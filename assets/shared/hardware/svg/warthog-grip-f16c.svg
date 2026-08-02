@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="640" height="440" viewBox="0 0 640 440">
+  <rect width="640" height="440" rx="24" fill="#f5f8fc" stroke="#0b1220" stroke-width="3"/>
+  <image href="../source/f16c-warthog-grip-front.png" x="72" y="56" width="232" height="300" preserveAspectRatio="xMidYMid meet"/>
+  <image href="../source/f16c-warthog-grip-rear.png" x="336" y="56" width="232" height="300" preserveAspectRatio="xMidYMid meet"/>
+  <rect x="62" y="46" width="516" height="320" rx="18" fill="none" stroke="#1f3d5c" stroke-width="2"/>
+  <circle cx="188" cy="164" r="10" fill="#16a34a" stroke="#ffffff" stroke-width="2"/>
+  <circle cx="452" cy="164" r="10" fill="#16a34a" stroke="#ffffff" stroke-width="2"/>
+  <circle cx="320" cy="248" r="10" fill="#16a34a" stroke="#ffffff" stroke-width="2"/>
+  <rect x="118" y="380" width="404" height="34" rx="12" fill="#ffffff" stroke="#394a67" stroke-width="2"/>
+  <text x="320" y="402" text-anchor="middle" font-family="Arial, sans-serif" font-size="18" font-weight="700" fill="#0b1220">Warthog grip template with placeholder hotspots</text>
+</svg>

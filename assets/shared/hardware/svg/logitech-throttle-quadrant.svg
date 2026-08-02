@@ -1,7 +1,8 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="320" height="220" viewBox="0 0 320 220">
-  <rect width="320" height="220" rx="18" fill="#0b1220"/>
-  <rect x="58" y="38" width="204" height="144" rx="16" fill="#111c32" stroke="#46d8ff" stroke-width="2"/>
-  <rect x="84" y="64" width="152" height="32" rx="8" fill="#1b2740"/>
-  <rect x="84" y="112" width="152" height="32" rx="8" fill="#1b2740"/>
-  <text x="160" y="188" text-anchor="middle" font-family="Arial, sans-serif" font-size="16" fill="#f2f7ff">Logitech Throttle Quadrant</text>
+  <rect width="320" height="220" rx="18" fill="#f7f9fc" stroke="#0b1220" stroke-width="3"/>
+  <rect x="58" y="38" width="204" height="144" rx="16" fill="#ffffff" stroke="#394a67" stroke-width="2"/>
+  <rect x="78" y="58" width="164" height="104" rx="18" fill="#dcefff" stroke="#0f6bff" stroke-width="2"/>
+  <rect x="96" y="76" width="128" height="20" rx="8" fill="#ffffff" stroke="#0b1220" stroke-width="2"/>
+  <rect x="96" y="110" width="128" height="20" rx="8" fill="#ffffff" stroke="#0b1220" stroke-width="2"/>
+  <text x="160" y="188" text-anchor="middle" font-family="Arial, sans-serif" font-size="16" font-weight="700" fill="#0b1220">Logitech Throttle Quadrant</text>
 </svg>

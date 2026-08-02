@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="640" height="440" viewBox="0 0 640 440">
+  <rect width="640" height="440" rx="24" fill="#f5f8fc" stroke="#0b1220" stroke-width="3"/>
+  <image href="../source/f4u-logitech-throttle-quadrant.png" x="96" y="54" width="448" height="300" preserveAspectRatio="xMidYMid meet"/>
+  <rect x="86" y="44" width="468" height="320" rx="18" fill="none" stroke="#1f3d5c" stroke-width="2"/>
+  <circle cx="220" cy="164" r="10" fill="#f59e0b" stroke="#ffffff" stroke-width="2"/>
+  <circle cx="320" cy="164" r="10" fill="#f59e0b" stroke="#ffffff" stroke-width="2"/>
+  <circle cx="420" cy="164" r="10" fill="#f59e0b" stroke="#ffffff" stroke-width="2"/>
+  <circle cx="320" cy="272" r="10" fill="#f59e0b" stroke="#ffffff" stroke-width="2"/>
+  <rect x="118" y="380" width="404" height="34" rx="12" fill="#ffffff" stroke="#394a67" stroke-width="2"/>
+  <text x="320" y="402" text-anchor="middle" font-family="Arial, sans-serif" font-size="18" font-weight="700" fill="#0b1220">F4U-1D Logitech throttle quadrant template</text>
+</svg>
