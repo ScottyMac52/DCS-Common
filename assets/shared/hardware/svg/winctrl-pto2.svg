@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="320" height="220" viewBox="0 0 320 220">
+  <rect width="320" height="220" rx="18" fill="#0b1220"/>
+  <rect x="58" y="38" width="204" height="144" rx="16" fill="#111c32" stroke="#46d8ff" stroke-width="2"/>
+  <rect x="82" y="62" width="156" height="24" rx="8" fill="#1b2740"/>
+  <rect x="82" y="96" width="156" height="24" rx="8" fill="#1b2740"/>
+  <rect x="82" y="130" width="156" height="24" rx="8" fill="#1b2740"/>
+  <text x="160" y="188" text-anchor="middle" font-family="Arial, sans-serif" font-size="16" fill="#f2f7ff">WINCTRL PTO2</text>
+</svg>

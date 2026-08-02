@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="320" height="220" viewBox="0 0 320 220">
+  <rect width="320" height="220" rx="18" fill="#0b1220"/>
+  <rect x="44" y="40" width="232" height="140" rx="16" fill="#111c32" stroke="#46d8ff" stroke-width="2"/>
+  <rect x="88" y="64" width="144" height="40" rx="10" fill="#1b2740"/>
+  <rect x="100" y="122" width="120" height="24" rx="8" fill="#1b2740"/>
+  <text x="160" y="188" text-anchor="middle" font-family="Arial, sans-serif" font-size="16" fill="#f2f7ff">AVA Base + F-18C Grip</text>
+</svg>
