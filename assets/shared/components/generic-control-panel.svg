@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="800" height="600" viewBox="0 0 800 600">
+  <rect x="40" y="40" width="720" height="520" rx="28" fill="#0f1b2c" stroke="#4dc6ff" stroke-width="4"/>
+  <rect x="80" y="90" width="640" height="420" rx="18" fill="#16253f" stroke="#7aa0c8" stroke-width="2"/>
+  <rect x="120" y="140" width="220" height="140" rx="16" fill="#1b3350" stroke="#9ed9ff" stroke-width="2"/>
+  <rect x="360" y="140" width="320" height="140" rx="16" fill="#1b3350" stroke="#9ed9ff" stroke-width="2"/>
+  <rect x="120" y="320" width="560" height="140" rx="16" fill="#1b3350" stroke="#9ed9ff" stroke-width="2"/>
+  <text x="400" y="72" text-anchor="middle" font-family="Segoe UI, Arial, sans-serif" font-size="26" font-weight="800" fill="#f5f9ff">GENERIC CONTROL PANEL</text>
+</svg>

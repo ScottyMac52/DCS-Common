@@ -27,6 +27,12 @@ test('renders shared SVG pages from a consumer config', async () => {
   assert.match(hardware, /SAMPLE HARDWARE PAGE/);
   assert.match(hardware, /Primary action/);
 
+  const sharedImagePayload = hardware.match(/href="(data:image\/svg\+xml;base64,[^"]+)"/);
+  assert.ok(sharedImagePayload, 'expected shared component image payload in rendered SVG');
+  const encoded = sharedImagePayload[1].split(',')[1];
+  const decoded = Buffer.from(encoded, 'base64').toString('utf8');
+  assert.match(decoded, /GENERIC CONTROL PANEL/);
+
   const diff = readFileSync(join(outputDir, 'sample-profile.diff.lua'), 'utf8');
   assert.match(diff, /sample-repo/);
   assert.match(diff, /primary-action/);

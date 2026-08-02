@@ -1,4 +1,4 @@
-import { mkdirSync, readFileSync, writeFileSync } from 'node:fs';
+import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { dirname, extname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
@@ -140,16 +140,41 @@ async function loadAssets(assets, baseDir) {
   return loaded;
 }
 
+function loadSharedComponentManifest(manifestPath) {
+  const manifest = JSON.parse(readFileSync(manifestPath, 'utf8'));
+  return manifest.components || [];
+}
+
 function resolveHref(href, assets) {
   if (typeof href === 'string') return href;
-  if (href && typeof href === 'object' && href.asset) return assets[href.asset] || '';
+  if (href && typeof href === 'object') {
+    if (typeof href.asset === 'string') return assets[href.asset] || '';
+    if (typeof href.href === 'string') return href.href;
+    if (href.href && typeof href.href === 'object' && typeof href.href.asset === 'string') return assets[href.href.asset] || '';
+  }
   return '';
 }
 
-function normalizePage(page, assets) {
+function normalizePage(page, assets, sharedAssetConfig) {
   const normalized = { ...page };
   if (normalized.images) {
-    normalized.images = normalized.images.map((layer) => ({ ...layer, href: resolveHref(layer.href, assets) }));
+    normalized.images = normalized.images.map((layer) => {
+      const resolvedHref = resolveHref(layer.href, assets);
+      return { ...layer, href: resolvedHref };
+    });
+  }
+  if (sharedAssetConfig?.componentId && normalized.type === 'hardware' && !normalized.images?.some((layer) => typeof layer.href === 'string' && layer.href.includes('data:'))) {
+    normalized.images = [
+      ...(normalized.images || []),
+      {
+        href: resolveHref({ asset: sharedAssetConfig.componentId }, assets),
+        x: sharedAssetConfig.x ?? 274,
+        y: sharedAssetConfig.y ?? 250,
+        width: sharedAssetConfig.width ?? 652,
+        height: sharedAssetConfig.height ?? 725,
+        opacity: sharedAssetConfig.opacity ?? 0.95,
+      },
+    ];
   }
   return normalized;
 }
@@ -158,8 +183,17 @@ export async function renderKneeboard({ config, outputDir = join(rootDir, 'dist'
   const resolvedRootDir = resolve(customRootDir);
   const resolvedOutputDir = resolve(outputDir);
   mkdirSync(resolvedOutputDir, { recursive: true });
+  const sharedManifestPath = join(resolvedRootDir, 'assets', 'shared', 'components', 'component-manifest.json');
+  const sharedComponents = existsSync(sharedManifestPath) ? loadSharedComponentManifest(sharedManifestPath) : [];
+
   const assets = await loadAssets(config.assets || {}, resolvedRootDir);
-  const pages = (config.pages || []).map((page) => normalizePage(page, assets));
+  for (const component of sharedComponents) {
+    const assetPath = resolve(resolvedRootDir, component.asset);
+    const buffer = readFileSync(assetPath);
+    const mime = inferMime(assetPath);
+    assets[component.id] = `data:${mime};base64,${buffer.toString('base64')}`;
+  }
+  const pages = (config.pages || []).map((page) => normalizePage(page, assets, config.sharedAssets));
   const created = [];
   for (const [index, page] of pages.entries()) {
     const svg = page.type === 'summary' ? summaryPage(page, index, pages.length) : hardwarePage(page, index, pages.length);

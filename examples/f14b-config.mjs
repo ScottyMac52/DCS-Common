@@ -10,6 +10,9 @@ export const config = {
       path: 'assets/source/sample-device.svg',
     },
   },
+  sharedAssets: {
+    componentId: 'generic-control-panel',
+  },
   diffTemplate: 'local repo = "{{repo}}"\nlocal binding = "{{binding}}"\nlocal label = "{{label}}"',
   profiles: [
     {
@@ -39,9 +42,7 @@ export const config = {
       file: '02-SAMPLE-HARDWARE',
       title: 'SAMPLE HARDWARE PAGE',
       kicker: 'CALL OUTS AND NOTES ARE POSITIONAL',
-      images: [
-        { href: { asset: 'sampleDevice' }, x: 274, y: 250, width: 652, height: 725, opacity: 0.95 },
-      ],
+      images: [],
       callouts: [
         { key: 'BTN 1', text: 'Primary action', side: 'left', accent: 'cyan' },
         { key: 'BTN 2', text: 'Secondary action', side: 'right', accent: 'gold' },
