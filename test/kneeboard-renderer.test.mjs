@@ -16,6 +16,7 @@ test('renders shared SVG pages from a consumer config', async () => {
   assert.equal(result.svgFiles.length, 2);
   assert.ok(existsSync(join(outputDir, '01-SHARED-OVERVIEW.svg')));
   assert.ok(existsSync(join(outputDir, '02-SAMPLE-HARDWARE.svg')));
+  assert.ok(existsSync(join(outputDir, 'sample-profile.diff.lua')));
 
   const overview = readFileSync(join(outputDir, '01-SHARED-OVERVIEW.svg'), 'utf8');
   assert.match(overview, /SHARED KNEEBOARD RENDERER/);
@@ -25,6 +26,11 @@ test('renders shared SVG pages from a consumer config', async () => {
   const hardware = readFileSync(join(outputDir, '02-SAMPLE-HARDWARE.svg'), 'utf8');
   assert.match(hardware, /SAMPLE HARDWARE PAGE/);
   assert.match(hardware, /Primary action/);
+
+  const diff = readFileSync(join(outputDir, 'sample-profile.diff.lua'), 'utf8');
+  assert.match(diff, /sample-repo/);
+  assert.match(diff, /primary-action/);
+  assert.match(diff, /secondary-action/);
 
   assert.ok(result.pngFiles.length === 0 || existsSync(join(outputDir, '01-SHARED-OVERVIEW.png')));
 });

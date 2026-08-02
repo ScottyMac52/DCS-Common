@@ -10,6 +10,17 @@ export const config = {
       path: 'assets/source/sample-device.svg',
     },
   },
+  diffTemplate: 'local repo = "{{repo}}"\nlocal binding = "{{binding}}"\nlocal label = "{{label}}"',
+  profiles: [
+    {
+      file: 'sample-profile',
+      repo: 'sample-repo',
+      bindings: [
+        { name: 'primary-action', label: 'Primary action' },
+        { name: 'secondary-action', label: 'Secondary action' },
+      ],
+    },
+  ],
   pages: [
     {
       type: 'summary',

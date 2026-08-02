@@ -50,6 +50,15 @@ function frame(title, kicker, body, index, pageCount) {
 </svg>`;
 }
 
+function renderDiffTemplate(template, profile) {
+  const bindings = profile.bindings || [];
+  const rendered = [];
+  for (const binding of bindings) {
+    rendered.push(template.replaceAll('{{repo}}', profile.repo).replaceAll('{{binding}}', binding.name).replaceAll('{{label}}', binding.label));
+  }
+  return rendered.join('\n');
+}
+
 function summaryPage(page, index, pageCount) {
   const cards = page.items.map((entry, itemIndex) => {
     const x = 96 + (itemIndex % 2) * 480;
@@ -163,10 +172,21 @@ export async function renderKneeboard({ config, outputDir = join(rootDir, 'dist'
       created.push(pngPath);
     }
   }
+
+  const profiles = config.profiles || [];
+  for (const profile of profiles) {
+    const template = config.diffTemplate || 'local diff = { repo = "{{repo}}", binding = "{{binding}}", label = "{{label}}" }';
+    const diffPath = join(resolvedOutputDir, `${profile.file}.diff.lua`);
+    const diffContent = renderDiffTemplate(template, profile);
+    writeFileSync(diffPath, diffContent, 'utf8');
+    created.push(diffPath);
+  }
+
   return {
     outputDir: resolvedOutputDir,
     svgFiles: created.filter((path) => path.endsWith('.svg')),
     pngFiles: created.filter((path) => path.endsWith('.png')),
+    diffFiles: created.filter((path) => path.endsWith('.diff.lua')),
   };
 }
 
