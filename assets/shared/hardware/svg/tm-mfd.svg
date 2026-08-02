@@ -1,12 +1,24 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="640" height="440" viewBox="0 0 640 440">
-  <rect width="640" height="440" rx="24" fill="#f5f8fc" stroke="#0b1220" stroke-width="3"/>
-  <image href="../source/mfd-clean.png" x="80" y="44" width="480" height="320" preserveAspectRatio="xMidYMid meet"/>
-  <rect x="72" y="36" width="496" height="336" rx="18" fill="none" stroke="#1f3d5c" stroke-width="2"/>
-  <circle cx="218" cy="150" r="10" fill="#ff4d4f" stroke="#ffffff" stroke-width="2"/>
-  <circle cx="288" cy="150" r="10" fill="#ff4d4f" stroke="#ffffff" stroke-width="2"/>
-  <circle cx="358" cy="150" r="10" fill="#ff4d4f" stroke="#ffffff" stroke-width="2"/>
-  <circle cx="218" cy="220" r="10" fill="#ff4d4f" stroke="#ffffff" stroke-width="2"/>
-  <circle cx="358" cy="220" r="10" fill="#ff4d4f" stroke="#ffffff" stroke-width="2"/>
-  <rect x="118" y="380" width="404" height="34" rx="12" fill="#ffffff" stroke="#394a67" stroke-width="2"/>
-  <text x="320" y="402" text-anchor="middle" font-family="Arial, sans-serif" font-size="18" font-weight="700" fill="#0b1220">TM MFD placeholder hotspots</text>
+  <rect width="640" height="440" rx="24" fill="#f1f5f9" stroke="#0f172a" stroke-width="3"/>
+  <rect x="24" y="24" width="592" height="392" rx="24" fill="#ffffff" stroke="#334155" stroke-width="3"/>
+  <rect x="42" y="42" width="556" height="356" rx="18" fill="#f8fbff" stroke="#94a3b8" stroke-width="2"/>
+  <image href="../source/mfd-clean.png" x="100" y="76" width="440" height="270" preserveAspectRatio="xMidYMid meet"/>
+  <rect x="70" y="54" width="500" height="292" rx="18" fill="none" stroke="#cbd5e1" stroke-width="2"/>
+  <rect x="54" y="354" width="532" height="34" rx="12" fill="#e2e8f0"/>
+  <text x="320" y="376" text-anchor="middle" font-family="Arial, sans-serif" font-size="16" font-weight="700" fill="#0f172a">TM MFD template • numbered hotspots</text>
+  <circle cx="220" cy="154" r="10" fill="#ef4444" stroke="#ffffff" stroke-width="2"/>
+  <circle cx="320" cy="154" r="10" fill="#ef4444" stroke="#ffffff" stroke-width="2"/>
+  <circle cx="420" cy="154" r="10" fill="#ef4444" stroke="#ffffff" stroke-width="2"/>
+  <circle cx="220" cy="240" r="10" fill="#ef4444" stroke="#ffffff" stroke-width="2"/>
+  <circle cx="420" cy="240" r="10" fill="#ef4444" stroke="#ffffff" stroke-width="2"/>
+  <rect x="194" y="128" width="52" height="24" rx="12" fill="#0f172a"/>
+  <rect x="294" y="128" width="52" height="24" rx="12" fill="#0f172a"/>
+  <rect x="394" y="128" width="52" height="24" rx="12" fill="#0f172a"/>
+  <rect x="194" y="214" width="52" height="24" rx="12" fill="#0f172a"/>
+  <rect x="394" y="214" width="52" height="24" rx="12" fill="#0f172a"/>
+  <text x="220" y="144" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" font-weight="700" fill="#ffffff">1</text>
+  <text x="320" y="144" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" font-weight="700" fill="#ffffff">2</text>
+  <text x="420" y="144" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" font-weight="700" fill="#ffffff">3</text>
+  <text x="220" y="230" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" font-weight="700" fill="#ffffff">4</text>
+  <text x="420" y="230" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" font-weight="700" fill="#ffffff">5</text>
 </svg>
