@@ -1,0 +1,223 @@
+name: Reusable release workflow
+
+on:
+  workflow_call:
+    inputs:
+      bump:
+        required: true
+        type: string
+        default: minor
+      package-version:
+        required: false
+        type: string
+        default: 0.0.0-ci.${{ github.run_number }}
+      install-lua-parser:
+        required: false
+        type: boolean
+        default: false
+      run-lua-parse:
+        required: false
+        type: boolean
+        default: false
+      run-autohotkey-tests:
+        required: false
+        type: boolean
+        default: false
+      run-release-validation:
+        required: false
+        type: boolean
+        default: false
+      package-script:
+        required: true
+        type: string
+      test-package-script:
+        required: true
+        type: string
+      build-release-script:
+        required: true
+        type: string
+      test-release-script:
+        required: true
+        type: string
+      artifact-name:
+        required: true
+        type: string
+      artifact-path:
+        required: true
+        type: string
+      node-version:
+        required: false
+        type: string
+        default: '22'
+      runs-on:
+        required: false
+        type: string
+        default: ubuntu-latest
+      install-command:
+        required: false
+        type: string
+        default: npm ci
+      build-command:
+        required: false
+        type: string
+        default: npm run build:kneeboard
+      test-kneeboard-command:
+        required: false
+        type: string
+        default: npm run test:kneeboard
+      test-versioning-command:
+        required: false
+        type: string
+        default: npm run test:versioning
+      package-root:
+        required: false
+        type: string
+        default: .
+      release-notes-path:
+        required: true
+        type: string
+      kneeboard-paths:
+        required: false
+        type: string
+        default: 'kneeboard/source kneeboard/F-16C_50'
+      release-title-prefix:
+        required: false
+        type: string
+        default: DCS Components
+
+jobs:
+  release:
+    runs-on: ${{ inputs.runs-on }}
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+          fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ inputs.node-version }}
+          cache: npm
+      - name: Install Lua parser
+        if: ${{ inputs.install-lua-parser }}
+        run: sudo apt-get update && sudo apt-get install -y lua5.4
+      - name: Install build dependencies
+        run: ${{ inputs.install-command }}
+      - name: Calculate next version
+        id: version
+        shell: pwsh
+        run: |
+          $LatestTag = git tag --list 'v*' --sort=-version:refname |
+            Where-Object { $_ -match '^v(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)$' } |
+            Select-Object -First 1
+
+          if ([string]::IsNullOrWhiteSpace($LatestTag)) {
+            $LatestVersion = '0.0.0'
+          } else {
+            $LatestVersion = $LatestTag.Substring(1)
+          }
+
+          $Version = node ./scripts/version.mjs next $LatestVersion $env:BUMP
+          if ($LASTEXITCODE -ne 0) { throw 'Failed to calculate the next semantic version.' }
+          $Tag = "v$Version"
+          if (git tag --list -- $Tag) { throw "Tag $Tag already exists." }
+
+          $ReleaseSha = git rev-parse HEAD
+          if ($LatestTag -and (git rev-list -n 1 $LatestTag) -eq $ReleaseSha) {
+            throw 'There are no commits on main after the latest tag.'
+          }
+
+          "PACKAGE_VERSION=$Version" >> $env:GITHUB_ENV
+          "RELEASE_TAG=$Tag" >> $env:GITHUB_ENV
+          "RELEASE_SHA=$ReleaseSha" >> $env:GITHUB_ENV
+          "tag=$Tag" >> $env:GITHUB_OUTPUT
+          Write-Host "Creating $Tag from $LatestTag with a $env:BUMP bump."
+        env:
+          BUMP: ${{ inputs.bump }}
+      - name: Test semantic versioning
+        run: ${{ inputs.test-versioning-command }}
+      - name: Parse Lua profiles
+        if: ${{ inputs.run-lua-parse }}
+        shell: pwsh
+        run: |
+          Set-Location '${{ inputs.package-root }}'
+          Get-ChildItem src -Recurse -Filter '*.lua' | ForEach-Object {
+            & luac5.4 -p $_.FullName
+            if ($LASTEXITCODE -ne 0) { throw "Invalid Lua: $($_.FullName)" }
+          }
+      - name: Generate OpenKneeboard pages
+        run: ${{ inputs.build-command }}
+      - name: Validate OpenKneeboard pages
+        run: ${{ inputs.test-kneeboard-command }}
+      - name: Commit regenerated kneeboard pages
+        shell: pwsh
+        run: |
+          Set-Location '${{ inputs.package-root }}'
+          git config user.name  "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+          git add ${{ inputs.kneeboard-paths }}
+
+          $status = git status --porcelain ${{ inputs.kneeboard-paths }}
+          if ([string]::IsNullOrWhiteSpace($status)) {
+            Write-Host 'Kneeboard pages are already up to date; nothing to commit.'
+            return
+          }
+
+          git commit -m "chore: regenerate kneeboard pages for $env:RELEASE_TAG [skip ci]"
+          git push origin HEAD:main
+
+          $NewSha = git rev-parse HEAD
+          "RELEASE_SHA=$NewSha" >> $env:GITHUB_ENV
+          Write-Host "Pushed regenerated kneeboard pages as $NewSha"
+      - name: Build package
+        shell: pwsh
+        run: |
+          Set-Location '${{ inputs.package-root }}'
+          ./${{ inputs.package-script }} -Version $env:PACKAGE_VERSION
+      - name: Validate package
+        shell: pwsh
+        run: |
+          Set-Location '${{ inputs.package-root }}'
+          ./${{ inputs.test-package-script }} -Version $env:PACKAGE_VERSION
+      - name: Validate AutoHotKey bridge
+        if: ${{ inputs.run-autohotkey-tests }}
+        shell: pwsh
+        run: |
+          Set-Location '${{ inputs.package-root }}'
+          ./scripts/Test-AutoHotKey.ps1
+      - name: Build complete release bundle
+        if: ${{ inputs.run-release-validation }}
+        shell: pwsh
+        run: |
+          Set-Location '${{ inputs.package-root }}'
+          ./${{ inputs.build-release-script }} -Version $env:PACKAGE_VERSION
+      - name: Validate complete release bundle
+        if: ${{ inputs.run-release-validation }}
+        shell: pwsh
+        run: |
+          Set-Location '${{ inputs.package-root }}'
+          ./${{ inputs.test-release-script }} -Version $env:PACKAGE_VERSION
+      - uses: actions/upload-artifact@v4
+        with:
+          name: ${{ inputs.artifact-name }}
+          path: |
+            ${{ inputs.artifact-path }}
+      - name: Create tagged release
+        shell: pwsh
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          Set-Location '${{ inputs.package-root }}'
+          $Title = "${{ inputs.release-title-prefix }} $env:PACKAGE_VERSION"
+          $Assets = Get-ChildItem dist/*.zip, dist/SHA256SUMS.txt | ForEach-Object FullName
+
+          gh release create $env:RELEASE_TAG $Assets `
+            --target $env:RELEASE_SHA `
+            --title $Title `
+            --notes-file '${{ inputs.release-notes-path }}' `
+            --repo $env:GITHUB_REPOSITORY
+
+          if ($LASTEXITCODE -ne 0) { throw "Failed to create release $env:RELEASE_TAG." }
