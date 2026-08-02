@@ -1,0 +1,134 @@
+name: Reusable build workflow
+
+on:
+  workflow_call:
+    inputs:
+      package-version:
+        required: false
+        type: string
+        default: 0.0.0-ci.${{ github.run_number }}
+      install-lua-parser:
+        required: false
+        type: boolean
+        default: false
+      run-lua-parse:
+        required: false
+        type: boolean
+        default: false
+      run-autohotkey-tests:
+        required: false
+        type: boolean
+        default: false
+      run-release-validation:
+        required: false
+        type: boolean
+        default: false
+      package-script:
+        required: true
+        type: string
+      test-package-script:
+        required: true
+        type: string
+      build-release-script:
+        required: true
+        type: string
+      test-release-script:
+        required: true
+        type: string
+      artifact-name:
+        required: true
+        type: string
+      artifact-path:
+        required: true
+        type: string
+      node-version:
+        required: false
+        type: string
+        default: '22'
+      runs-on:
+        required: false
+        type: string
+        default: ubuntu-latest
+      install-command:
+        required: false
+        type: string
+        default: npm ci
+      build-command:
+        required: false
+        type: string
+        default: npm run build:kneeboard
+      test-kneeboard-command:
+        required: false
+        type: string
+        default: npm run test:kneeboard
+      test-versioning-command:
+        required: false
+        type: string
+        default: npm run test:versioning
+      package-root:
+        required: false
+        type: string
+        default: .
+
+jobs:
+  build:
+    runs-on: ${{ inputs.runs-on }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ inputs.node-version }}
+          cache: npm
+      - name: Install Lua parser
+        if: ${{ inputs.install-lua-parser }}
+        run: sudo apt-get update && sudo apt-get install -y lua5.4
+      - name: Install build dependencies
+        run: ${{ inputs.install-command }}
+      - name: Test semantic versioning
+        run: ${{ inputs.test-versioning-command }}
+      - name: Parse Lua profiles
+        if: ${{ inputs.run-lua-parse }}
+        shell: pwsh
+        run: |
+          Set-Location '${{ inputs.package-root }}'
+          Get-ChildItem src -Recurse -Filter '*.lua' | ForEach-Object {
+            & luac5.4 -p $_.FullName
+            if ($LASTEXITCODE -ne 0) { throw "Invalid Lua: $($_.FullName)" }
+          }
+      - name: Generate OpenKneeboard pages
+        run: ${{ inputs.build-command }}
+      - name: Validate OpenKneeboard pages
+        run: ${{ inputs.test-kneeboard-command }}
+      - name: Build package
+        shell: pwsh
+        run: |
+          Set-Location '${{ inputs.package-root }}'
+          ./${{ inputs.package-script }} -Version $env:PACKAGE_VERSION
+      - name: Validate package
+        shell: pwsh
+        run: |
+          Set-Location '${{ inputs.package-root }}'
+          ./${{ inputs.test-package-script }} -Version $env:PACKAGE_VERSION
+      - name: Validate AutoHotKey bridge
+        if: ${{ inputs.run-autohotkey-tests }}
+        shell: pwsh
+        run: |
+          Set-Location '${{ inputs.package-root }}'
+          ./scripts/Test-AutoHotKey.ps1
+      - name: Build complete release bundle
+        if: ${{ inputs.run-release-validation }}
+        shell: pwsh
+        run: |
+          Set-Location '${{ inputs.package-root }}'
+          ./${{ inputs.build-release-script }} -Version $env:PACKAGE_VERSION
+      - name: Validate complete release bundle
+        if: ${{ inputs.run-release-validation }}
+        shell: pwsh
+        run: |
+          Set-Location '${{ inputs.package-root }}'
+          ./${{ inputs.test-release-script }} -Version $env:PACKAGE_VERSION
+      - uses: actions/upload-artifact@v4
+        with:
+          name: ${{ inputs.artifact-name }}
+          path: |
+            ${{ inputs.artifact-path }}
