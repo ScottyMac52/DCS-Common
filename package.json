@@ -1,0 +1,12 @@
+{
+  "name": "dcs-common",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test:kneeboard": "node --test test/kneeboard-renderer.test.mjs",
+    "render:example": "node scripts/render-kneeboard-example.mjs"
+  },
+  "dependencies": {
+    "sharp": "^0.34.0"
+  }
+}
