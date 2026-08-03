@@ -3,6 +3,7 @@ import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { spawnSync } from 'node:child_process';
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const hardwareRoot = join(root, 'assets/shared/hardware');
@@ -41,6 +42,15 @@ test('native sources and exported SVGs preserve callout identities', () => {
     assert.deepEqual(svgIds, sourceIds, `${device.id} callout IDs changed during export`);
     assert.equal((svg.match(/<image\b/g) ?? []).length, (xml.match(/id="hardware-image-/g) ?? []).length);
   }
+});
+
+
+test('published SVGs exactly match the deterministic draw.io exporter', () => {
+  const result = spawnSync(process.execPath, [join(root, 'scripts/export-drawio-hardware.mjs'), '--check'], {
+    cwd: root,
+    encoding: 'utf8',
+  });
+  assert.equal(result.status, 0, result.stderr || result.stdout);
 });
 
 test('MFD pilot has 20 OSBs and eight independently editable rocker positions', () => {

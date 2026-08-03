@@ -5,6 +5,7 @@ import { fileURLToPath } from 'node:url';
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const hardwareRoot = join(root, 'assets/shared/hardware');
 const manifest = JSON.parse(readFileSync(join(hardwareRoot, 'manifest.json'), 'utf8'));
+const checkOnly = process.argv.includes('--check');
 
 const decode = (value = '') => value
   .replaceAll('&quot;', '"')
@@ -92,11 +93,23 @@ function render(device, xml) {
   return lines.join('\n');
 }
 
-let written = 0;
+let processed = 0;
+const stale = [];
 for (const device of manifest.devices.filter((entry) => entry.drawio)) {
   const xml = readFileSync(join(hardwareRoot, device.drawio), 'utf8');
-  writeFileSync(join(hardwareRoot, device.svg), render(device, xml), 'utf8');
-  console.log(`exported ${device.drawio} -> ${device.svg}`);
-  written += 1;
+  const output = render(device, xml);
+  const target = join(hardwareRoot, device.svg);
+  if (checkOnly) {
+    if (readFileSync(target, 'utf8') !== output) stale.push(device.svg);
+  } else {
+    writeFileSync(target, output, 'utf8');
+    console.log(`exported ${device.drawio} -> ${device.svg}`);
+  }
+  processed += 1;
 }
-console.log(`Exported ${written} draw.io hardware template(s).`);
+if (stale.length) {
+  throw new Error(`Published draw.io SVG output is stale: ${stale.join(', ')}. Run npm run build:drawio-hardware.`);
+}
+console.log(checkOnly
+  ? `Verified ${processed} published draw.io hardware template(s).`
+  : `Exported ${processed} draw.io hardware template(s).`);
