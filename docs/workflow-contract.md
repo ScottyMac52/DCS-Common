@@ -15,6 +15,7 @@ A repository that consumes these workflows should provide:
   - scripts/Build-Release.ps1
   - scripts/Test-Release.ps1
 - optional AutoHotKey validation at scripts/Test-AutoHotKey.ps1
+- optional repository-specific validation through `extra-validation-command`
 - a repository-specific artifact name and artifact path for upload
 
 ## Reusable workflow inputs
@@ -24,6 +25,8 @@ The build and release workflows accept repository-specific inputs for:
 - package scripts and validation scripts
 - kneeboard build/test commands
 - optional Lua parsing and AutoHotKey validation
+- independent complete-release build and validation switches
+- repository-specific validation and release-note preparation commands
 - release notes path and kneeboard path globs for regeneration commits
 
 These inputs keep the shared workflows flexible while preserving a consistent build and release contract across repositories.
