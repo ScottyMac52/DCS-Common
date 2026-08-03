@@ -93,9 +93,41 @@ function hardwarePage(page, index, pageCount) {
   const callouts = page.callouts || [];
   const left = callouts.filter((entry) => entry.side === 'left');
   const right = callouts.filter((entry) => entry.side === 'right');
+  const drawPositionedCallout = (entry, side, fallbackX, fallbackY) => {
+    const x = entry.x ?? fallbackX;
+    const y = entry.y ?? fallbackY;
+    const width = entry.width ?? 260;
+    const height = entry.height ?? 44;
+    const accent = entry.accent === 'red' ? '#ff6b76' : entry.accent === 'gold' ? '#ffc95c' : '#46d8ff';
+    const anchors = entry.anchors || (entry.anchor ? [entry.anchor] : []);
+    const controls = entry.controls || (entry.control ? [entry.control] : []);
+    const lineX = side === 'left' ? x + width : x;
+    const lineY = y + height / 2;
+
+    anchors.forEach(([anchorX, anchorY], anchorIndex) => {
+      body.push(`<path d="M ${lineX} ${lineY} L ${anchorX} ${anchorY}" fill="none" stroke="${accent}" stroke-width="2.5" opacity="0.9"/>`);
+      const control = controls[anchorIndex] || controls[0];
+      body.push(`<circle${control ? ` data-control="${esc(control)}"` : ''} cx="${anchorX}" cy="${anchorY}" r="5" fill="none" stroke="${accent}" stroke-width="2.5"/>`);
+    });
+
+    body.push(`<rect x="${x}" y="${y}" width="${width}" height="${height}" rx="${entry.radius ?? 10}" fill="#12253d" stroke="${accent}" stroke-width="2"/>`);
+    const labelWidth = entry.labelWidth ?? 92;
+    body.push(`<rect x="${x + 9}" y="${y + 9}" width="${labelWidth}" height="${height - 18}" rx="8" fill="#07111d" stroke="${accent}" stroke-width="1.5"/>`);
+    body.push(`<text x="${x + 9 + labelWidth / 2}" y="${y + height / 2}" text-anchor="middle" dominant-baseline="middle" font-family="Segoe UI, Arial, sans-serif" font-size="${entry.labelFontSize ?? 14}" font-weight="800" fill="${accent}">${esc(entry.label || entry.key)}</text>`);
+    const lines = entry.lines || wrap(entry.text, 18, 2);
+    const firstLineY = y + (height - (lines.length - 1) * 18) / 2 + 5;
+    lines.forEach((line, lineIndex) => {
+      body.push(`<text x="${x + labelWidth + 20}" y="${firstLineY + lineIndex * 18}" font-family="Segoe UI, Arial, sans-serif" font-size="${entry.fontSize ?? 15}" font-weight="600" fill="#f5f9ff">${esc(line)}</text>`);
+    });
+    if (entry.title) body.push(`<title>${esc(entry.title)}</title>`);
+  };
   const drawSide = (entries, side, x) => {
     entries.forEach((entry, idx) => {
       const y = 250 + idx * 70;
+      if (entry.anchor || entry.anchors || entry.x !== undefined || entry.y !== undefined) {
+        drawPositionedCallout(entry, side, x, y);
+        return;
+      }
       const accent = entry.accent === 'red' ? '#ff6b76' : entry.accent === 'gold' ? '#ffc95c' : '#46d8ff';
       body.push(`<rect x="${x}" y="${y}" width="260" height="44" rx="10" fill="#12253d" stroke="${accent}" stroke-width="2"/>`);
       body.push(`<text x="${x + 18}" y="${y + 28}" font-family="Segoe UI, Arial, sans-serif" font-size="16" font-weight="800" fill="${accent}">${esc(entry.key)}</text>`);
