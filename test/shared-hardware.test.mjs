@@ -39,3 +39,28 @@ for (const relativePath of requiredTemplateAssets) {
 }
 
 console.log('Shared hardware validation passed.');
+
+
+const tmMfdLua = readFileSync(join(root, 'assets', 'shared', 'hardware', 'lua/tm-mfd.lua'), 'utf8');
+const tmMfdDrawio = readFileSync(join(root, 'assets', 'shared', 'hardware', 'drawio/tm-mfd.drawio'), 'utf8');
+const tmMfdSvg = readFileSync(join(root, 'assets', 'shared', 'hardware', 'svg/tm-mfd.svg'), 'utf8');
+const tmMfdControls = [...tmMfdLua.matchAll(
+  /\{\s*id = "([^"]+)",\s*key = "(JOY_BTN\d+)",\s*type = "([^"]+)",\s*hardwareLabel = "([^"]+)"/g,
+)].map((match) => ({ id: match[1], key: match[2], type: match[3], hardwareLabel: match[4] }));
+const tmMfdLuaIds = tmMfdControls.map(({ id }) => id).sort();
+const tmMfdDrawioIds = [...tmMfdDrawio.matchAll(/id="connector-([^"]+)"/g)].map((match) => match[1]).sort();
+const tmMfdSvgIds = [...tmMfdSvg.matchAll(/<!-- callout:([^\s]+) -->/g)].map((match) => match[1]).sort();
+
+assert.equal(tmMfdControls.length, 28, 'TM MFD must define all 28 physical controls');
+assert.equal(new Set(tmMfdLuaIds).size, 28, 'TM MFD control IDs must be unique');
+assert.deepEqual(tmMfdLuaIds, tmMfdDrawioIds, 'TM MFD Lua controls must match draw.io connector IDs');
+assert.deepEqual(tmMfdLuaIds, tmMfdSvgIds, 'TM MFD Lua controls must match exported SVG callout IDs');
+assert.deepEqual(
+  tmMfdControls.map(({ key }) => key).sort((a, b) => Number(a.slice(7)) - Number(b.slice(7))),
+  Array.from({ length: 28 }, (_, index) => `JOY_BTN${index + 1}`),
+  'TM MFD must define JOY_BTN1 through JOY_BTN28 exactly once',
+);
+assert.equal(tmMfdControls.filter(({ type }) => type === 'button').length, 20, 'TM MFD must define 20 OSB buttons');
+assert.equal(tmMfdControls.filter(({ type }) => type === 'rocker-position').length, 8, 'TM MFD must define eight rocker positions');
+assert.doesNotMatch(tmMfdLua, /\bcommand\s*=/, 'Shared TM MFD hardware must not contain aircraft commands');
+assert.match(tmMfdLua, /schemaVersion\s*=\s*1/, 'TM MFD physical catalog must declare schema version 1');
