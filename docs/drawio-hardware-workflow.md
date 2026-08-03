@@ -18,4 +18,4 @@ The custom exporter intentionally supports the limited native cell vocabulary us
 
 Add an approved raster image under `assets/shared/hardware/source/`, create the initial SVG/control inventory, add a `drawio` path to the manifest entry, and run `npm run create:drawio-hardware`. The creation command refuses to overwrite existing native sources unless `--force` is supplied; do not use `--force` after manual layout work begins.
 
-The placeholder devices without approved source images remain outside this workflow until their imagery is supplied.
+Record every externally sourced image and its product page in `assets/shared/hardware/SOURCES.md`. Manufacturer product images retain their original copyright and require maintainer approval before distribution.
