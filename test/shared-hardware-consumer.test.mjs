@@ -15,5 +15,6 @@ test('consumer API resolves stable device IDs and fills shared labels', () => {
 test('consumer page embeds the populated shared SVG', () => {
   const rendered = renderSharedHardwarePage({ deviceId: 'moza-ab9', labels: ['Pitch', 'Roll'], commonRoot });
   assert.match(rendered.svg, /data:image\/svg\+xml;base64,/);
+  assert.match(rendered.svg, /Shared DCS-Common device: moza-ab9/);
   assert.deepEqual(rendered.calloutIds, ['moza-ab9-pitch-axis', 'moza-ab9-roll-axis']);
 });

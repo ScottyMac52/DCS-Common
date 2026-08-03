@@ -38,6 +38,7 @@ export function renderSharedHardwarePage({ deviceId, labels = {}, title, kicker 
   return {
     calloutIds,
     svg: `<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="1600" viewBox="0 0 1200 1600">
+  <desc>Shared DCS-Common device: ${escapeXml(deviceId)}</desc>
   <rect width="1200" height="1600" fill="#06101d"/>
   <rect width="1200" height="16" fill="#46d8ff"/>
   <text x="54" y="80" font-family="Arial,sans-serif" font-size="44" font-weight="700" fill="#f5f9ff">${pageTitle}</text>
