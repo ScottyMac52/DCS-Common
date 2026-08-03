@@ -23,6 +23,14 @@ on:
         required: false
         type: boolean
         default: false
+      run-release-build:
+        required: false
+        type: boolean
+        default: false
+      extra-validation-command:
+        required: false
+        type: string
+        default: ''
       package-script:
         required: true
         type: string
@@ -73,6 +81,8 @@ on:
 jobs:
   build:
     runs-on: ${{ inputs.runs-on }}
+    env:
+      PACKAGE_VERSION: ${{ inputs.package-version }}
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -86,6 +96,10 @@ jobs:
         run: ${{ inputs.install-command }}
       - name: Test semantic versioning
         run: ${{ inputs.test-versioning-command }}
+      - name: Run repository-specific validation
+        if: ${{ inputs.extra-validation-command != '' }}
+        shell: pwsh
+        run: ${{ inputs.extra-validation-command }}
       - name: Parse Lua profiles
         if: ${{ inputs.run-lua-parse }}
         shell: pwsh
@@ -116,7 +130,7 @@ jobs:
           Set-Location '${{ inputs.package-root }}'
           ./scripts/Test-AutoHotKey.ps1
       - name: Build complete release bundle
-        if: ${{ inputs.run-release-validation }}
+        if: ${{ inputs.run-release-build || inputs.run-release-validation }}
         shell: pwsh
         run: |
           Set-Location '${{ inputs.package-root }}'
