@@ -19,7 +19,8 @@ const esc = (value = '') => value
 const attr = (source, name) => decode(source.match(new RegExp(`${name}="([^"]*)"`))?.[1]);
 const styleValue = (style, name) => {
   if (name === 'image') {
-    return style.match(/(?:^|;)image=(data:image\/[^;]+;base64,[A-Za-z0-9+/=]+)(?:;|$)/)?.[1];
+    const image = style.match(/(?:^|;)image=(data:image\/[^,;]+,[A-Za-z0-9+/=]+)(?:;|$)/)?.[1];
+    return image?.replace(',', ';base64,');
   }
   return style.split(';').find((part) => part.startsWith(`${name}=`))?.slice(name.length + 1);
 };

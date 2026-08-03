@@ -53,10 +53,11 @@ function parseSvg(svg) {
 }
 
 function toDrawio(device, model) {
+  const drawioImage = (href) => href.replace(';base64,', ',');
   const cells = [
     `        <mxCell id="canvas" value="" style="rounded=0;whiteSpace=wrap;html=1;fillColor=${model.background};strokeColor=none;" vertex="1" parent="1">\n${geometry(0, 0, model.width, model.height)}\n        </mxCell>`,
     ...model.images.map((image, index) =>
-      `        <mxCell id="hardware-image-${index + 1}" value="" style="shape=image;whiteSpace=wrap;html=1;aspect=fixed;image=${esc(image.href)};" vertex="1" parent="1">\n${geometry(image.x, image.y, image.width, image.height)}\n        </mxCell>`),
+      `        <mxCell id="hardware-image-${index + 1}" value="" style="shape=image;whiteSpace=wrap;html=1;aspect=fixed;image=${esc(drawioImage(image.href))};" vertex="1" parent="1">\n${geometry(image.x, image.y, image.width, image.height)}\n        </mxCell>`),
     ...model.callouts.flatMap((callout) => [
       `        <mxCell id="anchor-${esc(callout.id)}" value="" style="ellipse;whiteSpace=wrap;html=1;fillColor=#00bfff;strokeColor=#0f172a;strokeWidth=1.5;" vertex="1" parent="1">\n${geometry(callout.anchorX - 5, callout.anchorY - 5, 10, 10)}\n        </mxCell>`,
       `        <mxCell id="label-${esc(callout.id)}" value="" style="rounded=1;arcSize=18;whiteSpace=wrap;html=1;fillColor=#1e293b;strokeColor=#00bfff;strokeWidth=1.5;fontColor=#f1f5f9;fontFamily=Arial;fontSize=11;align=center;verticalAlign=middle;" vertex="1" parent="1">\n${geometry(callout.x, callout.y, callout.width, callout.height)}\n        </mxCell>`,

@@ -16,6 +16,8 @@ test('eight image-backed devices have native draw.io sources', () => {
     assert.match(xml, /<mxfile\b/);
     assert.match(xml, /compressed="false"/);
     assert.match(xml, /id="hardware-image-1"/);
+    assert.match(xml, /image=data:image\/(?:png|jpeg),[A-Za-z0-9+/=]+;/);
+    assert.doesNotMatch(xml, /image=data:image\/(?:png|jpeg);base64,/);
     assert.match(xml, /id="anchor-/);
     assert.match(xml, /id="label-/);
     assert.match(xml, /id="connector-/);
