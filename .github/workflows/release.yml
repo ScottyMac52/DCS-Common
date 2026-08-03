@@ -100,6 +100,8 @@ on:
 jobs:
   release:
     runs-on: ${{ inputs.runs-on }}
+    env:
+      DCS_COMMON_ROOT: ${{ github.workspace }}/.dcs-common
     permissions:
       contents: write
     steps:
@@ -108,6 +110,12 @@ jobs:
           ref: main
           fetch-depth: 0
           token: ${{ secrets.GITHUB_TOKEN }}
+      - name: Check out shared DCS-Common assets
+        uses: actions/checkout@v4
+        with:
+          repository: ScottyMac52/DCS-Common
+          ref: main
+          path: .dcs-common
       - uses: actions/setup-node@v4
         with:
           node-version: ${{ inputs.node-version }}
