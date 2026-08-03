@@ -18,8 +18,11 @@ To regenerate and validate the shared hardware catalog:
 
 ```bash
 npm run build:shared-hardware
+npm run build:drawio-hardware
 npm run test:shared-hardware
 ```
+
+Image-backed hardware templates use native draw.io sources. See [the draw.io hardware workflow](docs/drawio-hardware-workflow.md) before editing them.
 
 ## Shared kneeboard renderer
 

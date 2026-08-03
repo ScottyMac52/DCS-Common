@@ -9,12 +9,14 @@
     {
       "id": "vkb-f14-gunfighter",
       "label": "VKB F-14 Gunfighter Grip",
+      "drawio": "drawio/vkb-f14-gunfighter.drawio",
       "svg": "svg/vkb-f14-gunfighter.svg",
       "lua": "lua/vkb-f14-gunfighter.lua"
     },
     {
       "id": "tm-warthog-grip",
       "label": "TM Warthog Grip",
+      "drawio": "drawio/tm-warthog-grip.drawio",
       "svg": "svg/tm-warthog-grip.svg",
       "lua": "lua/tm-warthog-grip.lua"
     },
@@ -39,24 +41,28 @@
     {
       "id": "tm-mfd",
       "label": "TM MFD",
+      "drawio": "drawio/tm-mfd.drawio",
       "svg": "svg/tm-mfd.svg",
       "lua": "lua/tm-mfd.lua"
     },
     {
       "id": "onyourtwelve-pdcp",
       "label": "OnYourTwelve PDCP",
+      "drawio": "drawio/onyourtwelve-pdcp.drawio",
       "svg": "svg/onyourtwelve-pdcp.svg",
       "lua": "lua/onyourtwelve-pdcp.lua"
     },
     {
       "id": "winctrl-pto2",
       "label": "WINCTRL PTO2",
+      "drawio": "drawio/winctrl-pto2.drawio",
       "svg": "svg/winctrl-pto2.svg",
       "lua": "lua/winctrl-pto2.lua"
     },
     {
       "id": "winctrl-icp",
       "label": "WINCTRL ViperAce ICP",
+      "drawio": "drawio/winctrl-icp.drawio",
       "svg": "svg/winctrl-icp.svg",
       "lua": "lua/winctrl-icp.lua"
     },
@@ -69,12 +75,14 @@
     {
       "id": "tm-warthog-throttle",
       "label": "TM Warthog Throttle",
+      "drawio": "drawio/tm-warthog-throttle.drawio",
       "svg": "svg/tm-warthog-throttle.svg",
       "lua": "lua/tm-warthog-throttle.lua"
     },
     {
       "id": "logitech-throttle-quadrant",
       "label": "Logitech Throttle Quadrant",
+      "drawio": "drawio/logitech-throttle-quadrant.drawio",
       "svg": "svg/logitech-throttle-quadrant.svg",
       "lua": "lua/logitech-throttle-quadrant.lua"
     }
