@@ -27,7 +27,7 @@
   <rect x="800" y="278" width="160" height="22" rx="4" fill="#1e293b" stroke="#00bfff" stroke-width="1.5"/>
   <text id="lbl-winctrl-icp-a-a" x="880" y="293" text-anchor="middle" font-family="Arial,sans-serif" font-size="11" fill="#f1f5f9"></text>
   <!-- callout:winctrl-icp-a-g -->
-  <line x1="611" y1="267" x2="800" y2="313" stroke="#00bfff" stroke-width="1.5" stroke-dasharray="5 3" opacity="0.75"/>
+  <line x1="611" y1="267" x2="880" y2="302" stroke="#00bfff" stroke-width="1.5" stroke-dasharray="5 3" opacity="0.75"/>
   <circle cx="611" cy="267" r="5" fill="#00bfff" stroke="#0f172a" stroke-width="1.5"/>
   <rect x="800" y="302" width="160" height="22" rx="4" fill="#1e293b" stroke="#00bfff" stroke-width="1.5"/>
   <text id="lbl-winctrl-icp-a-g" x="880" y="317" text-anchor="middle" font-family="Arial,sans-serif" font-size="11" fill="#f1f5f9"></text>
@@ -67,7 +67,7 @@
   <rect x="5" y="422" width="160" height="22" rx="4" fill="#1e293b" stroke="#00bfff" stroke-width="1.5"/>
   <text id="lbl-winctrl-icp-kp-5" x="85" y="437" text-anchor="middle" font-family="Arial,sans-serif" font-size="11" fill="#f1f5f9"></text>
   <!-- callout:winctrl-icp-kp-6 -->
-  <line x1="463" y1="402" x2="165" y2="457" stroke="#00bfff" stroke-width="1.5" stroke-dasharray="5 3" opacity="0.75"/>
+  <line x1="463" y1="402" x2="85" y2="446" stroke="#00bfff" stroke-width="1.5" stroke-dasharray="5 3" opacity="0.75"/>
   <circle cx="463" cy="402" r="5" fill="#00bfff" stroke="#0f172a" stroke-width="1.5"/>
   <rect x="5" y="446" width="160" height="22" rx="4" fill="#1e293b" stroke="#00bfff" stroke-width="1.5"/>
   <text id="lbl-winctrl-icp-kp-6" x="85" y="461" text-anchor="middle" font-family="Arial,sans-serif" font-size="11" fill="#f1f5f9"></text>

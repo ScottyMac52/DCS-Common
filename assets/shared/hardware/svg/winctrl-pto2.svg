@@ -37,12 +37,12 @@
   <rect x="162" y="259" width="160" height="22" rx="4" fill="#1e293b" stroke="#00bfff" stroke-width="1.5"/>
   <text id="lbl-pto2-hook-byp" x="242" y="274" text-anchor="middle" font-family="Arial,sans-serif" font-size="11" fill="#f1f5f9"></text>
   <!-- callout:pto2-ldg-taxi -->
-  <line x1="278" y1="220" x2="162" y2="294" stroke="#00bfff" stroke-width="1.5" stroke-dasharray="5 3" opacity="0.75"/>
+  <line x1="278" y1="220" x2="82" y2="283" stroke="#00bfff" stroke-width="1.5" stroke-dasharray="5 3" opacity="0.75"/>
   <circle cx="278" cy="220" r="5" fill="#00bfff" stroke="#0f172a" stroke-width="1.5"/>
   <rect x="2" y="283" width="160" height="22" rx="4" fill="#1e293b" stroke="#00bfff" stroke-width="1.5"/>
   <text id="lbl-pto2-ldg-taxi" x="82" y="298" text-anchor="middle" font-family="Arial,sans-serif" font-size="11" fill="#f1f5f9"></text>
   <!-- callout:pto2-anti-skid -->
-  <line x1="366" y1="220" x2="162" y2="318" stroke="#00bfff" stroke-width="1.5" stroke-dasharray="5 3" opacity="0.75"/>
+  <line x1="366" y1="220" x2="82" y2="307" stroke="#00bfff" stroke-width="1.5" stroke-dasharray="5 3" opacity="0.75"/>
   <circle cx="366" cy="220" r="5" fill="#00bfff" stroke="#0f172a" stroke-width="1.5"/>
   <rect x="2" y="307" width="160" height="22" rx="4" fill="#1e293b" stroke="#00bfff" stroke-width="1.5"/>
   <text id="lbl-pto2-anti-skid" x="82" y="322" text-anchor="middle" font-family="Arial,sans-serif" font-size="11" fill="#f1f5f9"></text>
