@@ -2,43 +2,37 @@
   "devices": [
     {
       "id": "moza-ab9",
-      "label": "MOZA AB9",
+      "label": "MOZA AB9 FFB Base",
       "svg": "svg/moza-ab9.svg",
       "lua": "lua/moza-ab9.lua"
     },
     {
       "id": "vkb-f14-gunfighter",
-      "label": "VKB F-14 Gunfighter",
+      "label": "VKB F-14 Gunfighter Grip",
       "svg": "svg/vkb-f14-gunfighter.svg",
       "lua": "lua/vkb-f14-gunfighter.lua"
     },
     {
-      "id": "warthog-grip-f16c",
-      "label": "Warthog grip (F-16C style)",
-      "svg": "svg/warthog-grip-f16c.svg",
-      "lua": "lua/warthog-grip-f16c.lua"
-    },
-    {
-      "id": "grip-f16c",
-      "label": "F-16C grip",
-      "svg": "svg/grip-f16c.svg",
-      "lua": "lua/grip-f16c.lua"
+      "id": "tm-warthog-grip",
+      "label": "TM Warthog Grip",
+      "svg": "svg/tm-warthog-grip.svg",
+      "lua": "lua/tm-warthog-grip.lua"
     },
     {
       "id": "grip-f18c",
-      "label": "F-18C grip",
+      "label": "F-18C Grip",
       "svg": "svg/grip-f18c.svg",
       "lua": "lua/grip-f18c.lua"
     },
     {
       "id": "ava-base-f16c",
-      "label": "AVA Base with F-16C grip",
+      "label": "VKB AVA Base + F-16C Grip",
       "svg": "svg/ava-base-f16c.svg",
       "lua": "lua/ava-base-f16c.lua"
     },
     {
       "id": "ava-base-f18c",
-      "label": "AVA Base with F-18C grip",
+      "label": "VKB AVA Base + F-18C Grip",
       "svg": "svg/ava-base-f18c.svg",
       "lua": "lua/ava-base-f18c.lua"
     },
@@ -61,26 +55,14 @@
       "lua": "lua/winctrl-pto2.lua"
     },
     {
-      "id": "winctrl-pto2-f16c",
-      "label": "WINCTRL PTO2 (F-16C style)",
-      "svg": "svg/winctrl-pto2-f16c.svg",
-      "lua": "lua/winctrl-pto2-f16c.lua"
-    },
-    {
       "id": "winctrl-icp",
-      "label": "WINCTRL ICP",
+      "label": "WINCTRL ViperAce ICP",
       "svg": "svg/winctrl-icp.svg",
       "lua": "lua/winctrl-icp.lua"
     },
     {
-      "id": "winctrl-icp-f16c",
-      "label": "WINCTRL ICP (F-16C style)",
-      "svg": "svg/winctrl-icp-f16c.svg",
-      "lua": "lua/winctrl-icp-f16c.lua"
-    },
-    {
       "id": "tm-tpr",
-      "label": "TM TPR",
+      "label": "TM T-Pendular Rudder",
       "svg": "svg/tm-tpr.svg",
       "lua": "lua/tm-tpr.lua"
     },
@@ -95,18 +77,6 @@
       "label": "Logitech Throttle Quadrant",
       "svg": "svg/logitech-throttle-quadrant.svg",
       "lua": "lua/logitech-throttle-quadrant.lua"
-    },
-    {
-      "id": "f4u-logitech-throttle-quadrant",
-      "label": "F4U-1D Logitech Throttle Quadrant",
-      "svg": "svg/f4u-logitech-throttle-quadrant.svg",
-      "lua": "lua/f4u-logitech-throttle-quadrant.lua"
-    },
-    {
-      "id": "f4u-vkb-grip",
-      "label": "F4U-1D VKB F-14 Grip",
-      "svg": "svg/f4u-vkb-grip.svg",
-      "lua": "lua/f4u-vkb-grip.lua"
     }
   ]
 }

@@ -9,7 +9,7 @@ const manifestPath = join(root, 'assets', 'shared', 'hardware', 'manifest.json')
 const manifest = JSON.parse(readFileSync(manifestPath, 'utf8'));
 
 assert.ok(Array.isArray(manifest.devices), 'manifest should contain a devices array');
-assert.equal(manifest.devices.length, 18, 'expected 18 shared hardware definitions');
+assert.equal(manifest.devices.length, 13, 'expected 13 shared hardware definitions');
 
 for (const device of manifest.devices) {
   const svgPath = join(root, 'assets', 'shared', 'hardware', device.svg);
@@ -18,17 +18,16 @@ for (const device of manifest.devices) {
   assert.ok(existsSync(luaPath), `${device.id} is missing its Lua definition`);
 }
 
+// Every device with a source image must embed it (<image> tag) and have callout anchors.
 const requiredTemplateAssets = [
   'svg/tm-mfd.svg',
   'svg/onyourtwelve-pdcp.svg',
   'svg/winctrl-pto2.svg',
   'svg/vkb-f14-gunfighter.svg',
   'svg/tm-warthog-throttle.svg',
-  'svg/warthog-grip-f16c.svg',
-  'svg/winctrl-pto2-f16c.svg',
-  'svg/winctrl-icp-f16c.svg',
-  'svg/f4u-logitech-throttle-quadrant.svg',
-  'svg/f4u-vkb-grip.svg',
+  'svg/tm-warthog-grip.svg',
+  'svg/winctrl-icp.svg',
+  'svg/logitech-throttle-quadrant.svg',
 ];
 
 for (const relativePath of requiredTemplateAssets) {

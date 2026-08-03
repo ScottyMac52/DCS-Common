@@ -96,5 +96,5 @@
   <circle cx="850" cy="465" r="5" fill="#00bfff" stroke="#0f172a" stroke-width="1.5"/>
   <rect x="770" y="560" width="160" height="22" rx="4" fill="#1e293b" stroke="#00bfff" stroke-width="1.5"/>
   <text id="lbl-pto2-spread" x="850" y="575" text-anchor="middle" font-family="Arial,sans-serif" font-size="11" fill="#f1f5f9"></text>
-  <text x="480" y="592" text-anchor="middle" font-family="Arial,sans-serif" font-size="12" fill="#475569">WINCTRL PTO2 — carrier / flight controls</text>
+  <text x="480" y="592" text-anchor="middle" font-family="Arial,sans-serif" font-size="12" fill="#475569">WINCTRL PTO2</text>
 </svg>
