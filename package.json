@@ -8,6 +8,7 @@
     "build:shared-hardware": "node scripts/build-shared-hardware.mjs",
     "test:shared-hardware": "node test/shared-hardware.test.mjs",
     "build:drawio": "node scripts/process-drawio-export.mjs",
+    "build:drawio-templates": "node scripts/generate-drawio-templates.mjs",
     "test:drawio": "node test/drawio-export.test.mjs"
   },
   "dependencies": {
