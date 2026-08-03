@@ -95,7 +95,7 @@ function render(device, xml) {
 
 let processed = 0;
 const stale = [];
-for (const device of manifest.devices.filter((entry) => entry.drawio)) {
+for (const device of manifest.devices.filter((entry) => entry.drawio && entry.deterministicExport !== false)) {
   const xml = readFileSync(join(hardwareRoot, device.drawio), 'utf8');
   const output = render(device, xml);
   const target = join(hardwareRoot, device.svg);

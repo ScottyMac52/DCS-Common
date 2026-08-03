@@ -88,7 +88,7 @@ for (const device of manifest.devices) {
       'TM Warthog SVG must retain one label placeholder for every control');
     assert.doesNotMatch(svg, /<(?:line|circle)\b|<rect\b[^>]*\bx=/,
       'TM Warthog SVG must not draw duplicate callout paths, dots, or label boxes');
-    const buttonKeys = keys.filter((key) => /^JOY_BTN\\d+$/.test(key))
+    const buttonKeys = keys.filter((key) => /^JOY_BTN\d+$/.test(key))
       .sort((a, b) => Number(a.slice(7)) - Number(b.slice(7)));
     assert.deepEqual(
       buttonKeys,
