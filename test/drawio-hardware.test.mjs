@@ -9,8 +9,8 @@ const hardwareRoot = join(root, 'assets/shared/hardware');
 const manifest = JSON.parse(readFileSync(join(hardwareRoot, 'manifest.json'), 'utf8'));
 const phaseOne = manifest.devices.filter((device) => device.drawio);
 
-test('eight image-backed devices have native draw.io sources', () => {
-  assert.equal(phaseOne.length, 8);
+test('all 13 hardware devices have native draw.io sources', () => {
+  assert.equal(phaseOne.length, 13);
   for (const device of phaseOne) {
     const xml = readFileSync(join(hardwareRoot, device.drawio), 'utf8');
     assert.match(xml, /<mxfile\b/);
@@ -22,6 +22,7 @@ test('eight image-backed devices have native draw.io sources', () => {
     assert.match(xml, /id="label-/);
     assert.match(xml, /id="connector-/);
     assert.doesNotMatch(xml, /data:image\/svg\+xml/, `${device.id} must not embed the old SVG as a background`);
+    assert.doesNotMatch(readFileSync(join(hardwareRoot, device.svg), 'utf8'), /No source image available/);
   }
 });
 

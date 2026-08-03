@@ -7,6 +7,7 @@ const manifest = JSON.parse(readFileSync(join(root, 'assets/shared/hardware/mani
 const hardwareRoot = join(root, 'assets/shared/hardware');
 const outDir = join(hardwareRoot, 'drawio');
 const force = process.argv.includes('--force');
+const requestedIds = new Set(process.argv.slice(2).filter((argument) => argument !== '--force'));
 
 mkdirSync(outDir, { recursive: true });
 
@@ -81,7 +82,7 @@ ${cells.join('\n')}
 }
 
 let written = 0;
-for (const device of manifest.devices.filter((entry) => entry.drawio)) {
+for (const device of manifest.devices.filter((entry) => entry.drawio && (!requestedIds.size || requestedIds.has(entry.id)))) {
   const svgPath = join(hardwareRoot, device.svg);
   const drawioPath = join(hardwareRoot, device.drawio);
   if (existsSync(drawioPath) && !force) {

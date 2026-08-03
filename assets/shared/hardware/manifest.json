@@ -3,6 +3,7 @@
     {
       "id": "moza-ab9",
       "label": "MOZA AB9 FFB Base",
+      "drawio": "drawio/moza-ab9.drawio",
       "svg": "svg/moza-ab9.svg",
       "lua": "lua/moza-ab9.lua"
     },
@@ -22,19 +23,22 @@
     },
     {
       "id": "grip-f18c",
-      "label": "F-18C Grip",
+      "label": "Thrustmaster F/A-18C Hornet Grip",
+      "drawio": "drawio/grip-f18c.drawio",
       "svg": "svg/grip-f18c.svg",
       "lua": "lua/grip-f18c.lua"
     },
     {
       "id": "ava-base-f16c",
-      "label": "VKB AVA Base + F-16C Grip",
+      "label": "Thrustmaster AVA Base + F-16C Grip",
+      "drawio": "drawio/ava-base-f16c.drawio",
       "svg": "svg/ava-base-f16c.svg",
       "lua": "lua/ava-base-f16c.lua"
     },
     {
       "id": "ava-base-f18c",
-      "label": "VKB AVA Base + F-18C Grip",
+      "label": "Thrustmaster AVA Base + F/A-18C Grip",
+      "drawio": "drawio/ava-base-f18c.drawio",
       "svg": "svg/ava-base-f18c.svg",
       "lua": "lua/ava-base-f18c.lua"
     },
@@ -69,6 +73,7 @@
     {
       "id": "tm-tpr",
       "label": "TM T-Pendular Rudder",
+      "drawio": "drawio/tm-tpr.drawio",
       "svg": "svg/tm-tpr.svg",
       "lua": "lua/tm-tpr.lua"
     },
