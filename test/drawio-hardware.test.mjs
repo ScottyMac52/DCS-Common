@@ -9,8 +9,8 @@ const hardwareRoot = join(root, 'assets/shared/hardware');
 const manifest = JSON.parse(readFileSync(join(hardwareRoot, 'manifest.json'), 'utf8'));
 const phaseOne = manifest.devices.filter((device) => device.drawio);
 
-test('all 13 hardware devices have native draw.io sources', () => {
-  assert.equal(phaseOne.length, 13);
+test('all 14 hardware devices have native draw.io sources', () => {
+  assert.equal(phaseOne.length, 14);
   for (const device of phaseOne) {
     const xml = readFileSync(join(hardwareRoot, device.drawio), 'utf8');
     assert.match(xml, /<mxfile\b/);
@@ -24,6 +24,12 @@ test('all 13 hardware devices have native draw.io sources', () => {
     assert.doesNotMatch(xml, /data:image\/svg\+xml/, `${device.id} must not embed the old SVG as a background`);
     assert.doesNotMatch(readFileSync(join(hardwareRoot, device.svg), 'utf8'), /No source image available/);
   }
+});
+
+test('Viper TQS source has independently editable handle and Mission Pack image layers', () => {
+  const xml = readFileSync(join(hardwareRoot, 'drawio/viper-tqs-mission-pack.drawio'), 'utf8');
+  assert.equal((xml.match(/id="hardware-image-/g) ?? []).length, 2);
+  assert.ok((xml.match(/id="connector-viper-tqs-/g) ?? []).length >= 20);
 });
 
 test('native sources and exported SVGs preserve callout identities', () => {

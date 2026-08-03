@@ -90,6 +90,13 @@
       "drawio": "drawio/logitech-throttle-quadrant.drawio",
       "svg": "svg/logitech-throttle-quadrant.svg",
       "lua": "lua/logitech-throttle-quadrant.lua"
+    },
+    {
+      "id": "viper-tqs-mission-pack",
+      "label": "Viper TQS + Mission Pack",
+      "drawio": "drawio/viper-tqs-mission-pack.drawio",
+      "svg": "svg/viper-tqs-mission-pack.svg",
+      "lua": "lua/viper-tqs-mission-pack.lua"
     }
   ]
 }

@@ -9,7 +9,7 @@ const manifestPath = join(root, 'assets', 'shared', 'hardware', 'manifest.json')
 const manifest = JSON.parse(readFileSync(manifestPath, 'utf8'));
 
 assert.ok(Array.isArray(manifest.devices), 'manifest should contain a devices array');
-assert.equal(manifest.devices.length, 13, 'expected 13 shared hardware definitions');
+assert.equal(manifest.devices.length, 14, 'expected 14 shared hardware definitions');
 
 for (const device of manifest.devices) {
   const svgPath = join(root, 'assets', 'shared', 'hardware', device.svg);
@@ -28,6 +28,7 @@ const requiredTemplateAssets = [
   'svg/tm-warthog-grip.svg',
   'svg/winctrl-icp.svg',
   'svg/logitech-throttle-quadrant.svg',
+  'svg/viper-tqs-mission-pack.svg',
 ];
 
 for (const relativePath of requiredTemplateAssets) {
