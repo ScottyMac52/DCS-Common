@@ -2,6 +2,25 @@
 
 This repository now hosts a shared kneeboard rendering pipeline for DCS component repos.
 
+## Requirements
+
+- Node.js 22
+- npm
+
+## Local validation
+
+```bash
+npm ci
+npm test
+```
+
+To regenerate and validate the shared hardware catalog:
+
+```bash
+npm run build:shared-hardware
+npm run test:shared-hardware
+```
+
 ## Shared kneeboard renderer
 
 Consumer repositories can define a config object with:
@@ -19,6 +38,7 @@ Use the example config in examples/f14b-config.mjs and the render script in scri
 The shared hardware catalog lives under assets/shared/hardware and is indexed by assets/shared/hardware/manifest.json.
 
 Each entry contains:
+
 - an id for downstream lookup
 - a label for the hardware family
 - an SVG template that preserves the underlying control image/diagram as the base layer

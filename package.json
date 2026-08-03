@@ -3,6 +3,7 @@
   "private": true,
   "type": "module",
   "scripts": {
+    "test": "node --test test/*.test.mjs",
     "test:kneeboard": "node --test test/kneeboard-renderer.test.mjs",
     "render:example": "node scripts/render-kneeboard-example.mjs",
     "build:shared-hardware": "node scripts/build-shared-hardware.mjs",
