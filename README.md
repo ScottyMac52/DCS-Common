@@ -67,3 +67,16 @@ console.log(template?.svg);
 Shared Lua definitions describe hardware capabilities, not aircraft functions. Each complete device catalog uses stable control IDs that match its draw.io connector IDs and exported SVG callout IDs, plus the physical DCS input key, control type, and hardware label. Maintained positions, rocker halves, encoder directions, buttons, and axes are represented independently when the device exposes them as distinct inputs.
 
 Aircraft-specific command IDs, module functions, and user bindings belong in consumer repositories. Consumers map their aircraft functions to the shared control IDs and may render multiple physical instances from one device definition. `lua/tm-mfd.lua` is the reference schema for completing the remaining device catalogs.
+
+
+#### Completing a legacy Lua catalog
+
+A Lua definition is considered complete only when it declares `schemaVersion = 1`. To migrate a legacy stub:
+
+1. Verify every native physical input against authoritative documentation and an actual device enumeration.
+2. Give every independently exposed button, switch position, hat direction, encoder direction, and axis its own control entry.
+3. Match each control ID to one draw.io connector and one exported SVG callout.
+4. Remove aircraft-specific command identifiers and keep those mappings in consumer repositories.
+5. Run `npm run build:drawio-hardware`, `npm test`, and `npm run test:shared-hardware`.
+
+The shared-hardware test automatically validates every schema-versioned catalog. Non-versioned files remain visible as legacy incomplete catalogs until they are deliberately verified and migrated.
