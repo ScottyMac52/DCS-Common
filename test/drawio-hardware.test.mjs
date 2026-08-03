@@ -34,8 +34,10 @@ test('native sources and exported SVGs preserve callout identities', () => {
   }
 });
 
-test('MFD pilot has 20 independently editable OSB anchors and connectors', () => {
+test('MFD pilot has 20 OSBs and eight independently editable rocker positions', () => {
   const xml = readFileSync(join(hardwareRoot, 'drawio/tm-mfd.drawio'), 'utf8');
   assert.equal((xml.match(/id="anchor-mfd-osb-/g) ?? []).length, 20);
   assert.equal((xml.match(/id="connector-mfd-osb-/g) ?? []).length, 20);
+  assert.equal((xml.match(/id="anchor-mfd-rocker-/g) ?? []).length, 8);
+  assert.equal((xml.match(/id="connector-mfd-rocker-/g) ?? []).length, 8);
 });
