@@ -40,3 +40,37 @@ test('renders shared SVG pages from a consumer config', async () => {
 
   assert.ok(result.pngFiles.length === 0 || existsSync(join(outputDir, '01-SHARED-OVERVIEW.png')));
 });
+
+test('renders positioned callouts with exact control anchors', async () => {
+  const outputDir = mkdtempSync(join(tmpdir(), 'dcs-common-positioned-'));
+  const positionedConfig = {
+    pages: [{
+      type: 'hardware',
+      file: '01-POSITIONED',
+      title: 'POSITIONED CONTROLS',
+      kicker: 'ANCHOR-AWARE CALLOUTS',
+      callouts: [{
+        key: 'BTN 25 / 26',
+        label: 'BTN 25 / 26',
+        text: 'Time accelerate / Time decelerate',
+        lines: ['Time Accel / Decel', '↑ BTN25  ↓ BTN26'],
+        side: 'left',
+        accent: 'gold',
+        x: 40,
+        y: 540,
+        width: 286,
+        height: 96,
+        anchors: [[455, 840], [455, 858]],
+        controls: ['JOY_BTN25', 'JOY_BTN26'],
+      }],
+    }],
+  };
+
+  await renderKneeboard({ positionedConfig, config: positionedConfig, outputDir, rootDir: resolve(__dirname, '..') });
+  const svg = readFileSync(join(outputDir, '01-POSITIONED.svg'), 'utf8');
+  assert.match(svg, /data-control="JOY_BTN25"/);
+  assert.match(svg, /data-control="JOY_BTN26"/);
+  assert.match(svg, /M 326 588 L 455 840/);
+  assert.match(svg, /BTN 25 \/ 26/);
+  assert.match(svg, /Time Accel \/ Decel/);
+});
