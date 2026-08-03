@@ -9,3 +9,5 @@ Manufacturer product images are included for product identification and diagram 
 | `source/thrustmaster-f16c-grip.png` | Thrustmaster | https://www.thrustmaster.com/en-us/products/ava-base/ | https://www.thrustmaster.com/wp-content/uploads/2023/03/F16CviperProduct-pichi-768x768-1.webp |
 | `source/thrustmaster-f18c-grip.png` | Thrustmaster | https://www.thrustmaster.com/products/f-a-18c-hornet-hotas-add-on-grip/ | https://www.thrustmaster.com/wp-content/uploads/2023/03/stickFA18product-pichi-768x768-1.webp |
 | `source/thrustmaster-tpr.png` | Thrustmaster | https://www.thrustmaster.com/en-us/products/tpr-thrustmaster-pendular-rudder/ | https://www.thrustmaster.com/wp-content/uploads/2021/09/SF-gallery-TPR-Rudder-pc-1.png |
+
+| `source/tm-warthog-throttle-blank.png` | User-provided annotated device diagram | Conversation attachment supplied by repository owner | Native 576 × 784 PNG with JOY_BTN1–JOY_BTN32 and physical control labels |

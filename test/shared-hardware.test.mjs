@@ -77,6 +77,29 @@ for (const device of manifest.devices) {
   assert.deepEqual(luaIds, drawioIds, `${device.id} Lua controls must match draw.io connector IDs`);
   assert.deepEqual(luaIds, svgIds, `${device.id} Lua controls must match exported SVG callout IDs`);
 
+  if (device.id === 'tm-warthog-throttle') {
+    assert.equal(controls.length, 41, 'TM Warthog throttle must define 32 buttons, four POV directions, and five axes');
+    const buttonKeys = keys.filter((key) => /^JOY_BTN\\d+$/.test(key))
+      .sort((a, b) => Number(a.slice(7)) - Number(b.slice(7)));
+    assert.deepEqual(
+      buttonKeys,
+      Array.from({ length: 32 }, (_, index) => `JOY_BTN${index + 1}`),
+      'TM Warthog throttle must define JOY_BTN1 through JOY_BTN32 exactly once',
+    );
+    assert.deepEqual(
+      keys.filter((key) => key.startsWith('JOY_POV1_')).sort(),
+      ['JOY_POV1_D', 'JOY_POV1_L', 'JOY_POV1_R', 'JOY_POV1_U'],
+      'TM Warthog throttle must define all four POV directions',
+    );
+    assert.deepEqual(
+      keys.filter((key) => ['JOY_X', 'JOY_Y', 'JOY_Z', 'JOY_RZ', 'JOY_SLIDER1'].includes(key)).sort(),
+      ['JOY_RZ', 'JOY_SLIDER1', 'JOY_X', 'JOY_Y', 'JOY_Z'],
+      'TM Warthog throttle must define both throttle axes, slew axes, and friction axis',
+    );
+    assert.equal(controls.filter(({ type }) => type === 'axis').length, 5,
+      'TM Warthog throttle must define five axes');
+  }
+
   if (device.id === 'tm-mfd') {
     assert.equal(controls.length, 28, 'TM MFD must define all 28 physical controls');
     assert.deepEqual(
