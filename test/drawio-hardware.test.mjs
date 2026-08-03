@@ -50,3 +50,47 @@ test('MFD pilot has 20 OSBs and eight independently editable rocker positions', 
   assert.equal((xml.match(/id="anchor-mfd-rocker-/g) ?? []).length, 8);
   assert.equal((xml.match(/id="connector-mfd-rocker-/g) ?? []).length, 8);
 });
+
+
+test('TM MFD visible geometry stays inside a balanced viewport', () => {
+  const xml = readFileSync(join(hardwareRoot, 'drawio/tm-mfd.drawio'), 'utf8');
+  const model = xml.match(/<mxGraphModel\\b([^>]*)>/)?.[1] ?? '';
+  const numberAttribute = (source, name) => Number(source.match(new RegExp(`${name}="([^"]+)"`))?.[1] ?? 0);
+  const width = numberAttribute(model, 'pageWidth');
+  const height = numberAttribute(model, 'pageHeight');
+  const cells = [...xml.matchAll(/<mxCell\\b([^>]*?)>([\\s\\S]*?)<\\/mxCell>/g)].map((match) => {
+    const id = match[1].match(/id="([^"]+)"/)?.[1] ?? '';
+    const geometry = match[2].match(/<mxGeometry\\b([^>]*)\\/>/)?.[1] ?? '';
+    return {
+      id,
+      x: numberAttribute(geometry, 'x'),
+      y: numberAttribute(geometry, 'y'),
+      width: numberAttribute(geometry, 'width'),
+      height: numberAttribute(geometry, 'height'),
+    };
+  });
+  const visible = cells.filter(({ id }) =>
+    id === 'hardware-image-1' || id === 'footer' || id.startsWith('anchor-') || id.startsWith('label-'));
+  for (const cell of visible) {
+    assert.ok(cell.x >= 0 && cell.y >= 0, `${cell.id} starts outside the MFD viewport`);
+    assert.ok(cell.x + cell.width <= width, `${cell.id} exceeds the right MFD viewport edge`);
+    assert.ok(cell.y + cell.height <= height, `${cell.id} exceeds the bottom MFD viewport edge`);
+  }
+
+  const labels = visible.filter(({ id }) => id.startsWith('label-'));
+  const left = Math.min(...labels.map(({ x }) => x));
+  const right = width - Math.max(...labels.map(({ x, width: labelWidth }) => x + labelWidth));
+  assert.ok(left >= 20, 'TM MFD labels need visible left padding');
+  assert.ok(right >= 20, 'TM MFD labels need visible right padding');
+  assert.ok(Math.abs(left - right) <= 2, 'TM MFD outer margins must remain horizontally balanced');
+
+  const top = labels.filter(({ id }) => id.startsWith('label-mfd-osb-t'));
+  const bottom = labels.filter(({ id }) => id.startsWith('label-mfd-osb-b'));
+  assert.ok(Math.min(...top.map(({ y }) => y)) >= 20, 'TM MFD top row needs visible padding');
+  assert.ok(height - Math.max(...bottom.map(({ y, height: labelHeight }) => y + labelHeight)) >= 20,
+    'TM MFD bottom row needs visible padding');
+
+  const image = visible.find(({ id }) => id === 'hardware-image-1');
+  assert.ok(image);
+  assert.equal(image.x + image.width / 2, width / 2, 'TM MFD hardware image must remain centered');
+});
