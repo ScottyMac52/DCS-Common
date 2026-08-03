@@ -1,0 +1,83 @@
+<mxfile host="app.diagrams.net" type="device">
+  <diagram id="kneeboard-hardware-page" name="Hardware Page">
+    <mxGraphModel dx="800" dy="600" grid="0" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="0" pageScale="1" pageWidth="1200" pageHeight="1600" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+
+        <!-- ── Page chrome ──────────────────────────────────────────────── -->
+        <mxCell id="page-bg" value="" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#07111d;strokeColor=none;" vertex="1" parent="1">
+          <mxGeometry x="0" y="0" width="1200" height="1600" as="geometry" />
+        </mxCell>
+        <mxCell id="outer-frame" value="" style="rounded=1;arcSize=2;whiteSpace=wrap;html=1;fillColor=#0a1629;strokeColor=#2c4566;strokeWidth=3;" vertex="1" parent="1">
+          <mxGeometry x="48" y="48" width="1104" height="1504" as="geometry" />
+        </mxCell>
+        <mxCell id="header-bg" value="" style="rounded=1;arcSize=5;whiteSpace=wrap;html=1;fillColor=#12253d;strokeColor=none;" vertex="1" parent="1">
+          <mxGeometry x="48" y="48" width="1104" height="120" as="geometry" />
+        </mxCell>
+
+        <!-- ── Header text — edit these two cells ──────────────────────── -->
+        <mxCell id="page-title" value="Hardware Page Title" style="text;html=1;align=left;verticalAlign=middle;fontFamily=Segoe UI;fontSize=38;fontStyle=1;fontColor=#f4f8fb;strokeColor=none;fillColor=none;" vertex="1" parent="1">
+          <mxGeometry x="96" y="68" width="900" height="52" as="geometry" />
+        </mxCell>
+        <mxCell id="page-kicker" value="AIRCRAFT MODULE / SECTION" style="text;html=1;align=left;verticalAlign=middle;fontFamily=Segoe UI;fontSize=18;fontStyle=1;fontColor=#63d7ff;strokeColor=none;fillColor=none;letterSpacing=1;" vertex="1" parent="1">
+          <mxGeometry x="96" y="130" width="900" height="30" as="geometry" />
+        </mxCell>
+
+        <!-- ── Hardware image area ─────────────────────────────────────── -->
+        <!-- Replace this placeholder with the shared hardware SVG:         -->
+        <!--   Edit Style → set image= to the hardware SVG data URI         -->
+        <!--   or use Insert > Image to embed from assets/shared/hardware/  -->
+        <mxCell id="hardware-img" value="HARDWARE IMAGE&#xa;&#xa;Edit Style and set image= to the&#xa;shared hardware SVG, or use&#xa;Insert &gt; Image to embed it." style="shape=image;whiteSpace=wrap;html=1;fillColor=#1e293b;strokeColor=#334155;fontColor=#64748b;align=center;verticalAlign=middle;fontSize=14;" vertex="1" parent="1">
+          <mxGeometry x="96" y="200" width="1008" height="1080" as="geometry" />
+        </mxCell>
+
+        <!-- ── Callout pair template — duplicate this group per binding ── -->
+        <!-- Each callout is: a label box + an anchor dot + a connector     -->
+        <!-- Drag the anchor dot to sit on top of the physical control      -->
+
+        <!-- Callout 1 -->
+        <mxCell id="lbl-1" value="Binding Name" style="text;html=1;align=center;verticalAlign=middle;rounded=1;arcSize=30;fillColor=#1e293b;strokeColor=#00bfff;fontColor=#f1f5f9;fontFamily=Arial;fontSize=13;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="60" y="360" width="150" height="26" as="geometry" />
+        </mxCell>
+        <mxCell id="anchor-1" value="" style="ellipse;whiteSpace=wrap;html=1;fillColor=#00bfff;strokeColor=#0f172a;strokeWidth=2;" vertex="1" parent="1">
+          <mxGeometry x="430" y="472" width="12" height="12" as="geometry" />
+        </mxCell>
+        <mxCell id="conn-1" value="" style="endArrow=none;html=1;strokeColor=#00bfff;strokeWidth=1.5;dashed=1;dashPattern=5 3;opacity=75;exitX=1;exitY=0.5;exitDx=0;exitDy=0;" edge="1" source="lbl-1" target="anchor-1" parent="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <!-- Callout 2 -->
+        <mxCell id="lbl-2" value="Binding Name" style="text;html=1;align=center;verticalAlign=middle;rounded=1;arcSize=30;fillColor=#1e293b;strokeColor=#00bfff;fontColor=#f1f5f9;fontFamily=Arial;fontSize=13;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="60" y="396" width="150" height="26" as="geometry" />
+        </mxCell>
+        <mxCell id="anchor-2" value="" style="ellipse;whiteSpace=wrap;html=1;fillColor=#00bfff;strokeColor=#0f172a;strokeWidth=2;" vertex="1" parent="1">
+          <mxGeometry x="560" y="540" width="12" height="12" as="geometry" />
+        </mxCell>
+        <mxCell id="conn-2" value="" style="endArrow=none;html=1;strokeColor=#00bfff;strokeWidth=1.5;dashed=1;dashPattern=5 3;opacity=75;exitX=1;exitY=0.5;exitDx=0;exitDy=0;" edge="1" source="lbl-2" target="anchor-2" parent="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <!-- Callout 3 (right-side label example) -->
+        <mxCell id="lbl-3" value="Binding Name" style="text;html=1;align=center;verticalAlign=middle;rounded=1;arcSize=30;fillColor=#1e293b;strokeColor=#00bfff;fontColor=#f1f5f9;fontFamily=Arial;fontSize=13;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="994" y="360" width="150" height="26" as="geometry" />
+        </mxCell>
+        <mxCell id="anchor-3" value="" style="ellipse;whiteSpace=wrap;html=1;fillColor=#00bfff;strokeColor=#0f172a;strokeWidth=2;" vertex="1" parent="1">
+          <mxGeometry x="780" y="472" width="12" height="12" as="geometry" />
+        </mxCell>
+        <mxCell id="conn-3" value="" style="endArrow=none;html=1;strokeColor=#00bfff;strokeWidth=1.5;dashed=1;dashPattern=5 3;opacity=75;exitX=0;exitY=0.5;exitDx=0;exitDy=0;" edge="1" source="lbl-3" target="anchor-3" parent="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <!-- ── Footer ─────────────────────────────────────────────────── -->
+        <mxCell id="footer-left" value="DCS Kneeboard" style="text;html=1;align=left;verticalAlign=middle;fontFamily=Segoe UI;fontSize=16;fontColor=#88a3ba;strokeColor=none;fillColor=none;" vertex="1" parent="1">
+          <mxGeometry x="96" y="1530" width="400" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="footer-right" value="1 / 1" style="text;html=1;align=right;verticalAlign=middle;fontFamily=Segoe UI;fontSize=16;fontColor=#88a3ba;strokeColor=none;fillColor=none;" vertex="1" parent="1">
+          <mxGeometry x="704" y="1530" width="400" height="30" as="geometry" />
+        </mxCell>
+
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>
