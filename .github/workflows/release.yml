@@ -27,6 +27,18 @@ on:
         required: false
         type: boolean
         default: false
+      run-release-build:
+        required: false
+        type: boolean
+        default: false
+      extra-validation-command:
+        required: false
+        type: string
+        default: ''
+      prepare-release-notes-command:
+        required: false
+        type: string
+        default: ''
       package-script:
         required: true
         type: string
@@ -138,6 +150,10 @@ jobs:
           BUMP: ${{ inputs.bump }}
       - name: Test semantic versioning
         run: ${{ inputs.test-versioning-command }}
+      - name: Run repository-specific validation
+        if: ${{ inputs.extra-validation-command != '' }}
+        shell: pwsh
+        run: ${{ inputs.extra-validation-command }}
       - name: Parse Lua profiles
         if: ${{ inputs.run-lua-parse }}
         shell: pwsh
@@ -189,7 +205,7 @@ jobs:
           Set-Location '${{ inputs.package-root }}'
           ./scripts/Test-AutoHotKey.ps1
       - name: Build complete release bundle
-        if: ${{ inputs.run-release-validation }}
+        if: ${{ inputs.run-release-build || inputs.run-release-validation }}
         shell: pwsh
         run: |
           Set-Location '${{ inputs.package-root }}'
@@ -205,6 +221,10 @@ jobs:
           name: ${{ inputs.artifact-name }}
           path: |
             ${{ inputs.artifact-path }}
+      - name: Prepare release notes
+        if: ${{ inputs.prepare-release-notes-command != '' }}
+        shell: pwsh
+        run: ${{ inputs.prepare-release-notes-command }}
       - name: Create tagged release
         shell: pwsh
         env:
