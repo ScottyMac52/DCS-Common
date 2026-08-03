@@ -72,13 +72,21 @@ for (const device of manifest.devices) {
   const drawio = readFileSync(join(root, 'assets', 'shared', 'hardware', device.drawio), 'utf8');
   const svg = readFileSync(join(root, 'assets', 'shared', 'hardware', device.svg), 'utf8');
   const luaIds = [...ids].sort();
-  const drawioIds = [...drawio.matchAll(/id="connector-([^"]+)"/g)].map((match) => match[1]).sort();
+  const drawioIdPattern = device.id === 'tm-warthog-throttle'
+    ? /id="label-([^"]+)"/g
+    : /id="connector-([^"]+)"/g;
+  const drawioIds = [...drawio.matchAll(drawioIdPattern)].map((match) => match[1]).sort();
   const svgIds = [...svg.matchAll(/<!-- callout:([^\s]+) -->/g)].map((match) => match[1]).sort();
   assert.deepEqual(luaIds, drawioIds, `${device.id} Lua controls must match draw.io connector IDs`);
   assert.deepEqual(luaIds, svgIds, `${device.id} Lua controls must match exported SVG callout IDs`);
 
   if (device.id === 'tm-warthog-throttle') {
     assert.equal(controls.length, 41, 'TM Warthog throttle must define 32 buttons, four POV directions, and five axes');
+    assert.doesNotMatch(drawio, /id="(?:anchor|connector)-warthog-thr-/, 'TM Warthog draw.io must use the raster callouts without duplicate anchors or connectors');
+    assert.equal([...svg.matchAll(/<text id="lbl-warthog-thr-/g)].length, 41,
+      'TM Warthog SVG must retain one label placeholder for every control');
+    assert.doesNotMatch(svg, /<(?:line|circle)\b|<rect\b[^>]*\bx=/,
+      'TM Warthog SVG must not draw duplicate callout paths, dots, or label boxes');
     const buttonKeys = keys.filter((key) => /^JOY_BTN\\d+$/.test(key))
       .sort((a, b) => Number(a.slice(7)) - Number(b.slice(7)));
     assert.deepEqual(
