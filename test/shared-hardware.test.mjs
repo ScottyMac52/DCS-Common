@@ -72,7 +72,8 @@ for (const device of manifest.devices) {
   const drawio = readFileSync(join(root, 'assets', 'shared', 'hardware', device.drawio), 'utf8');
   const svg = readFileSync(join(root, 'assets', 'shared', 'hardware', device.svg), 'utf8');
   const luaIds = [...ids].sort();
-  const drawioIdPattern = device.id === 'tm-warthog-throttle'
+  const labelBasedDrawio = new Set(['tm-warthog-throttle', 'winctrl-pto2']);
+  const drawioIdPattern = labelBasedDrawio.has(device.id)
     ? /id="label-([^"]+)"/g
     : /id="connector-([^"]+)"/g;
   const drawioIds = [...drawio.matchAll(drawioIdPattern)].map((match) => match[1]).sort();
@@ -106,6 +107,19 @@ for (const device of manifest.devices) {
     );
     assert.equal(controls.filter(({ type }) => type === 'axis').length, 5,
       'TM Warthog throttle must define five axes');
+  }
+
+  if (device.id === 'winctrl-pto2') {
+    assert.equal(controls.length, 41, 'WINCTRL PTO2 must define all 41 physical inputs');
+    assert.deepEqual(
+      keys.sort((a, b) => Number(a.slice(7)) - Number(b.slice(7))),
+      Array.from({ length: 41 }, (_, index) => `JOY_BTN${index + 1}`),
+      'WINCTRL PTO2 must define JOY_BTN1 through JOY_BTN41 exactly once',
+    );
+    assert.equal([...drawio.matchAll(/id="label-pto2-button-/g)].length, 41,
+      'WINCTRL PTO2 draw.io must retain one aligned label component for every input');
+    assert.equal([...svg.matchAll(/<text id="lbl-pto2-button-/g)].length, 41,
+      'WINCTRL PTO2 SVG must retain one label placeholder for every input');
   }
 
   if (device.id === 'tm-mfd') {
