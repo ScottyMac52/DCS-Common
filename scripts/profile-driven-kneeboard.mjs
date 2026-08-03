@@ -110,7 +110,10 @@ export function loadProfileDrivenConfig(configPath, options = {}) {
   const pages = config.pages.map((page) => {
     if (!page.file || !page.deviceId) throw new Error('Every configured page requires file and deviceId.');
     const { calloutIds } = loadSharedHardware(page.deviceId, { commonRoot });
-    const labels = { ...(page.labels ?? {}) };
+    const labels = Array.isArray(page.labels) ? [...page.labels] : { ...(page.labels ?? {}) };
+    if (Array.isArray(labels) && Object.keys(page.controls ?? {}).length) {
+      throw new Error(`${page.file}: profile-driven controls require ID-keyed labels.`);
+    }
     for (const [controlId, reference] of Object.entries(page.controls ?? {})) {
       if (!calloutIds.includes(controlId)) throw new Error(`${page.file}: ${controlId} is not a ${page.deviceId} control.`);
       const matches = profile(reference.profile).bindings.filter((binding) =>
