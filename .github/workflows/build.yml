@@ -83,8 +83,15 @@ jobs:
     runs-on: ${{ inputs.runs-on }}
     env:
       PACKAGE_VERSION: ${{ inputs.package-version }}
+      DCS_COMMON_ROOT: ${{ github.workspace }}/.dcs-common
     steps:
       - uses: actions/checkout@v4
+      - name: Check out shared DCS-Common assets
+        uses: actions/checkout@v4
+        with:
+          repository: ScottyMac52/DCS-Common
+          ref: main
+          path: .dcs-common
       - uses: actions/setup-node@v4
         with:
           node-version: ${{ inputs.node-version }}
