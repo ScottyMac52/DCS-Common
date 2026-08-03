@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="800" height="600" viewBox="0 0 800 600">
+  <rect x="70" y="90" width="660" height="420" rx="26" fill="#0f1b2c" stroke="#5ddcff" stroke-width="4"/>
+  <rect x="120" y="140" width="560" height="320" rx="18" fill="#122539" stroke="#88b7d7" stroke-width="2"/>
+  <rect x="160" y="190" width="180" height="220" rx="14" fill="#1c3857" stroke="#b9e8ff" stroke-width="2"/>
+  <rect x="460" y="190" width="180" height="220" rx="14" fill="#1c3857" stroke="#b9e8ff" stroke-width="2"/>
+  <text x="400" y="72" text-anchor="middle" font-family="Segoe UI, Arial, sans-serif" font-size="24" font-weight="800" fill="#f5f9ff">GENERIC HARDWARE OUTLINE</text>
+</svg>

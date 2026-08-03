@@ -27,3 +27,13 @@ The build and release workflows accept repository-specific inputs for:
 - release notes path and kneeboard path globs for regeneration commits
 
 These inputs keep the shared workflows flexible while preserving a consistent build and release contract across repositories.
+
+## Shared kneeboard generation contract
+
+Consumer repositories can also adopt the common rendering pipeline in scripts/kneeboard-renderer.mjs. The contract is intentionally simple:
+
+- a config object defines the pages and page metadata
+- assets are resolved from a repo-local asset map
+- the renderer emits SVG pages and optional PNG pages to a target output directory
+
+This keeps the visual layout logic in DCS-Common while letting each aircraft repository provide its own content and placement data.

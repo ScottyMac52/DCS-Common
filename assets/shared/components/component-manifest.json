@@ -1,0 +1,16 @@
+{
+  "components": [
+    {
+      "id": "generic-control-panel",
+      "name": "Generic Control Panel",
+      "asset": "assets/shared/components/generic-control-panel.svg",
+      "type": "panel"
+    },
+    {
+      "id": "generic-hardware-outline",
+      "name": "Generic Hardware Outline",
+      "asset": "assets/shared/components/generic-hardware-outline.svg",
+      "type": "hardware"
+    }
+  ]
+}

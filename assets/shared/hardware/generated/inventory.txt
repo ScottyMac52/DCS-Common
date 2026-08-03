@@ -1,0 +1,13 @@
+- MOZA AB9 FFB Base :: svg/moza-ab9.svg :: lua/moza-ab9.lua
+- VKB F-14 Gunfighter Grip :: svg/vkb-f14-gunfighter.svg :: lua/vkb-f14-gunfighter.lua
+- TM Warthog Grip :: svg/tm-warthog-grip.svg :: lua/tm-warthog-grip.lua
+- F-18C Grip :: svg/grip-f18c.svg :: lua/grip-f18c.lua
+- VKB AVA Base + F-16C Grip :: svg/ava-base-f16c.svg :: lua/ava-base-f16c.lua
+- VKB AVA Base + F-18C Grip :: svg/ava-base-f18c.svg :: lua/ava-base-f18c.lua
+- TM MFD :: svg/tm-mfd.svg :: lua/tm-mfd.lua
+- OnYourTwelve PDCP :: svg/onyourtwelve-pdcp.svg :: lua/onyourtwelve-pdcp.lua
+- WINCTRL PTO2 :: svg/winctrl-pto2.svg :: lua/winctrl-pto2.lua
+- WINCTRL ViperAce ICP :: svg/winctrl-icp.svg :: lua/winctrl-icp.lua
+- TM T-Pendular Rudder :: svg/tm-tpr.svg :: lua/tm-tpr.lua
+- TM Warthog Throttle :: svg/tm-warthog-throttle.svg :: lua/tm-warthog-throttle.lua
+- Logitech Throttle Quadrant :: svg/logitech-throttle-quadrant.svg :: lua/logitech-throttle-quadrant.lua

@@ -1,0 +1,82 @@
+{
+  "devices": [
+    {
+      "id": "moza-ab9",
+      "label": "MOZA AB9 FFB Base",
+      "svg": "svg/moza-ab9.svg",
+      "lua": "lua/moza-ab9.lua"
+    },
+    {
+      "id": "vkb-f14-gunfighter",
+      "label": "VKB F-14 Gunfighter Grip",
+      "svg": "svg/vkb-f14-gunfighter.svg",
+      "lua": "lua/vkb-f14-gunfighter.lua"
+    },
+    {
+      "id": "tm-warthog-grip",
+      "label": "TM Warthog Grip",
+      "svg": "svg/tm-warthog-grip.svg",
+      "lua": "lua/tm-warthog-grip.lua"
+    },
+    {
+      "id": "grip-f18c",
+      "label": "F-18C Grip",
+      "svg": "svg/grip-f18c.svg",
+      "lua": "lua/grip-f18c.lua"
+    },
+    {
+      "id": "ava-base-f16c",
+      "label": "VKB AVA Base + F-16C Grip",
+      "svg": "svg/ava-base-f16c.svg",
+      "lua": "lua/ava-base-f16c.lua"
+    },
+    {
+      "id": "ava-base-f18c",
+      "label": "VKB AVA Base + F-18C Grip",
+      "svg": "svg/ava-base-f18c.svg",
+      "lua": "lua/ava-base-f18c.lua"
+    },
+    {
+      "id": "tm-mfd",
+      "label": "TM MFD",
+      "svg": "svg/tm-mfd.svg",
+      "lua": "lua/tm-mfd.lua"
+    },
+    {
+      "id": "onyourtwelve-pdcp",
+      "label": "OnYourTwelve PDCP",
+      "svg": "svg/onyourtwelve-pdcp.svg",
+      "lua": "lua/onyourtwelve-pdcp.lua"
+    },
+    {
+      "id": "winctrl-pto2",
+      "label": "WINCTRL PTO2",
+      "svg": "svg/winctrl-pto2.svg",
+      "lua": "lua/winctrl-pto2.lua"
+    },
+    {
+      "id": "winctrl-icp",
+      "label": "WINCTRL ViperAce ICP",
+      "svg": "svg/winctrl-icp.svg",
+      "lua": "lua/winctrl-icp.lua"
+    },
+    {
+      "id": "tm-tpr",
+      "label": "TM T-Pendular Rudder",
+      "svg": "svg/tm-tpr.svg",
+      "lua": "lua/tm-tpr.lua"
+    },
+    {
+      "id": "tm-warthog-throttle",
+      "label": "TM Warthog Throttle",
+      "svg": "svg/tm-warthog-throttle.svg",
+      "lua": "lua/tm-warthog-throttle.lua"
+    },
+    {
+      "id": "logitech-throttle-quadrant",
+      "label": "Logitech Throttle Quadrant",
+      "svg": "svg/logitech-throttle-quadrant.svg",
+      "lua": "lua/logitech-throttle-quadrant.lua"
+    }
+  ]
+}
