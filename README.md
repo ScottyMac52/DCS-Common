@@ -49,6 +49,8 @@ Each entry contains:
 
 Downstream repositories should consume these shared templates instead of recreating the same control images and placeholder hotspots locally. The shared assets are designed to be imported into the consumer repo as a base layer, then aligned to the repo-specific button and label positions as needed.
 
+Manifest device IDs identify hardware types, not individual physical units. A consumer with multiple units—such as MFD 1/2/3 or two Logitech throttle quadrants—should render the same canonical device ID multiple times and supply independent instance IDs and labels through `renderSharedHardwareInstancesPage`. Do not duplicate the shared draw.io or SVG definition for each physical unit.
+
 Example consumer pattern:
 
 ```js
