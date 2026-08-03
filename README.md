@@ -45,7 +45,7 @@ Each entry contains:
 - an id for downstream lookup
 - a label for the hardware family
 - an SVG template that preserves the underlying control image/diagram as the base layer
-- a Lua stub that downstream repos can extend when wiring bindings
+- a complete Lua physical-input catalog; downstream repositories provide separate aircraft-specific mappings
 
 Downstream repositories should consume these shared templates instead of recreating the same control images and placeholder hotspots locally. The shared assets are designed to be imported into the consumer repo as a base layer, then aligned to the repo-specific button and label positions as needed.
 
@@ -60,3 +60,10 @@ const manifest = JSON.parse(readFileSync('assets/shared/hardware/manifest.json',
 const template = manifest.devices.find((device) => device.id === 'vkb-f14-gunfighter');
 console.log(template?.svg);
 ```
+
+
+### Lua physical-input contract
+
+Shared Lua definitions describe hardware capabilities, not aircraft functions. Each complete device catalog uses stable control IDs that match its draw.io connector IDs and exported SVG callout IDs, plus the physical DCS input key, control type, and hardware label. Maintained positions, rocker halves, encoder directions, buttons, and axes are represented independently when the device exposes them as distinct inputs.
+
+Aircraft-specific command IDs, module functions, and user bindings belong in consumer repositories. Consumers map their aircraft functions to the shared control IDs and may render multiple physical instances from one device definition. `lua/tm-mfd.lua` is the reference schema for completing the remaining device catalogs.
