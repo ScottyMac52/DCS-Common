@@ -28,7 +28,7 @@ jobs:
         with:
           repository: ScottyMac52/DCS-Common
           # You can change this to 'main' once your TPR branch is merged
-          ref: agent/complete-tm-tpr-schema 
+          ref: main 
           path: .dcs-common
 
       # The build contract explicitly requires Node.js 22[cite: 3]
