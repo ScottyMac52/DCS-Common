@@ -24,6 +24,63 @@ npm run test:shared-hardware
 
 Image-backed hardware templates use native draw.io sources. See [the draw.io hardware workflow](docs/drawio-hardware-workflow.md) before editing them.
 
+## Authoring and release workflows
+
+### DCS-Common shared-hardware authoring
+
+The uncompressed draw.io file is the canonical visual source. Its SVG is a deterministic published output, and parity validation prevents a stale export from being merged.
+
+```mermaid
+flowchart TD
+  subgraph common["DCS-Common owned"]
+    edit["Edit canonical uncompressed .drawio"]
+    build["Run npm run build:drawio-hardware"]
+    svg["Generate deterministic published SVG"]
+    test["Run npm test with source/export parity"]
+    parity{"SVG matches draw.io source?"}
+    inspect["Visually inspect changed SVG"]
+    merge["Merge DCS-Common PR"]
+    fix["Fix source or exporter"]
+  end
+
+  edit --> build --> svg --> test --> parity
+  parity -- Yes --> inspect --> merge
+  parity -- No --> fix --> build
+```
+
+### Consumer build and release
+
+Consumer repositories own aircraft labels, DCS profiles, packaging, and releases. They consume stable device IDs and canonical geometry from DCS-Common.
+
+```mermaid
+flowchart TD
+  subgraph shared["DCS-Common owned"]
+    catalog["Manifest device IDs and canonical SVG geometry"]
+  end
+
+  subgraph consumer["Consumer repository owned"]
+    checkout["Reusable workflow checks out consumer and DCS-Common"]
+    root["Export DCS_COMMON_ROOT"]
+    base["Run base kneeboard generator"]
+    adapter["Shared adapter resolves stable device IDs"]
+    data["Load consumer labels and DCS profiles"]
+    apply["Apply labels to canonical geometry"]
+    pages["Generate SVG and 1200 × 1600 PNG pages"]
+    inputChecks["Run deterministic, profile, and Lua validation"]
+    commit["Commit generated kneeboard paths when required"]
+    package["Build OVGME and complete-release artifacts"]
+    releaseChecks["Run package and release validation"]
+    release["Create tag and GitHub Release"]
+  end
+
+  checkout --> root --> base --> adapter
+  catalog --> adapter
+  adapter --> data --> apply --> pages --> inputChecks --> commit --> package --> releaseChecks --> release
+```
+
+Changing DCS-Common does not rewrite an existing consumer release. A consumer receives updated shared assets only when its kneeboard is rebuilt or re-released from the updated catalog. See the [shared workflow contract](docs/workflow-contract.md) and [profile-driven kneeboard guide](docs/profile-driven-kneeboards.md) for consumer setup details.
+
+
 ## Shared kneeboard renderer
 
 Consumer repositories can define a config object with:
