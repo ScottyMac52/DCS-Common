@@ -144,14 +144,8 @@ jobs:
           $Tag = "v$Version"
           if (git tag --list -- $Tag) { throw "Tag $Tag already exists." }
 
-          $ReleaseSha = git rev-parse HEAD
-          if ($LatestTag -and (git rev-list -n 1 $LatestTag) -eq $ReleaseSha) {
-            throw 'There are no commits on main after the latest tag.'
-          }
-
           "PACKAGE_VERSION=$Version" >> $env:GITHUB_ENV
           "RELEASE_TAG=$Tag" >> $env:GITHUB_ENV
-          "RELEASE_SHA=$ReleaseSha" >> $env:GITHUB_ENV
           "tag=$Tag" >> $env:GITHUB_OUTPUT
           Write-Host "Creating $Tag from $LatestTag with a $env:BUMP bump."
         env:
@@ -194,8 +188,22 @@ jobs:
           git push origin HEAD:main
 
           $NewSha = git rev-parse HEAD
-          "RELEASE_SHA=$NewSha" >> $env:GITHUB_ENV
           Write-Host "Pushed regenerated kneeboard pages as $NewSha"
+      - name: Finalize release commit
+        shell: pwsh
+        run: |
+          Set-Location '${{ inputs.package-root }}'
+          $LatestTag = git tag --list 'v*' --sort=-version:refname |
+            Where-Object { $_ -match '^v(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)$' } |
+            Select-Object -First 1
+          $ReleaseSha = git rev-parse HEAD
+
+          if ($LatestTag -and (git rev-list -n 1 $LatestTag) -eq $ReleaseSha) {
+            throw 'There are no consumer commits or regenerated assets after the latest tag.'
+          }
+
+          "RELEASE_SHA=$ReleaseSha" >> $env:GITHUB_ENV
+          Write-Host "Release $env:RELEASE_TAG will target $ReleaseSha."
       - name: Build package
         shell: pwsh
         run: |
