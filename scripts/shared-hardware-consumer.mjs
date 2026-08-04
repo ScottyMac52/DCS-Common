@@ -1,4 +1,5 @@
 import { existsSync, readFileSync } from 'node:fs';
+import { execFileSync } from 'node:child_process';
 import { join, resolve } from 'node:path';
 
 const escapeXml = (value = '') => String(value)
@@ -6,6 +7,32 @@ const escapeXml = (value = '') => String(value)
   .replaceAll('<', '&lt;')
   .replaceAll('>', '&gt;')
   .replaceAll('"', '&quot;');
+
+const physicalPrefix = /^(?:JOY_)?BTN\s*\d[^:]*:/i;
+
+function validateDisplayLabels(labels) {
+  const values = Array.isArray(labels) ? labels : Object.values(labels);
+  const invalid = values.find((value) => physicalPrefix.test(String(value).trim()));
+  if (invalid !== undefined) {
+    throw new Error(`Shared hardware callout labels must describe functions without a physical-button prefix: ${invalid}`);
+  }
+}
+
+export function resolveDcsCommonVersion(commonRoot = resolveDcsCommonRoot()) {
+  if (process.env.DCS_COMMON_VERSION) return process.env.DCS_COMMON_VERSION;
+  try {
+    return execFileSync('git', ['-C', commonRoot, 'describe', '--tags', '--always', '--dirty'], { encoding: 'utf8' }).trim();
+  } catch {
+    return 'unknown';
+  }
+}
+
+export function formatProvenanceFooter({ commonRoot, consumer, consumerVersion, page = '' }) {
+  if (!consumer) throw new Error('A consumer name is required for a provenance footer.');
+  const commonVersion = resolveDcsCommonVersion(commonRoot);
+  const version = consumerVersion ?? process.env.PACKAGE_VERSION ?? '0.0.0-local';
+  return [`DCS-Common ${commonVersion}`, `${consumer} ${version}`, page].filter(Boolean).join(' • ');
+}
 
 export function resolveDcsCommonRoot(consumerRoot = process.cwd()) {
   const candidates = [process.env.DCS_COMMON_ROOT, join(consumerRoot, '.dcs-common')].filter(Boolean);
@@ -15,6 +42,7 @@ export function resolveDcsCommonRoot(consumerRoot = process.cwd()) {
 }
 
 export function loadSharedHardware(deviceId, { commonRoot = resolveDcsCommonRoot(), labels = {} } = {}) {
+  validateDisplayLabels(labels);
   const hardwareRoot = join(commonRoot, 'assets/shared/hardware');
   const manifest = JSON.parse(readFileSync(join(hardwareRoot, 'manifest.json'), 'utf8'));
   const device = manifest.devices.find((entry) => entry.id === deviceId);
@@ -31,10 +59,11 @@ export function loadSharedHardware(deviceId, { commonRoot = resolveDcsCommonRoot
   return { device, svg, calloutIds };
 }
 
-export function renderSharedHardwarePage({ deviceId, labels = {}, title, kicker = '', footer = '', commonRoot }) {
+export function renderSharedHardwarePage({ deviceId, labels = {}, title, kicker = '', footer = '', provenance, commonRoot }) {
   const { device, svg, calloutIds } = loadSharedHardware(deviceId, { commonRoot, labels });
   const encoded = Buffer.from(svg).toString('base64');
   const pageTitle = escapeXml(title ?? device.label);
+  const pageFooter = provenance ? formatProvenanceFooter({ commonRoot, ...provenance }) : footer;
   return {
     calloutIds,
     svg: `<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="1600" viewBox="0 0 1200 1600">
@@ -44,12 +73,12 @@ export function renderSharedHardwarePage({ deviceId, labels = {}, title, kicker 
   <text x="54" y="80" font-family="Arial,sans-serif" font-size="44" font-weight="700" fill="#f5f9ff">${pageTitle}</text>
   <text x="56" y="126" font-family="Arial,sans-serif" font-size="20" font-weight="700" fill="#ffc95c">${escapeXml(kicker)}</text>
   <image href="data:image/svg+xml;base64,${encoded}" x="35" y="155" width="1130" height="1350" preserveAspectRatio="xMidYMid meet"/>
-  <text x="54" y="1570" font-family="Arial,sans-serif" font-size="18" fill="#8ea5bd">${escapeXml(footer)}</text>
+  <text x="54" y="1570" font-family="Arial,sans-serif" font-size="18" fill="#8ea5bd">${escapeXml(pageFooter)}</text>
 </svg>`,
   };
 }
 
-export function renderSharedHardwareInstancesPage({ instances, title, kicker = '', footer = '', commonRoot }) {
+export function renderSharedHardwareInstancesPage({ instances, title, kicker = '', footer = '', provenance, commonRoot }) {
   if (!Array.isArray(instances) || instances.length === 0) throw new Error('At least one shared hardware instance is required.');
   const rendered = instances.map((instance, index) => {
     const { device, svg, calloutIds } = loadSharedHardware(instance.deviceId, { commonRoot, labels: instance.labels });
@@ -61,6 +90,7 @@ export function renderSharedHardwareInstancesPage({ instances, title, kicker = '
       encoded: Buffer.from(svg).toString('base64'),
     };
   });
+  const pageFooter = provenance ? formatProvenanceFooter({ commonRoot, ...provenance }) : footer;
   const defaultWidth = 540;
   const defaultHeight = 1180;
   return {
@@ -79,7 +109,7 @@ ${rendered.map((instance, index) => {
   const label = escapeXml(instance.title ?? instance.device.label);
   return `  <g data-instance="${escapeXml(instance.instanceId)}"><text x="${x + width / 2}" y="${y - 18}" text-anchor="middle" font-family="Arial,sans-serif" font-size="22" font-weight="700" fill="#8fdfff">${label}</text><image href="data:image/svg+xml;base64,${instance.encoded}" x="${x}" y="${y}" width="${width}" height="${height}" preserveAspectRatio="xMidYMid meet"/></g>`;
 }).join('\n')}
-  <text x="54" y="1570" font-family="Arial,sans-serif" font-size="18" fill="#8ea5bd">${escapeXml(footer)}</text>
+  <text x="54" y="1570" font-family="Arial,sans-serif" font-size="18" fill="#8ea5bd">${escapeXml(pageFooter)}</text>
 </svg>`,
   };
 }
