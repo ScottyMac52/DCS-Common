@@ -1,9 +1,10 @@
 return {
-  name = "TM TPR",
-  bindings = {
-    { command = "dnilp2019u2019cdnilvdnilvp1vu0", key = "JOY_BTN1", name = "Rudder left" },
-    { command = "dnilp2019u2019cdnilvdnilvp-1vu0", key = "JOY_BTN2", name = "Rudder right" },
-    { command = "dnilp2020u2020cdnilvdnilvp1vu0", key = "JOY_BTN3", name = "Brake left" },
-    { command = "dnilp2020u2020cdnilvdnilvp-1vu0", key = "JOY_BTN4", name = "Brake right" }
-  }
+  schemaVersion = 1,
+  id = "tm-tpr",
+  name = "TM T-Pendular Rudder",
+  controls = {
+    { id = "tpr-axis-rudder", key = "JOY_Z", type = "axis", hardwareLabel = "Rudder axis" },
+    { id = "tpr-axis-left-brake", key = "JOY_Y", type = "axis", hardwareLabel = "Left toe brake axis" },
+    { id = "tpr-axis-right-brake", key = "JOY_X", type = "axis", hardwareLabel = "Right toe brake axis" },
+  },
 }
