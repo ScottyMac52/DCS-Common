@@ -2,8 +2,11 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { mkdtempSync, mkdirSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
-import { join, resolve } from 'node:path';
+import { dirname, join, resolve } from 'node:path';
+import { fileURLToPath } from 'node:url';
 import { loadProfileDrivenConfig, parseDcsDiffLua, parseDcsModifiersLua } from '../scripts/profile-driven-kneeboard.mjs';
+
+const commonRoot = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 
 const source = `local diff = {
   ["axisDiffs"] = {
@@ -61,7 +64,7 @@ test('expands base and S3 layers and resolves the same OSB by exact modifier cho
       { id: 's3', file: '03-S3-LEFT-MFD', title: 'S3 HELD • LEFT MFD', modifiers: ['S3'], controls: { 'mfd-osb-t1': { profile: 'left', key: 'JOY_BTN1' } } },
     ] }],
   }));
-  const config = loadProfileDrivenConfig('kneeboard.json', { consumerRoot, commonRoot: resolve(import.meta.dirname, '..') });
+  const config = loadProfileDrivenConfig('kneeboard.json', { consumerRoot, commonRoot });
   assert.equal(config.pages[0].labels['mfd-osb-t1'], 'Left MFD OSB 1');
   assert.equal(config.pages[1].labels['mfd-osb-t1'], 'Markpoint shortcut');
   assert.equal(config.pages[1].modifiers[0].mode, 'hold');
@@ -74,5 +77,5 @@ test('rejects ambiguous bindings for the same key and modifier chord', () => {
     ["two"] = { ["added"] = { [1] = { ["key"] = "JOY_BTN1" }, }, ["name"] = "Two", },
   } } return diff`);
   writeFileSync(join(consumerRoot, 'kneeboard.json'), JSON.stringify({ schemaVersion: 1, aircraft: 'Test', profiles: { p: 'profile.diff.lua' }, pages: [{ file: 'mfd', deviceId: 'tm-mfd', controls: { 'mfd-osb-t1': { profile: 'p', key: 'JOY_BTN1' } } }] }));
-  assert.throws(() => loadProfileDrivenConfig('kneeboard.json', { consumerRoot, commonRoot: resolve(import.meta.dirname, '..') }), /resolves to 2 bindings/);
+  assert.throws(() => loadProfileDrivenConfig('kneeboard.json', { consumerRoot, commonRoot }), /resolves to 2 bindings/);
 });
