@@ -31,21 +31,19 @@ Image-backed hardware templates use native draw.io sources. See [the draw.io har
 The uncompressed draw.io file is the canonical visual source. Its SVG is a deterministic published output, and parity validation prevents a stale export from being merged.
 
 ```mermaid
-flowchart TD
-  subgraph common["DCS-Common owned"]
-    edit["Edit canonical uncompressed .drawio"]
-    build["Run npm run build:drawio-hardware"]
-    svg["Generate deterministic published SVG"]
-    test["Run npm test with source/export parity"]
-    parity{"SVG matches draw.io source?"}
-    inspect["Visually inspect changed SVG"]
-    merge["Merge DCS-Common PR"]
-    fix["Fix source or exporter"]
-  end
+flowchart TB
+  source["1. Edit canonical uncompressed .drawio"]
+  build["2. Run npm run build:drawio-hardware"]
+  output["3. Generate deterministic published SVG"]
+  checks["4. Run npm test with source/export parity"]
+  gate{"Does the SVG match the draw.io source?"}
+  inspect["5. Visually inspect the changed SVG"]
+  merge["6. Merge the DCS-Common PR"]
+  blocked["Stop: fix the source or exporter, then regenerate"]
 
-  edit --> build --> svg --> test --> parity
-  parity -- Yes --> inspect --> merge
-  parity -- No --> fix --> build
+  source --> build --> output --> checks --> gate
+  gate -- Pass --> inspect --> merge
+  gate -- Fail --> blocked
 ```
 
 ### Consumer build and release
