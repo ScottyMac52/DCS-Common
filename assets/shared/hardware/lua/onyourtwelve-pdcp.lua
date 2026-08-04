@@ -1,9 +1,36 @@
 return {
-  name = "OnYourTwelve PDCP",
-  bindings = {
-    { command = "dnilp1000u1000cdnilvdnilvp1vu0", key = "JOY_BTN1", name = "Display mode takeoff" },
-    { command = "dnilp1001u1001cdnilvdnilvp1vu0", key = "JOY_BTN2", name = "Display mode cruise" },
-    { command = "dnilp1002u1002cdnilvdnilvp1vu0", key = "JOY_BTN3", name = "Display mode air-to-air" },
-    { command = "dnilp1003u1003cdnilvdnilvp1vu0", key = "JOY_BTN4", name = "Display mode air-to-ground" }
+  schemaVersion = 1,
+  id = "onyourtwelve-pdcp",
+  name = "OnYourTwelve F-14 PDCP",
+  controls = {
+    { id = "pdcp-to", key = "JOY_BTN1", type = "button", hardwareLabel = "T.O." },
+    { id = "pdcp-cruise", key = "JOY_BTN2", type = "button", hardwareLabel = "CRUISE" },
+    { id = "pdcp-aa", key = "JOY_BTN3", type = "button", hardwareLabel = "A/A" },
+    { id = "pdcp-ag", key = "JOY_BTN4", type = "button", hardwareLabel = "A/G" },
+    { id = "pdcp-ldg", key = "JOY_BTN5", type = "button", hardwareLabel = "LDG" },
+    { id = "pdcp-vdi-awl", key = "JOY_BTN6", type = "button", hardwareLabel = "STEER TACAN" },
+    { id = "pdcp-steer-dest", key = "JOY_BTN7", type = "button", hardwareLabel = "STEER DEST" },
+    { id = "pdcp-steer-awl-pcd", key = "JOY_BTN8", type = "button", hardwareLabel = "STEER AWL/PCD" },
+    { id = "pdcp-steer-vec", key = "JOY_BTN9", type = "button", hardwareLabel = "STEER VEC" },
+    { id = "pdcp-steer-man", key = "JOY_BTN10", type = "button", hardwareLabel = "STEER MAN" },
+    { id = "pdcp-hud-dec", key = "JOY_BTN11", type = "switch-position", hardwareLabel = "HUD DIGITAL" },
+    { id = "pdcp-hud-analog", key = "JOY_BTN12", type = "switch-position", hardwareLabel = "HUD ANALOG" },
+    { id = "pdcp-hud-awl", key = "JOY_BTN13", type = "switch-position", hardwareLabel = "HUD ALT RDR" },
+    { id = "pdcp-hud-alt-baro", key = "JOY_BTN14", type = "switch-position", hardwareLabel = "HUD ALT BARO" },
+    { id = "pdcp-vdi-mode", key = "JOY_BTN15", type = "switch-position", hardwareLabel = "VDI NORM" },
+    { id = "pdcp-vdi-tv", key = "JOY_BTN16", type = "switch-position", hardwareLabel = "VDI TV" },
+    { id = "pdcp-hud-night", key = "JOY_BTN17", type = "switch-position", hardwareLabel = "HUD NIGHT" },
+    { id = "pdcp-hud-day", key = "JOY_BTN18", type = "switch-position", hardwareLabel = "HUD DAY" },
+    { id = "pdcp-hsd-mode", key = "JOY_BTN19", type = "rotary-position", hardwareLabel = "HSD NAV" },
+    { id = "pdcp-hsd-tid", key = "JOY_BTN20", type = "rotary-position", hardwareLabel = "HSD TID" },
+    { id = "pdcp-hsd-ecm", key = "JOY_BTN21", type = "switch-position", hardwareLabel = "ECM ORIDE OFF" },
+    { id = "pdcp-ecm-on", key = "JOY_BTN22", type = "switch-position", hardwareLabel = "ECM ORIDE ON" },
+    { id = "pdcp-pwr-hud", key = "JOY_BTN23", type = "switch-position", hardwareLabel = "HUD POWER OFF" },
+    { id = "pdcp-hud-power-on", key = "JOY_BTN24", type = "switch-position", hardwareLabel = "HUD POWER ON" },
+    { id = "pdcp-hsd-power-off", key = "JOY_BTN25", type = "switch-position", hardwareLabel = "HSD/ECM POWER OFF" },
+    { id = "pdcp-hsd-power-on", key = "JOY_BTN26", type = "switch-position", hardwareLabel = "HSD/ECM POWER ON" },
+    { id = "pdcp-pwr-vdi", key = "JOY_BTN27", type = "switch-position", hardwareLabel = "VDI POWER OFF" },
+    { id = "pdcp-vdi-power-on", key = "JOY_BTN28", type = "switch-position", hardwareLabel = "VDI POWER ON" },
+    { id = "pdcp-hsd-ecm-mode", key = "JOY_BTN29", type = "rotary-position", hardwareLabel = "HSD ECM" }
   }
 }
