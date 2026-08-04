@@ -24,6 +24,8 @@ npm run test:shared-hardware
 
 Image-backed hardware templates use native draw.io sources. See [the draw.io hardware workflow](docs/drawio-hardware-workflow.md) before editing them.
 
+Creating a new aircraft, UI-layer, or component repository? Follow the [complete consumer repository setup guide](docs/consumer-repository-setup.md).
+
 ## Authoring and release workflows
 
 ### DCS-Common shared-hardware authoring
