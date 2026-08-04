@@ -3,7 +3,7 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "test": "node --test test/*.test.mjs",
+    "test": "node --test",
     "build:drawio-hardware": "node scripts/export-drawio-hardware.mjs",
     "create:drawio-hardware": "node scripts/create-drawio-hardware-sources.mjs",
     "test:kneeboard": "node --test test/kneeboard-renderer.test.mjs",
