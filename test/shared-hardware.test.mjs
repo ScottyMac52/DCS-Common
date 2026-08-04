@@ -38,6 +38,78 @@ for (const relativePath of requiredTemplateAssets) {
   assert.match(contents, /placeholder|hotspot|circle|rect/, `${relativePath} should include placeholder hotspots`);
 }
 
+{
+  const device = manifest.devices.find(({ id }) => id === 'vkb-f14-gunfighter');
+  const drawio = readFileSync(join(root, 'assets', 'shared', 'hardware', device.drawio), 'utf8');
+  const svg = readFileSync(join(root, 'assets', 'shared', 'hardware', device.svg), 'utf8');
+  const hardwareRoot = join(root, 'assets', 'shared', 'hardware');
+  assert.ok(existsSync(join(hardwareRoot, 'source', 'vkb-f14-grip-side.png')),
+    'VKB F-14 side-view authoring source is missing');
+  assert.ok(existsSync(join(hardwareRoot, 'source', 'vkb-f14-grip-rear.png')),
+    'VKB F-14 rear-view authoring source is missing');
+  assert.ok(!existsSync(join(hardwareRoot, 'source', 'vkb-grip-clean.png')),
+    'The superseded single-view VKB F-14 image must be removed');
+  assert.equal([...drawio.matchAll(/id="hardware-image-/g)].length, 2,
+    'VKB F-14 draw.io must contain both supplied image views');
+  assert.equal([...svg.matchAll(/<image\b/g)].length, 2,
+    'VKB F-14 SVG must render both supplied image views');
+
+  const expectedIds = [
+    'vkb-hat', 'vkb-btn-red', 'vkb-btn-a', 'vkb-castle',
+    'vkb-sw1', 'vkb-sw2', 'vkb-sw3', 'vkb-sw4',
+    'vkb-grip-r', 'vkb-pinky', 'vkb-paddle', 'vkb-stage1', 'vkb-stage2',
+  ];
+  const drawioIds = [...drawio.matchAll(/id="connector-([^"]+)"/g)].map((match) => match[1]);
+  const svgIds = [...svg.matchAll(/<!-- callout:([^\s]+) -->/g)].map((match) => match[1]);
+  assert.deepEqual([...drawioIds].sort(), [...expectedIds].sort(),
+    'VKB F-14 draw.io must contain each stable callout exactly once');
+  assert.deepEqual([...svgIds].sort(), [...expectedIds].sort(),
+    'VKB F-14 SVG must contain each stable callout exactly once');
+
+  const geometry = (id) => {
+    const match = drawio.match(new RegExp(
+      `<mxCell id="${id}"[^>]*>[\\s\\S]*?<mxGeometry x="([^"]+)" y="([^"]+)" width="([^"]+)" height="([^"]+)"`,
+    ));
+    assert.ok(match, `VKB F-14 draw.io is missing geometry for ${id}`);
+    return { x: Number(match[1]), y: Number(match[2]), width: Number(match[3]), height: Number(match[4]) };
+  };
+  const images = ['hardware-image-1', 'hardware-image-2'].map(geometry);
+  const overlaps = (a, b) => !(
+    a.x + a.width <= b.x || b.x + b.width <= a.x ||
+    a.y + a.height <= b.y || b.y + b.height <= a.y
+  );
+  for (const id of expectedIds) {
+    const label = geometry(`label-${id}`);
+    assert.ok(images.every((image) => !overlaps(label, image)),
+      `VKB F-14 ${id} label box must remain outside both images`);
+    const anchor = geometry(`anchor-${id}`);
+    const center = { x: anchor.x + anchor.width / 2, y: anchor.y + anchor.height / 2 };
+    assert.ok(images.some((image) => (
+      center.x >= image.x && center.x <= image.x + image.width &&
+      center.y >= image.y && center.y <= image.y + image.height
+    )), `VKB F-14 ${id} anchor must terminate on one supplied image`);
+  }
+  const anchorCenters = expectedIds.map((id) => {
+    const anchor = geometry(`anchor-${id}`);
+    return `${anchor.x + anchor.width / 2},${anchor.y + anchor.height / 2}`;
+  });
+  assert.equal(new Set(anchorCenters).size, expectedIds.length,
+    'VKB F-14 callouts must not repeat a physical anchor');
+
+  for (const group of [
+    ['vkb-hat', 'vkb-btn-red'],
+    ['vkb-castle', 'vkb-sw1', 'vkb-sw2', 'vkb-sw3', 'vkb-sw4'],
+    ['vkb-grip-r', 'vkb-btn-a', 'vkb-pinky', 'vkb-paddle'],
+    ['vkb-stage1', 'vkb-stage2'],
+  ]) {
+    const positions = group.map((id) => geometry(`label-${id}`));
+    assert.ok(positions.every(({ x }) => x === positions[0].x),
+      `VKB F-14 related callouts must share one column: ${group.join(', ')}`);
+    assert.ok(positions.slice(1).every(({ y }, index) => y - positions[index].y === 50),
+      `VKB F-14 related callouts must be contiguous: ${group.join(', ')}`);
+  }
+}
+
 console.log('Shared hardware validation passed.');
 
 
@@ -133,6 +205,46 @@ for (const device of manifest.devices) {
       'TM MFD must define 20 OSB buttons');
     assert.equal(controls.filter(({ type }) => type === 'rocker-position').length, 8,
       'TM MFD must define eight rocker positions');
+  }
+
+  if (device.id === 'onyourtwelve-pdcp') {
+    assert.equal(controls.length, 29, 'OnYourTwelve PDCP must define all 29 independently exposed inputs');
+    assert.deepEqual(
+      keys.sort((a, b) => Number(a.slice(7)) - Number(b.slice(7))),
+      Array.from({ length: 29 }, (_, index) => `JOY_BTN${index + 1}`),
+      'OnYourTwelve PDCP must define JOY_BTN1 through JOY_BTN29 exactly once',
+    );
+    assert.equal(controls.filter(({ type }) => type === 'button').length, 10,
+      'OnYourTwelve PDCP must define ten pushbuttons');
+    assert.equal(controls.filter(({ type }) => type === 'switch-position').length, 16,
+      'OnYourTwelve PDCP must define sixteen switch positions');
+    assert.equal(controls.filter(({ type }) => type === 'rotary-position').length, 3,
+      'OnYourTwelve PDCP must define three HSD rotary positions');
+
+    const labelPosition = (id) => {
+      const match = drawio.match(new RegExp(
+        `<mxCell id="label-${id}"[^>]*><mxGeometry x="([^"]+)" y="([^"]+)"`,
+      ));
+      assert.ok(match, `OnYourTwelve PDCP is missing label geometry for ${id}`);
+      return { x: Number(match[1]), y: Number(match[2]) };
+    };
+    for (const group of [
+      ['pdcp-hud-dec', 'pdcp-hud-analog'],
+      ['pdcp-hud-awl', 'pdcp-hud-alt-baro'],
+      ['pdcp-vdi-mode', 'pdcp-vdi-tv'],
+      ['pdcp-hud-night', 'pdcp-hud-day'],
+      ['pdcp-hsd-mode', 'pdcp-hsd-tid', 'pdcp-hsd-ecm-mode'],
+      ['pdcp-hsd-ecm', 'pdcp-ecm-on'],
+      ['pdcp-pwr-hud', 'pdcp-hud-power-on'],
+      ['pdcp-pwr-vdi', 'pdcp-vdi-power-on'],
+      ['pdcp-hsd-power-off', 'pdcp-hsd-power-on'],
+    ]) {
+      const positions = group.map(labelPosition);
+      assert.ok(positions.every(({ x }) => x === positions[0].x),
+        `OnYourTwelve PDCP grouped positions must share a callout column: ${group.join(', ')}`);
+      assert.ok(positions.slice(1).every(({ y }, index) => y - positions[index].y === 48),
+        `OnYourTwelve PDCP grouped positions must be contiguous: ${group.join(', ')}`);
+    }
   }
 
   completeCatalogs.push(device.id);
