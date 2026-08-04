@@ -148,6 +148,31 @@ for (const device of manifest.devices) {
       'OnYourTwelve PDCP must define sixteen switch positions');
     assert.equal(controls.filter(({ type }) => type === 'rotary-position').length, 3,
       'OnYourTwelve PDCP must define three HSD rotary positions');
+
+    const labelPosition = (id) => {
+      const match = drawio.match(new RegExp(
+        `<mxCell id="label-${id}"[^>]*><mxGeometry x="([^"]+)" y="([^"]+)"`,
+      ));
+      assert.ok(match, `OnYourTwelve PDCP is missing label geometry for ${id}`);
+      return { x: Number(match[1]), y: Number(match[2]) };
+    };
+    for (const group of [
+      ['pdcp-hud-dec', 'pdcp-hud-analog'],
+      ['pdcp-hud-awl', 'pdcp-hud-alt-baro'],
+      ['pdcp-vdi-mode', 'pdcp-vdi-tv'],
+      ['pdcp-hud-night', 'pdcp-hud-day'],
+      ['pdcp-hsd-mode', 'pdcp-hsd-tid', 'pdcp-hsd-ecm-mode'],
+      ['pdcp-hsd-ecm', 'pdcp-ecm-on'],
+      ['pdcp-pwr-hud', 'pdcp-hud-power-on'],
+      ['pdcp-pwr-vdi', 'pdcp-vdi-power-on'],
+      ['pdcp-hsd-power-off', 'pdcp-hsd-power-on'],
+    ]) {
+      const positions = group.map(labelPosition);
+      assert.ok(positions.every(({ x }) => x === positions[0].x),
+        `OnYourTwelve PDCP grouped positions must share a callout column: ${group.join(', ')}`);
+      assert.ok(positions.slice(1).every(({ y }, index) => y - positions[index].y === 48),
+        `OnYourTwelve PDCP grouped positions must be contiguous: ${group.join(', ')}`);
+    }
   }
 
   completeCatalogs.push(device.id);
