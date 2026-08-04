@@ -135,6 +135,21 @@ for (const device of manifest.devices) {
       'TM MFD must define eight rocker positions');
   }
 
+  if (device.id === 'onyourtwelve-pdcp') {
+    assert.equal(controls.length, 29, 'OnYourTwelve PDCP must define all 29 independently exposed inputs');
+    assert.deepEqual(
+      keys.sort((a, b) => Number(a.slice(7)) - Number(b.slice(7))),
+      Array.from({ length: 29 }, (_, index) => `JOY_BTN${index + 1}`),
+      'OnYourTwelve PDCP must define JOY_BTN1 through JOY_BTN29 exactly once',
+    );
+    assert.equal(controls.filter(({ type }) => type === 'button').length, 10,
+      'OnYourTwelve PDCP must define ten pushbuttons');
+    assert.equal(controls.filter(({ type }) => type === 'switch-position').length, 16,
+      'OnYourTwelve PDCP must define sixteen switch positions');
+    assert.equal(controls.filter(({ type }) => type === 'rotary-position').length, 3,
+      'OnYourTwelve PDCP must define three HSD rotary positions');
+  }
+
   completeCatalogs.push(device.id);
 }
 
