@@ -4,6 +4,8 @@
   "type": "module",
   "scripts": {
     "test": "node --test",
+    "test:scaffold": "node --test test/scaffold-consumer.test.mjs",
+    "scaffold:preview": "node scripts/scaffold-consumer.mjs",
     "build:drawio-hardware": "node scripts/export-drawio-hardware.mjs",
     "create:drawio-hardware": "node scripts/create-drawio-hardware-sources.mjs",
     "test:kneeboard": "node --test test/kneeboard-renderer.test.mjs",
