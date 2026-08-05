@@ -96,7 +96,7 @@ Illustrative same-key bindings:
 | --- | --- | --- |
 | `JOY_BTN1` | _(none)_ | Left MFD OSB 1 |
 | `JOY_BTN1` | `WH_MODE` | Markpoint shortcut |
-| `JOY_BTN25` | _(none)_ | SYM increase |
+| `JOY_BTN25` | _(none)_ | BRT up |
 | `JOY_BTN25` | `WH_MODE` | Alternate rocker function |
 
 Chord membership is exact: unmodified ≠ `WH_MODE` ≠ `WH_MODE + OTHER`.
@@ -137,7 +137,7 @@ Chord membership is exact: unmodified ≠ `WH_MODE` ≠ `WH_MODE + OTHER`.
           "id": "base",
           "controls": {
             "mfd-osb-t1": { "profile": "leftMfd", "key": "JOY_BTN1" },
-            "mfd-rocker-sym-up": { "profile": "leftMfd", "key": "JOY_BTN25" }
+            "mfd-rocker-brt-up": { "profile": "leftMfd", "key": "JOY_BTN25" }
           }
         },
         {
@@ -148,7 +148,7 @@ Chord membership is exact: unmodified ≠ `WH_MODE` ≠ `WH_MODE + OTHER`.
           "modifiers": ["MODE"],
           "controls": {
             "mfd-osb-t1": { "profile": "leftMfd", "key": "JOY_BTN1" },
-            "mfd-rocker-sym-up": { "profile": "leftMfd", "key": "JOY_BTN25" }
+            "mfd-rocker-brt-up": { "profile": "leftMfd", "key": "JOY_BTN25" }
           }
         }
       ]
