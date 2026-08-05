@@ -26,6 +26,8 @@ Image-backed hardware templates use native draw.io sources. See [the draw.io har
 
 Creating a new aircraft, UI-layer, or component repository? Follow the [complete consumer repository setup guide](docs/consumer-repository-setup.md).
 
+Using DCS modifiers (hold or toggle) with layered kneeboard pages? See [profile-driven kneeboards — operator workflow](docs/profile-driven-kneeboards.md) and the [toggle-layer fixture](examples/modifiers-toggle-layer/).
+
 ## Authoring and release workflows
 
 ### DCS-Common shared-hardware authoring
