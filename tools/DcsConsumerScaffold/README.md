@@ -2,7 +2,7 @@
 
 Windows shell for the Option A scaffold flow. **Requires Node.js on PATH** and **.NET 10** SDK for local builds.
 
-Publisher: **Vyper Industries** · TFM: `net10.0-windows`
+Publisher: **Vyper Industries** · TFM: `net10.0-windows` · Assembly: `DcsConsumerScaffold.exe`
 
 ## Capabilities
 
@@ -25,6 +25,23 @@ dotnet run --project src/DcsConsumerScaffold
 dotnet test tools/DcsConsumerScaffold/DcsConsumerScaffold.sln -c Release
 ```
 
-## Release tags
+## Tag-based release (GitHub Release + setup.exe)
 
-Use **four-part** tags only for this app, e.g. `v1.0.0.0`. OvGME consumer packages continue to use three-part `vMAJOR.MINOR.PATCH` tags in their own repos.
+App versions use **four-part** tags only, e.g. `v1.0.0.0`. Consumer OvGME packages keep three-part `vMAJOR.MINOR.PATCH` tags in their own repos.
+
+1. Ensure `main` is green for scaffold CI.
+2. Create and push a tag on the release commit:
+
+```bash
+git checkout main
+git pull
+git tag -a v1.0.0.0 -m "DCS Input Profile Importer v1.0.0.0"
+git push origin v1.0.0.0
+```
+
+3. Workflow **Scaffold app CI / Build / Release** → job **Full Build + Inno Release (Tag)** runs:
+   - `dotnet` test + publish single-file win-x64 EXE
+   - Inno Setup from `installer/installer.iss` (publisher **Vyper Industries**)
+   - GitHub Release with `DcsConsumerScaffold_v1.0.0.0.zip` and `_setup/setup.exe`
+
+Do **not** use three-part tags (`v1.0.0`) for this app — the shared workflow rejects them.

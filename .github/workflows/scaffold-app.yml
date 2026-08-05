@@ -1,17 +1,13 @@
 name: Scaffold app CI / Build / Release
 
+# Tag releases: four-part only (vMAJOR.MINOR.PATCH.BUILD).
+# Path filters apply to PRs only — tag pushes must always run the release job.
 on:
   push:
     branches:
       - '**'
     tags:
       - 'v*.*.*.*'
-    paths:
-      - 'tools/DcsConsumerScaffold/**'
-      - 'scripts/scaffold-consumer.mjs'
-      - 'templates/consumer/**'
-      - 'assets/shared/hardware/scaffold-device-map.json'
-      - '.github/workflows/scaffold-app.yml'
   pull_request:
     branches:
       - main
