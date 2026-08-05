@@ -1,0 +1,17 @@
+param(
+  [Parameter(Mandatory = $true)][string]$Version
+)
+$ErrorActionPreference = 'Stop'
+$root = Split-Path -Parent $PSScriptRoot
+$dist = Join-Path $root 'dist'
+$pkgName = '{{REPO_NAME}}'
+$zip = Join-Path $dist "$pkgName-$Version-OVGME.zip"
+if (-not (Test-Path $zip)) { throw "Missing package $zip" }
+$sums = Get-Content (Join-Path $dist 'SHA256SUMS.txt')
+$leaf = Split-Path $zip -Leaf
+$hashLine = $sums | Where-Object { $_ -match [regex]::Escape($leaf) } | Select-Object -First 1
+if (-not $hashLine) { throw 'SHA256SUMS.txt does not list the package archive.' }
+$expected = ($hashLine -split '\s+')[0].ToLowerInvariant()
+$actual = (Get-FileHash $zip -Algorithm SHA256).Hash.ToLowerInvariant()
+if ($expected -ne $actual) { throw 'SHA256SUMS.txt does not match the package archive.' }
+Write-Host "Package checksum OK for $leaf"

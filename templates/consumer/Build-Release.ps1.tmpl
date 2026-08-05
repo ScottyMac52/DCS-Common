@@ -1,0 +1,23 @@
+param(
+  [Parameter(Mandatory = $true)][string]$Version
+)
+$ErrorActionPreference = 'Stop'
+$root = Split-Path -Parent $PSScriptRoot
+$dist = Join-Path $root 'dist'
+$pkgName = '{{REPO_NAME}}'
+$ovgme = Join-Path $dist "$pkgName-$Version-OVGME.zip"
+if (-not (Test-Path $ovgme)) { throw "Missing OVGME zip $ovgme" }
+$stage = Join-Path $dist "release-stage-$Version"
+if (Test-Path $stage) { Remove-Item $stage -Recurse -Force }
+New-Item -ItemType Directory -Force -Path $stage | Out-Null
+Copy-Item $ovgme $stage
+Copy-Item (Join-Path $root 'README.md') $stage -ErrorAction SilentlyContinue
+Copy-Item (Join-Path $root 'packaging/release/RELEASE-NOTES.md') $stage -ErrorAction SilentlyContinue
+Set-Content -Path (Join-Path $stage 'VERSION.TXT') -Value $Version -NoNewline
+$zip = Join-Path $dist "$pkgName-$Version-Complete.zip"
+if (Test-Path $zip) { Remove-Item $zip -Force }
+Compress-Archive -Path (Join-Path $stage '*') -DestinationPath $zip
+$hash = (Get-FileHash $zip -Algorithm SHA256).Hash.ToLowerInvariant()
+$sumsPath = Join-Path $dist 'SHA256SUMS.txt'
+Add-Content -Path $sumsPath -Value "$hash  $(Split-Path $zip -Leaf)"
+Write-Host "Wrote $zip"

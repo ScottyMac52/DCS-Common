@@ -1,0 +1,38 @@
+name: Create tagged OVGME release
+on:
+  workflow_dispatch:
+    inputs:
+      bump:
+        description: Semantic version component to increment
+        required: true
+        default: patch
+        type: choice
+        options: [patch, minor, major]
+
+permissions:
+  contents: write
+
+concurrency:
+  group: ovgme-release
+  cancel-in-progress: false
+
+jobs:
+  release:
+    uses: ScottyMac52/DCS-Common/.github/workflows/release.yml@main
+    with:
+      bump: ${{ inputs.bump }}
+      install-lua-parser: true
+      run-lua-parse: true
+      run-release-validation: true
+      package-script: scripts/Build-OvGME.ps1
+      test-package-script: scripts/Test-Package.ps1
+      build-release-script: scripts/Build-Release.ps1
+      test-release-script: scripts/Test-Package.ps1
+      artifact-name: {{ARTIFACT_NAME}}-Release-${{ inputs.bump }}-${{ github.run_number }}
+      artifact-path: |
+        dist/*.zip
+        dist/SHA256SUMS.txt
+      release-notes-path: packaging/release/RELEASE-NOTES.md
+      kneeboard-paths: kneeboard/source kneeboard/{{KNEEBOARD_ID}}
+      release-title-prefix: {{REPO_NAME}}
+    secrets: inherit
