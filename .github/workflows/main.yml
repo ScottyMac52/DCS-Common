@@ -84,10 +84,10 @@ jobs:
           Dummy release notes for testing.
           "@ | Out-File -Encoding utf8 "packaging/release/RELEASE-NOTES.md"
 
-          # 4. Mock build-kneeboard.mjs script
+          # 4. Mock build-kneeboard.mjs script (Fixed import)
           @"
           import { mkdirSync, writeFileSync } from 'node:fs';
-          import { resolve, dirname } from 'node:path';
+          import { resolve, dirname, join } from 'node:path';
           import { fileURLToPath } from 'node:url';
           const root = resolve(dirname(fileURLToPath(import.meta.url)), '..');
           mkdirSync(join(root, 'kneeboard', 'F-14BU'), { recursive: true });
@@ -140,4 +140,3 @@ jobs:
           path: |
             dist/*.zip
             dist/SHA256SUMS.txt
-            
