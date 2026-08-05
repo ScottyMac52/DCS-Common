@@ -1,0 +1,49 @@
+{
+  "schemaVersion": 1,
+  "aircraft": "F-16C_50",
+  "modifiersFile": "modifiers.lua",
+  "modifiers": {
+    "MODE": {
+      "nativeName": "WH_MODE",
+      "deviceId": "tm-warthog-grip",
+      "mode": "toggle",
+      "label": "Warthog BTN3 mode"
+    },
+    "S3": {
+      "nativeName": "AVA_F16_S3",
+      "deviceId": "ava-base-f16c",
+      "mode": "hold",
+      "label": "AVA S3 hold"
+    }
+  },
+  "profiles": {
+    "leftMfd": "profiles/mfd.diff.lua"
+  },
+  "pages": [
+    {
+      "file": "02-LEFT-MFD",
+      "deviceId": "tm-mfd",
+      "title": "COUGAR MFD 1 • LEFT MFD",
+      "layers": [
+        {
+          "id": "base",
+          "controls": {
+            "mfd-osb-t1": { "profile": "leftMfd", "key": "JOY_BTN1" },
+            "mfd-rocker-sym-up": { "profile": "leftMfd", "key": "JOY_BTN25" }
+          }
+        },
+        {
+          "id": "mode",
+          "file": "02-LEFT-MFD-MODE",
+          "title": "COUGAR MFD 1 • MODE LAYER",
+          "kicker": "WH_MODE TOGGLE ACTIVE • WARTHOG BTN3",
+          "modifiers": ["MODE"],
+          "controls": {
+            "mfd-osb-t1": { "profile": "leftMfd", "key": "JOY_BTN1" },
+            "mfd-rocker-sym-up": { "profile": "leftMfd", "key": "JOY_BTN25" }
+          }
+        }
+      ]
+    }
+  ]
+}
