@@ -32,9 +32,10 @@ jobs:
       - name: Generate Mock Configuration and Test Artifacts
         shell: pwsh
         run: |
-          New-Item -ItemType Directory -Force -Path "config", "scripts", "src/Config/Input/F-14BU/joystick", "kneeboard/source", "kneeboard/assets/source", "dist", "packaging/release"
+          # 1. Create ALL required directories, explicitly including packaging/ovgme
+          New-Item -ItemType Directory -Force -Path "config", "scripts", "src/Config/Input/F-14BU/joystick", "kneeboard/source", "kneeboard/assets/source", "dist", "packaging/release", "packaging/ovgme"
 
-          # 1. Mock kneeboard.json config
+          # 2. Mock kneeboard.json config
           @"
           {
             "schemaVersion": 1,
@@ -65,26 +66,26 @@ jobs:
           }
           "@ | Out-File -Encoding utf8 "config/kneeboard.json"
 
-          # 2. Mock Lua profile
+          # 3. Mock Lua profile
           @"
           return {}
           "@ | Out-File -Encoding utf8 "src/Config/Input/F-14BU/joystick/DummyProfile {00000000-0000-0000-0000-000000000000}.diff.lua"
 
-          # 3. Mock package metadata files
+          # 4. Mock package metadata files (NOW IN THE CORRECT DIRECTORY)
           @"
           OVGME PACKAGE VERSION ${{ env.PACKAGE_VERSION }}
-          "@ | Out-File -Encoding utf8 "README.TXT"
+          "@ | Out-File -Encoding utf8 "packaging/ovgme/README.TXT"
           
           @"
           ${{ env.PACKAGE_VERSION }}
-          "@ | Out-File -Encoding utf8 "VERSION.TXT"
+          "@ | Out-File -Encoding utf8 "packaging/ovgme/VERSION.TXT"
 
           @"
           # Release Notes
           Dummy release notes for testing.
           "@ | Out-File -Encoding utf8 "packaging/release/RELEASE-NOTES.md"
 
-          # 4. Mock build-kneeboard.mjs script
+          # 5. Mock build-kneeboard.mjs script
           @"
           import { mkdirSync, writeFileSync } from 'node:fs';
           import { resolve, dirname, join } from 'node:path';
@@ -96,7 +97,7 @@ jobs:
           console.log('Mock kneeboard build completed.');
           "@ | Out-File -Encoding utf8 "scripts/build-kneeboard.mjs"
 
-          # 5. Mock package.json script registration
+          # 6. Mock package.json script registration
           @"
           {
             "name": "dcs-common-test",
@@ -110,7 +111,6 @@ jobs:
       - name: Build Kneeboard
         run: npm run build:kneeboard
 
-      # Uses "F-14BU" instead of "F-14B(U)" for the ModuleName to match the actual folder path
       - name: Build OvGME Package
         shell: pwsh
         run: |
