@@ -1,0 +1,69 @@
+{
+  "schemaVersion": 1,
+  "description": "Ordered pattern list: first case-insensitive substring match on the DCS profile filename (GUID stripped) wins. Never invent deviceIds outside the shared hardware manifest.",
+  "mappings": [
+    {
+      "deviceId": "winctrl-pto2",
+      "patterns": ["WINCTRL CarrierAce PTO", "CarrierAce PTO", "WINCTRL PTO"]
+    },
+    {
+      "deviceId": "winctrl-icp",
+      "patterns": ["WINCTRL ViperAce ICP", "ViperAce ICP", "WINCTRL ICP"]
+    },
+    {
+      "deviceId": "viper-tqs-mission-pack",
+      "patterns": ["Viper TQS", "Mission Pack", "ViperAce TQS"]
+    },
+    {
+      "deviceId": "vkb-f14-gunfighter",
+      "patterns": ["VKBSim Gunfighter F14", "Gunfighter F14", "VKB F14", "VKBSim Gunfighter"]
+    },
+    {
+      "deviceId": "moza-ab9",
+      "patterns": ["MOZA AB9", "MOZA AB 9"]
+    },
+    {
+      "deviceId": "ava-base-f16c",
+      "patterns": ["Ava [R] Viper", "Ava Viper", "AVA Viper", "AVA F-16", "AVA F16"]
+    },
+    {
+      "deviceId": "ava-base-f18c",
+      "patterns": ["Ava [R] Hornet", "Ava Hornet", "AVA Hornet", "AVA F/A-18", "AVA F18"]
+    },
+    {
+      "deviceId": "tm-mfd",
+      "patterns": ["F16 MFD", "F-16 MFD", "Thrustmaster MFD", "TM MFD", "Cougar MFD"]
+    },
+    {
+      "deviceId": "tm-warthog-throttle",
+      "patterns": ["Throttle - HOTAS Warthog", "HOTAS Warthog Throttle", "Warthog Throttle"]
+    },
+    {
+      "deviceId": "tm-warthog-grip",
+      "patterns": ["Joystick - HOTAS Warthog", "HOTAS Warthog", "Warthog Joystick", "Warthog Grip"]
+    },
+    {
+      "deviceId": "grip-f18c",
+      "patterns": ["F/A-18C", "FA-18C Grip", "Hornet Grip", "Thrustmaster F/A-18"]
+    },
+    {
+      "deviceId": "onyourtwelve-pdcp",
+      "patterns": ["OnYourTwelve", "PDCP"]
+    },
+    {
+      "deviceId": "tm-tpr",
+      "patterns": ["T-Pendular", "TPR", "Pendular Rudder", "Thrustmaster TPR"]
+    },
+    {
+      "deviceId": "logitech-throttle-quadrant",
+      "patterns": ["Logitech Throttle Quadrant", "Throttle Quadrant"]
+    }
+  ],
+  "instancePatterns": [
+    {
+      "deviceId": "tm-mfd",
+      "regex": "\\bMFD\\s*([1-4])\\b",
+      "group": 1
+    }
+  ]
+}
