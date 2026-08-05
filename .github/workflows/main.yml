@@ -42,16 +42,16 @@ jobs:
       - name: Generate Mock Configuration and Test Artifacts
         shell: pwsh
         run: |
-          New-Item -ItemType Directory -Force -Path "config", "scripts", "src/Config/Input/F-14BU/joystick", "kneeboard/source", "kneeboard/assets/source", "dist", "packaging/release", "packaging/ovgme"
+          New-Item -ItemType Directory -Force -Path "config", "scripts", "src/Config/Input/Test/joystick", "kneeboard/source", "kneeboard/assets/source", "dist", "packaging/release", "packaging/ovgme"
 
           # Mock kneeboard.json config (EXHAUSTIVE HARDWARE MANIFEST MOCK)
           @"
           {
             "schemaVersion": 1,
-            "aircraft": "F-14B(U)",
+            "aircraft": "Test",
             "profiles": {
-              "pdcp": "src/Config/Input/F-14BU/joystick/OnYourTwelve F-14 PDCP {52C96400-3F11-11f1-8001-444553540000}.diff.lua",
-              "pto2": "src/Config/Input/F-14BU/joystick/WINCTRL CarrierAce PTO 2 {19B7D090-6120-11f0-8001-444553540000}.diff.lua"
+              "pdcp": "src/Config/Input/Test/joystick/OnYourTwelve F-14 PDCP {52C96400-3F11-11f1-8001-444553540000}.diff.lua",
+              "pto2": "src/Config/Input/Test/joystick/WINCTRL CarrierAce PTO 2 {19B7D090-6120-11f0-8001-444553540000}.diff.lua"
             },
             "summaryPages": [
               {
@@ -70,7 +70,7 @@ jobs:
                 "deviceId": "moza-ab9",
                 "title": "MOZA AB9 FFB BASE",
                 "kicker": "TEST DEVICE",
-                "labels": ["Mock Binding"]
+                "labels": ["Pitch", "Roll"]
               },
               {
                 "file": "03-VKB-F14-GRIP",
@@ -84,52 +84,98 @@ jobs:
                 "deviceId": "tm-warthog-grip",
                 "title": "TM WARTHOG GRIP",
                 "kicker": "TEST DEVICE",
-                "labels": ["Mock Binding"]
+                "labels": ["Trigger", "Weapons Release", "NWS Toggle", "Paddle", "Mode", "Second Trigger", "TMS UP", "TMS RIGHT", "TMS DOWN", "TMS LEFT", "DMS UP", "DMS RIGHT", "DMS DOWN", "DMS LEFT", "CMS UP", "CMS RIGHT", "CMS DOWN", "CMS LEFT", "CMS DEPRESS" ]
               },
               {
                 "file": "05-TM-F18C-GRIP",
                 "deviceId": "grip-f18c",
                 "title": "TM F/A-18C HORNET GRIP",
                 "kicker": "TEST DEVICE",
-                "labels": ["Mock Binding"]
+                "labels": ["Trigger", "Weapons Release", "NWS Toggle", "Paddle", "Mode", "Second Trigger", "SCS UP", "SCS RIGHT", "SCS DOWN", "SCS LEFT", "SCS DEPRESS", "WSS UP", "WSS RIGHT", "WSS DOWN", "WSS LEFT", "WSS DEPRESS", "VR UP", "VR DOWN", "VR DEPRESS" ]
               },
               {
                 "file": "06-AVA-F16C",
                 "deviceId": "ava-base-f16c",
                 "title": "AVA BASE + F-16C GRIP",
                 "kicker": "TEST DEVICE",
-                "labels": ["Mock Binding"]
+                "labels": ["Trigger", "Weapons Release", "NWS Toggle", "Paddle", "Mode", "Second Trigger", "TMS UP", "TMS RIGHT", "TMS DOWN", "TMS LEFT", "DMS UP", "DMS RIGHT", "DMS DOWN", "DMS LEFT", "CMS UP", "CMS RIGHT", "CMS DOWN", "CMS LEFT", "CMS DEPRESS" ]
               },
               {
                 "file": "07-AVA-F18C",
                 "deviceId": "ava-base-f18c",
                 "title": "AVA BASE + F/A-18C GRIP",
                 "kicker": "TEST DEVICE",
-                "labels": ["Mock Binding"]
+                "labels": ["Trigger", "Weapons Release", "NWS Toggle", "Paddle", "Mode", "Second Trigger", "SCS UP", "SCS RIGHT", "SCS DOWN", "SCS LEFT", "SCS DEPRESS", "WSS UP", "WSS RIGHT", "WSS DOWN", "WSS LEFT", "WSS DEPRESS", "VR UP", "VR DOWN", "VR DEPRESS" ]
               },
               {
                 "file": "08-TM-MFD",
                 "deviceId": "tm-mfd",
                 "title": "TM MFD",
                 "kicker": "TEST DEVICE",
-                "labels": ["Mock Binding"]
+                "labels": ["Left MFD OSB 1", "Left MFD OSB 2", "Left MFD OSB 3", "Left MFD OSB 4", "Left MFD OSB 5", "Left MFD OSB 6", "Left MFD OSB 7", "Left MFD OSB 8", "Left MFD OSB 9", "Left MFD OSB 10", "Left MFD OSB 11", "Left MFD OSB 12", "Left MFD OSB 13", "Left MFD OSB 14", "Left MFD OSB 15", "Left MFD OSB 16", "Left MFD OSB 17", "Left MFD OSB 18", "Left MFD OSB 19", "Left MFD OSB 20", "SYM increase", "SYM decrease", "CON increase", "CON decrease", "BRT increase", "BRT decrease", "GAIN increase", "GAIN decrease"] 
               },
               {
                 "file": "09-PDCP",
                 "deviceId": "onyourtwelve-pdcp",
                 "title": "ONYOURTWELVE F-14 PDCP",
-                "kicker": "TEST DEVICE",
+                "kicker": "DISPLAY, POWER, STEERING AND HSD PANEL",
                 "controls": {
-                  "pdcp-to": { "profile": "pdcp", "key": "JOY_BTN1", "label": "Takeoff" }
+                  "pdcp-to": { "profile": "pdcp", "key": "JOY_BTN1", "label": "Takeoff" },
+                  "pdcp-cruise": { "profile": "pdcp", "key": "JOY_BTN2", "label": "Cruise" },
+                  "pdcp-aa": { "profile": "pdcp", "key": "JOY_BTN3", "label": "Air-to-air" },
+                  "pdcp-ag": { "profile": "pdcp", "key": "JOY_BTN4", "label": "Air-to-ground" },
+                  "pdcp-ldg": { "profile": "pdcp", "key": "JOY_BTN5", "label": "Landing" },
+                  "pdcp-vdi-awl": { "profile": "pdcp", "key": "JOY_BTN6", "label": "STEER TACAN" },
+                  "pdcp-steer-dest": { "profile": "pdcp", "key": "JOY_BTN7", "label": "STEER DEST" },
+                  "pdcp-steer-awl-pcd": { "profile": "pdcp", "key": "JOY_BTN8", "label": "STEER AWL/PCD" },
+                  "pdcp-steer-vec": { "profile": "pdcp", "key": "JOY_BTN9", "label": "STEER VEC" },
+                  "pdcp-steer-man": { "profile": "pdcp", "key": "JOY_BTN10", "label": "STEER MAN" },
+                  "pdcp-hud-dec": { "profile": "pdcp", "key": "JOY_BTN11", "label": "HUD DIGITAL" },
+                  "pdcp-hud-analog": { "profile": "pdcp", "key": "JOY_BTN12", "label": "HUD ANALOG" },
+                  "pdcp-hud-awl": { "profile": "pdcp", "key": "JOY_BTN13", "label": "HUD ALT RDR" },
+                  "pdcp-hud-alt-baro": { "profile": "pdcp", "key": "JOY_BTN14", "label": "HUD ALT BARO" },
+                  "pdcp-vdi-mode": { "profile": "pdcp", "key": "JOY_BTN15", "label": "VDI NORM" },
+                  "pdcp-vdi-tv": { "profile": "pdcp", "key": "JOY_BTN16", "label": "VDI TV" },
+                  "pdcp-hud-night": { "profile": "pdcp", "key": "JOY_BTN17", "label": "HUD NIGHT" },
+                  "pdcp-hud-day": { "profile": "pdcp", "key": "JOY_BTN18", "label": "HUD DAY" },
+                  "pdcp-hsd-mode": { "profile": "pdcp", "key": "JOY_BTN19", "label": "HSD NAV" },
+                  "pdcp-hsd-tid": { "profile": "pdcp", "key": "JOY_BTN20", "label": "HSD TID" },
+                  "pdcp-hsd-ecm": { "profile": "pdcp", "key": "JOY_BTN21", "label": "ECM ORIDE OFF" },
+                  "pdcp-ecm-on": { "profile": "pdcp", "key": "JOY_BTN22", "label": "ECM ORIDE ON" },
+                  "pdcp-pwr-hud": { "profile": "pdcp", "key": "JOY_BTN23", "label": "HUD POWER OFF" },
+                  "pdcp-hud-power-on": { "profile": "pdcp", "key": "JOY_BTN24", "label": "HUD POWER ON" },
+                  "pdcp-hsd-power-off": { "profile": "pdcp", "key": "JOY_BTN25", "label": "HSD/ECM OFF" },
+                  "pdcp-hsd-power-on": { "profile": "pdcp", "key": "JOY_BTN26", "label": "HSD/ECM ON" },
+                  "pdcp-pwr-vdi": { "profile": "pdcp", "key": "JOY_BTN27", "label": "VDI POWER OFF" },
+                  "pdcp-vdi-power-on": { "profile": "pdcp", "key": "JOY_BTN28", "label": "VDI POWER ON" },
+                  "pdcp-hsd-ecm-mode": { "profile": "pdcp", "key": "JOY_BTN29", "label": "HSD ECM" }
                 }
               },
               {
                 "file": "10-PTO2",
                 "deviceId": "winctrl-pto2",
                 "title": "WINCTRL CARRIERACE PTO2",
-                "kicker": "TEST DEVICE",
+                "kicker": "CARRIER, GEAR, FLAPS, LIGHTS AND REFUELING",
                 "controls": {
-                  "pto2-button-2": { "profile": "pto2", "key": "JOY_BTN2", "label": "Caution reset" }
+                  "pto2-button-2": { "profile": "pto2", "key": "JOY_BTN2", "label": "Caution reset" },
+                  "pto2-button-3": { "profile": "pto2", "key": "JOY_BTN3", "label": "Launch bar retract" },
+                  "pto2-button-4": { "profile": "pto2", "key": "JOY_BTN4", "label": "Launch bar extend" },
+                  "pto2-button-5": { "profile": "pto2", "key": "JOY_BTN5", "label": "Flaps up" },
+                  "pto2-button-7": { "profile": "pto2", "key": "JOY_BTN7", "label": "Flaps full" },
+                  "pto2-button-8": { "profile": "pto2", "key": "JOY_BTN8", "label": "Taxi lights ON" },
+                  "pto2-button-9": { "profile": "pto2", "key": "JOY_BTN9", "label": "Taxi lights OFF" },
+                  "pto2-button-10": { "profile": "pto2", "key": "JOY_BTN10", "label": "Antiskid BOTH" },
+                  "pto2-button-11": { "profile": "pto2", "key": "JOY_BTN11", "label": "Antiskid OFF" },
+                  "pto2-button-12": { "profile": "pto2", "key": "JOY_BTN12", "label": "Hook bypass FIELD" },
+                  "pto2-button-13": { "profile": "pto2", "key": "JOY_BTN13", "label": "Hook bypass CARRIER" },
+                  "pto2-button-14": { "profile": "pto2", "key": "JOY_BTN14", "label": "Refuel probe extend" },
+                  "pto2-button-16": { "profile": "pto2", "key": "JOY_BTN16", "label": "Refuel probe retract" },
+                  "pto2-button-32": { "profile": "pto2", "key": "JOY_BTN32", "label": "Hook retract" },
+                  "pto2-button-34": { "profile": "pto2", "key": "JOY_BTN34", "label": "Hook extend" },
+                  "pto2-button-35": { "profile": "pto2", "key": "JOY_BTN35", "label": "Gear up" },
+                  "pto2-button-37": { "profile": "pto2", "key": "JOY_BTN37", "label": "Gear down" },
+                  "pto2-button-38": { "profile": "pto2", "key": "JOY_BTN38", "label": "Parking brake stow" },
+                  "pto2-button-39": { "profile": "pto2", "key": "JOY_BTN39", "label": "Parking brake pull" }
                 }
               },
               {
