@@ -219,39 +219,426 @@ jobs:
           }
           "@ | Out-File -Encoding utf8 "config/kneeboard.json"
 
-          # Mock Lua profiles (MUST pass DCS-Common's strict regex parsing and contain both keys)
-          $Profiles = @(
-            "DummyProfile {00000000-0000-0000-0000-000000000000}.diff.lua",
-            "OnYourTwelve F-14 PDCP {52C96400-3F11-11f1-8001-444553540000}.diff.lua",
-            "WINCTRL CarrierAce PTO 2 {19B7D090-6120-11f0-8001-444553540000}.diff.lua"
-          )
-          $MockLua = @"
+          # 1. DummyProfile Mock
+          $DummyLua = @"
           local diff = {
               ["keyDiffs"] = {
-                  ["dnil_1"] = {
-                      ["name"] = "Mock Binding 1",
+                  ["dnil_dummy"] = {
+                      ["name"] = "Dummy Binding",
                       ["added"] = {
-                          [1] = {
-                              ["key"] = "JOY_BTN1"
-                          }
-                      }
-                  },
-                  ["dnil_2"] = {
-                      ["name"] = "Mock Binding 2",
-                      ["added"] = {
-                          [1] = {
-                              ["key"] = "JOY_BTN2"
-                          }
+                          [1] = { ["key"] = "JOY_BTN1" }
                       }
                   }
               }
           }
           return diff
           "@
-          foreach ($Profile in $Profiles) {
-            $MockLua | Out-File -Encoding utf8 "src/Config/Input/Test/joystick/$Profile"
-          }
+          $DummyLua | Out-File -Encoding utf8 "src/Config/Input/F-14BU/joystick/DummyProfile {00000000-0000-0000-0000-000000000000}.diff.lua"
 
+          # 2. OnYourTwelve PDCP Mock
+          $PdcpLua = @"
+          local diff = {
+              ["keyDiffs"] = {
+          		["d3213pnilunilcd40vd0vpnilvunil"] = {
+          			["added"] = {
+          				[1] = {
+          					["key"] = "JOY_BTN23",
+          				},
+          			},
+          			["name"] = "HUD Power Off",
+          		},
+          		["d3213pnilunilcd40vd1vpnilvunil"] = {
+          			["added"] = {
+          				[1] = {
+          					["key"] = "JOY_BTN24",
+          				},
+          			},
+          			["name"] = "HUD Power On",
+          		},
+          		["d3214pnilunilcd42vd0vpnilvunil"] = {
+          			["added"] = {
+          				[1] = {
+          					["key"] = "JOY_BTN27",
+          				},
+          			},
+          			["name"] = "VDI Power Off",
+          		},
+          		["d3214pnilunilcd42vd1vpnilvunil"] = {
+          			["added"] = {
+          				[1] = {
+          					["key"] = "JOY_BTN28",
+          				},
+          			},
+          			["name"] = "VDI Power On",
+          		},
+          		["d3215pnilunilcd41vd0vpnilvunil"] = {
+          			["added"] = {
+          				[1] = {
+          					["key"] = "JOY_BTN25",
+          				},
+          			},
+          			["name"] = "HSD/ECM Power Off",
+          		},
+          		["d3215pnilunilcd41vd1vpnilvunil"] = {
+          			["added"] = {
+          				[1] = {
+          					["key"] = "JOY_BTN26",
+          				},
+          			},
+          			["name"] = "HSD/ECM Power On",
+          		},
+          		["d3216pnilunilcd40vd1vpnilvunil"] = {
+          			["added"] = {
+          				[1] = {
+          					["key"] = "JOY_BTN1",
+          				},
+          			},
+          			["name"] = "Display mode takeoff",
+          		},
+          		["d3217pnilunilcd40vd1vpnilvunil"] = {
+          			["added"] = {
+          				[1] = {
+          					["key"] = "JOY_BTN2",
+          				},
+          			},
+          			["name"] = "Display mode cruise",
+          		},
+          		["d3218pnilunilcd40vd1vpnilvunil"] = {
+          			["added"] = {
+          				[1] = {
+          					["key"] = "JOY_BTN3",
+          				},
+          			},
+          			["name"] = "Display mode air to air",
+          		},
+          		["d3219pnilunilcd40vd1vpnilvunil"] = {
+          			["added"] = {
+          				[1] = {
+          					["key"] = "JOY_BTN4",
+          				},
+          			},
+          			["name"] = "Display mode air to ground",
+          		},
+          		["d3220pnilunilcd40vd1vpnilvunil"] = {
+          			["added"] = {
+          				[1] = {
+          					["key"] = "JOY_BTN5",
+          				},
+          			},
+          			["name"] = "Display mode landing",
+          		},
+          		["d3224pnilunilcd42vd0vpnilvunil"] = {
+          			["added"] = {
+          				[1] = {
+          					["key"] = "JOY_BTN15",
+          				},
+          			},
+          			["name"] = "VDI Mode Norm",
+          		},
+          		["d3224pnilunilcd42vd1vpnilvunil"] = {
+          			["added"] = {
+          				[1] = {
+          					["key"] = "JOY_BTN16",
+          				},
+          			},
+          			["name"] = "VDI Mode TV",
+          		},
+          		["d3225pnilunilcd40vd0vpnilvunil"] = {
+          			["added"] = {
+          				[1] = {
+          					["key"] = "JOY_BTN17",
+          				},
+          			},
+          			["name"] = "HUD Mode Night",
+          		},
+          		["d3225pnilunilcd40vd1vpnilvunil"] = {
+          			["added"] = {
+          				[1] = {
+          					["key"] = "JOY_BTN18",
+          				},
+          			},
+          			["name"] = "HUD Mode Day",
+          		},
+          		["d3226pnilunilcd40vd0vpnilvunil"] = {
+          			["added"] = {
+          				[1] = {
+          					["key"] = "JOY_BTN11",
+          				},
+          			},
+          			["name"] = "HUD Digital",
+          		},
+          		["d3226pnilunilcd40vd1vpnilvunil"] = {
+          			["added"] = {
+          				[1] = {
+          					["key"] = "JOY_BTN12",
+          				},
+          			},
+          			["name"] = "HUD Analog",
+          		},
+          		["d3227pnilu3227cd40vd0vpnilvu1"] = {
+          			["added"] = {
+          				[1] = {
+          					["key"] = "JOY_BTN13",
+          				},
+          			},
+          			["name"] = "HUD Altimeter Radar, else Baro",
+          		},
+          		["d3227pnilu3227cd40vd1vpnilvu0"] = {
+          			["added"] = {
+          				[1] = {
+          					["key"] = "JOY_BTN14",
+          				},
+          			},
+          			["name"] = "HUD Altimeter Baro, else Radar",
+          		},
+          		["d3235pnilunilcd41vd-1vpnilvunil"] = {
+          			["added"] = {
+          				[1] = {
+          					["key"] = "JOY_BTN29",
+          				},
+          			},
+          			["name"] = "HSD Mode ECM",
+          		},
+          		["d3235pnilunilcd41vd0vpnilvunil"] = {
+          			["added"] = {
+          				[1] = {
+          					["key"] = "JOY_BTN20",
+          				},
+          			},
+          			["name"] = "HSD Mode TID",
+          		},
+          		["d3235pnilunilcd41vd1vpnilvunil"] = {
+          			["added"] = {
+          				[1] = {
+          					["key"] = "JOY_BTN19",
+          				},
+          			},
+          			["name"] = "HSD Mode NAV",
+          		},
+          		["d3239pnilunilcd41vd0vpnilvunil"] = {
+          			["added"] = {
+          				[1] = {
+          					["key"] = "JOY_BTN21",
+          				},
+          			},
+          			["name"] = "HSD ECM Override Off",
+          		},
+          		["d3239pnilunilcd41vd1vpnilvunil"] = {
+          			["added"] = {
+          				[1] = {
+          					["key"] = "JOY_BTN22",
+          				},
+          			},
+          			["name"] = "HSD ECM Override On",
+          		},
+          		["d3314pnilu3314cd46vd1vpnilvu0"] = {
+          			["added"] = {
+          				[1] = {
+          					["key"] = "JOY_BTN6",
+          				},
+          			},
+          			["name"] = "STEER CMD TACAN",
+          		},
+          		["d3315pnilu3315cd46vd1vpnilvu0"] = {
+          			["added"] = {
+          				[1] = {
+          					["key"] = "JOY_BTN7",
+          				},
+          			},
+          			["name"] = "STEER CMD Destination",
+          		},
+          		["d3316pnilu3316cd46vd1vpnilvu0"] = {
+          			["added"] = {
+          				[1] = {
+          					["key"] = "JOY_BTN9",
+          				},
+          			},
+          			["name"] = "STEER CMD VEC",
+          		},
+          		["d3317pnilu3317cd46vd1vpnilvu0"] = {
+          			["added"] = {
+          				[1] = {
+          					["key"] = "JOY_BTN10",
+          				},
+          			},
+          			["name"] = "STEER CMD MAN",
+          		},
+          		["d3318pnilu3318cd46vd1vpnilvu0"] = {
+          			["added"] = {
+          				[1] = {
+          					["key"] = "JOY_BTN8",
+          				},
+          			},
+          			["name"] = "STEER CMD AWL/PCD",
+          		},
+              }
+          }
+          return diff
+          "@
+          $PdcpLua | Out-File -Encoding utf8 "src/Config/Input/F-14BU/joystick/OnYourTwelve F-14 PDCP {52C96400-3F11-11f1-8001-444553540000}.diff.lua"
+
+          # 3. WINCTRL PTO 2 Mock
+          $Pto2Lua = @"
+          local diff = {
+          	["keyDiffs"] = {
+          		["d3013pnilunilcd18vd0vpnilvunil"] = {
+          			["added"] = {
+          				[1] = {
+          					["key"] = "JOY_BTN39",
+          				},
+          			},
+          			["name"] = "Parking brake pull",
+          		},
+          		["d3013pnilunilcd18vd1vpnilvunil"] = {
+          			["added"] = {
+          				[1] = {
+          					["key"] = "JOY_BTN38",
+          				},
+          			},
+          			["name"] = "Parking brake stow",
+          		},
+          		["d3014pnilunilcd18vd0vpnilvunil"] = {
+          			["added"] = {
+          				[1] = {
+          					["key"] = "JOY_BTN11",
+          				},
+          			},
+          			["name"] = "Antiskid & Spoiler BK - Off",
+          		},
+          		["d3014pnilunilcd18vd1vpnilvunil"] = {
+          			["added"] = {
+          				[1] = {
+          					["key"] = "JOY_BTN10",
+          				},
+          			},
+          			["name"] = "Antiskid & Spoiler BK - Both",
+          		},
+          		["d3016pnilunilcd18vd0vpnilvunil"] = {
+          			["added"] = {
+          				[1] = {
+          					["key"] = "JOY_BTN35",
+          				},
+          			},
+          			["name"] = "Gears Up",
+          		},
+          		["d3016pnilunilcd18vd1vpnilvunil"] = {
+          			["added"] = {
+          				[1] = {
+          					["key"] = "JOY_BTN37",
+          				},
+          			},
+          			["name"] = "Gears Down",
+          		},
+          		["d3019pnilu3019cd18vd1vpnilvu0"] = {
+          			["added"] = {
+          				[1] = {
+          					["key"] = "JOY_BTN3",
+          				},
+          			},
+          			["name"] = "Nose strut - EXTEND else OFF (3-way Switch Up)",
+          		},
+          		["d3019pnilu3019cd18vd-1vpnilvu0"] = {
+          			["added"] = {
+          				[1] = {
+          					["key"] = "JOY_BTN4",
+          				},
+          			},
+          			["name"] = "Nose strut - KNEEL else OFF (3-way Switch Down)",
+          		},
+          		["d3021pnilunilcd18vd0vpnilvunil"] = {
+          			["added"] = {
+          				[1] = {
+          					["key"] = "JOY_BTN32",
+          				},
+          			},
+          			["name"] = "Hook Retract",
+          		},
+          		["d3021pnilunilcd18vd1vpnilvunil"] = {
+          			["added"] = {
+          				[1] = {
+          					["key"] = "JOY_BTN34",
+          				},
+          			},
+          			["name"] = "Hook Extend",
+          		},
+          		["d3044pnilu3044cd19vd0.5vpnilvu0.65"] = {
+          			["added"] = {
+          				[1] = {
+          					["key"] = "JOY_BTN7",
+          				},
+          			},
+          			["name"] = "Flaps - DOWN else HALF (3-way Switch Down)",
+          		},
+          		["d3044pnilu3044cd19vd0.8vpnilvu0.65"] = {
+          			["added"] = {
+          				[1] = {
+          					["key"] = "JOY_BTN5",
+          				},
+          			},
+          			["name"] = "Flaps - UP else HALF (3-way Switch Up)",
+          		},
+          		["d3056pnilu3056cd35vd1vpnilvu0"] = {
+          			["added"] = {
+          				[1] = {
+          					["key"] = "JOY_BTN2",
+          				},
+          			},
+          			["name"] = "Master Caution Reset",
+          		},
+          		["d3068pnilunilcd21vd-1vpnilvunil"] = {
+          			["added"] = {
+          				[1] = {
+          					["key"] = "JOY_BTN16",
+          				},
+          			},
+          			["name"] = "Refuel Probe Retract",
+          		},
+          		["d3068pnilunilcd21vd1vpnilvunil"] = {
+          			["added"] = {
+          				[1] = {
+          					["key"] = "JOY_BTN14",
+          				},
+          			},
+          			["name"] = "Refuel Probe extend, Refuel All",
+          		},
+          		["d3171pnilunilcd12vd0vpnilvunil"] = {
+          			["added"] = {
+          				[1] = {
+          					["key"] = "JOY_BTN9",
+          				},
+          			},
+          			["name"] = "Lights Taxi OFF",
+          		},
+          		["d3171pnilunilcd12vd1vpnilvunil"] = {
+          			["added"] = {
+          				[1] = {
+          					["key"] = "JOY_BTN8",
+          				},
+          			},
+          			["name"] = "Lights Taxi ON",
+          		},
+          		["d3211pnilunilcd26vd0vpnilvunil"] = {
+          			["added"] = {
+          				[1] = {
+          					["key"] = "JOY_BTN13",
+          				},
+          			},
+          			["name"] = "Lights Hook Bypass CARRIER",
+          		},
+          		["d3211pnilunilcd26vd1vpnilvunil"] = {
+          			["added"] = {
+          				[1] = {
+          					["key"] = "JOY_BTN12",
+          				},
+          			},
+          			["name"] = "Lights Hook Bypass FIELD",
+          		},
+          	},
+          }
+          return diff
+          "@
+          $Pto2Lua | Out-File -Encoding utf8 "src/Config/Input/F-14BU/joystick/WINCTRL CarrierAce PTO 2 {19B7D090-6120-11f0-8001-444553540000}.diff.lua"
+          
           # Mock package metadata files
           @"
           OVGME PACKAGE VERSION {{VERSION}}
