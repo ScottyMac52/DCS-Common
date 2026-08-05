@@ -29,7 +29,7 @@
           "id": "base",
           "controls": {
             "mfd-osb-t1": { "profile": "leftMfd", "key": "JOY_BTN1" },
-            "mfd-rocker-sym-up": { "profile": "leftMfd", "key": "JOY_BTN25" }
+            "mfd-rocker-brt-up": { "profile": "leftMfd", "key": "JOY_BTN25" }
           }
         },
         {
@@ -40,7 +40,7 @@
           "modifiers": ["MODE"],
           "controls": {
             "mfd-osb-t1": { "profile": "leftMfd", "key": "JOY_BTN1" },
-            "mfd-rocker-sym-up": { "profile": "leftMfd", "key": "JOY_BTN25" }
+            "mfd-rocker-brt-up": { "profile": "leftMfd", "key": "JOY_BTN25" }
           }
         }
       ]
