@@ -17,8 +17,15 @@ jobs:
     runs-on: windows-latest
 
     steps:
-      - name: Checkout Repository
+      - name: Checkout Repository (Dummy Consumer)
         uses: actions/checkout@v4
+
+      - name: Checkout DCS-Common (Framework)
+        uses: actions/checkout@v4
+        with:
+          repository: ScottyMac52/DCS-Common
+          ref: main 
+          path: .dcs-common
 
       - name: Setup Node.js 22
         uses: actions/setup-node@v4
@@ -205,9 +212,9 @@ jobs:
           const profileDrivenUrl = pathToFileURL(join(commonRoot, 'scripts/profile-driven-kneeboard.mjs'));
           const kneeboardRendererUrl = pathToFileURL(join(commonRoot, 'scripts/kneeboard-renderer.mjs'));
 
-          const { renderSharedHardwarePage } = await import(sharedHardwareConsumerUrl);
-          const { loadProfileDrivenConfig } = await import(profileDrivenUrl);
-          const { renderKneeboard } = await import(kneeboardRendererUrl);
+          const { renderSharedHardwarePage } = await import(sharedHardwareConsumerUrl.href);
+          const { loadProfileDrivenConfig } = await import(profileDrivenUrl.href);
+          const { renderKneeboard } = await import(kneeboardRendererUrl.href);
 
           const rawConfig = JSON.parse(readFileSync(join(root, 'config/kneeboard.json'), 'utf8'));
           const config = loadProfileDrivenConfig('config/kneeboard.json', { consumerRoot: root, commonRoot });
@@ -299,3 +306,4 @@ jobs:
           path: |
             dist/*.zip
             dist/SHA256SUMS.txt
+            
