@@ -31,7 +31,6 @@ public sealed class ScaffoldEngineService
             return Path.GetFullPath(env);
         }
 
-        // Dev layout: .../tools/DcsConsumerScaffold/src/DcsConsumerScaffold/bin/.../ → repo root
         var dir = new DirectoryInfo(AppContext.BaseDirectory);
         for (var i = 0; i < 10 && dir != null; i++, dir = dir.Parent)
         {
@@ -58,41 +57,8 @@ public sealed class ScaffoldEngineService
         var script = Path.Combine(root, "scripts", "scaffold-consumer.mjs");
         var previewPath = Path.Combine(Path.GetTempPath(), $"dcs-scaffold-preview-{Guid.NewGuid():N}.json");
 
-        var args = new StringBuilder();
-        args.Append('"').Append(script).Append('"');
-        args.Append(" --preview-json \"").Append(previewPath).Append('"');
-        args.Append(" --profiles-dir \"").Append(profilesDir).Append('"');
-        args.Append(" --common-root \"").Append(root).Append('"');
-        if (!string.IsNullOrWhiteSpace(modifiersPath))
-        {
-            args.Append(" --modifiers \"").Append(modifiersPath).Append('"');
-        }
-
-        var psi = new ProcessStartInfo
-        {
-            FileName = "node",
-            Arguments = args.ToString(),
-            RedirectStandardOutput = true,
-            RedirectStandardError = true,
-            UseShellExecute = false,
-            CreateNoWindow = true,
-            WorkingDirectory = root,
-        };
-
-        using var process = new Process { StartInfo = psi };
-        var stdout = new StringBuilder();
-        var stderr = new StringBuilder();
-        process.OutputDataReceived += (_, e) => { if (e.Data != null) stdout.AppendLine(e.Data); };
-        process.ErrorDataReceived += (_, e) => { if (e.Data != null) stderr.AppendLine(e.Data); };
-
-        if (!process.Start())
-        {
-            throw new InvalidOperationException("Failed to start node. Ensure Node.js is installed and on PATH.");
-        }
-
-        process.BeginOutputReadLine();
-        process.BeginErrorReadLine();
-        await process.WaitForExitAsync(cancellationToken).ConfigureAwait(false);
+        var args = BuildPreviewArguments(script, previewPath, profilesDir, modifiersPath, root);
+        var (exitCode, stdout, stderr) = await RunNodeAsync(root, args, cancellationToken).ConfigureAwait(false);
 
         PreviewDocument? document = null;
         if (File.Exists(previewPath))
@@ -109,10 +75,66 @@ public sealed class ScaffoldEngineService
             }
         }
 
-        return (document, stdout.ToString(), stderr.ToString(), process.ExitCode);
+        return (document, stdout, stderr, exitCode);
     }
 
-    /// <summary>Builds argv list for tests without starting a process.</summary>
+    public async Task<(string StdOut, string StdErr, int ExitCode)> RunWriteAsync(
+        string profilesDir,
+        string? modifiersPath,
+        string? commonRoot,
+        string outputDir,
+        string displayName,
+        string inputModuleId,
+        string kneeboardId,
+        string? repoName = null,
+        CancellationToken cancellationToken = default)
+    {
+        var root = ResolveCommonRoot(commonRoot)
+            ?? throw new InvalidOperationException(
+                "Could not find DCS-Common root (scripts/scaffold-consumer.mjs). Set DCS_COMMON_ROOT or browse to the repo.");
+
+        var script = Path.Combine(root, "scripts", "scaffold-consumer.mjs");
+        var args = BuildWriteArguments(
+            script, profilesDir, modifiersPath, root, outputDir, displayName, inputModuleId, kneeboardId, repoName);
+        return await RunNodeAsync(root, args, cancellationToken).ConfigureAwait(false);
+    }
+
+    private static async Task<(int ExitCode, string StdOut, string StdErr)> RunNodeAsync(
+        string workingDirectory,
+        IReadOnlyList<string> argumentTokens,
+        CancellationToken cancellationToken)
+    {
+        var psi = new ProcessStartInfo
+        {
+            FileName = "node",
+            RedirectStandardOutput = true,
+            RedirectStandardError = true,
+            UseShellExecute = false,
+            CreateNoWindow = true,
+            WorkingDirectory = workingDirectory,
+        };
+        foreach (var token in argumentTokens)
+        {
+            psi.ArgumentList.Add(token);
+        }
+
+        using var process = new Process { StartInfo = psi };
+        var stdout = new StringBuilder();
+        var stderr = new StringBuilder();
+        process.OutputDataReceived += (_, e) => { if (e.Data != null) stdout.AppendLine(e.Data); };
+        process.ErrorDataReceived += (_, e) => { if (e.Data != null) stderr.AppendLine(e.Data); };
+
+        if (!process.Start())
+        {
+            throw new InvalidOperationException("Failed to start node. Ensure Node.js is installed and on PATH.");
+        }
+
+        process.BeginOutputReadLine();
+        process.BeginErrorReadLine();
+        await process.WaitForExitAsync(cancellationToken).ConfigureAwait(false);
+        return (process.ExitCode, stdout.ToString(), stderr.ToString());
+    }
+
     public static IReadOnlyList<string> BuildPreviewArguments(
         string scriptPath,
         string previewJsonPath,
@@ -134,6 +156,48 @@ public sealed class ScaffoldEngineService
         {
             list.Add("--modifiers");
             list.Add(modifiersPath);
+        }
+
+        return list;
+    }
+
+    public static IReadOnlyList<string> BuildWriteArguments(
+        string scriptPath,
+        string profilesDir,
+        string? modifiersPath,
+        string commonRoot,
+        string outputDir,
+        string displayName,
+        string inputModuleId,
+        string kneeboardId,
+        string? repoName = null)
+    {
+        var list = new List<string>
+        {
+            scriptPath,
+            "--output-dir",
+            outputDir,
+            "--profiles-dir",
+            profilesDir,
+            "--common-root",
+            commonRoot,
+            "--display-name",
+            displayName,
+            "--input-module-id",
+            inputModuleId,
+            "--kneeboard-id",
+            kneeboardId,
+        };
+        if (!string.IsNullOrWhiteSpace(modifiersPath))
+        {
+            list.Add("--modifiers");
+            list.Add(modifiersPath);
+        }
+
+        if (!string.IsNullOrWhiteSpace(repoName))
+        {
+            list.Add("--repo-name");
+            list.Add(repoName);
         }
 
         return list;
