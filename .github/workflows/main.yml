@@ -233,7 +233,7 @@ jobs:
           }
           return diff
           "@
-          $DummyLua | Out-File -Encoding utf8 "src/Config/Input/F-14BU/joystick/DummyProfile {00000000-0000-0000-0000-000000000000}.diff.lua"
+          $DummyLua | Out-File -Encoding utf8 "src/Config/Input/Test/joystick/DummyProfile {00000000-0000-0000-0000-000000000000}.diff.lua"
 
           # 2. OnYourTwelve PDCP Mock
           $PdcpLua = @"
@@ -475,7 +475,7 @@ jobs:
           }
           return diff
           "@
-          $PdcpLua | Out-File -Encoding utf8 "src/Config/Input/F-14BU/joystick/OnYourTwelve F-14 PDCP {52C96400-3F11-11f1-8001-444553540000}.diff.lua"
+          $PdcpLua | Out-File -Encoding utf8 "src/Config/Input/Test/joystick/OnYourTwelve F-14 PDCP {52C96400-3F11-11f1-8001-444553540000}.diff.lua"
 
           # 3. WINCTRL PTO 2 Mock
           $Pto2Lua = @"
@@ -637,7 +637,7 @@ jobs:
           }
           return diff
           "@
-          $Pto2Lua | Out-File -Encoding utf8 "src/Config/Input/F-14BU/joystick/WINCTRL CarrierAce PTO 2 {19B7D090-6120-11f0-8001-444553540000}.diff.lua"
+          $Pto2Lua | Out-File -Encoding utf8 "src/Config/Input/Test/joystick/WINCTRL CarrierAce PTO 2 {19B7D090-6120-11f0-8001-444553540000}.diff.lua"
           
           # Mock package metadata files
           @"
