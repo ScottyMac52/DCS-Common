@@ -249,7 +249,7 @@ jobs:
           return diff
           "@
           foreach ($Profile in $Profiles) {
-            $MockLua | Out-File -Encoding utf8 "src/Config/Input/F-14BU/joystick/$Profile"
+            $MockLua | Out-File -Encoding utf8 "src/Config/Input/Test/joystick/$Profile"
           }
 
           # Mock package metadata files
