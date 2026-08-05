@@ -1,6 +1,11 @@
 # DCS-Common consumer repository setup
 
-This is the complete contract for a new aircraft, UI-layer, or component repository that consumes DCS-Common. A conforming consumer owns DCS bindings, labels, page order, packaging, and releases. DCS-Common owns reusable workflows, shared hardware identities, draw.io sources, exported SVG geometry, product images, callout IDs, anchors, connectors, and rendering helpers.
+This is the complete contract for a new aircraft, UI-layer, or component repository that consumes DCS-Common.
+
+A conforming consumer owns DCS bindings, labels, page order, packaging, and releases.
+DCS-Common owns reusable workflows, shared hardware identities, draw.io sources, exported SVG geometry, product images, callout IDs, anchors, connectors, and rendering helpers.
+
+**Reference implementation:** [DCS-F-14B-U-Components](https://github.com/ScottyMac52/DCS-F-14B-U-Components). Prefer that pattern over older two-step consumers.
 
 ## 1. Decide the DCS identities first
 
@@ -8,11 +13,11 @@ Record these values before creating files. They are independent and must not be 
 
 | Value | Example | Used by |
 | --- | --- | --- |
-| Repository name | `DCS-F-16C-Components` | GitHub and artifact naming |
-| Display name | `F-16C Block 50` | Documentation and kneeboard titles |
-| DCS input module ID | `F-16C_50` | `Config/Input/<module>` |
-| DCS kneeboard ID | `F-16C_50` | `KNEEBOARD/<module>` |
-| Saved Games root | `%USERPROFILE%\Saved Games\DCS` | OVGME configuration root |
+| Repository name | `DCS-F-14B-U-Components` | GitHub and artifact naming |
+| Display name | `F-14B(U)` | Documentation and kneeboard titles |
+| DCS input module ID | `F-14BU` | `Config/Input/<module>` |
+| DCS kneeboard ID | `F-14BU` | `KNEEBOARD/<module>` |
+| Saved Games root | `%USERPROFILE%\Saved Games\DCS.openbeta` | OVGME configuration root |
 
 Use the module IDs that DCS actually reads. A repository named for an aircraft can still require a different module directory. If the input and kneeboard IDs differ, declare both and test both install paths. The OVGME archive must be relative to the documented Saved Games root: its package container starts with `Config/` and `KNEEBOARD/`; it must not contain an extra `Saved Games/DCS` directory.
 
@@ -20,7 +25,7 @@ Users of `DCS.openbeta`, a named DCS instance, or a relocated Saved Games direct
 
 ## 2. Create the repository layout
 
-Use this minimum layout, omitting only genuinely unused optional files:
+Use this minimum layout:
 
 ```text
 .github/workflows/
@@ -36,9 +41,9 @@ packaging/
   ovgme/README.TXT
   release/RELEASE-NOTES.md
 scripts/
-  apply-shared-hardware.mjs
-  build-kneeboard.mjs
+  build-kneeboard.mjs         # single unified generator (preferred)
   test-kneeboard.mjs
+  test-versioning.mjs
   version.mjs
   Build-OvGME.ps1
   Test-Package.ps1
@@ -51,7 +56,10 @@ package.json
 package-lock.json
 ```
 
-`Test-Release.ps1` is optional. The preferred pattern (used by DCS-F-14B-U-Components and the current recommended contract) is to point both `test-package-script` and `test-release-script` at a single robust `Test-Package.ps1` that validates both the OVGME package and the complete release bundle.
+**Do not add these obsolete scripts:**
+
+- `scripts/apply-shared-hardware.mjs` — deleted in the F-14 pattern. Shared hardware rendering is done inside `build-kneeboard.mjs`.
+- `scripts/Test-Release.ps1` — not used. Point both workflow inputs at `Test-Package.ps1`.
 
 Add third-party notices and source records for any consumer-owned assets. Do not copy anything from `DCS-Common/assets/shared/hardware/drawio`, `svg`, or `source` into this layout.
 
@@ -78,23 +86,39 @@ Validation must parse every Lua file, enforce the expected profile inventory, de
 
 ## 4. Define consumer-owned kneeboard data
 
-Choose stable device IDs from [`assets/shared/hardware/manifest.json`](../assets/shared/hardware/manifest.json). Put aircraft functions, profile paths, titles, output filenames, page order, and short label overrides in `config/kneeboard.json`. DCS binding names are the default labels when profile-driven controls are used.
+Choose stable device IDs from [`assets/shared/hardware/manifest.json`](../assets/shared/hardware/manifest.json).
+
+Put aircraft functions, profile paths, titles, output filenames, page order, and short label overrides in `config/kneeboard.json`.
+
+The preferred structure (as used by F-14B-U) separates optional summary pages from hardware pages:
 
 ```json
 {
   "schemaVersion": 1,
-  "aircraft": "Example_Module",
+  "aircraft": "F-14B(U)",
   "profiles": {
-    "panel": "src/Config/Input/Example_Module/joystick/Panel {GUID}.diff.lua"
+    "pto2": "src/Config/Input/F-14BU/joystick/WINCTRL CarrierAce PTO 2 {GUID}.diff.lua"
   },
+  "summaryPages": [
+    {
+      "type": "summary",
+      "file": "01-VAICOM-OVERVIEW",
+      "title": "VAICOM PRO + CONTROL OVERVIEW",
+      "kicker": "VOICE-FIRST • PHYSICAL BACKUP",
+      "items": [
+        { "key": "TX1", "text": "VHF AM", "accent": "gold" }
+      ]
+    }
+  ],
   "pages": [
     {
-      "file": "02-PANEL",
+      "file": "05-PTO2",
       "deviceId": "winctrl-pto2",
-      "title": "WINCTRL PTO2",
+      "title": "WINCTRL CARRIERACE PTO2",
+      "kicker": "CARRIER, GEAR, FLAPS, LIGHTS AND REFUELING",
       "controls": {
         "pto2-button-35": {
-          "profile": "panel",
+          "profile": "pto2",
           "key": "JOY_BTN35",
           "label": "Gear up"
         }
@@ -104,53 +128,102 @@ Choose stable device IDs from [`assets/shared/hardware/manifest.json`](../assets
 }
 ```
 
-The consumer may supply only consumer-specific composition data. It must not copy or redefine shared draw.io files, SVGs, embedded product images, callout IDs, anchor coordinates, connector paths, or device geometry. Keep output filenames and page order stable after publication because OpenKneeboard and user documentation may depend on them.
+Notes:
+
+- `summaryPages` are consumer-owned text/layout pages rendered through `kneeboard-renderer.mjs`.
+- `pages` with a `deviceId` are shared-hardware pages rendered through `shared-hardware-consumer.mjs`.
+- Labels may be a map keyed by callout ID, an ordered array aligned to callout order, or profile-driven `controls` entries.
+- Callout labels must describe **functions**, not physical button prefixes (`JOY_BTN12: ...` is rejected).
+- Keep output filenames and page order stable after publication because OpenKneeboard and user documentation may depend on them.
 
 See [Profile-driven kneeboards](profile-driven-kneeboards.md) for modifiers and layered pages.
 
-## 5. Add the shared-hardware adapter
+## 5. Unified kneeboard build (preferred pattern)
 
-Automation checks out DCS-Common into `.dcs-common` and exports `DCS_COMMON_ROOT`. Use the environment variable first and `.dcs-common` as the local/automation fallback.
+Automation checks out DCS-Common into `.dcs-common` and exports `DCS_COMMON_ROOT`. Prefer the environment variable; fall back to `.dcs-common`.
 
-### One shared device
+There is **one** build script. It imports Common helpers directly and generates every page in order. There is no separate apply/replace step.
 
 ```js
-import { mkdirSync, writeFileSync } from 'node:fs';
-import { dirname, join, resolve } from 'node:path';
+import { mkdirSync, rmSync, writeFileSync, readFileSync } from 'node:fs';
+import { dirname, join, resolve, basename } from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 import sharp from 'sharp';
 
-const root = resolve(dirname(fileURLToPath(import.meta.url)), '..');
+const scriptDir = dirname(fileURLToPath(import.meta.url));
+const root = resolve(scriptDir, '..');
 const commonRoot = resolve(process.env.DCS_COMMON_ROOT ?? join(root, '.dcs-common'));
-const { renderSharedHardwareInstancesPage, renderSharedHardwarePage } = await import(
+
+const { renderSharedHardwarePage } = await import(
   pathToFileURL(join(commonRoot, 'scripts/shared-hardware-consumer.mjs'))
 );
 const { loadProfileDrivenConfig } = await import(
   pathToFileURL(join(commonRoot, 'scripts/profile-driven-kneeboard.mjs'))
 );
+const { renderKneeboard } = await import(
+  pathToFileURL(join(commonRoot, 'scripts/kneeboard-renderer.mjs'))
+);
+
+const rawConfig = JSON.parse(readFileSync(join(root, 'config/kneeboard.json'), 'utf8'));
 const config = loadProfileDrivenConfig('config/kneeboard.json', { consumerRoot: root, commonRoot });
-const svgDir = join(root, 'kneeboard/source');
-const pngDir = join(root, 'kneeboard/Example_Module');
+
+const aircraftFolder = config.aircraft.replace(/[^a-zA-Z0-9-]/g, '');
+const svgDir = join(root, 'kneeboard', 'source');
+const pngDir = join(root, 'kneeboard', aircraftFolder);
+
+rmSync(svgDir, { recursive: true, force: true });
+rmSync(pngDir, { recursive: true, force: true });
 mkdirSync(svgDir, { recursive: true });
 mkdirSync(pngDir, { recursive: true });
 
-for (const [index, page] of config.pages.entries()) {
-  const { svg } = renderSharedHardwarePage({
-    ...page,
-    commonRoot,
-    provenance: { consumer: 'DCS-Example-Components', page: `${index + 1} / ${config.pages.length}` },
-  });
-  writeFileSync(join(svgDir, `${page.file}.svg`), svg);
-  await sharp(Buffer.from(svg)).png().toFile(join(pngDir, `${page.file}.png`));
+const allPages = [
+  ...(rawConfig.summaryPages || []),
+  ...config.pages,
+].sort((a, b) => a.file.localeCompare(b.file));
+
+const totalPages = allPages.length;
+
+for (const [index, page] of allPages.entries()) {
+  if (page.type === 'summary') {
+    const result = await renderKneeboard({
+      config: {
+        pages: [{ ...page, pageCount: totalPages }],
+        profiles: [],
+      },
+      outputDir: pngDir,
+      rootDir: root,
+    });
+
+    for (const svgFile of result.svgFiles) {
+      let svgContent = readFileSync(svgFile, 'utf8');
+      svgContent = svgContent.replace(/1 \/ 1/, `${index + 1} / ${totalPages}`);
+      writeFileSync(join(svgDir, basename(svgFile)), svgContent, 'utf8');
+      await sharp(Buffer.from(svgContent)).png().toFile(join(pngDir, `${page.file}.png`));
+    }
+  } else if (page.deviceId) {
+    const hardwareRender = renderSharedHardwarePage({
+      ...page,
+      commonRoot,
+      provenance: {
+        consumer: `DCS-${aircraftFolder}-Components`,
+        page: `${index + 1} / ${totalPages}`,
+      },
+    });
+
+    writeFileSync(join(svgDir, `${page.file}.svg`), hardwareRender.svg, 'utf8');
+    await sharp(Buffer.from(hardwareRender.svg)).png().toFile(join(pngDir, `${page.file}.png`));
+  }
 }
+
+console.log(`Successfully generated ${totalPages} pages.`);
 ```
 
-### Two instances of one device
+### Dual instances of one shared device
 
-Use one canonical device ID with separate instance IDs and labels. Do not duplicate the shared template.
+Use `renderSharedHardwareInstancesPage` when one page shows two copies of the same canonical device (for example dual Logitech throttle quadrants). Do not duplicate shared templates.
 
 ```js
-const { svg, instances } = renderSharedHardwareInstancesPage({
+const { svg } = renderSharedHardwareInstancesPage({
   commonRoot,
   title: 'DUAL THROTTLE QUADRANTS',
   provenance: { consumer: 'DCS-Example-Components', page: '3 / 4' },
@@ -173,16 +246,20 @@ const { svg, instances } = renderSharedHardwareInstancesPage({
 
 Consumer tests must assert the shared-device marker (`Shared DCS-Common device: <id>`) or the shared-instance marker and each expected instance ID.
 
+### Legacy note
+
+Older consumers still use a two-step `build-kneeboard.mjs && apply-shared-hardware.mjs` chain. That pattern is obsolete. New work and documentation must use the unified builder above.
+
 ## 6. Implement the build contract
 
-Use Node.js 22, ES modules, a lockfile, and an explicit compatible `sharp` version range. The essential package metadata is:
+Use Node.js 22, ES modules, a lockfile, and an explicit compatible `sharp` version range:
 
 ```json
 {
   "private": true,
   "type": "module",
   "scripts": {
-    "build:kneeboard": "node scripts/build-kneeboard.mjs && node scripts/apply-shared-hardware.mjs",
+    "build:kneeboard": "node scripts/build-kneeboard.mjs",
     "test:kneeboard": "node scripts/test-kneeboard.mjs",
     "test:versioning": "node scripts/test-versioning.mjs"
   },
@@ -192,7 +269,7 @@ Use Node.js 22, ES modules, a lockfile, and an explicit compatible `sharp` versi
 }
 ```
 
-The ordering is mandatory: generate consumer-owned base pages first, then replace or add shared-hardware pages through the adapter. Both stages read `PACKAGE_VERSION`; local builds may use a documented development fallback, while CI and releases provide it explicitly.
+There is no second apply step. `PACKAGE_VERSION` is read by provenance/footer helpers; local builds may fall back to `0.0.0-local`, while CI and releases provide it explicitly.
 
 Commit every generated SVG under `kneeboard/source` and every 1200 × 1600 PNG under `kneeboard/<kneeboard-id>`. Generated pages must be deterministic and self-contained: no HTTP resources, filesystem-dependent links, timestamps, random IDs, or machine-specific paths.
 
@@ -201,7 +278,7 @@ Commit every generated SVG under `kneeboard/source` and every 1200 × 1600 PNG u
 - exact page count, filenames, and order
 - SVG and PNG dimensions
 - offline/self-contained SVG resources
-- required visible labels and page numbers
+- required visible labels and page numbers / footers
 - shared-device or shared-instance markers
 - a second identical build produces identical hashes
 - conditional pages agree with installed profiles
@@ -232,7 +309,7 @@ Place `README.TXT` and `VERSION.TXT` beside that container in the archive. The R
 
 Regenerate `dist/SHA256SUMS.txt` for every release ZIP.
 
-The preferred pattern is for `Test-Package.ps1` to also validate the complete release bundle (inventory, optional component validators, and checksums). A separate `Test-Release.ps1` remains optional if a consumer prefers the older split, but the reusable workflow examples and the F-14B-U reference now point both `test-package-script` and `test-release-script` at `Test-Package.ps1`.
+**Use one test script.** Point both `test-package-script` and `test-release-script` at `scripts/Test-Package.ps1`. That script validates the OVGME package **and** the complete release bundle (inventory, optional component validators, and checksums). Do not create or document a separate `Test-Release.ps1` for new consumers.
 
 Use `packaging/release/RELEASE-NOTES.md` as the default release notes path. Keep all artifact paths literal and synchronized across scripts and workflow callers.
 
@@ -277,7 +354,7 @@ jobs:
         dist/SHA256SUMS.txt
 ```
 
-Set `extra-validation-command` for repository-specific PowerShell validation and `run-autohotkey-tests: true` when applicable. Override build/test commands or `package-root` only when the repository layout requires it.
+Set `extra-validation-command` for repository-specific PowerShell validation and `run-autohotkey-tests: true` when applicable.
 
 ### Tagged release
 
@@ -328,8 +405,8 @@ The release workflow requires `contents: write` and serialized concurrency becau
 
 Use these repositories as implementation references, not as sources to copy shared geometry from:
 
-- [DCS-F-16C-Components](https://github.com/ScottyMac52/DCS-F-16C-Components): aircraft profiles, profile-driven pages, OVGME, complete release, and reusable workflow callers
-- [DCS-F-14B-U-Components](https://github.com/ScottyMac52/DCS-F-14B-U-Components): aircraft profiles and shared hardware pages (current preferred pattern for test scripts)
+- [DCS-F-14B-U-Components](https://github.com/ScottyMac52/DCS-F-14B-U-Components): **preferred contract** — unified `build-kneeboard.mjs`, summary + hardware pages, single `Test-Package.ps1` for both package and release validation
+- [DCS-F-16C-Components](https://github.com/ScottyMac52/DCS-F-16C-Components): aircraft profiles and profile-driven pages (still uses the older two-step apply path in places)
 - [DCS-F4U-1D-Components](https://github.com/ScottyMac52/DCS-F4U-1D-Components): two instances of one canonical shared device
 - [DCS-UI-Layer](https://github.com/ScottyMac52/DCS-UI-Layer): a global UI-layer kneeboard and Saved Games packaging
 
@@ -339,6 +416,8 @@ Copy this checklist into the first pull request for a new consumer:
 
 ```markdown
 - [ ] Record the exact input module ID, kneeboard ID, and tested Saved Games root.
+- [ ] Layout has no `apply-shared-hardware.mjs` and no `Test-Release.ps1`.
+- [ ] `package.json` build:kneeboard is a single `node scripts/build-kneeboard.mjs`.
 - [ ] Run `npm ci`.
 - [ ] Parse every `.lua` file and run profile/device/reserved-input validation.
 - [ ] Set `DCS_COMMON_ROOT` or create the `.dcs-common` checkout.
@@ -348,7 +427,7 @@ Copy this checklist into the first pull request for a new consumer:
 - [ ] Run `pwsh ./scripts/Build-OvGME.ps1 -Version 0.0.0-local`.
 - [ ] Run `pwsh ./scripts/Test-Package.ps1 -Version 0.0.0-local`.
 - [ ] Run `pwsh ./scripts/Build-Release.ps1 -Version 0.0.0-local`.
-- [ ] Run `pwsh ./scripts/Test-Package.ps1 -Version 0.0.0-local` again (or a dedicated Test-Release.ps1 if you keep one) to validate the complete bundle.
+- [ ] Run `pwsh ./scripts/Test-Package.ps1 -Version 0.0.0-local` again to validate the complete bundle.
 - [ ] Visually inspect every generated hardware page at normal kneeboard scale.
 - [ ] Open a pull request and require reusable build CI to pass.
 - [ ] Run one patch release end to end; verify regenerated assets, tag target, ZIP contents, checksums, and GitHub Release downloads.
