@@ -748,7 +748,7 @@ jobs:
         shell: pwsh
         run: |
           if (Test-Path "./scripts/Build-Release.ps1") {
-            ./scripts/Build-Release.ps1 -Version ${{ env.PACKAGE_VERSION }} -PackagePrefix "Test" -BundlePrefix "ControlProfiles"
+            ./scripts/Build-Release.ps1 -Version ${{ env.PACKAGE_VERSION }} -PackagePrefix "Master-Test" -BundlePrefix "ControlProfiles"
           } else {
             New-Item -ItemType Directory -Force -Path "dist" | Out-Null
             New-Item -ItemType File -Force -Path "dist/Scott-Test-Control-Profiles-${{ env.PACKAGE_VERSION }}.zip" | Out-Null
