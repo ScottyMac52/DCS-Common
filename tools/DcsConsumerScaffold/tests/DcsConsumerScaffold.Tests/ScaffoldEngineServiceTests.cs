@@ -36,6 +36,32 @@ public class ScaffoldEngineServiceTests
     }
 
     [Fact]
+    public void BuildWriteArguments_IncludesIdentitiesAndOutput()
+    {
+        var args = ScaffoldEngineService.BuildWriteArguments(
+            scriptPath: "script.mjs",
+            profilesDir: "profiles",
+            modifiersPath: "modifiers.lua",
+            commonRoot: "root",
+            outputDir: "out",
+            displayName: "F-16C",
+            inputModuleId: "F-16C_50",
+            kneeboardId: "F-16C_50",
+            repoName: "DCS-F-16C-Components");
+
+        Assert.Contains("--output-dir", args);
+        Assert.Contains("out", args);
+        Assert.Contains("--display-name", args);
+        Assert.Contains("F-16C", args);
+        Assert.Contains("--input-module-id", args);
+        Assert.Contains("F-16C_50", args);
+        Assert.Contains("--kneeboard-id", args);
+        Assert.Contains("--repo-name", args);
+        Assert.Contains("DCS-F-16C-Components", args);
+        Assert.Contains("--modifiers", args);
+    }
+
+    [Fact]
     public void PreviewRow_ModifierModesDisplay_JoinsValues()
     {
         var row = new PreviewRow { ModifierModes = ["hold", null, "toggle"] };

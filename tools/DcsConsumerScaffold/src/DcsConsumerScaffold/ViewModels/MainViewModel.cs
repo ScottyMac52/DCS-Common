@@ -13,14 +13,20 @@ public sealed class MainViewModel : INotifyPropertyChanged
     private string _profilesDir = string.Empty;
     private string _modifiersPath = string.Empty;
     private string _commonRoot = string.Empty;
-    private string _statusText = "Select a profiles directory, then Load Preview.";
+    private string _outputDir = string.Empty;
+    private string _displayName = string.Empty;
+    private string _inputModuleId = string.Empty;
+    private string _kneeboardId = string.Empty;
+    private string _statusText = "Select a profiles directory, then Load Preview. After review, set output + identities and Proceed.";
     private string _summaryText = string.Empty;
     private bool _isBusy;
+    private bool _hasPreview;
 
     public MainViewModel(ScaffoldEngineService? engine = null)
     {
         _engine = engine ?? new ScaffoldEngineService();
-        LoadPreviewCommand = new RelayCommand(async () => await LoadPreviewAsync(), () => !IsBusy && !string.IsNullOrWhiteSpace(ProfilesDir));
+        LoadPreviewCommand = new RelayCommand(async () => await LoadPreviewAsync(), CanLoadPreview);
+        ProceedCommand = new RelayCommand(async () => await ProceedAsync(), CanProceed);
         Rows = new ObservableCollection<PreviewRow>();
     }
 
@@ -31,7 +37,13 @@ public sealed class MainViewModel : INotifyPropertyChanged
     public string ProfilesDir
     {
         get => _profilesDir;
-        set { if (Set(ref _profilesDir, value)) LoadPreviewCommand.RaiseCanExecuteChanged(); }
+        set
+        {
+            if (Set(ref _profilesDir, value))
+            {
+                RaiseCommands();
+            }
+        }
     }
 
     public string ModifiersPath
@@ -44,6 +56,54 @@ public sealed class MainViewModel : INotifyPropertyChanged
     {
         get => _commonRoot;
         set => Set(ref _commonRoot, value);
+    }
+
+    public string OutputDir
+    {
+        get => _outputDir;
+        set
+        {
+            if (Set(ref _outputDir, value))
+            {
+                RaiseCommands();
+            }
+        }
+    }
+
+    public string DisplayName
+    {
+        get => _displayName;
+        set
+        {
+            if (Set(ref _displayName, value))
+            {
+                RaiseCommands();
+            }
+        }
+    }
+
+    public string InputModuleId
+    {
+        get => _inputModuleId;
+        set
+        {
+            if (Set(ref _inputModuleId, value))
+            {
+                RaiseCommands();
+            }
+        }
+    }
+
+    public string KneeboardId
+    {
+        get => _kneeboardId;
+        set
+        {
+            if (Set(ref _kneeboardId, value))
+            {
+                RaiseCommands();
+            }
+        }
     }
 
     public string StatusText
@@ -65,12 +125,42 @@ public sealed class MainViewModel : INotifyPropertyChanged
         {
             if (Set(ref _isBusy, value))
             {
-                LoadPreviewCommand.RaiseCanExecuteChanged();
+                RaiseCommands();
+            }
+        }
+    }
+
+    public bool HasPreview
+    {
+        get => _hasPreview;
+        set
+        {
+            if (Set(ref _hasPreview, value))
+            {
+                RaiseCommands();
             }
         }
     }
 
     public RelayCommand LoadPreviewCommand { get; }
+    public RelayCommand ProceedCommand { get; }
+
+    private bool CanLoadPreview() => !IsBusy && !string.IsNullOrWhiteSpace(ProfilesDir);
+
+    private bool CanProceed() =>
+        !IsBusy &&
+        HasPreview &&
+        !string.IsNullOrWhiteSpace(ProfilesDir) &&
+        !string.IsNullOrWhiteSpace(OutputDir) &&
+        !string.IsNullOrWhiteSpace(DisplayName) &&
+        !string.IsNullOrWhiteSpace(InputModuleId) &&
+        !string.IsNullOrWhiteSpace(KneeboardId);
+
+    private void RaiseCommands()
+    {
+        LoadPreviewCommand.RaiseCanExecuteChanged();
+        ProceedCommand.RaiseCanExecuteChanged();
+    }
 
     public async Task LoadPreviewAsync()
     {
@@ -81,8 +171,9 @@ public sealed class MainViewModel : INotifyPropertyChanged
         }
 
         IsBusy = true;
-        StatusText = "Running Node scaffold engine…";
+        StatusText = "Running Node scaffold engine (preview)…";
         Rows.Clear();
+        HasPreview = false;
         try
         {
             var (document, stdout, stderr, exitCode) = await _engine.RunPreviewAsync(
@@ -98,6 +189,7 @@ public sealed class MainViewModel : INotifyPropertyChanged
                 }
             }
 
+            HasPreview = document != null;
             var summary = document?.Summary;
             SummaryText = summary == null
                 ? string.Empty
@@ -106,14 +198,50 @@ public sealed class MainViewModel : INotifyPropertyChanged
             var errorBlock = document?.Errors is { Count: > 0 }
                 ? string.Join(Environment.NewLine, document.Errors)
                 : string.Empty;
-            StatusText = exitCode == 0
-                ? $"Preview loaded (exit {exitCode}).{Environment.NewLine}{stdout}".Trim()
+            StatusText = exitCode is 0 or 2
+                ? $"Preview loaded (exit {exitCode}).{Environment.NewLine}{stdout}{Environment.NewLine}{errorBlock}".Trim()
                 : $"Engine exit {exitCode}.{Environment.NewLine}{stderr}{Environment.NewLine}{stdout}{Environment.NewLine}{errorBlock}".Trim();
         }
         catch (Exception ex)
         {
             StatusText = ex.Message;
             SummaryText = string.Empty;
+            HasPreview = false;
+        }
+        finally
+        {
+            IsBusy = false;
+        }
+    }
+
+    public async Task ProceedAsync()
+    {
+        if (!CanProceed())
+        {
+            StatusText = "Proceed requires a successful preview plus output directory, display name, input module ID, and kneeboard ID.";
+            return;
+        }
+
+        IsBusy = true;
+        StatusText = "Writing consumer repository…";
+        try
+        {
+            var (stdout, stderr, exitCode) = await _engine.RunWriteAsync(
+                ProfilesDir,
+                string.IsNullOrWhiteSpace(ModifiersPath) ? null : ModifiersPath,
+                string.IsNullOrWhiteSpace(CommonRoot) ? null : CommonRoot,
+                OutputDir,
+                DisplayName.Trim(),
+                InputModuleId.Trim(),
+                KneeboardId.Trim());
+
+            StatusText = exitCode is 0 or 2
+                ? $"Proceed finished (exit {exitCode}). See SCAFFOLD-REPORT.md under the output folder.{Environment.NewLine}{stdout}{Environment.NewLine}{stderr}".Trim()
+                : $"Proceed failed (exit {exitCode}).{Environment.NewLine}{stderr}{Environment.NewLine}{stdout}".Trim();
+        }
+        catch (Exception ex)
+        {
+            StatusText = ex.Message;
         }
         finally
         {

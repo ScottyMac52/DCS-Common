@@ -16,10 +16,7 @@ public partial class MainWindow : Window
 
     private void BrowseProfiles_Click(object sender, RoutedEventArgs e)
     {
-        var dialog = new OpenFolderDialog
-        {
-            Title = "Select DCS joystick profiles directory",
-        };
+        var dialog = new OpenFolderDialog { Title = "Select DCS joystick profiles directory" };
         if (dialog.ShowDialog(this) == true)
         {
             _viewModel.ProfilesDir = dialog.FolderName;
@@ -41,13 +38,19 @@ public partial class MainWindow : Window
 
     private void BrowseCommon_Click(object sender, RoutedEventArgs e)
     {
-        var dialog = new OpenFolderDialog
-        {
-            Title = "Select DCS-Common repository root",
-        };
+        var dialog = new OpenFolderDialog { Title = "Select DCS-Common repository root" };
         if (dialog.ShowDialog(this) == true)
         {
             _viewModel.CommonRoot = dialog.FolderName;
+        }
+    }
+
+    private void BrowseOutput_Click(object sender, RoutedEventArgs e)
+    {
+        var dialog = new OpenFolderDialog { Title = "Select output directory for the new consumer repo" };
+        if (dialog.ShowDialog(this) == true)
+        {
+            _viewModel.OutputDir = dialog.FolderName;
         }
     }
 }
