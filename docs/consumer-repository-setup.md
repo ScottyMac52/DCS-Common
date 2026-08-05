@@ -56,6 +56,12 @@ package.json
 package-lock.json
 ```
 
+When using native DCS modifiers, also version:
+
+```text
+src/Config/Input/<input-module-id>/modifiers.lua
+```
+
 **Do not add these obsolete scripts:**
 
 - `scripts/apply-shared-hardware.mjs` — deleted in the F-14 pattern. Shared hardware rendering is done inside `build-kneeboard.mjs`.
@@ -136,7 +142,17 @@ Notes:
 - Callout labels must describe **functions**, not physical button prefixes (`JOY_BTN12: ...` is rejected).
 - Keep output filenames and page order stable after publication because OpenKneeboard and user documentation may depend on them.
 
-See [Profile-driven kneeboards](profile-driven-kneeboards.md) for modifiers and layered pages.
+### Modifiers and layered pages
+
+When a physical control is a DCS modifier (hold or toggle) and other bindings use that reformer chord, wire `modifiersFile`, stable aliases under `modifiers`, and `pages[].layers` so each chord becomes its own kneeboard page.
+
+**Full operator procedure** (DCS UI → export → aliases → layers → rebuild → cockpit checklist), hold vs toggle, exact-chord rules, failure modes, and a Warthog BTN3 toggle + TM MFD worked example:
+
+→ **[Profile-driven kneeboards — Modifier layers and operator workflow](profile-driven-kneeboards.md)**
+
+Minimal fixture: [`examples/modifiers-toggle-layer/`](../examples/modifiers-toggle-layer/).
+
+If the package is the pilot’s source of truth for modifiers, ship `modifiers.lua` on the DCS `Config/Input/<module>/` path inside the OvGME archive—not only use it for kneeboard generation.
 
 ## 5. Unified kneeboard build (preferred pattern)
 
@@ -218,6 +234,8 @@ for (const [index, page] of allPages.entries()) {
 console.log(`Successfully generated ${totalPages} pages.`);
 ```
 
+`loadProfileDrivenConfig` expands `layers` into one page object per chord (including resolved labels from `.diff.lua`). The loop above already iterates the expanded `config.pages` list.
+
 ### Dual instances of one shared device
 
 Use `renderSharedHardwareInstancesPage` when one page shows two copies of the same canonical device (for example dual Logitech throttle quadrants). Do not duplicate shared templates.
@@ -282,6 +300,7 @@ Commit every generated SVG under `kneeboard/source` and every 1200 × 1600 PNG u
 - shared-device or shared-instance markers
 - a second identical build produces identical hashes
 - conditional pages agree with installed profiles
+- when modifiers are used, both base and layer output files exist with distinct labels for the same physical keys
 
 ## 7. Build and validate the OVGME package
 
@@ -291,6 +310,8 @@ Commit every generated SVG under `kneeboard/source` and every 1200 × 1600 PNG u
 Config/Input/<input-module-id>/joystick/*.diff.lua
 KNEEBOARD/<kneeboard-id>/*.png
 ```
+
+Include `Config/Input/<input-module-id>/modifiers.lua` when the consumer versions native modifiers for packaging.
 
 Place `README.TXT` and `VERSION.TXT` beside that container in the archive. The README template should contain a required `{{VERSION}}` token. Produce the OVGME ZIP under `dist/` and record its SHA-256 in `dist/SHA256SUMS.txt`.
 
@@ -431,6 +452,15 @@ Copy this checklist into the first pull request for a new consumer:
 - [ ] Visually inspect every generated hardware page at normal kneeboard scale.
 - [ ] Open a pull request and require reusable build CI to pass.
 - [ ] Run one patch release end to end; verify regenerated assets, tag target, ZIP contents, checksums, and GitHub Release downloads.
+```
+
+If the consumer uses modifiers, also confirm:
+
+```markdown
+- [ ] `modifiers.lua` is versioned and referenced by `modifiersFile`.
+- [ ] Hold vs toggle `mode` in JSON matches DCS `switch`.
+- [ ] Base and layer output pages both generate with correct reformer-resolved labels.
+- [ ] Optional: `modifiers.lua` is packaged under `Config/Input/<module>/` when it is pilot source of truth.
 ```
 
 A later DCS-Common draw.io or SVG change is incorporated when this consumer is rebuilt or re-released with the updated shared catalog. It does not rewrite an existing tag, package, or release.
