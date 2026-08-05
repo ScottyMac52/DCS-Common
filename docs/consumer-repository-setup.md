@@ -43,7 +43,6 @@ scripts/
   Build-OvGME.ps1
   Test-Package.ps1
   Build-Release.ps1
-  Test-Release.ps1
 src/Config/Input/<input-module-id>/joystick/
   <device name> {GUID}.diff.lua
 LICENSE
@@ -51,6 +50,8 @@ README.md
 package.json
 package-lock.json
 ```
+
+`Test-Release.ps1` is optional. The preferred pattern (used by DCS-F-14B-U-Components and the current recommended contract) is to point both `test-package-script` and `test-release-script` at a single robust `Test-Package.ps1` that validates both the OVGME package and the complete release bundle.
 
 Add third-party notices and source records for any consumer-owned assets. Do not copy anything from `DCS-Common/assets/shared/hardware/drawio`, `svg`, or `source` into this layout.
 
@@ -229,7 +230,9 @@ Place `README.TXT` and `VERSION.TXT` beside that container in the archive. The R
 - optional AutoHotKey or companion utilities
 - an internal `SHA256SUMS.txt`
 
-Regenerate `dist/SHA256SUMS.txt` for every release ZIP. `Test-Release.ps1` must expand the complete bundle, assert its exact required file inventory, run optional component validators, and recompute every declared checksum.
+Regenerate `dist/SHA256SUMS.txt` for every release ZIP.
+
+The preferred pattern is for `Test-Package.ps1` to also validate the complete release bundle (inventory, optional component validators, and checksums). A separate `Test-Release.ps1` remains optional if a consumer prefers the older split, but the reusable workflow examples and the F-14B-U reference now point both `test-package-script` and `test-release-script` at `Test-Package.ps1`.
 
 Use `packaging/release/RELEASE-NOTES.md` as the default release notes path. Keep all artifact paths literal and synchronized across scripts and workflow callers.
 
@@ -267,7 +270,7 @@ jobs:
       package-script: scripts/Build-OvGME.ps1
       test-package-script: scripts/Test-Package.ps1
       build-release-script: scripts/Build-Release.ps1
-      test-release-script: scripts/Test-Release.ps1
+      test-release-script: scripts/Test-Package.ps1
       artifact-name: Example-Release
       artifact-path: |
         dist/*.zip
@@ -308,7 +311,7 @@ jobs:
       package-script: scripts/Build-OvGME.ps1
       test-package-script: scripts/Test-Package.ps1
       build-release-script: scripts/Build-Release.ps1
-      test-release-script: scripts/Test-Release.ps1
+      test-release-script: scripts/Test-Package.ps1
       artifact-name: Example-Release-${{ inputs.bump }}-${{ github.run_number }}
       artifact-path: |
         dist/*.zip
@@ -326,7 +329,7 @@ The release workflow requires `contents: write` and serialized concurrency becau
 Use these repositories as implementation references, not as sources to copy shared geometry from:
 
 - [DCS-F-16C-Components](https://github.com/ScottyMac52/DCS-F-16C-Components): aircraft profiles, profile-driven pages, OVGME, complete release, and reusable workflow callers
-- [DCS-F-14B-U-Components](https://github.com/ScottyMac52/DCS-F-14B-U-Components): aircraft profiles and shared hardware pages
+- [DCS-F-14B-U-Components](https://github.com/ScottyMac52/DCS-F-14B-U-Components): aircraft profiles and shared hardware pages (current preferred pattern for test scripts)
 - [DCS-F4U-1D-Components](https://github.com/ScottyMac52/DCS-F4U-1D-Components): two instances of one canonical shared device
 - [DCS-UI-Layer](https://github.com/ScottyMac52/DCS-UI-Layer): a global UI-layer kneeboard and Saved Games packaging
 
@@ -345,7 +348,7 @@ Copy this checklist into the first pull request for a new consumer:
 - [ ] Run `pwsh ./scripts/Build-OvGME.ps1 -Version 0.0.0-local`.
 - [ ] Run `pwsh ./scripts/Test-Package.ps1 -Version 0.0.0-local`.
 - [ ] Run `pwsh ./scripts/Build-Release.ps1 -Version 0.0.0-local`.
-- [ ] Run `pwsh ./scripts/Test-Release.ps1 -Version 0.0.0-local`.
+- [ ] Run `pwsh ./scripts/Test-Package.ps1 -Version 0.0.0-local` again (or a dedicated Test-Release.ps1 if you keep one) to validate the complete bundle.
 - [ ] Visually inspect every generated hardware page at normal kneeboard scale.
 - [ ] Open a pull request and require reusable build CI to pass.
 - [ ] Run one patch release end to end; verify regenerated assets, tag target, ZIP contents, checksums, and GitHub Release downloads.
