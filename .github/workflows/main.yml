@@ -173,14 +173,29 @@ jobs:
           }
           "@ | Out-File -Encoding utf8 "config/kneeboard.json"
 
-          # Mock Lua profiles
+          # Mock Lua profiles (MUST pass DCS-Common's strict regex parsing)
           $Profiles = @(
             "DummyProfile {00000000-0000-0000-0000-000000000000}.diff.lua",
             "OnYourTwelve F-14 PDCP {52C96400-3F11-11f1-8001-444553540000}.diff.lua",
             "WINCTRL CarrierAce PTO 2 {19B7D090-6120-11f0-8001-444553540000}.diff.lua"
           )
+          $MockLua = @"
+          local diff = {
+              ["keyDiffs"] = {
+                  ["dnil"] = {
+                      ["name"] = "Mock Binding",
+                      ["added"] = {
+                          [1] = {
+                              ["key"] = "JOY_BTN1"
+                          }
+                      }
+                  }
+              }
+          }
+          return diff
+          "@
           foreach ($Profile in $Profiles) {
-            "return {}" | Out-File -Encoding utf8 "src/Config/Input/F-14BU/joystick/$Profile"
+            $MockLua | Out-File -Encoding utf8 "src/Config/Input/F-14BU/joystick/$Profile"
           }
 
           # Mock package metadata files
@@ -306,4 +321,3 @@ jobs:
           path: |
             dist/*.zip
             dist/SHA256SUMS.txt
-            
