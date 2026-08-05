@@ -1,13 +1,16 @@
 name: Scaffold app CI / Build / Release
 
 # Tag releases: four-part only (vMAJOR.MINOR.PATCH.BUILD).
-# Path filters apply to PRs only — tag pushes must always run the release job.
+# YAML-only commits do not start branch/PR CI; tags always run release.
 on:
   push:
     branches:
       - '**'
     tags:
       - 'v*.*.*.*'
+    paths-ignore:
+      - '**/*.yml'
+      - '**/*.yaml'
   pull_request:
     branches:
       - main
@@ -16,7 +19,9 @@ on:
       - 'scripts/scaffold-consumer.mjs'
       - 'templates/consumer/**'
       - 'assets/shared/hardware/scaffold-device-map.json'
-      - '.github/workflows/scaffold-app.yml'
+    paths-ignore:
+      - '**/*.yml'
+      - '**/*.yaml'
   workflow_dispatch:
 
 # Default read; release job elevates for softprops/action-gh-release.

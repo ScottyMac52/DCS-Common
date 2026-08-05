@@ -4,6 +4,9 @@ on:
   workflow_dispatch:
   pull_request:
     branches: [main]
+    paths-ignore:
+      - '**/*.yml'
+      - '**/*.yaml'
 
 permissions:
   contents: read
@@ -762,4 +765,3 @@ jobs:
           path: |
             dist/*.zip
             dist/SHA256SUMS.txt
-            

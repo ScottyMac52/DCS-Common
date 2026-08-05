@@ -2,9 +2,14 @@ name: Export Draw.io Hardware
 
 on:
   workflow_dispatch:
-  pull_request:
+  push:
     branches: [main]
-    
+    paths:
+      - 'assets/shared/hardware/drawio/**'
+    paths-ignore:
+      - '**/*.yml'
+      - '**/*.yaml'
+
 permissions:
   contents: write
 
