@@ -32,7 +32,7 @@ jobs:
       - name: Generate Mock Configuration and Test Artifacts
         shell: pwsh
         run: |
-          # 1. Create ALL required directories, explicitly including packaging/ovgme
+          # 1. Create ALL required directories
           New-Item -ItemType Directory -Force -Path "config", "scripts", "src/Config/Input/F-14BU/joystick", "kneeboard/source", "kneeboard/assets/source", "dist", "packaging/release", "packaging/ovgme"
 
           # 2. Mock kneeboard.json config
@@ -71,13 +71,13 @@ jobs:
           return {}
           "@ | Out-File -Encoding utf8 "src/Config/Input/F-14BU/joystick/DummyProfile {00000000-0000-0000-0000-000000000000}.diff.lua"
 
-          # 4. Mock package metadata files (NOW IN THE CORRECT DIRECTORY)
+          # 4. Mock package metadata files (PROVIDED AS EXACT TEMPLATES WITH {{VERSION}})
           @"
-          OVGME PACKAGE VERSION ${{ env.PACKAGE_VERSION }}
+          OVGME PACKAGE VERSION {{VERSION}}
           "@ | Out-File -Encoding utf8 "packaging/ovgme/README.TXT"
           
           @"
-          ${{ env.PACKAGE_VERSION }}
+          {{VERSION}}
           "@ | Out-File -Encoding utf8 "packaging/ovgme/VERSION.TXT"
 
           @"
