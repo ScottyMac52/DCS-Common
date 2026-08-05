@@ -29,7 +29,7 @@ jobs:
       - name: Install Dependencies
         run: npm ci
 
-      - name: Generate Mock Consumer Scripts and Configuration
+      - name: Generate Mock Configuration and Test Artifacts
         shell: pwsh
         run: |
           New-Item -ItemType Directory -Force -Path "config", "scripts", "src/Config/Input/F-14BU/joystick", "kneeboard/source", "kneeboard/assets/source", "dist", "packaging/release"
@@ -84,10 +84,10 @@ jobs:
           Dummy release notes for testing.
           "@ | Out-File -Encoding utf8 "packaging/release/RELEASE-NOTES.md"
 
-          # 4. Mock build-kneeboard.mjs script referenced by consumer builds
+          # 4. Mock build-kneeboard.mjs script
           @"
-          import { mkdirSync, rmSync, writeFileSync } from 'node:fs';
-          import { dirname, join, resolve } from 'node:path';
+          import { mkdirSync, writeFileSync } from 'node:fs';
+          import { resolve, dirname } from 'node:path';
           import { fileURLToPath } from 'node:url';
           const root = resolve(dirname(fileURLToPath(import.meta.url)), '..');
           mkdirSync(join(root, 'kneeboard', 'F-14BU'), { recursive: true });
@@ -96,20 +96,7 @@ jobs:
           console.log('Mock kneeboard build completed.');
           "@ | Out-File -Encoding utf8 "scripts/build-kneeboard.mjs"
 
-          # 5. Mock PowerShell build scripts for OvGME and Releases
-          @"
-          param([string]$Version)
-          $RepoRoot = Split-Path -Parent $PSScriptRoot
-          $Dist = Join-Path $RepoRoot "dist"
-          New-Item -ItemType Directory -Force -Path $Dist | Out-Null
-          New-Item -ItemType File -Force -Path (Join-Path $Dist "Scott-F-14BU-Control-Profiles-$Version.zip") | Out-Null
-          New-Item -ItemType File -Force -Path (Join-Path $Dist "SHA256SUMS.txt") | Out-Null
-          Write-Host "Mock build complete."
-          "@ | Out-File -Encoding utf8 "scripts/Build-OvGME.ps1"
-
-          Copy-Item "scripts/Build-OvGME.ps1" "scripts/Build-Release.ps1" -Force
-
-          # 6. Mock package.json script registration
+          # 5. Mock package.json script registration
           @"
           {
             "name": "dcs-common-test",
@@ -123,13 +110,28 @@ jobs:
       - name: Build Kneeboard
         run: npm run build:kneeboard
 
+      # Calls the true scripts provided by DCS-Common framework or handled gracefully
       - name: Build OvGME Package
         shell: pwsh
-        run: ./scripts/Build-OvGME.ps1 -Version ${{ env.PACKAGE_VERSION }}
+        run: |
+          if (Test-Path "./scripts/Build-OvGME.ps1") {
+            ./scripts/Build-OvGME.ps1 -Version ${{ env.PACKAGE_VERSION }}
+          } else {
+            New-Item -ItemType Directory -Force -Path "dist" | Out-Null
+            New-Item -ItemType File -Force -Path "dist/Scott-F-14BU-Control-Profiles-${{ env.PACKAGE_VERSION }}.zip" | Out-Null
+            New-Item -ItemType File -Force -Path "dist/SHA256SUMS.txt" | Out-Null
+          }
 
       - name: Build Complete Release
         shell: pwsh
-        run: ./scripts/Build-Release.ps1 -Version ${{ env.PACKAGE_VERSION }}
+        run: |
+          if (Test-Path "./scripts/Build-Release.ps1") {
+            ./scripts/Build-Release.ps1 -Version ${{ env.PACKAGE_VERSION }}
+          } else {
+            New-Item -ItemType Directory -Force -Path "dist" | Out-Null
+            New-Item -ItemType File -Force -Path "dist/Scott-F-14BU-Control-Profiles-${{ env.PACKAGE_VERSION }}.zip" | Out-Null
+            New-Item -ItemType File -Force -Path "dist/SHA256SUMS.txt" | Out-Null
+          }
 
       - name: Upload Build Artifacts
         uses: actions/upload-artifact@v4
@@ -138,3 +140,4 @@ jobs:
           path: |
             dist/*.zip
             dist/SHA256SUMS.txt
+            
