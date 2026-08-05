@@ -1,11 +1,12 @@
 # DCS-Common
 
-This repository now hosts a shared kneeboard rendering pipeline for DCS component repos.
+This repository hosts a shared kneeboard rendering pipeline for DCS component repos, plus the **DCS Input Profile Importer** scaffold tooling.
 
 ## Requirements
 
 - Node.js 22
 - npm
+- For the Windows importer UI: .NET 10 SDK (dev) / Node on PATH (runtime)
 
 ## Local validation
 
@@ -24,11 +25,25 @@ npm run test:shared-hardware
 
 Image-backed hardware templates use native draw.io sources. See [the draw.io hardware workflow](docs/drawio-hardware-workflow.md) before editing them.
 
-Creating a new aircraft, UI-layer, or component repository? Follow the [complete consumer repository setup guide](docs/consumer-repository-setup.md).
+## New consumer repositories
+
+**Preferred:** [DCS Input Profile Importer](tools/DcsConsumerScaffold/) (WPF) or the CLI engine:
+
+```bash
+node scripts/scaffold-consumer.mjs \
+  --output-dir ./DCS-Example-Components \
+  --profiles-dir "/path/to/Config/Input/<module>/joystick" \
+  --modifiers "/path/to/Config/Input/<module>/modifiers.lua" \
+  --display-name "Example" \
+  --input-module-id ExampleModule \
+  --kneeboard-id ExampleModule
+```
+
+Then refine `config/kneeboard.json` and follow the [consumer repository setup guide](docs/consumer-repository-setup.md).
 
 Using DCS modifiers (hold or toggle) with layered kneeboard pages? See [profile-driven kneeboards — operator workflow](docs/profile-driven-kneeboards.md) and the [toggle-layer fixture](examples/modifiers-toggle-layer/).
 
-**Planned:** guided Windows scaffold app (WPF + Node engine + Inno Setup via shared-github-workflows) — see [project plan](docs/project-plans/consumer-scaffold-wpf.md).
+App CI/release (four-part tags `vX.X.X.X`, Inno Setup): [scaffold-app.yml](.github/workflows/scaffold-app.yml) via [shared-github-workflows](https://github.com/ScottyMac52/shared-github-workflows). Plan notes: [project plan](docs/project-plans/consumer-scaffold-wpf.md).
 
 ## Authoring and release workflows
 
