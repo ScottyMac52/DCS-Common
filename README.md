@@ -28,6 +28,8 @@ Creating a new aircraft, UI-layer, or component repository? Follow the [complete
 
 Using DCS modifiers (hold or toggle) with layered kneeboard pages? See [profile-driven kneeboards — operator workflow](docs/profile-driven-kneeboards.md) and the [toggle-layer fixture](examples/modifiers-toggle-layer/).
 
+**Planned:** guided Windows scaffold app (WPF + Node engine + Inno Setup via shared-github-workflows) — see [project plan](docs/project-plans/consumer-scaffold-wpf.md).
+
 ## Authoring and release workflows
 
 ### DCS-Common shared-hardware authoring
