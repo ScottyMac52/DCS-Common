@@ -7,6 +7,38 @@ DCS-Common owns reusable workflows, shared hardware identities, draw.io sources,
 
 **Reference implementation:** [DCS-F-14B-U-Components](https://github.com/ScottyMac52/DCS-F-14B-U-Components). Prefer that pattern over older two-step consumers.
 
+## 0. Preferred path: DCS Input Profile Importer
+
+For a **new** consumer, prefer scaffolding instead of hand-copying files.
+
+| Tool | Location |
+| --- | --- |
+| WPF app | [`tools/DcsConsumerScaffold/`](../tools/DcsConsumerScaffold/) — Load Preview, then **Proceed** |
+| CLI engine | `node scripts/scaffold-consumer.mjs` |
+| Device map | [`assets/shared/hardware/scaffold-device-map.json`](../assets/shared/hardware/scaffold-device-map.json) |
+| Templates | [`templates/consumer/`](../templates/consumer/) |
+
+**Requires Node.js on PATH.** Point the tool at your DCS-exported `joystick` folder (and optional `modifiers.lua`), set display name / input module ID / kneeboard ID, and write into an empty output directory.
+
+```bash
+node scripts/scaffold-consumer.mjs \
+  --preview-json preview.json \
+  --profiles-dir "$USERPROFILE/Saved Games/DCS.openbeta/Config/Input/<module>/joystick" \
+  --modifiers "$USERPROFILE/Saved Games/DCS.openbeta/Config/Input/<module>/modifiers.lua"
+
+node scripts/scaffold-consumer.mjs \
+  --output-dir ./DCS-Example-Components \
+  --profiles-dir "$USERPROFILE/Saved Games/DCS.openbeta/Config/Input/<module>/joystick" \
+  --modifiers "$USERPROFILE/Saved Games/DCS.openbeta/Config/Input/<module>/modifiers.lua" \
+  --display-name "Example" \
+  --input-module-id ExampleModule \
+  --kneeboard-id ExampleModule
+```
+
+Scaffold output is a **draft**: review `SCAFFOLD-REPORT.md` and `config/kneeboard.json`, fix any **UNMAPPED** devices (or re-run with `--map`), then complete sections 6–12 below (build, package, CI).
+
+App releases use **four-part** tags (`v1.0.0.0`) and Inno Setup via [shared-github-workflows](https://github.com/ScottyMac52/shared-github-workflows). Consumer **package** tags remain `vMAJOR.MINOR.PATCH`.
+
 ## 1. Decide the DCS identities first
 
 Record these values before creating files. They are independent and must not be inferred from the repository or display name.
@@ -25,7 +57,7 @@ Users of `DCS.openbeta`, a named DCS instance, or a relocated Saved Games direct
 
 ## 2. Create the repository layout
 
-Use this minimum layout:
+Use this minimum layout (the scaffold tool produces most of it):
 
 ```text
 .github/workflows/
@@ -158,109 +190,15 @@ If the package is the pilot’s source of truth for modifiers, ship `modifiers.l
 
 Automation checks out DCS-Common into `.dcs-common` and exports `DCS_COMMON_ROOT`. Prefer the environment variable; fall back to `.dcs-common`.
 
-There is **one** build script. It imports Common helpers directly and generates every page in order. There is no separate apply/replace step.
+There is **one** build script. It imports Common helpers directly and generates every page in order. There is no separate apply/replace step. Scaffolded consumers already include a unified `scripts/build-kneeboard.mjs` from the templates.
 
-```js
-import { mkdirSync, rmSync, writeFileSync, readFileSync } from 'node:fs';
-import { dirname, join, resolve, basename } from 'node:path';
-import { fileURLToPath, pathToFileURL } from 'node:url';
-import sharp from 'sharp';
+See the F-14 reference and the template under `templates/consumer/build-kneeboard.mjs.tmpl` for the full loop (`summaryPages` + hardware pages + provenance).
 
-const scriptDir = dirname(fileURLToPath(import.meta.url));
-const root = resolve(scriptDir, '..');
-const commonRoot = resolve(process.env.DCS_COMMON_ROOT ?? join(root, '.dcs-common'));
-
-const { renderSharedHardwarePage } = await import(
-  pathToFileURL(join(commonRoot, 'scripts/shared-hardware-consumer.mjs'))
-);
-const { loadProfileDrivenConfig } = await import(
-  pathToFileURL(join(commonRoot, 'scripts/profile-driven-kneeboard.mjs'))
-);
-const { renderKneeboard } = await import(
-  pathToFileURL(join(commonRoot, 'scripts/kneeboard-renderer.mjs'))
-);
-
-const rawConfig = JSON.parse(readFileSync(join(root, 'config/kneeboard.json'), 'utf8'));
-const config = loadProfileDrivenConfig('config/kneeboard.json', { consumerRoot: root, commonRoot });
-
-const aircraftFolder = config.aircraft.replace(/[^a-zA-Z0-9-]/g, '');
-const svgDir = join(root, 'kneeboard', 'source');
-const pngDir = join(root, 'kneeboard', aircraftFolder);
-
-rmSync(svgDir, { recursive: true, force: true });
-rmSync(pngDir, { recursive: true, force: true });
-mkdirSync(svgDir, { recursive: true });
-mkdirSync(pngDir, { recursive: true });
-
-const allPages = [
-  ...(rawConfig.summaryPages || []),
-  ...config.pages,
-].sort((a, b) => a.file.localeCompare(b.file));
-
-const totalPages = allPages.length;
-
-for (const [index, page] of allPages.entries()) {
-  if (page.type === 'summary') {
-    const result = await renderKneeboard({
-      config: {
-        pages: [{ ...page, pageCount: totalPages }],
-        profiles: [],
-      },
-      outputDir: pngDir,
-      rootDir: root,
-    });
-
-    for (const svgFile of result.svgFiles) {
-      let svgContent = readFileSync(svgFile, 'utf8');
-      svgContent = svgContent.replace(/1 \/ 1/, `${index + 1} / ${totalPages}`);
-      writeFileSync(join(svgDir, basename(svgFile)), svgContent, 'utf8');
-      await sharp(Buffer.from(svgContent)).png().toFile(join(pngDir, `${page.file}.png`));
-    }
-  } else if (page.deviceId) {
-    const hardwareRender = renderSharedHardwarePage({
-      ...page,
-      commonRoot,
-      provenance: {
-        consumer: `DCS-${aircraftFolder}-Components`,
-        page: `${index + 1} / ${totalPages}`,
-      },
-    });
-
-    writeFileSync(join(svgDir, `${page.file}.svg`), hardwareRender.svg, 'utf8');
-    await sharp(Buffer.from(hardwareRender.svg)).png().toFile(join(pngDir, `${page.file}.png`));
-  }
-}
-
-console.log(`Successfully generated ${totalPages} pages.`);
-```
-
-`loadProfileDrivenConfig` expands `layers` into one page object per chord (including resolved labels from `.diff.lua`). The loop above already iterates the expanded `config.pages` list.
+`loadProfileDrivenConfig` expands `layers` into one page object per chord (including resolved labels from `.diff.lua`).
 
 ### Dual instances of one shared device
 
 Use `renderSharedHardwareInstancesPage` when one page shows two copies of the same canonical device (for example dual Logitech throttle quadrants). Do not duplicate shared templates.
-
-```js
-const { svg } = renderSharedHardwareInstancesPage({
-  commonRoot,
-  title: 'DUAL THROTTLE QUADRANTS',
-  provenance: { consumer: 'DCS-Example-Components', page: '3 / 4' },
-  instances: [
-    {
-      instanceId: 'primary-quadrant',
-      deviceId: 'logitech-throttle-quadrant',
-      title: 'PRIMARY',
-      labels: ['Mixture', 'Propeller RPM', 'Throttle'],
-    },
-    {
-      instanceId: 'secondary-quadrant',
-      deviceId: 'logitech-throttle-quadrant',
-      title: 'SECONDARY',
-      labels: ['Supercharger', 'Unbound', 'Unbound'],
-    },
-  ],
-});
-```
 
 Consumer tests must assert the shared-device marker (`Shared DCS-Common device: <id>`) or the shared-instance marker and each expected instance ID.
 
@@ -344,81 +282,7 @@ The reusable release workflow calculates the next tag, regenerates and optionall
 
 Keep consumer workflows thin. The reusable workflows check out both repositories and export `DCS_COMMON_ROOT=${{ github.workspace }}/.dcs-common`.
 
-### Pull-request and main build
-
-```yaml
-name: Build OVGME package
-on:
-  push:
-    branches: [main]
-  pull_request:
-  workflow_dispatch:
-
-permissions:
-  contents: read
-
-jobs:
-  build:
-    uses: ScottyMac52/DCS-Common/.github/workflows/build.yml@main
-    with:
-      package-version: 0.0.0-ci.${{ github.run_number }}
-      install-lua-parser: true
-      run-lua-parse: true
-      run-release-validation: true
-      package-script: scripts/Build-OvGME.ps1
-      test-package-script: scripts/Test-Package.ps1
-      build-release-script: scripts/Build-Release.ps1
-      test-release-script: scripts/Test-Package.ps1
-      artifact-name: Example-Release
-      artifact-path: |
-        dist/*.zip
-        dist/SHA256SUMS.txt
-```
-
-Set `extra-validation-command` for repository-specific PowerShell validation and `run-autohotkey-tests: true` when applicable.
-
-### Tagged release
-
-```yaml
-name: Create tagged OVGME release
-on:
-  workflow_dispatch:
-    inputs:
-      bump:
-        description: Semantic version component to increment
-        required: true
-        default: patch
-        type: choice
-        options: [patch, minor, major]
-
-permissions:
-  contents: write
-
-concurrency:
-  group: ovgme-release
-  cancel-in-progress: false
-
-jobs:
-  release:
-    uses: ScottyMac52/DCS-Common/.github/workflows/release.yml@main
-    with:
-      bump: ${{ inputs.bump }}
-      install-lua-parser: true
-      run-lua-parse: true
-      run-release-validation: true
-      package-script: scripts/Build-OvGME.ps1
-      test-package-script: scripts/Test-Package.ps1
-      build-release-script: scripts/Build-Release.ps1
-      test-release-script: scripts/Test-Package.ps1
-      artifact-name: Example-Release-${{ inputs.bump }}-${{ github.run_number }}
-      artifact-path: |
-        dist/*.zip
-        dist/SHA256SUMS.txt
-      release-notes-path: packaging/release/RELEASE-NOTES.md
-      kneeboard-paths: kneeboard/source kneeboard/Example_Module
-      release-title-prefix: DCS Example Components
-    secrets: inherit
-```
+Scaffolded consumers already include thin `build.yml` / `release.yml` callers under `.github/workflows/`.
 
 The release workflow requires `contents: write` and serialized concurrency because it may commit regenerated kneeboard paths to `main` before creating the tag and GitHub Release. List every generated SVG and PNG directory in `kneeboard-paths`.
 
@@ -427,7 +291,7 @@ The release workflow requires `contents: write` and serialized concurrency becau
 Use these repositories as implementation references, not as sources to copy shared geometry from:
 
 - [DCS-F-14B-U-Components](https://github.com/ScottyMac52/DCS-F-14B-U-Components): **preferred contract** — unified `build-kneeboard.mjs`, summary + hardware pages, single `Test-Package.ps1` for both package and release validation
-- [DCS-F-16C-Components](https://github.com/ScottyMac52/DCS-F-16C-Components): aircraft profiles and profile-driven pages (still uses the older two-step apply path in places)
+- [DCS-F-16C-Components](https://github.com/ScottyMac52/DCS-F-16C-Components): aircraft profiles and profile-driven pages
 - [DCS-F4U-1D-Components](https://github.com/ScottyMac52/DCS-F4U-1D-Components): two instances of one canonical shared device
 - [DCS-UI-Layer](https://github.com/ScottyMac52/DCS-UI-Layer): a global UI-layer kneeboard and Saved Games packaging
 
@@ -437,6 +301,7 @@ Copy this checklist into the first pull request for a new consumer:
 
 ```markdown
 - [ ] Record the exact input module ID, kneeboard ID, and tested Saved Games root.
+- [ ] Prefer scaffold (Importer / `scaffold-consumer.mjs`) then review SCAFFOLD-REPORT.md.
 - [ ] Layout has no `apply-shared-hardware.mjs` and no `Test-Release.ps1`.
 - [ ] `package.json` build:kneeboard is a single `node scripts/build-kneeboard.mjs`.
 - [ ] Run `npm ci`.
@@ -444,7 +309,7 @@ Copy this checklist into the first pull request for a new consumer:
 - [ ] Set `DCS_COMMON_ROOT` or create the `.dcs-common` checkout.
 - [ ] Set a test `PACKAGE_VERSION` and run `npm run build:kneeboard`.
 - [ ] Run `npm run test:kneeboard` and confirm a deterministic rebuild.
-- [ ] Run `npm run test:versioning`.
+- [ ] Run `npm run test:versioning` (when present).
 - [ ] Run `pwsh ./scripts/Build-OvGME.ps1 -Version 0.0.0-local`.
 - [ ] Run `pwsh ./scripts/Test-Package.ps1 -Version 0.0.0-local`.
 - [ ] Run `pwsh ./scripts/Build-Release.ps1 -Version 0.0.0-local`.

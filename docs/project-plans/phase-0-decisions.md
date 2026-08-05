@@ -1,19 +1,23 @@
 # Phase 0 decisions — DCS Input Profile Importer
 
-Accepted **2026-08-05**. Authoritative product plan: [consumer-scaffold-wpf.md](consumer-scaffold-wpf.md) (when merged).
+Accepted **2026-08-05**. Product plan: [consumer-scaffold-wpf.md](consumer-scaffold-wpf.md).
 
 | Item | Decision |
 | --- | --- |
 | Architecture | Option A — WPF shell invokes Node `scripts/scaffold-consumer.mjs` |
 | App location | `tools/DcsConsumerScaffold/` inside DCS-Common |
-| Runtime packaging | **A2 — Require Node.js on PATH** (installer does not bundle Node) |
+| Runtime packaging | **A2 — Require Node.js on PATH** |
 | Product name | **DCS Input Profile Importer** |
 | Inno `app_publisher` | **Vyper Industries** |
-| App version tags | **Four-part `vMAJOR.MINOR.PATCH.BUILD`** (shared-github-workflows) |
+| App version tags | **Four-part `vMAJOR.MINOR.PATCH.BUILD`** |
+| TFM | `net10.0-windows` |
 
-## Implementation order
+## Delivery status
 
-1. **PR1 (this track):** `--preview-json` engine + `scaffold-device-map.json` + Node tests
-2. WPF shell + preview UI + `scaffold-app.yml` CI
-3. Engine write path + consumer templates
-4. Inno installer + docs close-out
+| Phase | Status |
+| --- | --- |
+| Preview engine + device map | Shipped (#66) |
+| WPF preview shell + CI | Shipped (#67) |
+| Write path + templates | Shipped (#68) |
+| Proceed + Inno tag path | Shipped (#69); CI YAML/tuple fix (#70) |
+| Docs as preferred path | Close-out PR |
