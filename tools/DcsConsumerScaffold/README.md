@@ -1,11 +1,12 @@
 # DCS Input Profile Importer (WPF)
 
-Windows shell for the Option A scaffold flow. **Requires Node.js on PATH.**
+Windows shell for the Option A scaffold flow. **Requires Node.js on PATH** and **.NET 10** SDK for local builds.
 
 ## Status
 
 - **Preview only** — calls `scripts/scaffold-consumer.mjs --preview-json`
 - Proceed / consumer tree write / Inno installer: later phases
+- Target framework: `net10.0-windows`
 
 ## Dev run
 
@@ -25,4 +26,4 @@ dotnet test tools/DcsConsumerScaffold/DcsConsumerScaffold.sln -c Release
 
 ## CI
 
-`.github/workflows/scaffold-app.yml` uses [shared-github-workflows](https://github.com/ScottyMac52/shared-github-workflows) (`enable_installer: false` until Phase 4).
+`.github/workflows/scaffold-app.yml` uses [shared-github-workflows](https://github.com/ScottyMac52/shared-github-workflows) with `dotnet_version: 10.0.x` (`enable_installer: false` until Phase 4).
