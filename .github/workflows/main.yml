@@ -136,8 +136,8 @@ jobs:
                 "file": "11-WINCTRL-ICP",
                 "deviceId": "winctrl-icp",
                 "title": "WINCTRL VIPERACE ICP",
-                "kicker": "TEST DEVICE",
-                "labels": ["Mock Binding"]
+                "kicker": "DEVICE-SPECIFIC USB NUMBERING",
+                "labels": ["COM1", "COM2", "IFF", "LIST", "A-A", "A-G", "Keypad", "DED rocker", "DCS switch", "FLIR controls", "JOY axes: four knobs"]
               },
               {
                 "file": "12-TM-TPR",
