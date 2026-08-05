@@ -96,7 +96,8 @@ public sealed class ScaffoldEngineService
         var script = Path.Combine(root, "scripts", "scaffold-consumer.mjs");
         var args = BuildWriteArguments(
             script, profilesDir, modifiersPath, root, outputDir, displayName, inputModuleId, kneeboardId, repoName);
-        return await RunNodeAsync(root, args, cancellationToken).ConfigureAwait(false);
+        var (exitCode, stdout, stderr) = await RunNodeAsync(root, args, cancellationToken).ConfigureAwait(false);
+        return (stdout, stderr, exitCode);
     }
 
     private static async Task<(int ExitCode, string StdOut, string StdErr)> RunNodeAsync(
