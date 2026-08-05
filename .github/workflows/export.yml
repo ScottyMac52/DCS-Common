@@ -6,9 +6,6 @@ on:
     branches: [main]
     paths:
       - 'assets/shared/hardware/drawio/**'
-    paths-ignore:
-      - '**/*.yml'
-      - '**/*.yaml'
 
 permissions:
   contents: write
