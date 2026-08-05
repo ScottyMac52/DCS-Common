@@ -126,7 +126,7 @@ jobs:
         shell: pwsh
         run: |
           if (Test-Path "./scripts/Build-Release.ps1") {
-            ./scripts/Build-Release.ps1 -Version ${{ env.PACKAGE_VERSION }} -ModuleName "F-14BU" -KneeboardId "F-14BU" -PackagePrefix "F-14BU-Test"
+            ./scripts/Build-Release.ps1 -Version ${{ env.PACKAGE_VERSION }} -PackagePrefix "F-14BU-Test" -BundlePrefix "F-14BU-ControlProfiles"
           } else {
             New-Item -ItemType Directory -Force -Path "dist" | Out-Null
             New-Item -ItemType File -Force -Path "dist/Scott-F-14BU-Control-Profiles-${{ env.PACKAGE_VERSION }}.zip" | Out-Null
