@@ -1,0 +1,48 @@
+name: Scaffold app CI / Build
+
+on:
+  push:
+    branches:
+      - '**'
+    paths:
+      - 'tools/DcsConsumerScaffold/**'
+      - 'scripts/scaffold-consumer.mjs'
+      - 'assets/shared/hardware/scaffold-device-map.json'
+      - '.github/workflows/scaffold-app.yml'
+  pull_request:
+    branches:
+      - main
+    paths:
+      - 'tools/DcsConsumerScaffold/**'
+      - 'scripts/scaffold-consumer.mjs'
+      - 'assets/shared/hardware/scaffold-device-map.json'
+      - '.github/workflows/scaffold-app.yml'
+  workflow_dispatch:
+
+jobs:
+  ci:
+    name: CI (Tests + Coverage)
+    if: github.event_name == 'push' && !startsWith(github.ref, 'refs/tags/')
+    uses: ScottyMac52/shared-github-workflows/.github/workflows/reusable-build-and-release.yml@main
+    with:
+      dotnet_version: '10.0.x'
+      run_tests: true
+      run_coverage: true
+      run_build_release: false
+      ci_mode: true
+      create_release: false
+    secrets: inherit
+
+  build:
+    name: Build on PR / Main
+    if: github.event_name == 'pull_request' || (github.event_name == 'push' && github.ref == 'refs/heads/main') || github.event_name == 'workflow_dispatch'
+    uses: ScottyMac52/shared-github-workflows/.github/workflows/reusable-build-and-release.yml@main
+    with:
+      dotnet_version: '10.0.x'
+      run_tests: true
+      run_coverage: true
+      run_build_release: true
+      ci_mode: false
+      create_release: false
+      enable_installer: false
+    secrets: inherit
