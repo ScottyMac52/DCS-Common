@@ -84,7 +84,7 @@ jobs:
           Dummy release notes for testing.
           "@ | Out-File -Encoding utf8 "packaging/release/RELEASE-NOTES.md"
 
-          # 4. Mock build-kneeboard.mjs script (Fixed import)
+          # 4. Mock build-kneeboard.mjs script
           @"
           import { mkdirSync, writeFileSync } from 'node:fs';
           import { resolve, dirname, join } from 'node:path';
@@ -110,12 +110,12 @@ jobs:
       - name: Build Kneeboard
         run: npm run build:kneeboard
 
-      # Correctly passes the mandatory arguments into DCS-Common's scripts
+      # Uses "F-14BU" instead of "F-14B(U)" for the ModuleName to match the actual folder path
       - name: Build OvGME Package
         shell: pwsh
         run: |
           if (Test-Path "./scripts/Build-OvGME.ps1") {
-            ./scripts/Build-OvGME.ps1 -Version ${{ env.PACKAGE_VERSION }} -ModuleName "F-14B(U)" -KneeboardId "F-14BU" -PackagePrefix "F-14BU-Test"
+            ./scripts/Build-OvGME.ps1 -Version ${{ env.PACKAGE_VERSION }} -ModuleName "F-14BU" -KneeboardId "F-14BU" -PackagePrefix "F-14BU-Test"
           } else {
             New-Item -ItemType Directory -Force -Path "dist" | Out-Null
             New-Item -ItemType File -Force -Path "dist/Scott-F-14BU-Control-Profiles-${{ env.PACKAGE_VERSION }}.zip" | Out-Null
@@ -126,7 +126,7 @@ jobs:
         shell: pwsh
         run: |
           if (Test-Path "./scripts/Build-Release.ps1") {
-            ./scripts/Build-Release.ps1 -Version ${{ env.PACKAGE_VERSION }} -ModuleName "F-14B(U)" -KneeboardId "F-14BU" -PackagePrefix "F-14BU-Test"
+            ./scripts/Build-Release.ps1 -Version ${{ env.PACKAGE_VERSION }} -ModuleName "F-14BU" -KneeboardId "F-14BU" -PackagePrefix "F-14BU-Test"
           } else {
             New-Item -ItemType Directory -Force -Path "dist" | Out-Null
             New-Item -ItemType File -Force -Path "dist/Scott-F-14BU-Control-Profiles-${{ env.PACKAGE_VERSION }}.zip" | Out-Null
