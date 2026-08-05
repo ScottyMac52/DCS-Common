@@ -110,12 +110,12 @@ jobs:
       - name: Build Kneeboard
         run: npm run build:kneeboard
 
-      # Calls the true scripts provided by DCS-Common framework or handled gracefully
+      # Correctly passes the mandatory arguments into DCS-Common's scripts
       - name: Build OvGME Package
         shell: pwsh
         run: |
           if (Test-Path "./scripts/Build-OvGME.ps1") {
-            ./scripts/Build-OvGME.ps1 -Version ${{ env.PACKAGE_VERSION }}
+            ./scripts/Build-OvGME.ps1 -Version ${{ env.PACKAGE_VERSION }} -ModuleName "F-14B(U)" -KneeboardId "F-14BU" -PackagePrefix "F-14BU-Test"
           } else {
             New-Item -ItemType Directory -Force -Path "dist" | Out-Null
             New-Item -ItemType File -Force -Path "dist/Scott-F-14BU-Control-Profiles-${{ env.PACKAGE_VERSION }}.zip" | Out-Null
@@ -126,7 +126,7 @@ jobs:
         shell: pwsh
         run: |
           if (Test-Path "./scripts/Build-Release.ps1") {
-            ./scripts/Build-Release.ps1 -Version ${{ env.PACKAGE_VERSION }}
+            ./scripts/Build-Release.ps1 -Version ${{ env.PACKAGE_VERSION }} -ModuleName "F-14B(U)" -KneeboardId "F-14BU" -PackagePrefix "F-14BU-Test"
           } else {
             New-Item -ItemType Directory -Force -Path "dist" | Out-Null
             New-Item -ItemType File -Force -Path "dist/Scott-F-14BU-Control-Profiles-${{ env.PACKAGE_VERSION }}.zip" | Out-Null
@@ -140,3 +140,4 @@ jobs:
           path: |
             dist/*.zip
             dist/SHA256SUMS.txt
+            
