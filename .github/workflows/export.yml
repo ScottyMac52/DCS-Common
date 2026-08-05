@@ -2,11 +2,9 @@ name: Export Draw.io Hardware
 
 on:
   workflow_dispatch:
-  push:
-    paths:
-      - 'assets/shared/hardware/drawio/**'
-      - 'assets/shared/hardware/manifest.json'
-
+  pull_request:
+    branches: [main]
+    
 permissions:
   contents: write
 
