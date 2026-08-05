@@ -35,41 +35,144 @@ jobs:
           # 1. Create ALL required directories
           New-Item -ItemType Directory -Force -Path "config", "scripts", "src/Config/Input/F-14BU/joystick", "kneeboard/source", "kneeboard/assets/source", "dist", "packaging/release", "packaging/ovgme"
 
-          # 2. Mock kneeboard.json config
+          # 2. Mock kneeboard.json config (EXHAUSTIVE HARDWARE MANIFEST MOCK)
           @"
           {
             "schemaVersion": 1,
             "aircraft": "F-14B(U)",
             "profiles": {
-              "dummy": "src/Config/Input/F-14BU/joystick/DummyProfile {00000000-0000-0000-0000-000000000000}.diff.lua"
+              "pdcp": "src/Config/Input/F-14BU/joystick/OnYourTwelve F-14 PDCP {52C96400-3F11-11f1-8001-444553540000}.diff.lua",
+              "pto2": "src/Config/Input/F-14BU/joystick/WINCTRL CarrierAce PTO 2 {19B7D090-6120-11f0-8001-444553540000}.diff.lua"
             },
             "summaryPages": [
               {
                 "type": "summary",
                 "file": "01-VAICOM-OVERVIEW",
-                "title": "TEST SUMMARY",
-                "kicker": "FAKE DATA CONFIGURATION",
+                "title": "VAICOM PRO + CONTROL OVERVIEW",
+                "kicker": "VOICE-FIRST JESTER • PHYSICAL BACKUP • NO JESTER WHEEL",
                 "items": [
-                  { "key": "TST", "text": "Dummy test line for validation", "accent": "gold" }
+                  { "key": "TX1", "text": "12Joy6 • VHF AM • Ctrl+Alt+Shift+1", "accent": "gold" }
                 ]
               }
             ],
             "pages": [
               {
-                "file": "02-TEST-DEVICE",
+                "file": "02-MOZA-AB9",
+                "deviceId": "moza-ab9",
+                "title": "MOZA AB9 FFB BASE",
+                "kicker": "TEST DEVICE",
+                "labels": ["Mock Binding"]
+              },
+              {
+                "file": "03-VKB-F14-GRIP",
+                "deviceId": "vkb-f14-gunfighter",
+                "title": "VKB GUNFIGHTER • F-14 GRIP",
+                "kicker": "PRIMARY FLIGHT, WEAPONS, TRIM AND DIRECT LIFT CONTROL",
+                "labels": ["Trim", "Store release", "Weapon select", "NWS toggle", "DLC", "Catapult salute", "Trigger", "", "DLC / countermeasure", "", "", "Trigger stage 1", "Trigger stage 2"]
+              },
+              {
+                "file": "04-TM-WARTHOG-GRIP",
+                "deviceId": "tm-warthog-grip",
+                "title": "TM WARTHOG GRIP",
+                "kicker": "TEST DEVICE",
+                "labels": ["Mock Binding"]
+              },
+              {
+                "file": "05-TM-F18C-GRIP",
+                "deviceId": "grip-f18c",
+                "title": "TM F/A-18C HORNET GRIP",
+                "kicker": "TEST DEVICE",
+                "labels": ["Mock Binding"]
+              },
+              {
+                "file": "06-AVA-F16C",
+                "deviceId": "ava-base-f16c",
+                "title": "AVA BASE + F-16C GRIP",
+                "kicker": "TEST DEVICE",
+                "labels": ["Mock Binding"]
+              },
+              {
+                "file": "07-AVA-F18C",
+                "deviceId": "ava-base-f18c",
+                "title": "AVA BASE + F/A-18C GRIP",
+                "kicker": "TEST DEVICE",
+                "labels": ["Mock Binding"]
+              },
+              {
+                "file": "08-TM-MFD",
                 "deviceId": "tm-mfd",
-                "title": "TEST DEVICE",
-                "kicker": "HARDWARE MOCK",
-                "labels": ["BTN 1", "BTN 2", "BTN 3", "BTN 4", "BTN 5", "BTN 6", "BTN 7", "BTN 8", "BTN 9", "BTN 10", "BTN 11", "BTN 12", "BTN 13", "BTN 14", "BTN 15", "BTN 16", "BTN 17", "BTN 18", "BTN 19", "BTN 20", "BTN 21", "BTN 22", "BTN 23", "BTN 24", "BTN 25", "BTN 26", "BTN 27", "BTN 28"]
+                "title": "TM MFD",
+                "kicker": "TEST DEVICE",
+                "labels": ["Mock Binding"]
+              },
+              {
+                "file": "09-PDCP",
+                "deviceId": "onyourtwelve-pdcp",
+                "title": "ONYOURTWELVE F-14 PDCP",
+                "kicker": "DISPLAY, POWER, STEERING AND HSD PANEL",
+                "controls": {
+                  "pdcp-to": { "profile": "pdcp", "key": "JOY_BTN1", "label": "Takeoff" }
+                }
+              },
+              {
+                "file": "10-PTO2",
+                "deviceId": "winctrl-pto2",
+                "title": "WINCTRL CARRIERACE PTO2",
+                "kicker": "CARRIER, GEAR, FLAPS, LIGHTS AND REFUELING",
+                "controls": {
+                  "pto2-button-2": { "profile": "pto2", "key": "JOY_BTN2", "label": "Caution reset" }
+                }
+              },
+              {
+                "file": "11-WINCTRL-ICP",
+                "deviceId": "winctrl-icp",
+                "title": "WINCTRL VIPERACE ICP",
+                "kicker": "TEST DEVICE",
+                "labels": ["Mock Binding"]
+              },
+              {
+                "file": "12-TM-TPR",
+                "deviceId": "tm-tpr",
+                "title": "THRUSTMASTER TPR",
+                "kicker": "RUDDER AND WHEEL BRAKES",
+                "labels": ["Left Wheel Brake", "Right Wheel Brake", "Rudder"]
+              },
+              {
+                "file": "13-WARTHOG-THROTTLE",
+                "deviceId": "tm-warthog-throttle",
+                "title": "THRUSTMASTER WARTHOG THROTTLE",
+                "kicker": "TEST DEVICE",
+                "labels": {
+                  "warthog-thr-mic-up": "Mock Binding"
+                }
+              },
+              {
+                "file": "14-LOGITECH-TQ",
+                "deviceId": "logitech-throttle-quadrant",
+                "title": "LOGITECH THROTTLE QUADRANT",
+                "kicker": "TEST DEVICE",
+                "labels": ["Mock Binding"]
+              },
+              {
+                "file": "15-VIPER-TQS",
+                "deviceId": "viper-tqs-mission-pack",
+                "title": "VIPER TQS + MISSION PACK",
+                "kicker": "TEST DEVICE",
+                "labels": ["Mock Binding"]
               }
             ]
           }
           "@ | Out-File -Encoding utf8 "config/kneeboard.json"
 
-          # 3. Mock Lua profile
-          @"
-          return {}
-          "@ | Out-File -Encoding utf8 "src/Config/Input/F-14BU/joystick/DummyProfile {00000000-0000-0000-0000-000000000000}.diff.lua"
+          # 3. Mock Lua profiles (Ensure all referenced diff files exist)
+          $Profiles = @(
+            "DummyProfile {00000000-0000-0000-0000-000000000000}.diff.lua",
+            "OnYourTwelve F-14 PDCP {52C96400-3F11-11f1-8001-444553540000}.diff.lua",
+            "WINCTRL CarrierAce PTO 2 {19B7D090-6120-11f0-8001-444553540000}.diff.lua"
+          )
+          foreach ($Profile in $Profiles) {
+            "return {}" | Out-File -Encoding utf8 "src/Config/Input/F-14BU/joystick/$Profile"
+          }
 
           # 4. Mock package metadata files (PROVIDED AS EXACT TEMPLATES WITH {{VERSION}})
           @"
@@ -85,16 +188,23 @@ jobs:
           Dummy release notes for testing.
           "@ | Out-File -Encoding utf8 "packaging/release/RELEASE-NOTES.md"
 
-          # 5. Mock build-kneeboard.mjs script
+          # 5. Mock build-kneeboard.mjs script (DYNAMICALLY READS ALL PAGES)
           @"
-          import { mkdirSync, writeFileSync } from 'node:fs';
+          import { mkdirSync, writeFileSync, readFileSync } from 'node:fs';
           import { resolve, dirname, join } from 'node:path';
           import { fileURLToPath } from 'node:url';
+          
           const root = resolve(dirname(fileURLToPath(import.meta.url)), '..');
-          mkdirSync(join(root, 'kneeboard', 'F-14BU'), { recursive: true });
-          writeFileSync(join(root, 'kneeboard', 'F-14BU', '01-VAICOM-OVERVIEW.png'), Buffer.from('dummy'));
-          writeFileSync(join(root, 'kneeboard', 'F-14BU', '02-TEST-DEVICE.png'), Buffer.from('dummy'));
-          console.log('Mock kneeboard build completed.');
+          const outputDir = join(root, 'kneeboard', 'F-14BU');
+          mkdirSync(outputDir, { recursive: true });
+          
+          const config = JSON.parse(readFileSync(join(root, 'config', 'kneeboard.json'), 'utf8'));
+          const allPages = [...(config.summaryPages || []), ...(config.pages || [])];
+          
+          for (const page of allPages) {
+            writeFileSync(join(outputDir, \`\${page.file}.png\`), Buffer.from('dummy'));
+          }
+          console.log(\`Mock kneeboard build completed. Wrote \${allPages.length} dummy PNGs.\`);
           "@ | Out-File -Encoding utf8 "scripts/build-kneeboard.mjs"
 
           # 6. Mock package.json script registration
