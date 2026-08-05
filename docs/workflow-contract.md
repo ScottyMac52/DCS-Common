@@ -13,7 +13,7 @@ A repository that consumes these workflows should provide:
   - scripts/Test-Package.ps1
 - optional release scripts when full release validation is enabled:
   - scripts/Build-Release.ps1
-  - scripts/Test-Release.ps1
+  - (preferred) reuse `scripts/Test-Package.ps1` for the complete-release validation, or optionally supply a dedicated `scripts/Test-Release.ps1`
 - optional AutoHotKey validation at scripts/Test-AutoHotKey.ps1
 - optional repository-specific validation through `extra-validation-command`
 - a repository-specific artifact name and artifact path for upload
