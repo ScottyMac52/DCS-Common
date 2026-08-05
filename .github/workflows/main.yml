@@ -29,13 +29,15 @@ jobs:
       - name: Install Dependencies
         run: npm ci
 
+      - name: Install Image Processor
+        run: npm install sharp
+
       - name: Generate Mock Configuration and Test Artifacts
         shell: pwsh
         run: |
-          # 1. Create ALL required directories
           New-Item -ItemType Directory -Force -Path "config", "scripts", "src/Config/Input/F-14BU/joystick", "kneeboard/source", "kneeboard/assets/source", "dist", "packaging/release", "packaging/ovgme"
 
-          # 2. Mock kneeboard.json config (EXHAUSTIVE HARDWARE MANIFEST MOCK)
+          # Mock kneeboard.json config (EXHAUSTIVE HARDWARE MANIFEST MOCK)
           @"
           {
             "schemaVersion": 1,
@@ -67,7 +69,7 @@ jobs:
                 "file": "03-VKB-F14-GRIP",
                 "deviceId": "vkb-f14-gunfighter",
                 "title": "VKB GUNFIGHTER • F-14 GRIP",
-                "kicker": "PRIMARY FLIGHT, WEAPONS, TRIM AND DIRECT LIFT CONTROL",
+                "kicker": "TEST DEVICE",
                 "labels": ["Trim", "Store release", "Weapon select", "NWS toggle", "DLC", "Catapult salute", "Trigger", "", "DLC / countermeasure", "", "", "Trigger stage 1", "Trigger stage 2"]
               },
               {
@@ -109,7 +111,7 @@ jobs:
                 "file": "09-PDCP",
                 "deviceId": "onyourtwelve-pdcp",
                 "title": "ONYOURTWELVE F-14 PDCP",
-                "kicker": "DISPLAY, POWER, STEERING AND HSD PANEL",
+                "kicker": "TEST DEVICE",
                 "controls": {
                   "pdcp-to": { "profile": "pdcp", "key": "JOY_BTN1", "label": "Takeoff" }
                 }
@@ -118,7 +120,7 @@ jobs:
                 "file": "10-PTO2",
                 "deviceId": "winctrl-pto2",
                 "title": "WINCTRL CARRIERACE PTO2",
-                "kicker": "CARRIER, GEAR, FLAPS, LIGHTS AND REFUELING",
+                "kicker": "TEST DEVICE",
                 "controls": {
                   "pto2-button-2": { "profile": "pto2", "key": "JOY_BTN2", "label": "Caution reset" }
                 }
@@ -134,7 +136,7 @@ jobs:
                 "file": "12-TM-TPR",
                 "deviceId": "tm-tpr",
                 "title": "THRUSTMASTER TPR",
-                "kicker": "RUDDER AND WHEEL BRAKES",
+                "kicker": "TEST DEVICE",
                 "labels": ["Left Wheel Brake", "Right Wheel Brake", "Rudder"]
               },
               {
@@ -164,7 +166,7 @@ jobs:
           }
           "@ | Out-File -Encoding utf8 "config/kneeboard.json"
 
-          # 3. Mock Lua profiles (Ensure all referenced diff files exist)
+          # Mock Lua profiles
           $Profiles = @(
             "DummyProfile {00000000-0000-0000-0000-000000000000}.diff.lua",
             "OnYourTwelve F-14 PDCP {52C96400-3F11-11f1-8001-444553540000}.diff.lua",
@@ -174,7 +176,7 @@ jobs:
             "return {}" | Out-File -Encoding utf8 "src/Config/Input/F-14BU/joystick/$Profile"
           }
 
-          # 4. Mock package metadata files (PROVIDED AS EXACT TEMPLATES WITH {{VERSION}})
+          # Mock package metadata files
           @"
           OVGME PACKAGE VERSION {{VERSION}}
           "@ | Out-File -Encoding utf8 "packaging/ovgme/README.TXT"
@@ -188,30 +190,77 @@ jobs:
           Dummy release notes for testing.
           "@ | Out-File -Encoding utf8 "packaging/release/RELEASE-NOTES.md"
 
-          # 5. Mock build-kneeboard.mjs script (DYNAMICALLY READS ALL PAGES, NO TEMPLATE LITERALS)
+          # Mock build-kneeboard.mjs (IMPORTS DCS-COMMON ENGINES & RENDERS REAL IMAGES)
           @"
-          import { mkdirSync, writeFileSync, readFileSync } from 'node:fs';
-          import { resolve, dirname, join } from 'node:path';
-          import { fileURLToPath } from 'node:url';
-          
-          const root = resolve(dirname(fileURLToPath(import.meta.url)), '..');
-          const outputDir = join(root, 'kneeboard', 'F-14BU');
-          mkdirSync(outputDir, { recursive: true });
-          
-          const config = JSON.parse(readFileSync(join(root, 'config', 'kneeboard.json'), 'utf8'));
-          const allPages = [...(config.summaryPages || []), ...(config.pages || [])];
-          
-          for (const page of allPages) {
-            writeFileSync(join(outputDir, page.file + '.png'), Buffer.from('dummy'));
+          import { mkdirSync, rmSync, writeFileSync, readFileSync } from 'node:fs';
+          import { dirname, join, resolve, basename } from 'node:path';
+          import { fileURLToPath, pathToFileURL } from 'node:url';
+          import sharp from 'sharp';
+
+          const scriptDir = dirname(fileURLToPath(import.meta.url));
+          const root = resolve(scriptDir, '..');
+          const commonRoot = resolve(process.env.DCS_COMMON_ROOT || join(root, '.dcs-common'));
+
+          const sharedHardwareConsumerUrl = pathToFileURL(join(commonRoot, 'scripts/shared-hardware-consumer.mjs'));
+          const profileDrivenUrl = pathToFileURL(join(commonRoot, 'scripts/profile-driven-kneeboard.mjs'));
+          const kneeboardRendererUrl = pathToFileURL(join(commonRoot, 'scripts/kneeboard-renderer.mjs'));
+
+          const { renderSharedHardwarePage } = await import(sharedHardwareConsumerUrl);
+          const { loadProfileDrivenConfig } = await import(profileDrivenUrl);
+          const { renderKneeboard } = await import(kneeboardRendererUrl);
+
+          const rawConfig = JSON.parse(readFileSync(join(root, 'config/kneeboard.json'), 'utf8'));
+          const config = loadProfileDrivenConfig('config/kneeboard.json', { consumerRoot: root, commonRoot });
+
+          const aircraftFolder = config.aircraft.replace(/[^a-zA-Z0-9-]/g, '');
+          const pngDir = join(root, 'kneeboard', aircraftFolder);
+
+          rmSync(pngDir, { recursive: true, force: true });
+          mkdirSync(pngDir, { recursive: true });
+
+          const allPages = [
+            ...(rawConfig.summaryPages || []),
+            ...config.pages
+          ].sort((a, b) => a.file.localeCompare(b.file));
+
+          const totalPages = allPages.length;
+
+          for (const [index, page] of allPages.entries()) {
+            if (page.type === 'summary') {
+              const result = await renderKneeboard({
+                config: { 
+                  pages: [{ ...page, pageCount: totalPages }], 
+                  profiles: [] 
+                },
+                outputDir: pngDir,
+                rootDir: root,
+              });
+              
+              for (const svgFile of result.svgFiles) {
+                let svgContent = readFileSync(svgFile, 'utf8');
+                svgContent = svgContent.replace(/1 \/ 1/, (index + 1) + ' / ' + totalPages);
+                await sharp(Buffer.from(svgContent)).png().toFile(join(pngDir, page.file + '.png'));
+              }
+            } else if (page.deviceId) {
+              const hardwareRender = renderSharedHardwarePage({
+                ...page,
+                commonRoot,
+                provenance: { consumer: 'DCS-' + aircraftFolder + '-Components', page: (index + 1) + ' / ' + totalPages },
+              });
+              
+              await sharp(Buffer.from(hardwareRender.svg)).png().toFile(join(pngDir, page.file + '.png'));
+            }
           }
-          console.log('Mock kneeboard build completed. Wrote ' + allPages.length + ' dummy PNGs.');
+
+          console.log('Successfully compiled ' + totalPages + ' pages using actual DCS-Common assets.');
           "@ | Out-File -Encoding utf8 "scripts/build-kneeboard.mjs"
 
-          # 6. Mock package.json script registration
+          # Mock package.json script registration
           @"
           {
             "name": "dcs-common-test",
             "version": "0.0.0",
+            "type": "module",
             "scripts": {
               "build:kneeboard": "node scripts/build-kneeboard.mjs"
             }
@@ -250,4 +299,3 @@ jobs:
           path: |
             dist/*.zip
             dist/SHA256SUMS.txt
-            
