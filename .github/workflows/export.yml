@@ -1,0 +1,45 @@
+name: Export Draw.io Hardware
+
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - 'assets/shared/hardware/drawio/**'
+      - 'assets/shared/hardware/manifest.json'
+
+permissions:
+  contents: write
+
+jobs:
+  export-drawio:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js 22
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: 'npm'
+
+      - name: Install Dependencies
+        run: npm ci
+
+      - name: Export Draw.io to SVG
+        run: npm run build:drawio-hardware
+
+      - name: Check for Changes
+        id: verify-changes
+        run: |
+          git diff --quiet || echo "has_changes=true" >> $GITHUB_OUTPUT
+
+      - name: Commit and Push Updated SVGs
+        if: steps.verify-changes.outputs.has_changes == 'true'
+        run: |
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+          git add assets/shared/hardware/svg/
+          git commit -m "chore: auto-export draw.io hardware updates to SVG"
+          git push
