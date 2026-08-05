@@ -4,6 +4,8 @@ on:
   push:
     branches:
       - '**'
+    tags:
+      - 'v*.*.*.*'
     paths:
       - 'tools/DcsConsumerScaffold/**'
       - 'scripts/scaffold-consumer.mjs'
@@ -19,9 +21,6 @@ on:
       - 'templates/consumer/**'
       - 'assets/shared/hardware/scaffold-device-map.json'
       - '.github/workflows/scaffold-app.yml'
-  push:
-    tags:
-      - 'v*.*.*.*'
   workflow_dispatch:
 
 jobs:
