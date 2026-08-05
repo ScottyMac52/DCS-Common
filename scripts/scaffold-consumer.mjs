@@ -2,11 +2,21 @@
 /**
  * DCS Input Profile Importer — scaffold engine (Option A core).
  *
- * Phase 1: --preview-json only (no consumer tree write).
- * Requires Node.js on PATH. WPF shell will invoke this CLI later.
+ * Preview: --preview-json
+ * Write:   --output-dir (+ identity flags) materializes a consumer skeleton.
+ * Requires Node.js on PATH.
  */
-import { readdirSync, readFileSync, writeFileSync, existsSync, statSync } from 'node:fs';
-import { basename, dirname, join, resolve } from 'node:path';
+import {
+  readdirSync,
+  readFileSync,
+  writeFileSync,
+  existsSync,
+  statSync,
+  mkdirSync,
+  copyFileSync,
+  cpSync,
+} from 'node:fs';
+import { basename, dirname, join, resolve, relative } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { parseDcsDiffLua, parseDcsModifiersLua } from './profile-driven-kneeboard.mjs';
 
@@ -14,34 +24,52 @@ const scriptDir = dirname(fileURLToPath(import.meta.url));
 const defaultCommonRoot = resolve(scriptDir, '..');
 
 function printHelp() {
-  const text = `
+  console.log(`
 DCS Input Profile Importer — scaffold engine
 
-Usage:
+Preview:
   node scripts/scaffold-consumer.mjs --preview-json <out.json> --profiles-dir <dir> [options]
 
-Required:
-  --preview-json <path>   Write structured preview rows (no consumer tree mutation)
-  --profiles-dir <path>   Directory of DCS *.diff.lua profiles
+Write consumer skeleton:
+  node scripts/scaffold-consumer.mjs --output-dir <dir> --profiles-dir <dir> \\
+    --display-name "F-16C" --input-module-id F-16C_50 --kneeboard-id F-16C_50 [options]
+
+Required (preview):
+  --preview-json <path>
+  --profiles-dir <path>
+
+Required (write):
+  --output-dir <path>
+  --profiles-dir <path>
+  --display-name <text>
+  --input-module-id <id>
+  --kneeboard-id <id>
 
 Optional:
-  --modifiers <path>      Native DCS modifiers.lua
-  --map <path>            JSON overrides: { "<profile basename or stem>": "<deviceId>" }
-  --common-root <path>    DCS-Common root (default: repo containing this script)
-  --help                  Show this help
+  --modifiers <path>
+  --map <path>
+  --common-root <path>
+  --repo-name <name>          default: derived from display name
+  --dry-run                   report planned writes without creating files
+  --help
 
-Exit codes: 0 success, 1 usage/validation error, 2 parse failures present in report
-`.trim();
-  console.log(text);
+Exit: 0 ok, 1 usage/error, 2 preview/write completed with reported errors
+`.trim());
 }
 
 export function parseArgs(argv = process.argv.slice(2)) {
   const options = {
     previewJson: null,
+    outputDir: null,
     profilesDir: null,
     modifiersPath: null,
     mapPath: null,
     commonRoot: defaultCommonRoot,
+    displayName: null,
+    inputModuleId: null,
+    kneeboardId: null,
+    repoName: null,
+    dryRun: false,
     help: false,
   };
   for (let index = 0; index < argv.length; index += 1) {
@@ -53,10 +81,16 @@ export function parseArgs(argv = process.argv.slice(2)) {
     };
     if (arg === '--help' || arg === '-h') options.help = true;
     else if (arg === '--preview-json') options.previewJson = next();
+    else if (arg === '--output-dir') options.outputDir = next();
     else if (arg === '--profiles-dir') options.profilesDir = next();
     else if (arg === '--modifiers') options.modifiersPath = next();
     else if (arg === '--map') options.mapPath = next();
     else if (arg === '--common-root') options.commonRoot = resolve(next());
+    else if (arg === '--display-name') options.displayName = next();
+    else if (arg === '--input-module-id') options.inputModuleId = next();
+    else if (arg === '--kneeboard-id') options.kneeboardId = next();
+    else if (arg === '--repo-name') options.repoName = next();
+    else if (arg === '--dry-run') options.dryRun = true;
     else throw new Error(`Unknown argument: ${arg}`);
   }
   return options;
@@ -112,7 +146,6 @@ export function resolveInstanceHint(stem, deviceId, deviceMap) {
   return null;
 }
 
-/** Best-effort extraction of control id/key pairs from shared Lua catalogs. */
 export function loadCalloutCatalog(commonRoot, deviceId) {
   if (!deviceId) return { byKey: new Map(), controls: [] };
   const manifest = JSON.parse(readFileSync(join(commonRoot, 'assets/shared/hardware/manifest.json'), 'utf8'));
@@ -136,6 +169,19 @@ export function loadCalloutCatalog(commonRoot, deviceId) {
 
 function chordKey(reformers = []) {
   return [...reformers].sort((a, b) => a.localeCompare(b)).join('+');
+}
+
+function slugifyId(value) {
+  return String(value)
+    .replace(/[^a-zA-Z0-9]+/g, '-')
+    .replace(/^-+|-+$/g, '')
+    .replace(/-+/g, '-');
+}
+
+function profileKeyFromDevice(device) {
+  const base = device.deviceId ?? slugifyId(device.stem || 'device').toLowerCase();
+  if (device.instanceHint) return `${base}-${device.instanceHint}`;
+  return base;
 }
 
 export function buildPreview({ profilesDir, modifiersPath = null, mapPath = null, commonRoot = defaultCommonRoot }) {
@@ -219,7 +265,6 @@ export function buildPreview({ profilesDir, modifiersPath = null, mapPath = null
         if (!mapping.deviceId) status = 'Unmapped device';
         else if (calloutIds.length === 0) status = 'No callout';
 
-        // Ambiguity: same profile + key + chord maps to multiple commands
         const sameChordCommands = bindings.filter((candidate) =>
           candidate.added.some(
             (entry) => entry.key === input.key && chordKey(entry.reformers) === chordKey(reformers),
@@ -274,15 +319,235 @@ export function buildPreview({ profilesDir, modifiersPath = null, mapPath = null
   };
 }
 
+function readTemplate(commonRoot, name) {
+  const path = join(commonRoot, 'templates/consumer', name);
+  if (!existsSync(path)) throw new Error(`Missing template: ${path}`);
+  return readFileSync(path, 'utf8');
+}
+
+function applyTokens(template, tokens) {
+  let text = template;
+  for (const [key, value] of Object.entries(tokens)) {
+    text = text.replaceAll(`{{${key}}}`, String(value));
+  }
+  return text;
+}
+
+function aliasFromModifierName(name) {
+  const cleaned = String(name).replace(/[^a-zA-Z0-9]+/g, '_').replace(/^_+|_+$/g, '');
+  return cleaned || 'MOD';
+}
+
+/** Draft kneeboard.json from preview rows (base chord only for controls; layers stubbed when modifiers exist). */
+export function buildDraftKneeboardConfig(preview, { displayName, inputModuleId }) {
+  const profiles = {};
+  for (const device of preview.devices) {
+    if (!device.deviceId) continue;
+    const key = profileKeyFromDevice(device);
+    profiles[key] = `src/Config/Input/${inputModuleId}/joystick/${device.profileFile}`;
+  }
+
+  const modifiers = {};
+  for (const mod of preview.modifiers) {
+    const alias = aliasFromModifierName(mod.name);
+    modifiers[alias] = {
+      nativeName: mod.name,
+      mode: mod.mode,
+    };
+  }
+
+  const pagesByDevice = new Map();
+  let pageIndex = 1;
+  for (const device of preview.devices) {
+    if (!device.deviceId) continue;
+    const profileKey = profileKeyFromDevice(device);
+    const title = device.stem || device.deviceId;
+    const file = `${String(pageIndex).padStart(2, '0')}-${slugifyId(profileKey).toUpperCase()}`;
+    pageIndex += 1;
+
+    const controls = {};
+    const layerControls = new Map(); // chord -> controls
+
+    for (const row of preview.rows) {
+      if (row.profileFile !== device.profileFile) continue;
+      if (!row.calloutId) continue;
+      if (row.section !== 'keyDiffs') continue;
+
+      if (!row.chord) {
+        if (!controls[row.calloutId]) {
+          controls[row.calloutId] = { profile: profileKey, key: row.key };
+        }
+      } else {
+        if (!layerControls.has(row.chord)) layerControls.set(row.chord, {});
+        const layerMap = layerControls.get(row.chord);
+        if (!layerMap[row.calloutId]) {
+          layerMap[row.calloutId] = { profile: profileKey, key: row.key };
+        }
+      }
+    }
+
+    const page = {
+      file,
+      deviceId: device.deviceId,
+      title,
+      kicker: device.instanceHint ? `INSTANCE ${device.instanceHint}` : 'SCAFFOLD DRAFT',
+    };
+
+    if (layerControls.size === 0) {
+      page.controls = controls;
+    } else {
+      const layers = [
+        { id: 'base', controls },
+      ];
+      for (const [chord, layerMap] of layerControls) {
+        const aliases = chord.split('+').map((native) => {
+          const found = Object.entries(modifiers).find(([, value]) => value.nativeName === native);
+          return found?.[0] ?? aliasFromModifierName(native);
+        });
+        layers.push({
+          id: aliases.join('_') || 'layer',
+          file: `${file}-${aliases.join('-') || 'LAYER'}`,
+          title: `${title} • ${chord}`,
+          modifiers: aliases,
+          controls: layerMap,
+        });
+      }
+      page.layers = layers;
+    }
+
+    pagesByDevice.set(profileKey, page);
+  }
+
+  const config = {
+    schemaVersion: 1,
+    aircraft: displayName,
+    profiles,
+    pages: [...pagesByDevice.values()],
+  };
+
+  if (Object.keys(modifiers).length > 0) {
+    config.modifiersFile = `src/Config/Input/${inputModuleId}/modifiers.lua`;
+    config.modifiers = modifiers;
+  }
+
+  return config;
+}
+
+export function writeConsumer({ preview, outputDir, displayName, inputModuleId, kneeboardId, repoName, dryRun = false, commonRoot = defaultCommonRoot }) {
+  const out = resolve(outputDir);
+  const name = repoName ?? `DCS-${slugifyId(displayName)}-Components`;
+  const tokens = {
+    DISPLAY_NAME: displayName,
+    INPUT_MODULE_ID: inputModuleId,
+    KNEEBOARD_ID: kneeboardId,
+    REPO_NAME: name,
+    ARTIFACT_NAME: slugifyId(displayName),
+  };
+
+  const planned = [];
+  const write = (rel, content) => {
+    planned.push(rel);
+    if (dryRun) return;
+    const absolute = join(out, rel);
+    mkdirSync(dirname(absolute), { recursive: true });
+    writeFileSync(absolute, content.endsWith('\n') ? content : `${content}\n`, 'utf8');
+  };
+  const copy = (from, rel) => {
+    planned.push(rel);
+    if (dryRun) return;
+    const absolute = join(out, rel);
+    mkdirSync(dirname(absolute), { recursive: true });
+    copyFileSync(from, absolute);
+  };
+
+  const joystickRel = `src/Config/Input/${inputModuleId}/joystick`;
+  for (const device of preview.devices) {
+    const source = join(preview.profilesDir, device.profileFile);
+    copy(source, `${joystickRel}/${device.profileFile}`);
+  }
+  if (preview.modifiersPath && existsSync(preview.modifiersPath)) {
+    copy(preview.modifiersPath, `src/Config/Input/${inputModuleId}/modifiers.lua`);
+  }
+
+  const kneeboard = buildDraftKneeboardConfig(preview, { displayName, inputModuleId });
+  write('config/kneeboard.json', JSON.stringify(kneeboard, null, 2));
+
+  write('package.json', applyTokens(readTemplate(commonRoot, 'package.json.tmpl'), tokens));
+  write('README.md', applyTokens(readTemplate(commonRoot, 'README.md.tmpl'), tokens));
+  write('scripts/build-kneeboard.mjs', readTemplate(commonRoot, 'build-kneeboard.mjs.tmpl'));
+  write('scripts/test-kneeboard.mjs', applyTokens(readTemplate(commonRoot, 'test-kneeboard.mjs.tmpl'), tokens));
+  write('.github/workflows/build.yml', applyTokens(readTemplate(commonRoot, 'build.yml.tmpl'), tokens));
+  write('.github/workflows/release.yml', applyTokens(readTemplate(commonRoot, 'release.yml.tmpl'), tokens));
+  write('packaging/ovgme/README.TXT', applyTokens(readTemplate(commonRoot, 'ovgme-README.TXT.tmpl'), tokens));
+  write('packaging/release/RELEASE-NOTES.md', applyTokens(readTemplate(commonRoot, 'RELEASE-NOTES.md.tmpl'), tokens));
+
+  // Minimal packaging stubs so layout matches contract; operators refine scripts next.
+  write(
+    'scripts/Build-OvGME.ps1',
+    applyTokens(readTemplate(commonRoot, 'Build-OvGME.ps1.tmpl'), tokens),
+  );
+  write(
+    'scripts/Test-Package.ps1',
+    applyTokens(readTemplate(commonRoot, 'Test-Package.ps1.tmpl'), tokens),
+  );
+  write(
+    'scripts/Build-Release.ps1',
+    applyTokens(readTemplate(commonRoot, 'Build-Release.ps1.tmpl'), tokens),
+  );
+
+  const reportLines = [
+    '# SCAFFOLD-REPORT',
+    '',
+    `Generated by scaffold-consumer.mjs for **${displayName}**`,
+    '',
+    `- Input module: \`${inputModuleId}\``,
+    `- Kneeboard ID: \`${kneeboardId}\``,
+    `- Profiles: ${preview.summary.profileCount}`,
+    `- Mapped devices: ${preview.summary.mappedDevices}`,
+    `- Unmapped devices: ${preview.summary.unmappedDevices}`,
+    `- Preview errors: ${preview.summary.errorCount}`,
+    '',
+    '## Devices',
+    '',
+    ...preview.devices.map(
+      (d) =>
+        `- \`${d.profileFile}\` → ${d.deviceId ?? '**UNMAPPED**'} (${d.mappingSource}${d.instanceHint ? `, instance ${d.instanceHint}` : ''})`,
+    ),
+    '',
+    '## Next steps',
+    '',
+    '1. Review `config/kneeboard.json` (draft controls/layers).',
+    '2. Map any UNMAPPED devices via `--map` and re-run, or edit JSON by hand.',
+    '3. `npm ci` and set `DCS_COMMON_ROOT` to a DCS-Common checkout.',
+    '4. `npm run build:kneeboard` / `npm run test:kneeboard`.',
+    '5. Flesh out packaging scripts if the stubs need consumer-specific inventory checks.',
+    '',
+    '## Planned files',
+    '',
+    ...planned.map((p) => `- ${p}`),
+  ];
+  write('SCAFFOLD-REPORT.md', `${reportLines.join('\n')}\n`);
+
+  return {
+    outputDir: out,
+    repoName: name,
+    plannedFiles: planned,
+    kneeboard,
+    dryRun,
+    errors: preview.errors,
+  };
+}
+
 export function main(argv = process.argv.slice(2)) {
   const options = parseArgs(argv);
   if (options.help) {
     printHelp();
     return 0;
   }
-  if (!options.previewJson || !options.profilesDir) {
+
+  if (!options.profilesDir) {
     printHelp();
-    console.error('\nError: --preview-json and --profiles-dir are required.');
+    console.error('\nError: --profiles-dir is required.');
     return 1;
   }
 
@@ -293,8 +558,37 @@ export function main(argv = process.argv.slice(2)) {
     commonRoot: options.commonRoot,
   });
 
-  writeFileSync(options.previewJson, `${JSON.stringify(preview, null, 2)}\n`, 'utf8');
-  console.log(`Wrote preview: ${options.previewJson}`);
+  if (options.previewJson) {
+    writeFileSync(options.previewJson, `${JSON.stringify(preview, null, 2)}\n`, 'utf8');
+    console.log(`Wrote preview: ${options.previewJson}`);
+  }
+
+  if (options.outputDir) {
+    if (!options.displayName || !options.inputModuleId || !options.kneeboardId) {
+      console.error('Write mode requires --display-name, --input-module-id, and --kneeboard-id.');
+      return 1;
+    }
+    const result = writeConsumer({
+      preview,
+      outputDir: options.outputDir,
+      displayName: options.displayName,
+      inputModuleId: options.inputModuleId,
+      kneeboardId: options.kneeboardId,
+      repoName: options.repoName,
+      dryRun: options.dryRun,
+      commonRoot: options.commonRoot,
+    });
+    console.log(
+      `${result.dryRun ? 'Dry-run' : 'Wrote'} consumer under ${result.outputDir} (${result.plannedFiles.length} paths)`,
+    );
+  }
+
+  if (!options.previewJson && !options.outputDir) {
+    printHelp();
+    console.error('\nError: provide --preview-json and/or --output-dir.');
+    return 1;
+  }
+
   console.log(
     `Profiles=${preview.summary.profileCount} rows=${preview.summary.rowCount} mapped=${preview.summary.mappedDevices} unmapped=${preview.summary.unmappedDevices} errors=${preview.summary.errorCount}`,
   );
