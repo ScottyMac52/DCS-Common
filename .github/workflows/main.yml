@@ -173,7 +173,7 @@ jobs:
           }
           "@ | Out-File -Encoding utf8 "config/kneeboard.json"
 
-          # Mock Lua profiles (MUST pass DCS-Common's strict regex parsing)
+          # Mock Lua profiles (MUST pass DCS-Common's strict regex parsing and contain both keys)
           $Profiles = @(
             "DummyProfile {00000000-0000-0000-0000-000000000000}.diff.lua",
             "OnYourTwelve F-14 PDCP {52C96400-3F11-11f1-8001-444553540000}.diff.lua",
@@ -182,11 +182,19 @@ jobs:
           $MockLua = @"
           local diff = {
               ["keyDiffs"] = {
-                  ["dnil"] = {
-                      ["name"] = "Mock Binding",
+                  ["dnil_1"] = {
+                      ["name"] = "Mock Binding 1",
                       ["added"] = {
                           [1] = {
                               ["key"] = "JOY_BTN1"
+                          }
+                      }
+                  },
+                  ["dnil_2"] = {
+                      ["name"] = "Mock Binding 2",
+                      ["added"] = {
+                          [1] = {
+                              ["key"] = "JOY_BTN2"
                           }
                       }
                   }
@@ -321,3 +329,4 @@ jobs:
           path: |
             dist/*.zip
             dist/SHA256SUMS.txt
+            
