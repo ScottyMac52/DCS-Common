@@ -188,7 +188,7 @@ jobs:
           Dummy release notes for testing.
           "@ | Out-File -Encoding utf8 "packaging/release/RELEASE-NOTES.md"
 
-          # 5. Mock build-kneeboard.mjs script (DYNAMICALLY READS ALL PAGES)
+          # 5. Mock build-kneeboard.mjs script (DYNAMICALLY READS ALL PAGES, NO TEMPLATE LITERALS)
           @"
           import { mkdirSync, writeFileSync, readFileSync } from 'node:fs';
           import { resolve, dirname, join } from 'node:path';
@@ -202,9 +202,9 @@ jobs:
           const allPages = [...(config.summaryPages || []), ...(config.pages || [])];
           
           for (const page of allPages) {
-            writeFileSync(join(outputDir, \`\${page.file}.png\`), Buffer.from('dummy'));
+            writeFileSync(join(outputDir, page.file + '.png'), Buffer.from('dummy'));
           }
-          console.log(\`Mock kneeboard build completed. Wrote \${allPages.length} dummy PNGs.\`);
+          console.log('Mock kneeboard build completed. Wrote ' + allPages.length + ' dummy PNGs.');
           "@ | Out-File -Encoding utf8 "scripts/build-kneeboard.mjs"
 
           # 6. Mock package.json script registration
