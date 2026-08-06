@@ -59,7 +59,6 @@
     {
       "id": "winctrl-pto2",
       "label": "WINCTRL PTO2",
-      "deterministicExport": false,
       "drawio": "drawio/winctrl-pto2.drawio",
       "svg": "svg/winctrl-pto2.svg",
       "lua": "lua/winctrl-pto2.lua"
@@ -81,7 +80,6 @@
     {
       "id": "tm-warthog-throttle",
       "label": "TM Warthog Throttle",
-      "deterministicExport": false,
       "drawio": "drawio/tm-warthog-throttle.drawio",
       "svg": "svg/tm-warthog-throttle.svg",
       "lua": "lua/tm-warthog-throttle.lua"
