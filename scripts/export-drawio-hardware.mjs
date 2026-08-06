@@ -1,4 +1,4 @@
-import { readFileSync, writeFileSync } from 'node:fs';
+import { readFileSync, writeFileSync, mkdirSync } from 'node:fs';
 import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
@@ -126,6 +126,7 @@ for (const device of manifest.devices.filter((entry) => entry.drawio && entry.de
   if (checkOnly) {
     if (readFileSync(target, 'utf8') !== output) stale.push(device.svg);
   } else {
+    mkdirSync(dirname(target), { recursive: true });   // <-- add this
     writeFileSync(target, output, 'utf8');
     console.log(`exported ${device.drawio} -> ${device.svg}`);
   }
