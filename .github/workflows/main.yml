@@ -4,9 +4,6 @@ on:
   workflow_dispatch:
   pull_request:
     branches: [main]
-    paths-ignore:
-      - '**/*.yml'
-      - '**/*.yaml'
 
 permissions:
   contents: read
@@ -27,7 +24,9 @@ jobs:
         uses: actions/checkout@v4
         with:
           repository: ScottyMac52/DCS-Common
-          ref: main 
+          # On PRs, test the PR head so framework changes in the PR are exercised.
+          # On workflow_dispatch, fall back to main.
+          ref: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.sha || 'main' }}
           path: .dcs-common
 
       - name: Setup Node.js 22

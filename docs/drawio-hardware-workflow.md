@@ -14,6 +14,30 @@ The native, uncompressed files under `assets/shared/hardware/drawio/` are the vi
 
 The custom exporter intentionally supports the limited native cell vocabulary used by these templates. This keeps exports deterministic in CI without requiring the diagrams.net desktop application.
 
+## Optional button-number watermarks
+
+Callout label cells may carry a physical button number as a style attribute:
+
+```
+buttonNumber=12;
+```
+
+When present, the exporter can render a small, low-opacity watermark of that number inside the callout box (bottom-right corner).
+
+Control is via `assets/shared/hardware/export-config.json`:
+
+```json
+{
+  "includeButtonNumberWatermarks": false
+}
+```
+
+- Default is `false` so published SVGs stay clean.
+- Set to `true` (or pass `--watermarks` on the CLI) when you want the numbers visible for development or documentation.
+- Labels without a `buttonNumber` attribute never show a watermark.
+
+This feature is limited to the draw.io → SVG generation path. It does not affect runtime DCS UI or other layers.
+
 ## Add a source-backed device
 
 Add an approved raster image under `assets/shared/hardware/source/`, create the initial SVG/control inventory, add a `drawio` path to the manifest entry, and run `npm run create:drawio-hardware`. The creation command refuses to overwrite existing native sources unless `--force` is supplied; do not use `--force` after manual layout work begins.

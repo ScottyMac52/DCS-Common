@@ -16,19 +16,19 @@ test('all 14 hardware devices have native draw.io sources', () => {
     const xml = readFileSync(join(hardwareRoot, device.drawio), 'utf8');
     assert.match(xml, /<mxfile\b/);
     assert.match(xml, /compressed="false"/);
-    if (device.deterministicExport === false) {
-      assert.ok((xml.match(/id="label-[^"]+"/g) ?? []).length > 0);
-      assert.match(xml, /image=data:image\/(?:png|jpeg|jpg),[A-Za-z0-9+/=]+/);
-      continue;
-    }
     assert.match(xml, /id="hardware-image-1"/);
-    assert.match(xml, /image=data:image\/(?:png|jpeg),[A-Za-z0-9+/=]+;/);
-    assert.doesNotMatch(xml, /image=data:image\/(?:png|jpeg);base64,/);
-    assert.match(xml, /id="anchor-/);
     assert.match(xml, /id="label-/);
-    assert.match(xml, /id="connector-/);
+    assert.match(xml, /image=data:image\/(?:png|jpeg|jpg),[A-Za-z0-9+/=]+/);
     assert.doesNotMatch(xml, /data:image\/svg\+xml/, `${device.id} must not embed the old SVG as a background`);
     assert.doesNotMatch(readFileSync(join(hardwareRoot, device.svg), 'utf8'), /No source image available/);
+
+    // Callout style requires anchors + connectors; box-only style is labels over artwork.
+    const hasConnectors = (xml.match(/id="connector-/g) ?? []).length > 0;
+    if (hasConnectors) {
+      assert.match(xml, /id="anchor-/);
+      assert.match(xml, /image=data:image\/(?:png|jpeg),[A-Za-z0-9+/=]+;/);
+      assert.doesNotMatch(xml, /image=data:image\/(?:png|jpeg);base64,/);
+    }
   }
 });
 
@@ -42,15 +42,17 @@ test('native sources and exported SVGs preserve callout identities', () => {
   for (const device of phaseOne) {
     const xml = readFileSync(join(hardwareRoot, device.drawio), 'utf8');
     const svg = readFileSync(join(hardwareRoot, device.svg), 'utf8');
-    const idPattern = device.deterministicExport === false
-      ? /id="label-([^"]+)"/g
-      : /id="connector-([^"]+)"/g;
+    const hasConnectors = (xml.match(/id="connector-/g) ?? []).length > 0;
+    const idPattern = hasConnectors
+      ? /id="connector-([^"]+)"/g
+      : /id="label-([^"]+)"/g;
     const sourceIds = [...xml.matchAll(idPattern)].map((match) => match[1]).sort();
-    const svgIds = [...svg.matchAll(/<!-- callout:([^\s]+) -->/g)].map((match) => match[1]).sort();
-    assert.deepEqual(svgIds, sourceIds, `${device.id} callout IDs changed during export`);
-    if (device.deterministicExport !== false) {
-      assert.equal((svg.match(/<image\b/g) ?? []).length, (xml.match(/id="hardware-image-/g) ?? []).length);
-    }
+    const commentPattern = hasConnectors
+      ? /<!-- callout:([^\s]+) -->/g
+      : /<!-- box:([^\s]+) -->/g;
+    const svgIds = [...svg.matchAll(commentPattern)].map((match) => match[1]).sort();
+    assert.deepEqual(svgIds, sourceIds, `${device.id} control IDs changed during export`);
+    assert.equal((svg.match(/<image\b/g) ?? []).length, (xml.match(/id="hardware-image-/g) ?? []).length);
   }
 });
 
