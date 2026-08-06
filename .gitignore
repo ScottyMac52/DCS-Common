@@ -41,3 +41,6 @@ luac.out
 
 
 node_modules/
+
+# Generated SVG files
+*.svg

@@ -88,10 +88,8 @@
         <mxCell id="label-lev3" parent="1" style="rounded=1;arcSize=18;whiteSpace=wrap;html=1;fillColor=#1e293b;strokeColor=#00bfff;strokeWidth=1.5;fontColor=#f1f5f9;fontFamily=Arial;fontSize=11;align=center;verticalAlign=middle;" value="Mixture Axis" vertex="1">
           <mxGeometry height="30" width="160" x="695" y="95" as="geometry" />
         </mxCell>
-        <mxCell id="connector-lev3" edge="1" parent="1" source="label-lev3" style="endArrow=none;html=1;strokeColor=#00bfff;strokeWidth=1.5;dashed=1;dashPattern=5 3;opacity=75;" value="">
-          <mxGeometry relative="1" as="geometry">
-            <mxPoint x="560" y="105" as="targetPoint" />
-          </mxGeometry>
+		<mxCell id="connector-lev3" edge="1" parent="1" source="label-lev3" style="endArrow=none;html=1;strokeColor=#00bfff;strokeWidth=1.5;dashed=1;dashPattern=5 3;opacity=75;" target="anchor-lev3" value="">
+          <mxGeometry relative="1" as="geometry" />
         </mxCell>
         <mxCell id="edge-label-lev3" connectable="0" parent="connector-lev3" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];fontColor=#ffffff;labelBackgroundColor=#0f172a;" value="Right Lever" vertex="1">
           <mxGeometry relative="1" x="-0.2" as="geometry" />
@@ -162,7 +160,7 @@
         <mxCell id="developer-notes" parent="1" style="text;html=1;align=left;verticalAlign=top;fillColor=#1e293b;fontColor=#94a3b8;strokeColor=#475569;strokeWidth=2;spacing=10;fontFamily=Arial;fontSize=11;rounded=1;" value="EXPECTED ARRAY LABEL ORDER:&#xa;1. lev1 (Left Lever)&#xa;2. lev2 (Center Lever)&#xa;3. detent1 (Left Detent)&#xa;4. detent2 (Center Detent)&#xa;5. t1 (Left Rocker Up)&#xa;6. t2 (Left Rocker Down)&#xa;7. lev3 (Right Lever)&#xa;8. detent3 (Right Detent)&#xa;9. t3 (Center Rocker Up)&#xa;10. t4 (Center Rocker Down)&#xa;11. t5 (Right Rocker Up)&#xa;12. t6 (Right Rocker Down)" vertex="1">
           <mxGeometry height="210" width="220" x="-80" y="-70" as="geometry" />
         </mxCell>
-        <mxCell id="VAMas1ioyirTDDEWs2W6-1" parent="1" style="text;html=1;align=center;verticalAlign=middle;fontFamily=Arial;fontSize=12;fontColor=#475569;strokeColor=none;fillColor=none;" value="Logitech Throttle Quadrant • canonical shared template" vertex="1">
+        <mxCell id="footer" parent="1" style="text;html=1;align=center;verticalAlign=middle;fontFamily=Arial;fontSize=12;fontColor=#475569;strokeColor=none;fillColor=none;" value="Logitech Throttle Quadrant • canonical shared template" vertex="1">
           <mxGeometry height="20" width="1080" x="-80" y="620" as="geometry" />
         </mxCell>
       </root>
