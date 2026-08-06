@@ -1,4 +1,4 @@
-import { readFileSync, writeFileSync, mkdirSync } from 'node:fs';
+import { readFileSync, writeFileSync, mkdirSync, existsSync } from 'node:fs';
 import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
@@ -7,16 +7,24 @@ const hardwareRoot = join(root, 'assets/shared/hardware');
 const manifest = JSON.parse(readFileSync(join(hardwareRoot, 'manifest.json'), 'utf8'));
 const checkOnly = process.argv.includes('--check');
 
+// Optional config for export behaviour (defaults keep published SVGs clean).
+const exportConfigPath = join(hardwareRoot, 'export-config.json');
+const exportConfig = existsSync(exportConfigPath)
+  ? JSON.parse(readFileSync(exportConfigPath, 'utf8'))
+  : {};
+const includeButtonNumberWatermarks = exportConfig.includeButtonNumberWatermarks === true
+  || process.argv.includes('--watermarks');
+
 const decode = (value = '') => value
-  .replaceAll('"', '"')
-  .replaceAll('<', '<')
-  .replaceAll('>', '>')
-  .replaceAll('&', '&');
+  .replaceAll('&quot;', '"')
+  .replaceAll('&lt;', '<')
+  .replaceAll('&gt;', '>')
+  .replaceAll('&amp;', '&');
 const esc = (value = '') => value
-  .replaceAll('&', '&')
-  .replaceAll('"', '"')
-  .replaceAll('<', '<')
-  .replaceAll('>', '>');
+  .replaceAll('&', '&amp;')
+  .replaceAll('"', '&quot;')
+  .replaceAll('<', '&lt;')
+  .replaceAll('>', '&gt;');
 const attr = (source, name) => decode(source.match(new RegExp(`${name}="([^"]*)"`))?.[1]);
 const styleValue = (style, name) => {
   if (name === 'image') {
@@ -57,6 +65,17 @@ function endpoint(label, anchor) {
 function renderLabelBox(lines, label, id) {
   lines.push(`  <rect x="${label.x}" y="${label.y}" width="${label.width}" height="${label.height}" rx="4" fill="#1e293b" stroke="#00bfff" stroke-width="1.5"/>`);
   lines.push(`  <text id="lbl-${esc(id)}" x="${label.x + label.width / 2}" y="${label.y + 15}" text-anchor="middle" font-family="Arial,sans-serif" font-size="11" fill="#f1f5f9">${esc(label.value)}</text>`);
+
+  // Optional button-number watermark (controlled by export-config.json or --watermarks).
+  // Data lives in the draw.io label style as buttonNumber=N.
+  if (includeButtonNumberWatermarks) {
+    const buttonNumber = styleValue(label.style || '', 'buttonNumber');
+    if (buttonNumber) {
+      const wx = label.x + label.width - 4;
+      const wy = label.y + label.height - 3;
+      lines.push(`  <text class="btn-watermark" data-button="${esc(buttonNumber)}" x="${wx}" y="${wy}" text-anchor="end" font-family="Arial,sans-serif" font-size="8" fill="#94a3b8" opacity="0.35">${esc(buttonNumber)}</text>`);
+    }
+  }
 }
 
 function render(device, xml) {
@@ -126,7 +145,7 @@ for (const device of manifest.devices.filter((entry) => entry.drawio && entry.de
   if (checkOnly) {
     if (readFileSync(target, 'utf8') !== output) stale.push(device.svg);
   } else {
-    mkdirSync(dirname(target), { recursive: true });   // <-- add this
+    mkdirSync(dirname(target), { recursive: true });
     writeFileSync(target, output, 'utf8');
     console.log(`exported ${device.drawio} -> ${device.svg}`);
   }
@@ -137,4 +156,4 @@ if (stale.length) {
 }
 console.log(checkOnly
   ? `Verified ${processed} published draw.io hardware template(s).`
-  : `Exported ${processed} draw.io hardware template(s).`);
+  : `Exported ${processed} draw.io hardware template(s)${includeButtonNumberWatermarks ? ' (with button-number watermarks)' : ''}.`);
