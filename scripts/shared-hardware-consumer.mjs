@@ -3,10 +3,10 @@ import { execFileSync } from 'node:child_process';
 import { join, resolve } from 'node:path';
 
 const escapeXml = (value = '') => String(value)
-  .replaceAll('&', '&amp;')
-  .replaceAll('<', '&lt;')
-  .replaceAll('>', '&gt;')
-  .replaceAll('"', '&quot;');
+  .replaceAll('&', '&')
+  .replaceAll('<', '<')
+  .replaceAll('>', '>')
+  .replaceAll('"', '"');
 
 const physicalPrefix = /^(?:JOY_)?BTN\s*\d[^:]*:/i;
 
@@ -91,8 +91,11 @@ export function renderSharedHardwareInstancesPage({ instances, title, kicker = '
     };
   });
   const pageFooter = provenance ? formatProvenanceFooter({ commonRoot, ...provenance }) : footer;
-  const defaultWidth = 540;
-  const defaultHeight = 1180;
+  // Shared device SVGs are landscape (e.g. 960×640). A tall portrait slot
+  // (old default 540×1180) letterboxed the diagram and clipped top callouts.
+  // Keep ~3:2 so callouts stay visible inside each instance card.
+  const defaultWidth = 560;
+  const defaultHeight = 400;
   return {
     instances: rendered.map(({ instanceId, deviceId, calloutIds }) => ({ instanceId, deviceId, calloutIds })),
     svg: `<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="1600" viewBox="0 0 1200 1600">
@@ -102,10 +105,10 @@ export function renderSharedHardwareInstancesPage({ instances, title, kicker = '
   <text x="54" y="80" font-family="Arial,sans-serif" font-size="44" font-weight="700" fill="#f5f9ff">${escapeXml(title)}</text>
   <text x="56" y="126" font-family="Arial,sans-serif" font-size="20" font-weight="700" fill="#ffc95c">${escapeXml(kicker)}</text>
 ${rendered.map((instance, index) => {
-  const x = instance.x ?? 40 + index * 570;
-  const y = instance.y ?? 190;
   const width = instance.width ?? defaultWidth;
   const height = instance.height ?? defaultHeight;
+  const x = instance.x ?? 40 + index * (width + 20);
+  const y = instance.y ?? 280;
   const label = escapeXml(instance.title ?? instance.device.label);
   return `  <g data-instance="${escapeXml(instance.instanceId)}"><text x="${x + width / 2}" y="${y - 18}" text-anchor="middle" font-family="Arial,sans-serif" font-size="22" font-weight="700" fill="#8fdfff">${label}</text><image href="data:image/svg+xml;base64,${instance.encoded}" x="${x}" y="${y}" width="${width}" height="${height}" preserveAspectRatio="xMidYMid meet"/></g>`;
 }).join('\n')}
