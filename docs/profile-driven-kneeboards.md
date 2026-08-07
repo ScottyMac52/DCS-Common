@@ -2,6 +2,8 @@
 
 Aircraft repositories keep their DCS `.diff.lua` profiles as binding data and add a JSON composition file. DCS-Common parses the profiles, validates every referenced joystick key, and supplies the DCS binding name as the default kneeboard label. A short `label` override is allowed when the DCS name is too long for the hardware diagram.
 
+When a page uses `controls`, any page-level `labels` map must be **ID-keyed** (callout id → text). An ordered `labels` **array** is only valid on pages **without** `controls`; the loader rejects `controls` + array labels with `profile-driven controls require ID-keyed labels`. Prefer ID-keyed `labels` and/or per-control `"label"` for profile-driven pages.
+
 ```json
 {
   "schemaVersion": 1,
@@ -34,121 +36,74 @@ Set `modifiersFile` to import native DCS modifier declarations and map stable co
   "modifiers": {
     "S3": { "nativeName": "AVA_F16_S3", "deviceId": "ava-base-f16c", "mode": "hold" }
   },
-  "pages": [{
-    "file": "02-LEFT-MFD",
-    "deviceId": "tm-mfd",
-    "layers": [
-      { "id": "base", "controls": { "mfd-osb-t1": { "profile": "left", "key": "JOY_BTN1" } } },
-      { "id": "s3", "file": "03-S3-LEFT-MFD", "modifiers": ["S3"], "controls": { "mfd-osb-t1": { "profile": "left", "key": "JOY_BTN1" } } }
-    ]
-  }]
+  "pages": [
+    {
+      "file": "03-LEFT-MFD",
+      "deviceId": "tm-mfd",
+      "layers": [
+        { "id": "base", "controls": { "mfd-osb-t1": { "profile": "left", "key": "JOY_BTN1" } } },
+        { "id": "s3", "file": "03-S3-LEFT-MFD", "modifiers": ["S3"], "controls": { "mfd-osb-t1": { "profile": "left", "key": "JOY_BTN1" } } }
+      ]
+    }
+  ]
 }
 ```
 
-Modifier order is canonicalized, while exact chord membership is preserved. A one-modifier binding is distinct from an unmodified binding and from a two-modifier chord. Native `switch = false` modifiers are reported as `hold`; switched modifiers are reported as `toggle` so consumers can render accurate legends.
+See the operator procedure below for hold vs toggle, exact-chord rules, and a full Warthog BTN3 worked example.
 
----
-
-## Operator workflow: implement a modifier end-to-end
-
-Use this procedure after you create or change a modifier in DCS and want consumer profiles and kneeboard layers to match.
-
-**Worked example:** Thrustmaster Warthog **JOY_BTN3** as a **toggle mode switch**. While the mode is armed, selected **TM MFD OSBs and rockers** resolve to alternate DCS commands.
+## Modifier layers and operator workflow
 
 ### Phase 1 — Declare the modifier in DCS
 
 1. In DCS **Controls**, open **Modifiers** (module or UI layer as appropriate).
 2. Add a modifier on the physical control:
-   - Device: exact DCS device name / GUID (e.g. Joystick - HOTAS Warthog)
-   - Key: `JOY_BTN3`
-   - **Switch = On** for toggle (press engages, press again disengages). **Switch = Off** for hold-to-use.
-3. Give it a stable native name, e.g. `WH_MODE`. This string becomes the reformer name in `.diff.lua`.
-4. Let DCS write `Saved Games/.../Config/Input/<ModuleOrUiLayer>/modifiers.lua`.
+   - **Hold** (`switch = false`): chord active only while pressed.
+   - **Toggle** (`switch = true`): press to arm, press to disarm.
+3. Export the module input folder (or UI layer) so `modifiers.lua` and the relevant `.diff.lua` files are on disk.
 
-Expected native shape (simplified):
+### Phase 2 — Wire the consumer JSON
 
-```lua
-local modifiers = {
-  ["WH_MODE"] = {
-    ["device"] = "Joystick - HOTAS Warthog {GUID}",
-    ["key"] = "JOY_BTN3",
-    ["switch"] = true,  -- toggle
-  },
-}
-return modifiers
-```
+1. Point `modifiersFile` at the versioned `modifiers.lua`.
+2. Map a stable alias under `modifiers` (`nativeName` must match DCS).
+3. Set `mode` to `hold` or `toggle` to match DCS `switch`.
 
-Rules enforced when Common imports the file:
+### Phase 3 — Bind alternate functions with the reformer
 
-- Each modifier requires `device`, `key`, and `switch`
-- Names are unique case-insensitively
-- Two modifiers cannot share the same device + key
-
-### Phase 2 — Bind base and alternate functions in DCS
-
-1. On the target device profile (e.g. `F16 MFD 1 {GUID}.diff.lua`), bind **unmodified** OSB/rocker commands as usual.
+1. In DCS, assign base (no reformer) commands on the shared physical keys.
 2. For each alternate function, bind the **same physical key** with the **WH_MODE** reformer active (toggle engaged in the controls UI when assigning).
-3. Export / copy the resulting `.diff.lua` into the consumer under `src/Config/Input/...`.
+3. Re-export profiles so `added` entries carry the reformer list.
 
-Illustrative same-key bindings:
-
-| Physical | Reformers | Example DCS command name |
-| --- | --- | --- |
-| `JOY_BTN1` | _(none)_ | Left MFD OSB 1 |
-| `JOY_BTN1` | `WH_MODE` | Markpoint shortcut |
-| `JOY_BTN25` | _(none)_ | BRT up |
-| `JOY_BTN25` | `WH_MODE` | Alternate rocker function |
-
-Chord membership is exact: unmodified ≠ `WH_MODE` ≠ `WH_MODE + OTHER`.
-
-### Phase 3 — Version modifiers in the consumer repository
-
-1. Copy the DCS `modifiers.lua` into the consumer, for example:
-   - `src/Config/Input/<AircraftOrUiLayer>/modifiers.lua`
-2. Commit the updated `.diff.lua` profiles that contain the reformer chords.
-3. When `modifiersFile` is set, do **not** invent reformer names in JSON that are missing from `modifiers.lua` — the catalog requires a native match.
-4. If the OvGME package is the pilot’s source of truth for modifiers (not only kneeboard generation), ship the same `modifiers.lua` on the path DCS expects under `Config/Input/...`.
-
-### Phase 4 — Wire aliases and layers in `config/kneeboard.json`
+### Phase 4 — Layer the kneeboard page
 
 ```json
 {
-  "schemaVersion": 1,
-  "aircraft": "F-16C_50",
   "modifiersFile": "src/Config/Input/F-16C_50/modifiers.lua",
   "modifiers": {
     "MODE": {
       "nativeName": "WH_MODE",
-      "deviceId": "tm-warthog-grip",
+      "deviceId": "ava-base-f16c",
       "mode": "toggle",
       "label": "Warthog BTN3 mode"
     }
-  },
-  "profiles": {
-    "leftMfd": "src/Config/Input/F-16C_50/joystick/F16 MFD 1 {GUID}.diff.lua"
   },
   "pages": [
     {
       "file": "02-LEFT-MFD",
       "deviceId": "tm-mfd",
-      "title": "COUGAR MFD 1 • LEFT MFD",
       "layers": [
         {
           "id": "base",
           "controls": {
-            "mfd-osb-t1": { "profile": "leftMfd", "key": "JOY_BTN1" },
-            "mfd-rocker-brt-up": { "profile": "leftMfd", "key": "JOY_BTN25" }
+            "mfd-osb-t1": { "profile": "left", "key": "JOY_BTN1" }
           }
         },
         {
           "id": "mode",
           "file": "02-LEFT-MFD-MODE",
-          "title": "COUGAR MFD 1 • MODE LAYER",
-          "kicker": "WH_MODE TOGGLE ACTIVE • WARTHOG BTN3",
+          "title": "LEFT MFD • MODE TOGGLE ACTIVE",
           "modifiers": ["MODE"],
           "controls": {
-            "mfd-osb-t1": { "profile": "leftMfd", "key": "JOY_BTN1" },
-            "mfd-rocker-brt-up": { "profile": "leftMfd", "key": "JOY_BTN25" }
+            "mfd-osb-t1": { "profile": "left", "key": "JOY_BTN1" }
           }
         }
       ]
@@ -162,7 +117,7 @@ Notes:
 - Alias id (`MODE`) is stable for the consumer; `nativeName` must match the DCS modifier name (`WH_MODE`).
 - Declaring `"mode": "toggle"` must agree with `switch = true` in `modifiers.lua` or the load fails.
 - Each layer becomes its own output page: base keeps `02-LEFT-MFD`; mode layer uses `02-LEFT-MFD-MODE`.
-- Control IDs must exist on the shared device (`tm-mfd` catalog). Labels default to the DCS binding name unless `label` is set.
+- Control IDs must exist on the shared device (`tm-mfd` catalog). Labels default to the DCS binding name unless `label` is set (or an ID-keyed `labels` entry overrides the same callout).
 - Optional: set `modifiers` on an individual control reference when that control’s chord differs from the layer default.
 
 ### Phase 5 — Rebuild and validate

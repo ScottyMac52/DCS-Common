@@ -49,7 +49,7 @@ Record these values before creating files. They are independent and must not be 
 | Display name | `F-14B(U)` | Documentation and kneeboard titles |
 | DCS input module ID | `F-14BU` | `Config/Input/<module>` |
 | DCS kneeboard ID | `F-14BU` | `KNEEBOARD/<module>` |
-| Saved Games root | `%USERPROFILE%\Saved Games\DCS.openbeta` | OVGME configuration root |
+| Saved Games root | `%USERPROFILE%\\Saved Games\\DCS.openbeta` | OVGME configuration root |
 
 Use the module IDs that DCS actually reads. A repository named for an aircraft can still require a different module directory. If the input and kneeboard IDs differ, declare both and test both install paths. The OVGME archive must be relative to the documented Saved Games root: its package container starts with `Config/` and `KNEEBOARD/`; it must not contain an extra `Saved Games/DCS` directory.
 
@@ -170,7 +170,10 @@ Notes:
 
 - `summaryPages` are consumer-owned text/layout pages rendered through `kneeboard-renderer.mjs`.
 - `pages` with a `deviceId` are shared-hardware pages rendered through `shared-hardware-consumer.mjs`.
-- Labels may be a map keyed by callout ID, an ordered array aligned to callout order, or profile-driven `controls` entries.
+- **Labels vs controls**
+  - **ID-keyed object** (`"labels": { "callout-id": "Text" }`): preferred; works with or without `controls`.
+  - **Ordered array** (`"labels": ["Text", …]`): aligned to shared-SVG callout document order; **only** when the page has **no** `controls`. Combining an array with `controls` fails the build (`profile-driven controls require ID-keyed labels`).
+  - **`controls`**: profile-driven wiring (`profile` + `key`). Display text defaults to the DCS binding name; optional per-control `"label"` shortens it. Scaffold pre-fills an ID-keyed `labels` map from those names for easy edits.
 - Callout labels must describe **functions**, not physical button prefixes (`JOY_BTN12: ...` is rejected).
 - Keep output filenames and page order stable after publication because OpenKneeboard and user documentation may depend on them.
 
