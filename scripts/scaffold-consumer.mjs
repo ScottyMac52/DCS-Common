@@ -366,22 +366,30 @@ export function buildDraftKneeboardConfig(preview, { displayName, inputModuleId 
     pageIndex += 1;
 
     const controls = {};
-    const layerControls = new Map(); // chord -> controls
+    const labels = {};
+    const layerControls = new Map(); // chord -> { controls, labels }
 
     for (const row of preview.rows) {
       if (row.profileFile !== device.profileFile) continue;
       if (!row.calloutId) continue;
       if (row.section !== 'keyDiffs') continue;
 
+      const displayName = row.name || row.key;
+
       if (!row.chord) {
         if (!controls[row.calloutId]) {
           controls[row.calloutId] = { profile: profileKey, key: row.key };
+          // Pre-fill from the DCS binding name so editors can shorten without rediscovering IDs.
+          labels[row.calloutId] = displayName;
         }
       } else {
-        if (!layerControls.has(row.chord)) layerControls.set(row.chord, {});
-        const layerMap = layerControls.get(row.chord);
-        if (!layerMap[row.calloutId]) {
-          layerMap[row.calloutId] = { profile: profileKey, key: row.key };
+        if (!layerControls.has(row.chord)) {
+          layerControls.set(row.chord, { controls: {}, labels: {} });
+        }
+        const layer = layerControls.get(row.chord);
+        if (!layer.controls[row.calloutId]) {
+          layer.controls[row.calloutId] = { profile: profileKey, key: row.key };
+          layer.labels[row.calloutId] = displayName;
         }
       }
     }
@@ -391,20 +399,18 @@ export function buildDraftKneeboardConfig(preview, { displayName, inputModuleId 
       deviceId: device.deviceId,
       title,
       kicker: device.instanceHint ? `INSTANCE ${device.instanceHint}` : 'SCAFFOLD DRAFT',
-      // JSON has no comments; _comment documents optional display overrides for editors.
+      // JSON has no comments; _comment documents how labels relate to controls.
       _comment:
-        'Optional display overrides: set labels to an ID-keyed object ' +
-        '({ "<calloutId>": "Short text" }) or add "label" on a controls entry. ' +
-        'Leave labels {} to use DCS binding names resolved from controls.',
-      // Empty object so editors can add ID-keyed overrides without inventing the key.
-      labels: {},
+        'labels are pre-filled from DCS binding names via controls. Edit any string to override display text; ' +
+        'keep callout IDs in sync with controls. You can also set "label" on a controls entry.',
+      labels,
     };
 
     if (layerControls.size === 0) {
       page.controls = controls;
     } else {
       const layers = [
-        { id: 'base', controls, labels: {} },
+        { id: 'base', controls, labels: { ...labels } },
       ];
       for (const [chord, layerMap] of layerControls) {
         const aliases = chord.split('+').map((native) => {
@@ -416,8 +422,8 @@ export function buildDraftKneeboardConfig(preview, { displayName, inputModuleId 
           file: `${file}-${aliases.join('-') || 'LAYER'}`,
           title: `${title} • ${chord}`,
           modifiers: aliases,
-          controls: layerMap,
-          labels: {},
+          controls: layerMap.controls,
+          labels: layerMap.labels,
         });
       }
       page.layers = layers;
@@ -525,7 +531,7 @@ export function writeConsumer({ preview, outputDir, displayName, inputModuleId, 
     '## Next steps',
     '',
     '1. Review `config/kneeboard.json` (draft controls/layers).',
-    '2. Optional label overrides: each page has `labels: {}` and a `_comment` describing ID-keyed overrides (or per-control `"label"`). Leave empty to keep DCS binding names from controls.',
+    '2. Review pre-filled `labels` (from DCS binding names). Edit strings to shorten display text; IDs must stay aligned with `controls`.',
     '3. Map any UNMAPPED devices via `--map` and re-run, or edit JSON by hand.',
     '4. `npm ci` and set `DCS_COMMON_ROOT` to a DCS-Common checkout.',
     '5. `npm run build:kneeboard` / `npm run test:kneeboard`.',
