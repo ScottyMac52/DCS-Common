@@ -5,8 +5,10 @@ on:
   pull_request:
   workflow_dispatch:
 
+# contents: write is required when commit-kneeboard is true so the
+# reusable workflow can push regenerated SVG/PNG back to main.
 permissions:
-  contents: read
+  contents: write
 
 jobs:
   build:
@@ -20,6 +22,10 @@ jobs:
       test-package-script: scripts/Test-Package.ps1
       build-release-script: scripts/Build-Release.ps1
       test-release-script: scripts/Test-Package.ps1
+      # Keep repo kneeboard assets in lockstep with the OvGME package.
+      # Skipped automatically on pull_request; runs on main push / workflow_dispatch.
+      commit-kneeboard: true
+      kneeboard-paths: kneeboard/source kneeboard/{{KNEEBOARD_ID}}
       artifact-name: {{ARTIFACT_NAME}}-Release
       artifact-path: |
         dist/*.zip
