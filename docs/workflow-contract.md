@@ -32,6 +32,8 @@ The build and release workflows accept repository-specific inputs for:
 - independent complete-release build and validation switches
 - repository-specific validation and release-note preparation commands
 - release notes path and kneeboard path globs for regeneration commits
+- **`commit-kneeboard`** (build workflow) — when `true`, after generate+validate the workflow commits any changed SVG/PNG under `kneeboard-paths` back to `main` before packaging. Skipped on `pull_request`. Caller must set `permissions.contents: write`.
+- **`kneeboard-paths`** — space-separated paths passed to `git add` (e.g. `kneeboard/source kneeboard/F4U-1D`)
 
 These inputs keep the shared workflows flexible while preserving a consistent build and release contract across repositories.
 
@@ -44,3 +46,14 @@ Consumer repositories adopt the Common rendering pipeline:
 - `scripts/kneeboard-renderer.mjs` — summary/text pages when the consumer defines `summaryPages`
 
 The consumer owns page order, titles, labels, and packaging. DCS-Common owns geometry, callout IDs, product images, and rendering helpers. Generated SVG/PNG output is committed in the consumer and must be deterministic.
+
+### Repo vs OvGME lockstep (required)
+
+`Build-OvGME.ps1` copies **committed** files from `kneeboard/<id>/` into the package. If CI generates fresh pages in the workspace but does not commit them, the OvGME zip can contain pages that do not match `main`.
+
+Contract rules:
+
+1. **Release workflow** always regenerates, commits (`chore: regenerate kneeboard pages for vX.Y.Z [skip ci]`), then packages. Tag targets the post-commit SHA.
+2. **Build workflow** should set `commit-kneeboard: true` and `kneeboard-paths` for production consumers so main-branch and `workflow_dispatch` builds also push regenerated pages before packaging. PRs never push.
+3. Commit messages use `[skip ci]` to avoid recursive builds.
+4. Consumers must grant `permissions: contents: write` on the calling workflow when commit-back is enabled.

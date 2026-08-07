@@ -77,15 +77,32 @@ on:
         required: false
         type: string
         default: .
+      # When true, commit regenerated kneeboard SVG/PNG back to the default branch
+      # after generate+validate and before packaging. Only runs on push to main
+      # or workflow_dispatch (never on pull_request). Caller must grant contents: write.
+      commit-kneeboard:
+        required: false
+        type: boolean
+        default: false
+      kneeboard-paths:
+        required: false
+        type: string
+        default: 'kneeboard/source kneeboard/F-16C_50'
 
 jobs:
   build:
     runs-on: ${{ inputs.runs-on }}
+    permissions:
+      contents: write
     env:
       PACKAGE_VERSION: ${{ inputs.package-version }}
       DCS_COMMON_ROOT: ${{ github.workspace }}/.dcs-common
     steps:
       - uses: actions/checkout@v4
+        with:
+          # Needed so a subsequent push can update main when commit-kneeboard is enabled.
+          token: ${{ secrets.GITHUB_TOKEN }}
+          fetch-depth: 0
       - name: Check out shared DCS-Common assets
         uses: actions/checkout@v4
         with:
@@ -120,6 +137,30 @@ jobs:
         run: ${{ inputs.build-command }}
       - name: Validate OpenKneeboard pages
         run: ${{ inputs.test-kneeboard-command }}
+      - name: Commit regenerated kneeboard pages
+        if: >-
+          ${{ inputs.commit-kneeboard
+              && github.event_name != 'pull_request'
+              && (github.ref == 'refs/heads/main' || github.event_name == 'workflow_dispatch') }}
+        shell: pwsh
+        run: |
+          Set-Location '${{ inputs.package-root }}'
+          git config user.name  "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+          git add ${{ inputs.kneeboard-paths }}
+
+          $status = git status --porcelain ${{ inputs.kneeboard-paths }}
+          if ([string]::IsNullOrWhiteSpace($status)) {
+            Write-Host 'Kneeboard pages are already up to date; nothing to commit.'
+            return
+          }
+
+          git commit -m "chore: regenerate kneeboard pages for package $env:PACKAGE_VERSION [skip ci]"
+          git push origin HEAD:main
+
+          $NewSha = git rev-parse HEAD
+          Write-Host "Pushed regenerated kneeboard pages as $NewSha"
       - name: Build package
         shell: pwsh
         run: |
