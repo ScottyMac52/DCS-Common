@@ -155,9 +155,30 @@ export function loadCalloutCatalog(commonRoot, deviceId) {
   if (!existsSync(luaPath)) return { byKey: new Map(), controls: [] };
   const source = readFileSync(luaPath, 'utf8');
   const controls = [];
-  const blockPattern = /\{\s*id\s*=\s*"((?:\\.|[^"])*)"\s*,\s*key\s*=\s*"((?:\\.|[^"])*)"/g;
-  for (let match; (match = blockPattern.exec(source));) {
-    controls.push({ id: match[1], key: match[2] });
+  // Full schema: { id = "...", key = "..." } (either field order)
+  const withId = /\{\s*(?:id\s*=\s*"((?:\\.|[^"])*)"\s*,\s*key\s*=\s*"((?:\\.|[^"])*)"|key\s*=\s*"((?:\\.|[^"])*)"\s*,\s*id\s*=\s*"((?:\\.|[^"])*)")/g;
+  for (let match; (match = withId.exec(source));) {
+    const id = match[1] ?? match[4];
+    const key = match[2] ?? match[3];
+    if (id && key) controls.push({ id, key });
+  }
+  // Lightweight bindings fallback when no id+key pairs found
+  if (controls.length === 0) {
+    const bindingPattern = /\{\s*key\s*=\s*"((?:\\.|[^"])*)"[^}]*\}/g;
+    const svgPath = device.svg ? join(commonRoot, 'assets/shared/hardware', device.svg) : null;
+    const svgIds = [];
+    if (svgPath && existsSync(svgPath)) {
+      const svg = readFileSync(svgPath, 'utf8');
+      for (const m of svg.matchAll(/<text id="lbl-([^"]+)"/g)) svgIds.push(m[1]);
+    }
+    let index = 0;
+    for (let match; (match = bindingPattern.exec(source));) {
+      const key = match[1];
+      if (/[-\/]/.test(key)) continue;
+      const id = svgIds[index] ?? key.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+      controls.push({ id, key });
+      index += 1;
+    }
   }
   const byKey = new Map();
   for (const control of controls) {
@@ -372,7 +393,7 @@ export function buildDraftKneeboardConfig(preview, { displayName, inputModuleId 
     for (const row of preview.rows) {
       if (row.profileFile !== device.profileFile) continue;
       if (!row.calloutId) continue;
-      if (row.section !== 'keyDiffs') continue;
+      // Include keyDiffs and axisDiffs so throttle/stick/rudder axes are scaffolded.
 
       const displayName = row.name || row.key;
 
@@ -533,7 +554,7 @@ export function writeConsumer({ preview, outputDir, displayName, inputModuleId, 
     '2. Review pre-filled `labels` (from DCS binding names). Edit strings to shorten display text; IDs must stay aligned with `controls`.',
     '3. Map any UNMAPPED devices via `--map` and re-run, or edit JSON by hand.',
     '4. `npm ci` and set `DCS_COMMON_ROOT` to a DCS-Common checkout.',
-    '5. `npm run build:kneeboard` / `npm run test:kneeboard`.',
+    '5. `npm run build:kneeboard` / `npm run test:kneeboard` / `npm run test:versioning`.',
     '6. Flesh out packaging scripts if the stubs need consumer-specific inventory checks.',
     '',
     '## Planned files',
