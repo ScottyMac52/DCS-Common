@@ -1,11 +1,23 @@
 return {
+  schemaVersion = 1,
+  id = "viper-tqs-mission-pack",
   name = "Viper TQS + Mission Pack",
-  bindings = {
-    { key = "JOY_BTN1-5", name = "VAICOM TX1-TX5 reserved" },
-    { key = "JOY_BTN6", name = "UNCAGE" },
-    { key = "JOY_BTN7-64", name = "Consumer-defined TQS and Mission Pack mappings" },
-    { key = "JOY_X/JOY_Y", name = "Radar cursor" },
-    { key = "JOY_RX/JOY_RY", name = "Range and antenna elevation" },
-    { key = "JOY_RZ", name = "Zoom view" },
-  }
+  controls = {
+    { id = "viper-tqs-uncage", key = "JOY_BTN6", type = "button", hardwareLabel = "Uncage / cage" },
+    { id = "viper-tqs-speed-brake", key = "JOY_BTN9", type = "switch", hardwareLabel = "Speed brake extend" },
+    { id = "viper-tqs-speed-brake", key = "JOY_BTN10", type = "switch", hardwareLabel = "Speed brake retract" },
+    { id = "viper-tqs-dogfight", key = "JOY_BTN5", type = "button", hardwareLabel = "Afterburner / dogfight" },
+    { id = "viper-tqs-enable", key = "JOY_BTN16", type = "button", hardwareLabel = "Sight electrical cage" },
+    { id = "viper-tqs-idle-detent", key = "JOY_BTN50", type = "switch", hardwareLabel = "Air start cover open" },
+    { id = "viper-tqs-idle-detent", key = "JOY_BTN51", type = "switch", hardwareLabel = "Air start cover close" },
+    { id = "viper-tqs-landing-gear", key = "JOY_BTN52", type = "switch", hardwareLabel = "Air start on" },
+    { id = "viper-tqs-landing-gear", key = "JOY_BTN53", type = "switch", hardwareLabel = "Air start off" },
+    { id = "viper-tqs-stores-cat", key = "JOY_BTN42", type = "rotary", hardwareLabel = "Armament selector CW" },
+    { id = "viper-tqs-stores-cat", key = "JOY_BTN43", type = "rotary", hardwareLabel = "Armament selector CCW" },
+    { id = "viper-tqs-dcs-switch", key = "JOY_BTN17", type = "switch", hardwareLabel = "Mode selector manual" },
+    { id = "viper-tqs-zoom", key = "JOY_RZ", type = "axis", hardwareLabel = "Zoom view" },
+    { id = "viper-tqs-range-antenna", key = "JOY_RX", type = "axis", hardwareLabel = "Manual range" },
+    { id = "viper-tqs-radar-cursor", key = "JOY_RY", type = "axis", hardwareLabel = "UHF volume / antenna" },
+    { id = "viper-tqs-rf", key = "JOY_Z", type = "axis", hardwareLabel = "Thrust" },
+  },
 }

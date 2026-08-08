@@ -155,9 +155,31 @@ export function loadCalloutCatalog(commonRoot, deviceId) {
   if (!existsSync(luaPath)) return { byKey: new Map(), controls: [] };
   const source = readFileSync(luaPath, 'utf8');
   const controls = [];
-  const blockPattern = /\{\s*id\s*=\s*"((?:\\.|[^"])*)"\s*,\s*key\s*=\s*"((?:\\.|[^"])*)"/g;
-  for (let match; (match = blockPattern.exec(source));) {
-    controls.push({ id: match[1], key: match[2] });
+  // Full schema: { id = "...", key = "..." } (either field order)
+  const withId = /\{\s*(?:id\s*=\s*"((?:\\.|[^"])*)"\s*,\s*key\s*=\s*"((?:\\.|[^"])*)"|key\s*=\s*"((?:\\.|[^"])*)"\s*,\s*id\s*=\s*"((?:\\.|[^"])*)")/g;
+  for (let match; (match = withId.exec(source));) {
+    const id = match[1] ?? match[4];
+    const key = match[2] ?? match[3];
+    if (id && key) controls.push({ id, key });
+  }
+  // Lightweight bindings: { key = "JOY_…", name = "…" } without id — only used when no id+key pairs found
+  if (controls.length === 0) {
+    const bindingPattern = /\{\s*key\s*=\s*"((?:\\.|[^"])*)"[^}]*\}/g;
+    const svgPath = device.svg ? join(commonRoot, 'assets/shared/hardware', device.svg) : null;
+    const svgIds = [];
+    if (svgPath && existsSync(svgPath)) {
+      const svg = readFileSync(svgPath, 'utf8');
+      for (const m of svg.matchAll(/<text id="lbl-([^"]+)"/g)) svgIds.push(m[1]);
+    }
+    let index = 0;
+    for (let match; (match = bindingPattern.exec(source));) {
+      const key = match[1];
+      // Skip range placeholders like JOY_BTN1-5 or JOY_X/JOY_Y
+      if (/[-\/]/.test(key)) continue;
+      const id = svgIds[index] ?? key.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+      controls.push({ id, key });
+      index += 1;
+    }
   }
   const byKey = new Map();
   for (const control of controls) {
@@ -372,7 +394,7 @@ export function buildDraftKneeboardConfig(preview, { displayName, inputModuleId 
     for (const row of preview.rows) {
       if (row.profileFile !== device.profileFile) continue;
       if (!row.calloutId) continue;
-      if (row.section !== 'keyDiffs') continue;
+      // Include keyDiffs and axisDiffs so throttle/stick/rudder axes are scaffolded.
 
       const displayName = row.name || row.key;
 
@@ -495,7 +517,6 @@ export function writeConsumer({ preview, outputDir, displayName, inputModuleId, 
   write('packaging/ovgme/README.TXT', applyTokens(readTemplate(commonRoot, 'ovgme-README.TXT.tmpl'), tokens));
   write('packaging/release/RELEASE-NOTES.md', applyTokens(readTemplate(commonRoot, 'RELEASE-NOTES.md.tmpl'), tokens));
 
-  // Minimal packaging stubs so layout matches contract; operators refine scripts next.
   write(
     'scripts/Build-OvGME.ps1',
     applyTokens(readTemplate(commonRoot, 'Build-OvGME.ps1.tmpl'), tokens),
