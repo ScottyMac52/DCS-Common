@@ -1,10 +1,21 @@
 return {
+  schemaVersion = 1,
+  id = "vkb-f14-gunfighter",
   name = "VKB F-14 Gunfighter",
-  bindings = {
-    { command = "dnilp2019u2019cdnilvdnilvp1vu0", key = "JOY_BTN10", name = "Trim Pitch Up" },
-    { command = "dnilp2020u2020cdnilvdnilvp-1vu0", key = "JOY_BTN9", name = "Trim Roll Left Wing Down" },
-    { command = "dnilp2020u2020cdnilvdnilvp1vu0", key = "JOY_BTN12", name = "Trim Roll Right Wing Down" },
-    { command = "dnilp2019u2019cdnilvdnilvp-1vu0", key = "JOY_BTN11", name = "Trim Pitch Down" },
-    { command = "d3085pnilu3085cd57vd1vpnilvu0", key = "JOY_BTN7", name = "Autopilot Reference / Nosewheel Steering Toggle" }
-  }
+  controls = {
+    { id = "vkb-hat", key = "JOY_BTN10", type = "hat", hardwareLabel = "Trim hat" },
+    { id = "vkb-hat", key = "JOY_BTN11", type = "hat", hardwareLabel = "Trim hat" },
+    { id = "vkb-hat", key = "JOY_BTN9", type = "hat", hardwareLabel = "Trim hat" },
+    { id = "vkb-hat", key = "JOY_BTN12", type = "hat", hardwareLabel = "Trim hat" },
+    { id = "vkb-btn-red", key = "JOY_BTN3", type = "button", hardwareLabel = "Weapon release" },
+    { id = "vkb-btn-a", key = "JOY_BTN5", type = "button", hardwareLabel = "A / reject button" },
+    { id = "vkb-castle", key = "JOY_BTN4", type = "hat", hardwareLabel = "Castle / mode" },
+    { id = "vkb-sw1", key = "JOY_BTN13", type = "switch", hardwareLabel = "Mode switch position" },
+    { id = "vkb-sw2", key = "JOY_BTN14", type = "switch", hardwareLabel = "Mode switch position" },
+    { id = "vkb-sw3", key = "JOY_BTN15", type = "switch", hardwareLabel = "Mode switch position" },
+    { id = "vkb-sw4", key = "JOY_BTN16", type = "switch", hardwareLabel = "Mode switch position" },
+    { id = "vkb-pinky", key = "JOY_BTN7", type = "button", hardwareLabel = "Pinky / NWS" },
+    { id = "vkb-stage1", key = "JOY_BTN1", type = "trigger", hardwareLabel = "Trigger second detent" },
+    { id = "vkb-stage2", key = "JOY_BTN1", type = "trigger", hardwareLabel = "Trigger second detent" },
+  },
 }

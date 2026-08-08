@@ -1,8 +1,24 @@
 return {
+  schemaVersion = 1,
+  id = "winctrl-icp",
   name = "WINCTRL ICP",
-  bindings = {
-    { command = "dnilp1000u1000cdnilvdnilvp1vu0", key = "JOY_BTN1", name = "ICP button 1" },
-    { command = "dnilp1001u1001cdnilvdnilvp1vu0", key = "JOY_BTN2", name = "ICP button 2" },
-    { command = "dnilp1002u1002cdnilvdnilvp1vu0", key = "JOY_BTN3", name = "ICP button 3" }
-  }
+  controls = {
+    { id = "winctrl-icp-com1", key = "JOY_X", type = "axis", hardwareLabel = "COM1 / volume axis" },
+    { id = "winctrl-icp-com2", key = "JOY_Y", type = "axis", hardwareLabel = "COM2 / volume axis" },
+    { id = "winctrl-icp-iff", key = "JOY_RX", type = "axis", hardwareLabel = "IFF / rotary axis" },
+    { id = "winctrl-icp-list", key = "JOY_RY", type = "axis", hardwareLabel = "LIST / rotary axis" },
+    { id = "winctrl-icp-a-a", key = "JOY_BTN6", type = "button", hardwareLabel = "A-A / selector" },
+    { id = "winctrl-icp-a-g", key = "JOY_BTN1", type = "button", hardwareLabel = "A-G" },
+    { id = "winctrl-icp-kp-1", key = "JOY_BTN2", type = "button", hardwareLabel = "ICP key 1" },
+    { id = "winctrl-icp-kp-2", key = "JOY_BTN3", type = "button", hardwareLabel = "ICP key 2" },
+    { id = "winctrl-icp-kp-3", key = "JOY_BTN4", type = "button", hardwareLabel = "ICP key 3" },
+    { id = "winctrl-icp-rcl", key = "JOY_BTN5", type = "button", hardwareLabel = "RCL" },
+    { id = "winctrl-icp-entr", key = "JOY_BTN7", type = "button", hardwareLabel = "ENTR" },
+    { id = "winctrl-icp-kp-4", key = "JOY_BTN8", type = "button", hardwareLabel = "ICP key 4" },
+    { id = "winctrl-icp-kp-5", key = "JOY_BTN9", type = "button", hardwareLabel = "ICP key 5" },
+    { id = "winctrl-icp-kp-6", key = "JOY_BTN10", type = "button", hardwareLabel = "ICP key 6" },
+    { id = "winctrl-icp-dcs-up", key = "JOY_BTN11", type = "button", hardwareLabel = "DCS up" },
+    { id = "winctrl-icp-rtn", key = "JOY_BTN12", type = "button", hardwareLabel = "RTN" },
+    { id = "winctrl-icp-seq", key = "JOY_BTN13", type = "button", hardwareLabel = "SEQ" },
+  },
 }
