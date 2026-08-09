@@ -43,3 +43,27 @@ This feature is limited to the draw.io → SVG generation path. It does not affe
 Add an approved raster image under `assets/shared/hardware/source/`, create the initial SVG/control inventory, add a `drawio` path to the manifest entry, and run `npm run create:drawio-hardware`. The creation command refuses to overwrite existing native sources unless `--force` is supplied; do not use `--force` after manual layout work begins.
 
 Record every externally sourced image and its product page in `assets/shared/hardware/SOURCES.md`. Manufacturer product images retain their original copyright and require maintainer approval before distribution.
+
+## Modifier coloring contract (shared hardware)
+
+Shared hardware templates use a **single base image**. Modifier state is never expressed by generating alternate full images.
+
+Instead:
+
+1. Callout **text color** indicates which modifier (if any) is active for that binding.
+2. A small **legend table** in the lower-right of the kneeboard page documents the active color → modifier mapping.
+
+### Locked color vocabulary
+
+| Role | Color |
+| --- | --- |
+| Base (no modifier) | Black |
+| Modifier 1 | Red |
+| Modifier 2 | Orange |
+| Modifier 3 | Blue |
+| Modifier 4 | Green |
+| Modifier 5 | Cyan |
+
+Consumers must apply these colors in order. Do not invent additional colors without updating this contract and the shared documentation.
+
+This pattern was introduced with the WINCTRL PTO2 redesign (issue #87) and is the expected approach for future devices.
