@@ -11,5 +11,5 @@ Manufacturer product images are included for product identification and diagram 
 | `source/thrustmaster-tpr.png` | Thrustmaster | https://www.thrustmaster.com/en-us/products/tpr-thrustmaster-pendular-rudder/ | https://www.thrustmaster.com/wp-content/uploads/2021/09/SF-gallery-TPR-Rudder-pc-1.png |
 | `source/vkb-f14-grip-side.png`, `source/vkb-f14-grip-rear.png` | VKB F-14 Combat Grip | User-provided issue attachments | Native 449 × 688 and 440 × 686 PNG views supplied in issue #54 |
 
-| `source/tm-warthog-throttle-blank.png` | User-provided annotated device diagram | Conversation attachment supplied by repository owner | Native 576 × 784 PNG with JOY_BTN1–JOY_BTN32 and physical control labels |
+| `source/tm-warthog-throttle-blank.png` | User-provided annotated device diagram (Blank2) | Conversation attachment supplied by repository owner | Native 1625 × 2201 PNG (scaled to 1000 × 1354 for template) with numbered empty label boxes, JOY_BTN1–32, POV, axes; base callouts use black text overlays only |
 | `source/pto2-buttons.png` (and RGB variant) | WINCTRL / user-provided | Issue #87 attachment | Clean panel diagram with numbered button bubbles (767 × 553) supplied for external callout redesign |

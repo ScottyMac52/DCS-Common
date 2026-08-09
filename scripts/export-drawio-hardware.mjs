@@ -25,7 +25,7 @@ const esc = (value = '') => value
   .replaceAll('"', '&quot;')
   .replaceAll('<', '&lt;')
   .replaceAll('>', '&gt;');
-const attr = (source, name) => decode(source.match(new RegExp(`${name}="([^"]*)"`))?.[1]);
+const attr = (source, name) => decode(source.match(new RegExp(`${name}=\"([^\"]*)\"`))?.[1]);
 const styleValue = (style, name) => {
   if (name === 'image') {
     const image = style.match(/(?:^|;)image=(data:image\/[^,;]+,[A-Za-z0-9+/=]+)(?:;|$)/)?.[1];
@@ -63,8 +63,20 @@ function endpoint(label, anchor) {
 }
 
 function renderLabelBox(lines, label, id) {
-  lines.push(`  <rect x="${label.x}" y="${label.y}" width="${label.width}" height="${label.height}" rx="4" fill="#1e293b" stroke="#00bfff" stroke-width="1.5"/>`);
-  lines.push(`  <text id="lbl-${esc(id)}" x="${label.x + label.width / 2}" y="${label.y + 15}" text-anchor="middle" font-family="Arial,sans-serif" font-size="11" fill="#f1f5f9">${esc(label.value)}</text>`);
+  const style = label.style || '';
+  const fillColor = styleValue(style, 'fillColor') || '#1e293b';
+  const fontColor = styleValue(style, 'fontColor') || '#f1f5f9';
+  const strokeColor = styleValue(style, 'strokeColor') || '#00bfff';
+  const fontSize = styleValue(style, 'fontSize') || '11';
+  const isTransparent = !fillColor || fillColor === 'none' || fillColor === 'transparent';
+
+  if (!isTransparent) {
+    lines.push(`  <rect x=\"${label.x}\" y=\"${label.y}\" width=\"${label.width}\" height=\"${label.height}\" rx=\"4\" fill=\"${esc(fillColor)}\" stroke=\"${esc(strokeColor)}\" stroke-width=\"1.5\"/>`);
+  }
+
+  // Vertical centering approximation for pure-text overlays and chips
+  const textY = label.y + Math.round(Number(label.height) / 2) + 4;
+  lines.push(`  <text id=\"lbl-${esc(id)}\" x=\"${label.x + label.width / 2}\" y=\"${textY}\" text-anchor=\"middle\" font-family=\"Arial,sans-serif\" font-size=\"${esc(fontSize)}\" fill=\"${esc(fontColor)}\">${esc(label.value)}</text>`);
 
   // Optional button-number watermark (controlled by export-config.json or --watermarks).
   // Data lives in the draw.io label style as buttonNumber=N.
@@ -73,13 +85,13 @@ function renderLabelBox(lines, label, id) {
     if (buttonNumber) {
       const wx = label.x + label.width - 4;
       const wy = label.y + label.height - 3;
-      lines.push(`  <text class="btn-watermark" data-button="${esc(buttonNumber)}" x="${wx}" y="${wy}" text-anchor="end" font-family="Arial,sans-serif" font-size="8" fill="#94a3b8" opacity="0.35">${esc(buttonNumber)}</text>`);
+      lines.push(`  <text class=\"btn-watermark\" data-button=\"${esc(buttonNumber)}\" x=\"${wx}\" y=\"${wy}\" text-anchor=\"end\" font-family=\"Arial,sans-serif\" font-size=\"8\" fill=\"#94a3b8\" opacity=\"0.35\">${esc(buttonNumber)}</text>`);
     }
   }
 }
 
 function render(device, xml) {
-  if (!xml.includes('compressed="false"')) throw new Error(`${device.id}: draw.io source must be uncompressed XML`);
+  if (!xml.includes('compressed=\"false\"')) throw new Error(`${device.id}: draw.io source must be uncompressed XML`);
   const modelTag = xml.match(/<mxGraphModel\b([^>]*)>/)?.[1];
   const width = Number(attr(modelTag, 'pageWidth'));
   const height = Number(attr(modelTag, 'pageHeight'));
@@ -100,11 +112,11 @@ function render(device, xml) {
   }
 
   const lines = [
-    `<svg xmlns="http://www.w3.org/2000/svg" width="${width}" height="${height}" viewBox="0 0 ${width} ${height}">`,
-    `  <rect width="${width}" height="${height}" fill="${styleValue(canvas.style, 'fillColor')}"/>`,
+    `<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"${width}\" height=\"${height}\" viewBox=\"0 0 ${width} ${height}\">`,
+    `  <rect width=\"${width}\" height=\"${height}\" fill=\"${styleValue(canvas.style, 'fillColor')}\"/>`,
   ];
   for (const image of images) {
-    lines.push(`  <image href="${esc(styleValue(image.style, 'image'))}" x="${image.x}" y="${image.y}" width="${image.width}" height="${image.height}" preserveAspectRatio="xMidYMid meet"/>`);
+    lines.push(`  <image href=\"${esc(styleValue(image.style, 'image'))}\" x=\"${image.x}\" y=\"${image.y}\" width=\"${image.width}\" height=\"${image.height}\" preserveAspectRatio=\"xMidYMid meet\"/>`);
   }
 
   const labelsViaConnector = new Set();
@@ -118,8 +130,8 @@ function render(device, xml) {
     const ay = anchor.y + anchor.height / 2;
     const end = endpoint(label, anchor);
     lines.push(`  <!-- callout:${id} -->`);
-    lines.push(`  <line x1="${ax}" y1="${ay}" x2="${end.x}" y2="${end.y}" stroke="#00bfff" stroke-width="1.5" stroke-dasharray="5 3" opacity="0.75"/>`);
-    lines.push(`  <circle cx="${ax}" cy="${ay}" r="5" fill="#00bfff" stroke="#0f172a" stroke-width="1.5"/>`);
+    lines.push(`  <line x1=\"${ax}\" y1=\"${ay}\" x2=\"${end.x}\" y2=\"${end.y}\" stroke=\"#00bfff\" stroke-width=\"1.5\" stroke-dasharray=\"5 3\" opacity=\"0.75\"/>`);
+    lines.push(`  <circle cx=\"${ax}\" cy=\"${ay}\" r=\"5\" fill=\"#00bfff\" stroke=\"#0f172a\" stroke-width=\"1.5\"/>`);
     renderLabelBox(lines, label, id);
   }
 
@@ -131,7 +143,7 @@ function render(device, xml) {
     renderLabelBox(lines, label, id);
   }
 
-  lines.push(`  <text x="${width / 2}" y="${height - 8}" text-anchor="middle" font-family="Arial,sans-serif" font-size="12" fill="#475569">${esc(footer.value)}</text>`);
+  lines.push(`  <text x=\"${width / 2}\" y=\"${height - 8}\" text-anchor=\"middle\" font-family=\"Arial,sans-serif\" font-size=\"12\" fill=\"#475569\">${esc(footer.value)}</text>`);
   lines.push('</svg>');
   return lines.join('\n');
 }
