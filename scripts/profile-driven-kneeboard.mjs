@@ -1,6 +1,6 @@
 import { readFileSync } from 'node:fs';
 import { dirname, isAbsolute, join, resolve } from 'node:path';
-import { loadSharedHardware, resolveDcsCommonRoot } from './shared-hardware-consumer.mjs';
+import { loadSharedHardware, resolveDcsCommonRoot, modifierColorAt, MODIFIER_COLOR_CONTRACT } from './shared-hardware-consumer.mjs';
 
 function unescapeLuaString(value) {
   return value.replace(/\\([\\"nrt])/g, (_, code) => ({ '\\': '\\', '"': '"', n: '\n', r: '\r', t: '\t' })[code]);
@@ -224,9 +224,65 @@ export function loadProfileDrivenConfig(configPath, options = {}) {
       }
       labels[controlId] = reference.label ?? matches[0].binding.name;
     }
+    // Assign callout colors from the locked modifier vocabulary.
+    // Catalog order (config.modifiers keys, then remaining native names) maps to color index 1..N.
+    const catalogOrder = [...modifierCatalog.keys()];
+    const labelColors = {};
+    const usedModifierIds = new Set();
+    for (const [controlId, reference] of Object.entries(page.controls ?? {})) {
+      const modIds = reference.modifiers ?? page.modifierIds ?? [];
+      if (!modIds.length) {
+        labelColors[controlId] = modifierColorAt(0);
+        continue;
+      }
+      // Primary color = earliest catalog modifier in this chord
+      let bestIndex = catalogOrder.length + 1;
+      for (const id of modIds) {
+        const idx = catalogOrder.indexOf(id);
+        if (idx >= 0 && idx < bestIndex) bestIndex = idx;
+        usedModifierIds.add(id);
+      }
+      // color index 1 = first catalog modifier
+      labelColors[controlId] = modifierColorAt(bestIndex === catalogOrder.length + 1 ? 1 : bestIndex + 1);
+    }
+    // Layer-only modifiers (whole page shifted) still color every labelled control if none were set via controls
+    if ((page.modifierIds?.length ?? 0) > 0) {
+      for (const id of page.modifierIds) usedModifierIds.add(id);
+      const layerIdx = Math.min(...page.modifierIds.map((id) => {
+        const idx = catalogOrder.indexOf(id);
+        return idx >= 0 ? idx + 1 : 1;
+      }));
+      for (const controlId of Object.keys(labels)) {
+        if (!(controlId in labelColors)) labelColors[controlId] = modifierColorAt(layerIdx);
+      }
+    }
+
+    const legend = [];
+    // Always include Base when any coloured callout exists, or when modifiers are in play
+    if (usedModifierIds.size > 0 || Object.keys(labelColors).length > 0) {
+      const hasBase = Object.values(labelColors).some((c) => c === modifierColorAt(0)) || usedModifierIds.size === 0;
+      // Show base if any control is base-coloured, or always show when legend is shown
+      legend.push({ label: 'Base (no modifier)', fill: modifierColorAt(0) });
+      for (const id of catalogOrder) {
+        if (!usedModifierIds.has(id)) continue;
+        const entry = modifierCatalog.get(id);
+        const idx = catalogOrder.indexOf(id) + 1;
+        const mode = entry?.mode ? ` (${entry.mode})` : '';
+        const key = entry?.key ? ` · ${entry.key}` : '';
+        legend.push({
+          label: `${entry?.label ?? id}${mode}${key}`,
+          fill: modifierColorAt(idx),
+        });
+      }
+    }
+    // Only emit legend when at least one non-base modifier is used on the page
+    const legendOut = usedModifierIds.size > 0 ? legend : [];
+
     return {
       ...page,
       labels,
+      labelColors,
+      legend: legendOut,
       modifierIds: [...page.modifierIds],
       modifiers: layerModifiers.map((nativeName) => [...modifierCatalog.values()].find((entry) => entry.nativeName === nativeName)),
     };

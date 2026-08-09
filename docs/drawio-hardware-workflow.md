@@ -66,4 +66,15 @@ Instead:
 
 Consumers must apply these colors in order. Do not invent additional colors without updating this contract and the shared documentation.
 
+### Runtime support in the shared consumer
+
+`scripts/shared-hardware-consumer.mjs` implements this contract:
+
+- `MODIFIER_COLOR_CONTRACT` / `modifierColorAt(index)` — locked fills (index 0 = base).
+- `loadSharedHardware(..., { labelColors })` — sets each callout `<text>` `fill` from the map.
+- `renderSharedHardwarePage(..., { legend })` — draws a lower-right **SHIFT / MODIFIER** legend on the outer 1200×1600 page when entries are provided.
+- `loadProfileDrivenConfig` (in `profile-driven-kneeboard.mjs`) assigns `labelColors` and `legend` per page from profile reformer chords and `config.modifiers` order.
+
+Consumers that spread the page object into `renderSharedHardwarePage` (as F4U does) pick up coloring and the legend automatically once the kneeboard config declares modifiers and uses them on controls or layers.
+
 This pattern was introduced with the WINCTRL PTO2 redesign (issue #87) and is the expected approach for future devices.
