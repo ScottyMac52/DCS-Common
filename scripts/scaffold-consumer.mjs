@@ -162,7 +162,7 @@ export function loadCalloutCatalog(commonRoot, deviceId) {
     const key = match[2] ?? match[3];
     if (id && key) controls.push({ id, key });
   }
-  // Lightweight bindings: { key = "JOY_…", name = "…" } without id — only used when no id+key pairs found
+  // Lightweight bindings fallback when no id+key pairs found
   if (controls.length === 0) {
     const bindingPattern = /\{\s*key\s*=\s*"((?:\\.|[^"])*)"[^}]*\}/g;
     const svgPath = device.svg ? join(commonRoot, 'assets/shared/hardware', device.svg) : null;
@@ -174,7 +174,6 @@ export function loadCalloutCatalog(commonRoot, deviceId) {
     let index = 0;
     for (let match; (match = bindingPattern.exec(source));) {
       const key = match[1];
-      // Skip range placeholders like JOY_BTN1-5 or JOY_X/JOY_Y
       if (/[-\/]/.test(key)) continue;
       const id = svgIds[index] ?? key.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
       controls.push({ id, key });
@@ -389,7 +388,7 @@ export function buildDraftKneeboardConfig(preview, { displayName, inputModuleId 
 
     const controls = {};
     const labels = {};
-    const layerControls = new Map(); // chord -> { controls, labels }
+    const layerControls = new Map();
 
     for (const row of preview.rows) {
       if (row.profileFile !== device.profileFile) continue;
@@ -401,7 +400,6 @@ export function buildDraftKneeboardConfig(preview, { displayName, inputModuleId 
       if (!row.chord) {
         if (!controls[row.calloutId]) {
           controls[row.calloutId] = { profile: profileKey, key: row.key };
-          // Pre-fill from the DCS binding name so editors can shorten without rediscovering IDs.
           labels[row.calloutId] = displayName;
         }
       } else {
@@ -421,7 +419,6 @@ export function buildDraftKneeboardConfig(preview, { displayName, inputModuleId 
       deviceId: device.deviceId,
       title,
       kicker: device.instanceHint ? `INSTANCE ${device.instanceHint}` : 'SCAFFOLD DRAFT',
-      // JSON has no comments; _comment documents how labels relate to controls.
       _comment:
         'labels are pre-filled from DCS binding names via controls. Edit any string to override display text; ' +
         'keep callout IDs in sync with controls. You can also set "label" on a controls entry.',
@@ -512,6 +509,8 @@ export function writeConsumer({ preview, outputDir, displayName, inputModuleId, 
   write('README.md', applyTokens(readTemplate(commonRoot, 'README.md.tmpl'), tokens));
   write('scripts/build-kneeboard.mjs', readTemplate(commonRoot, 'build-kneeboard.mjs.tmpl'));
   write('scripts/test-kneeboard.mjs', applyTokens(readTemplate(commonRoot, 'test-kneeboard.mjs.tmpl'), tokens));
+  write('scripts/version.mjs', readTemplate(commonRoot, 'version.mjs.tmpl'));
+  write('scripts/test-versioning.mjs', readTemplate(commonRoot, 'test-versioning.mjs.tmpl'));
   write('.github/workflows/build.yml', applyTokens(readTemplate(commonRoot, 'build.yml.tmpl'), tokens));
   write('.github/workflows/release.yml', applyTokens(readTemplate(commonRoot, 'release.yml.tmpl'), tokens));
   write('packaging/ovgme/README.TXT', applyTokens(readTemplate(commonRoot, 'ovgme-README.TXT.tmpl'), tokens));
@@ -555,7 +554,7 @@ export function writeConsumer({ preview, outputDir, displayName, inputModuleId, 
     '2. Review pre-filled `labels` (from DCS binding names). Edit strings to shorten display text; IDs must stay aligned with `controls`.',
     '3. Map any UNMAPPED devices via `--map` and re-run, or edit JSON by hand.',
     '4. `npm ci` and set `DCS_COMMON_ROOT` to a DCS-Common checkout.',
-    '5. `npm run build:kneeboard` / `npm run test:kneeboard`.',
+    '5. `npm run build:kneeboard` / `npm run test:kneeboard` / `npm run test:versioning`.',
     '6. Flesh out packaging scripts if the stubs need consumer-specific inventory checks.',
     '',
     '## Planned files',
