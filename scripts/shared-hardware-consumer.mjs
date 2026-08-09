@@ -2,11 +2,13 @@ import { existsSync, readFileSync } from 'node:fs';
 import { execFileSync } from 'node:child_process';
 import { join, resolve } from 'node:path';
 
-const escapeXml = (value = '') => String(value)
-  .replaceAll('&', '&')
-  .replaceAll('<', '<')
-  .replaceAll('>', '>')
-  .replaceAll('"', '"');
+// Build entities via concat so tooling cannot strip the amp; sequences.
+const escapeXml = (value = '') =>
+  String(value)
+    .replaceAll('&', '&' + 'amp;')
+    .replaceAll('<', '&' + 'lt;')
+    .replaceAll('>', '&' + 'gt;')
+    .replaceAll('"', '&' + 'quot;');
 
 const physicalPrefix = /^(?:JOY_)?BTN\s*\d[^:]*:/i;
 
