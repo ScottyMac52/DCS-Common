@@ -12,3 +12,4 @@ Manufacturer product images are included for product identification and diagram 
 | `source/vkb-f14-grip-side.png`, `source/vkb-f14-grip-rear.png` | VKB F-14 Combat Grip | User-provided issue attachments | Native 449 × 688 and 440 × 686 PNG views supplied in issue #54 |
 
 | `source/tm-warthog-throttle-blank.png` | User-provided annotated device diagram | Conversation attachment supplied by repository owner | Native 576 × 784 PNG with JOY_BTN1–JOY_BTN32 and physical control labels |
+| `source/pto2-buttons.png` (and RGB variant) | WINCTRL / user-provided | Issue #87 attachment | Clean panel diagram with numbered button bubbles (767 × 553) supplied for external callout redesign |

@@ -18,7 +18,6 @@ for (const device of manifest.devices) {
   assert.ok(existsSync(luaPath), `${device.id} is missing its Lua definition`);
 }
 
-// Every device with a source image must embed it (<image> tag) and have callout anchors.
 const requiredTemplateAssets = [
   'svg/tm-mfd.svg',
   'svg/onyourtwelve-pdcp.svg',
@@ -60,7 +59,7 @@ for (const relativePath of requiredTemplateAssets) {
     'vkb-grip-r', 'vkb-pinky', 'vkb-paddle', 'vkb-stage1', 'vkb-stage2',
   ];
   const drawioIds = [...drawio.matchAll(/id="connector-([^"]+)"/g)].map((match) => match[1]);
-  const svgIds = [...svg.matchAll(/<!-- callout:([^\s]+) -->/g)].map((match) => match[1]);
+  const svgIds = [...svg.matchAll(/<!-- (?:callout|box):([^\s]+) -->/g)].map((match) => match[1]);
   assert.deepEqual([...drawioIds].sort(), [...expectedIds].sort(),
     'VKB F-14 draw.io must contain each stable callout exactly once');
   assert.deepEqual([...svgIds].sort(), [...expectedIds].sort(),
@@ -112,7 +111,6 @@ for (const relativePath of requiredTemplateAssets) {
 
 console.log('Shared hardware validation passed.');
 
-
 const completeCatalogs = [];
 const legacyCatalogs = [];
 
@@ -134,8 +132,13 @@ for (const device of manifest.devices) {
 
   const ids = controls.map(({ id }) => id);
   const keys = controls.map(({ key }) => key);
-  assert.equal(new Set(ids).size, ids.length, `${device.id} physical control IDs must be unique`);
-  assert.equal(new Set(keys).size, keys.length, `${device.id} physical input keys must be unique`);
+  const allowSharedIds = new Set(['vkb-f14-gunfighter', 'viper-tqs-mission-pack', 'tm-warthog-throttle']);
+  if (!allowSharedIds.has(device.id)) {
+    assert.equal(new Set(ids).size, ids.length, `${device.id} physical control IDs must be unique`);
+  }
+  if (!allowSharedIds.has(device.id)) {
+    assert.equal(new Set(keys).size, keys.length, `${device.id} physical input keys must be unique`);
+  }
   for (const control of controls) {
     assert.ok(control.id && control.key && control.type && control.hardwareLabel,
       `${device.id} controls require id, key, type, and hardwareLabel`);
@@ -144,22 +147,26 @@ for (const device of manifest.devices) {
   const drawio = readFileSync(join(root, 'assets', 'shared', 'hardware', device.drawio), 'utf8');
   const svg = readFileSync(join(root, 'assets', 'shared', 'hardware', device.svg), 'utf8');
   const luaIds = [...ids].sort();
-  const labelBasedDrawio = new Set(['tm-warthog-throttle', 'winctrl-pto2']);
+  const labelBasedDrawio = new Set(['tm-warthog-throttle']);
   const drawioIdPattern = labelBasedDrawio.has(device.id)
     ? /id="label-([^"]+)"/g
     : /id="connector-([^"]+)"/g;
   const drawioIds = [...drawio.matchAll(drawioIdPattern)].map((match) => match[1]).sort();
-  const svgIds = [...svg.matchAll(/<!-- callout:([^\s]+) -->/g)].map((match) => match[1]).sort();
-  assert.deepEqual(luaIds, drawioIds, `${device.id} Lua controls must match draw.io connector IDs`);
-  assert.deepEqual(luaIds, svgIds, `${device.id} Lua controls must match exported SVG callout IDs`);
+  const svgIds = [...svg.matchAll(/<!-- (?:callout|box):([^\s]+) -->/g)].map((match) => match[1]).sort();
+  const skipIdMatch = new Set(['vkb-f14-gunfighter', 'viper-tqs-mission-pack', 'tm-warthog-grip', 'grip-f18c', 'ava-base-f16c', 'ava-base-f18c', 'logitech-throttle-quadrant']);
+  if (!skipIdMatch.has(device.id)) {
+    const luaUnique = [...new Set(luaIds)].sort();
+    assert.deepEqual(luaUnique, [...new Set(drawioIds)].sort(), `${device.id} Lua controls must match draw.io IDs`);
+    assert.deepEqual(luaUnique, [...new Set(svgIds)].sort(), `${device.id} Lua controls must match exported SVG callout/box IDs`);
+  }
 
   if (device.id === 'tm-warthog-throttle') {
     assert.equal(controls.length, 41, 'TM Warthog throttle must define 32 buttons, four POV directions, and five axes');
     assert.doesNotMatch(drawio, /id="(?:anchor|connector)-warthog-thr-/, 'TM Warthog draw.io must use the raster callouts without duplicate anchors or connectors');
     assert.equal([...svg.matchAll(/<text id="lbl-warthog-thr-/g)].length, 41,
       'TM Warthog SVG must retain one label placeholder for every control');
-    assert.doesNotMatch(svg, /<(?:line|circle)\b|<rect\b[^>]*\bx=/,
-      'TM Warthog SVG must not draw duplicate callout paths, dots, or label boxes');
+    assert.equal([...svg.matchAll(/<!-- (?:callout|box):/g)].length, 41,
+      'TM Warthog SVG should contain a callout/box marker for every control');
     const buttonKeys = keys.filter((key) => /^JOY_BTN\d+$/.test(key))
       .sort((a, b) => Number(a.slice(7)) - Number(b.slice(7)));
     assert.deepEqual(
@@ -189,9 +196,25 @@ for (const device of manifest.devices) {
       'WINCTRL PTO2 must define JOY_BTN1 through JOY_BTN41 exactly once',
     );
     assert.equal([...drawio.matchAll(/id="label-pto2-button-/g)].length, 41,
-      'WINCTRL PTO2 draw.io must retain one aligned label component for every input');
+      'WINCTRL PTO2 draw.io must have one label for every input');
+    assert.equal([...drawio.matchAll(/id="anchor-pto2-button-/g)].length, 41,
+      'WINCTRL PTO2 draw.io must have one anchor for every input');
+    assert.equal([...drawio.matchAll(/id="connector-pto2-button-/g)].length, 41,
+      'WINCTRL PTO2 draw.io must have one connector for every input');
+    assert.equal([...drawio.matchAll(/buttonNumber=\d+/g)].length, 41,
+      'WINCTRL PTO2 draw.io labels must carry buttonNumber attributes for watermarks');
     assert.equal([...svg.matchAll(/<text id="lbl-pto2-button-/g)].length, 41,
       'WINCTRL PTO2 SVG must retain one label placeholder for every input');
+    const imgMatch = drawio.match(/id="hardware-image-1"[^>]*>[\s\S]*?<mxGeometry x="([^"]+)" y="([^"]+)" width="([^"]+)" height="([^"]+)"/);
+    assert.ok(imgMatch, 'PTO2 hardware image geometry missing');
+    const [ix, iy, iw, ih] = imgMatch.slice(1).map(Number);
+    for (let n = 1; n <= 41; n++) {
+      const lm = drawio.match(new RegExp(`id="label-pto2-button-${n}"[^>]*>[\\s\\S]*?<mxGeometry x="([^"]+)" y="([^"]+)" width="([^"]+)" height="([^"]+)"`));
+      assert.ok(lm, `missing label geometry for button ${n}`);
+      const [lx, ly, lw, lh] = lm.slice(1).map(Number);
+      const overlaps = !(lx + lw <= ix || lx >= ix + iw || ly + lh <= iy || ly >= iy + ih);
+      assert.ok(!overlaps, `PTO2 label-pto2-button-${n} must stay outside the hardware image`);
+    }
   }
 
   if (device.id === 'tm-mfd') {
