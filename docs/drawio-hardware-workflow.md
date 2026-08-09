@@ -57,7 +57,7 @@ Instead:
 
 | Role | Color |
 | --- | --- |
-| Base (no modifier) | Black |
+| Base (no modifier) | White |
 | Modifier 1 | Red |
 | Modifier 2 | Orange |
 | Modifier 3 | Blue |

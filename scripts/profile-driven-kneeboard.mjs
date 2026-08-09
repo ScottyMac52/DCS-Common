@@ -189,17 +189,64 @@ export function loadProfileDrivenConfig(configPath, options = {}) {
     return profileCache.get(id);
   };
 
-  const expandedPages = config.pages.flatMap((page) => page.layers?.map((layer, index) => ({
-    ...page,
-    ...layer,
-    layers: undefined,
-    file: layer.file ?? (index === 0 ? page.file : `${page.file}-${layer.id}`),
-    title: layer.title ?? page.title,
-    kicker: layer.kicker ?? page.kicker,
-    controls: layer.controls ?? {},
-    labels: layer.labels ?? {},
-    modifierIds: layer.modifiers ?? [],
-  })) ?? [{ ...page, modifierIds: page.modifiers ?? [] }]);
+  // Issue #87: one page per device with colored callouts + legend.
+  // layers[] are merged onto a single page (base labels in black; shifted
+  // bindings override the same callout in the modifier color). Set
+  // page.separateModifierPages = true to restore the old one-file-per-layer behavior.
+  const expandedPages = [];
+  for (const page of config.pages) {
+    if (!page.layers?.length) {
+      expandedPages.push({ ...page, modifierIds: page.modifiers ?? [], controlModifiers: {} });
+      continue;
+    }
+    if (page.separateModifierPages) {
+      for (const [index, layer] of page.layers.entries()) {
+        expandedPages.push({
+          ...page,
+          ...layer,
+          layers: undefined,
+          file: layer.file ?? (index === 0 ? page.file : `${page.file}-${layer.id}`),
+          title: layer.title ?? page.title,
+          kicker: layer.kicker ?? page.kicker,
+          controls: layer.controls ?? {},
+          labels: layer.labels ?? {},
+          modifierIds: layer.modifiers ?? [],
+          controlModifiers: {},
+        });
+      }
+      continue;
+    }
+    // Combined page: merge all layers onto page.file
+    const controls = {};
+    const labels = { ...(page.labels ?? {}) };
+    const controlModifiers = {}; // controlId -> modifier id list for coloring
+    const usedModifierIds = [];
+    for (const layer of page.layers) {
+      const layerMods = layer.modifiers ?? [];
+      for (const id of layerMods) {
+        if (!usedModifierIds.includes(id)) usedModifierIds.push(id);
+      }
+      for (const [controlId, reference] of Object.entries(layer.controls ?? {})) {
+        controls[controlId] = {
+          ...reference,
+          modifiers: reference.modifiers ?? layerMods,
+        };
+        if (layer.labels?.[controlId] !== undefined) labels[controlId] = layer.labels[controlId];
+        controlModifiers[controlId] = reference.modifiers ?? layerMods;
+      }
+    }
+    expandedPages.push({
+      ...page,
+      layers: undefined,
+      file: page.file,
+      title: page.title,
+      kicker: page.kicker,
+      controls,
+      labels,
+      modifierIds: usedModifierIds,
+      controlModifiers,
+    });
+  }
 
   const outputFiles = new Set();
   const pages = expandedPages.map((page) => {
@@ -222,61 +269,49 @@ export function loadProfileDrivenConfig(configPath, options = {}) {
       if (matches.length !== 1) {
         throw new Error(`${page.file}: ${reference.profile}:${reference.key} resolves to ${matches.length} bindings; specify command when ambiguous.`);
       }
-      labels[controlId] = reference.label ?? matches[0].binding.name;
+      if (labels[controlId] === undefined || labels[controlId] === '') {
+        labels[controlId] = reference.label ?? matches[0].binding.name;
+      } else if (reference.label) {
+        labels[controlId] = reference.label;
+      }
     }
-    // Assign callout colors from the locked modifier vocabulary.
-    // Catalog order (config.modifiers keys, then remaining native names) maps to color index 1..N.
-    const catalogOrder = [...modifierCatalog.keys()];
+
+    // Color index = order of first appearance among modifiers actually used on this page (not full catalog).
+    const usedOrder = [];
+    const noteUsed = (ids) => {
+      for (const id of ids) {
+        if (!usedOrder.includes(id)) usedOrder.push(id);
+      }
+    };
     const labelColors = {};
-    const usedModifierIds = new Set();
     for (const [controlId, reference] of Object.entries(page.controls ?? {})) {
-      const modIds = reference.modifiers ?? page.modifierIds ?? [];
+      const modIds = page.controlModifiers?.[controlId] ?? reference.modifiers ?? page.modifierIds ?? [];
       if (!modIds.length) {
         labelColors[controlId] = modifierColorAt(0);
         continue;
       }
-      // Primary color = earliest catalog modifier in this chord
-      let bestIndex = catalogOrder.length + 1;
-      for (const id of modIds) {
-        const idx = catalogOrder.indexOf(id);
-        if (idx >= 0 && idx < bestIndex) bestIndex = idx;
-        usedModifierIds.add(id);
-      }
-      // color index 1 = first catalog modifier
-      labelColors[controlId] = modifierColorAt(bestIndex === catalogOrder.length + 1 ? 1 : bestIndex + 1);
+      noteUsed(modIds);
+      const primary = modIds[0];
+      const colorIndex = usedOrder.indexOf(primary) + 1; // 1..N
+      labelColors[controlId] = modifierColorAt(colorIndex);
     }
-    // Layer-only modifiers (whole page shifted) still color every labelled control if none were set via controls
-    if ((page.modifierIds?.length ?? 0) > 0) {
-      for (const id of page.modifierIds) usedModifierIds.add(id);
-      const layerIdx = Math.min(...page.modifierIds.map((id) => {
-        const idx = catalogOrder.indexOf(id);
-        return idx >= 0 ? idx + 1 : 1;
-      }));
-      for (const controlId of Object.keys(labels)) {
-        if (!(controlId in labelColors)) labelColors[controlId] = modifierColorAt(layerIdx);
-      }
+    // Ensure every resolved label has a color (defaults to base)
+    for (const controlId of Object.keys(labels)) {
+      if (!(controlId in labelColors)) labelColors[controlId] = modifierColorAt(0);
     }
 
-    const legend = [];
-    // Always include Base when any coloured callout exists, or when modifiers are in play
-    if (usedModifierIds.size > 0 || Object.keys(labelColors).length > 0) {
-      const hasBase = Object.values(labelColors).some((c) => c === modifierColorAt(0)) || usedModifierIds.size === 0;
-      // Show base if any control is base-coloured, or always show when legend is shown
-      legend.push({ label: 'Base (no modifier)', fill: modifierColorAt(0) });
-      for (const id of catalogOrder) {
-        if (!usedModifierIds.has(id)) continue;
+    const legendOut = [];
+    if (usedOrder.length > 0) {
+      legendOut.push({ label: 'Base (no modifier)', fill: modifierColorAt(0) });
+      for (const [i, id] of usedOrder.entries()) {
         const entry = modifierCatalog.get(id);
-        const idx = catalogOrder.indexOf(id) + 1;
         const mode = entry?.mode ? ` (${entry.mode})` : '';
-        const key = entry?.key ? ` · ${entry.key}` : '';
-        legend.push({
-          label: `${entry?.label ?? id}${mode}${key}`,
-          fill: modifierColorAt(idx),
+        legendOut.push({
+          label: `${entry?.label ?? id}${mode}`,
+          fill: modifierColorAt(i + 1),
         });
       }
     }
-    // Only emit legend when at least one non-base modifier is used on the page
-    const legendOut = usedModifierIds.size > 0 ? legend : [];
 
     return {
       ...page,

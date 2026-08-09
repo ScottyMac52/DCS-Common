@@ -12,7 +12,7 @@ const escapeXml = (value = '') =>
 
 /** Locked modifier color vocabulary (issue #87). Index 0 = base (no modifier). */
 export const MODIFIER_COLOR_CONTRACT = Object.freeze([
-  { role: 'base', name: 'Base', fill: '#111827' },
+  { role: 'base', name: 'Base', fill: '#ffffff' },
   { role: 'modifier-1', name: 'Modifier 1', fill: '#dc2626' }, // red
   { role: 'modifier-2', name: 'Modifier 2', fill: '#ea580c' }, // orange
   { role: 'modifier-3', name: 'Modifier 3', fill: '#2563eb' }, // blue

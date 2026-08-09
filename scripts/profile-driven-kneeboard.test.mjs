@@ -47,41 +47,8 @@ test('parses held and switched native DCS modifiers', () => {
   ]);
 });
 
-test('expands base and S3 layers and resolves the same OSB by exact modifier chord', () => {
+test('merges base and S3 layers onto one page with shift color and legend', () => {
   const consumerRoot = mkdtempSync(join(tmpdir(), 'dcs-modifiers-'));
-  mkdirSync(join(consumerRoot, 'profiles'));
-  writeFileSync(join(consumerRoot, 'modifiers.lua'), modifiersSource);
-  writeFileSync(join(consumerRoot, 'profiles/mfd.diff.lua'), `local diff = { ["keyDiffs"] = {
-    ["base"] = { ["added"] = { [1] = { ["key"] = "JOY_BTN1" }, }, ["name"] = "Left MFD OSB 1", },
-    ["shifted"] = { ["added"] = { [1] = { ["key"] = "JOY_BTN1", ["reformers"] = { [1] = "AVA_F16_S3" } }, }, ["name"] = "Markpoint shortcut", },
-  } } return diff`);
-  writeFileSync(join(consumerRoot, 'kneeboard.json'), JSON.stringify({
-    schemaVersion: 1, aircraft: 'F-16C', modifiersFile: 'modifiers.lua',
-    modifiers: { S3: { nativeName: 'AVA_F16_S3', deviceId: 'ava-base-f16c', mode: 'hold' } },
-    profiles: { left: 'profiles/mfd.diff.lua' },
-    pages: [{ file: '02-LEFT-MFD', deviceId: 'tm-mfd', title: 'LEFT MFD', layers: [
-      { id: 'base', controls: { 'mfd-osb-t1': { profile: 'left', key: 'JOY_BTN1' } } },
-      { id: 's3', file: '03-S3-LEFT-MFD', title: 'S3 HELD • LEFT MFD', modifiers: ['S3'], controls: { 'mfd-osb-t1': { profile: 'left', key: 'JOY_BTN1' } } },
-    ] }],
-  }));
-  const config = loadProfileDrivenConfig('kneeboard.json', { consumerRoot, commonRoot });
-  assert.equal(config.pages[0].labels['mfd-osb-t1'], 'Left MFD OSB 1');
-  assert.equal(config.pages[1].labels['mfd-osb-t1'], 'Markpoint shortcut');
-  assert.equal(config.pages[1].modifiers[0].mode, 'hold');
-});
-
-test('rejects ambiguous bindings for the same key and modifier chord', () => {
-  const consumerRoot = mkdtempSync(join(tmpdir(), 'dcs-modifier-conflict-'));
-  writeFileSync(join(consumerRoot, 'profile.diff.lua'), `local diff = { ["keyDiffs"] = {
-    ["one"] = { ["added"] = { [1] = { ["key"] = "JOY_BTN1" }, }, ["name"] = "One", },
-    ["two"] = { ["added"] = { [1] = { ["key"] = "JOY_BTN1" }, }, ["name"] = "Two", },
-  } } return diff`);
-  writeFileSync(join(consumerRoot, 'kneeboard.json'), JSON.stringify({ schemaVersion: 1, aircraft: 'Test', profiles: { p: 'profile.diff.lua' }, pages: [{ file: 'mfd', deviceId: 'tm-mfd', controls: { 'mfd-osb-t1': { profile: 'p', key: 'JOY_BTN1' } } }] }));
-  assert.throws(() => loadProfileDrivenConfig('kneeboard.json', { consumerRoot, commonRoot }), /resolves to 2 bindings/);
-});
-
-test('profile-driven pages emit labelColors and shift legend for modifier layers', () => {
-  const consumerRoot = mkdtempSync(join(tmpdir(), 'dcs-mod-legend-'));
   mkdirSync(join(consumerRoot, 'profiles'));
   writeFileSync(join(consumerRoot, 'modifiers.lua'), modifiersSource);
   writeFileSync(join(consumerRoot, 'profiles/mfd.diff.lua'), `local diff = { ["keyDiffs"] = {
@@ -94,15 +61,58 @@ test('profile-driven pages emit labelColors and shift legend for modifier layers
     profiles: { left: 'profiles/mfd.diff.lua' },
     pages: [{ file: '02-LEFT-MFD', deviceId: 'tm-mfd', title: 'LEFT MFD', layers: [
       { id: 'base', controls: { 'mfd-osb-t1': { profile: 'left', key: 'JOY_BTN1' } } },
+      { id: 's3', file: '03-S3-LEFT-MFD', title: 'S3 HELD • LEFT MFD', modifiers: ['S3'], controls: { 'mfd-osb-t1': { profile: 'left', key: 'JOY_BTN1' }, 'mfd-osb-t2': { profile: 'left', key: 'JOY_BTN1', modifiers: ['S3'] } } },
+    ] }],
+  }));
+  // t2 only on shifted layer needs a binding - simplify: only t1 on both layers
+  writeFileSync(join(consumerRoot, 'kneeboard.json'), JSON.stringify({
+    schemaVersion: 1, aircraft: 'F-16C', modifiersFile: 'modifiers.lua',
+    modifiers: { S3: { nativeName: 'AVA_F16_S3', deviceId: 'ava-base-f16c', mode: 'hold', label: 'S3' } },
+    profiles: { left: 'profiles/mfd.diff.lua' },
+    pages: [{ file: '02-LEFT-MFD', deviceId: 'tm-mfd', title: 'LEFT MFD', layers: [
+      { id: 'base', controls: { 'mfd-osb-t1': { profile: 'left', key: 'JOY_BTN1' } }, labels: { 'mfd-osb-t1': 'Left MFD OSB 1' } },
+      { id: 's3', modifiers: ['S3'], controls: { 'mfd-osb-t1': { profile: 'left', key: 'JOY_BTN1' } }, labels: { 'mfd-osb-t1': 'Markpoint shortcut' } },
+    ] }],
+  }));
+  const config = loadProfileDrivenConfig('kneeboard.json', { consumerRoot, commonRoot });
+  assert.equal(config.pages.length, 1, 'layers merge into a single page');
+  assert.equal(config.pages[0].file, '02-LEFT-MFD');
+  assert.equal(config.pages[0].labels['mfd-osb-t1'], 'Markpoint shortcut', 'shifted layer label wins on same callout');
+  assert.equal(config.pages[0].labelColors['mfd-osb-t1'], '#dc2626', 'first used modifier is red');
+  assert.ok(config.pages[0].legend.length >= 2);
+  assert.match(config.pages[0].legend[1].label, /S3/);
+  assert.equal(config.pages[0].legend[1].fill, '#dc2626');
+});
+
+test('separateModifierPages still emits one file per layer', () => {
+  const consumerRoot = mkdtempSync(join(tmpdir(), 'dcs-separate-'));
+  mkdirSync(join(consumerRoot, 'profiles'));
+  writeFileSync(join(consumerRoot, 'modifiers.lua'), modifiersSource);
+  writeFileSync(join(consumerRoot, 'profiles/mfd.diff.lua'), `local diff = { ["keyDiffs"] = {
+    ["base"] = { ["added"] = { [1] = { ["key"] = "JOY_BTN1" }, }, ["name"] = "Left MFD OSB 1", },
+    ["shifted"] = { ["added"] = { [1] = { ["key"] = "JOY_BTN1", ["reformers"] = { [1] = "AVA_F16_S3" } }, }, ["name"] = "Markpoint shortcut", },
+  } } return diff`);
+  writeFileSync(join(consumerRoot, 'kneeboard.json'), JSON.stringify({
+    schemaVersion: 1, aircraft: 'F-16C', modifiersFile: 'modifiers.lua',
+    modifiers: { S3: { nativeName: 'AVA_F16_S3', deviceId: 'ava-base-f16c', mode: 'hold' } },
+    profiles: { left: 'profiles/mfd.diff.lua' },
+    pages: [{ file: '02-LEFT-MFD', deviceId: 'tm-mfd', title: 'LEFT MFD', separateModifierPages: true, layers: [
+      { id: 'base', controls: { 'mfd-osb-t1': { profile: 'left', key: 'JOY_BTN1' } } },
       { id: 's3', file: '03-S3-LEFT-MFD', title: 'S3 HELD • LEFT MFD', modifiers: ['S3'], controls: { 'mfd-osb-t1': { profile: 'left', key: 'JOY_BTN1' } } },
     ] }],
   }));
   const config = loadProfileDrivenConfig('kneeboard.json', { consumerRoot, commonRoot });
-  const base = config.pages[0];
-  const shifted = config.pages[1];
-  assert.equal(base.legend.length, 0, 'base layer has no shift legend');
-  assert.ok(shifted.legend.length >= 2, 'shifted layer includes base + S3 in legend');
-  assert.match(shifted.legend[1].label, /S3/);
-  assert.equal(shifted.labelColors['mfd-osb-t1'], '#dc2626');
-  assert.equal(base.labelColors['mfd-osb-t1'], '#111827');
+  assert.equal(config.pages.length, 2);
+  assert.equal(config.pages[0].labels['mfd-osb-t1'], 'Left MFD OSB 1');
+  assert.equal(config.pages[1].labels['mfd-osb-t1'], 'Markpoint shortcut');
+});
+
+test('rejects ambiguous bindings for the same key and modifier chord', () => {
+  const consumerRoot = mkdtempSync(join(tmpdir(), 'dcs-modifier-conflict-'));
+  writeFileSync(join(consumerRoot, 'profile.diff.lua'), `local diff = { ["keyDiffs"] = {
+    ["one"] = { ["added"] = { [1] = { ["key"] = "JOY_BTN1" }, }, ["name"] = "One", },
+    ["two"] = { ["added"] = { [1] = { ["key"] = "JOY_BTN1" }, }, ["name"] = "Two", },
+  } } return diff`);
+  writeFileSync(join(consumerRoot, 'kneeboard.json'), JSON.stringify({ schemaVersion: 1, aircraft: 'Test', profiles: { p: 'profile.diff.lua' }, pages: [{ file: 'mfd', deviceId: 'tm-mfd', controls: { 'mfd-osb-t1': { profile: 'p', key: 'JOY_BTN1' } } }] }));
+  assert.throws(() => loadProfileDrivenConfig('kneeboard.json', { consumerRoot, commonRoot }), /resolves to 2 bindings/);
 });
