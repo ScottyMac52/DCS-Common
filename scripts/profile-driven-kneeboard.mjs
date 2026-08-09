@@ -287,7 +287,8 @@ export function loadProfileDrivenConfig(configPath, options = {}) {
     for (const [controlId, reference] of Object.entries(page.controls ?? {})) {
       const modIds = page.controlModifiers?.[controlId] ?? reference.modifiers ?? page.modifierIds ?? [];
       if (!modIds.length) {
-        labelColors[controlId] = modifierColorAt(0);
+        // Leave base colour to the SVG default so light-background overlays
+        // (black text) and dark-box callouts (white text) both work.
         continue;
       }
       noteUsed(modIds);
@@ -295,10 +296,7 @@ export function loadProfileDrivenConfig(configPath, options = {}) {
       const colorIndex = usedOrder.indexOf(primary) + 1; // 1..N
       labelColors[controlId] = modifierColorAt(colorIndex);
     }
-    // Ensure every resolved label has a color (defaults to base)
-    for (const controlId of Object.keys(labels)) {
-      if (!(controlId in labelColors)) labelColors[controlId] = modifierColorAt(0);
-    }
+    // Only force a colour when a modifier is active; base stays device-native.
 
     const legendOut = [];
     if (usedOrder.length > 0) {
