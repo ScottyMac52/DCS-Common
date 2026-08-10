@@ -62,7 +62,7 @@ jobs:
                 "title": "VAICOM PRO + CONTROL OVERVIEW",
                 "kicker": "VOICE-FIRST JESTER • PHYSICAL BACKUP • NO JESTER WHEEL",
                 "items": [
-                  { "key": "TX1", "text1: "12Joy6 • VHF AM • Ctrl+Alt+Shift+1", "accent": "gold" },
+                  { "key": "TX1", "text1": "12Joy6 • VHF AM • Ctrl+Alt+Shift+1", "accent": "gold" },
                   { "key": "TX2", "text2": "12Joy3 • UHF • Ctrl+Alt+Shift+2", "accent": "gold" },
                   { "key": "TX3", "text3": "12Joy4 • VHF FM • Ctrl+Alt+Shift+3", "accent": "gold" },
                   { "key": "TX4", "text4": "12Joy5 • AUTO • Ctrl+Alt+Shift+4", "accent": "gold" },
