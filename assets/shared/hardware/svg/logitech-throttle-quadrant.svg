@@ -5,61 +5,61 @@
   <line x1="435" y1="135" x2="775" y2="185" stroke="#00bfff" stroke-width="1.5" stroke-dasharray="5 3" opacity="0.75"/>
   <circle cx="435" cy="135" r="5" fill="#00bfff" stroke="#0f172a" stroke-width="1.5"/>
   <rect x="695" y="185" width="160" height="30" rx="4" fill="#1e293b" stroke="#00bfff" stroke-width="1.5"/>
-  <text id="lbl-lev1" x="775" y="200" text-anchor="middle" font-family="Arial,sans-serif" font-size="11" fill="#f1f5f9">Throttle Axis</text>
+  <text id="lbl-lev1" x="775" y="204" text-anchor="middle" font-family="Arial,sans-serif" font-size="11" fill="#f1f5f9">Throttle Axis</text>
   <!-- callout:lev2 -->
   <line x1="495" y1="115" x2="695" y2="155" stroke="#00bfff" stroke-width="1.5" stroke-dasharray="5 3" opacity="0.75"/>
   <circle cx="495" cy="115" r="5" fill="#00bfff" stroke="#0f172a" stroke-width="1.5"/>
   <rect x="695" y="140" width="160" height="30" rx="4" fill="#1e293b" stroke="#00bfff" stroke-width="1.5"/>
-  <text id="lbl-lev2" x="775" y="155" text-anchor="middle" font-family="Arial,sans-serif" font-size="11" fill="#f1f5f9">Propeller Axis</text>
+  <text id="lbl-lev2" x="775" y="159" text-anchor="middle" font-family="Arial,sans-serif" font-size="11" fill="#f1f5f9">Propeller Axis</text>
   <!-- callout:detent1 -->
   <line x1="545" y1="445" x2="240" y2="375" stroke="#00bfff" stroke-width="1.5" stroke-dasharray="5 3" opacity="0.75"/>
   <circle cx="545" cy="445" r="5" fill="#00bfff" stroke="#0f172a" stroke-width="1.5"/>
   <rect x="80" y="360" width="160" height="30" rx="4" fill="#1e293b" stroke="#00bfff" stroke-width="1.5"/>
-  <text id="lbl-detent1" x="160" y="375" text-anchor="middle" font-family="Arial,sans-serif" font-size="11" fill="#f1f5f9">Throttle Detent</text>
+  <text id="lbl-detent1" x="160" y="379" text-anchor="middle" font-family="Arial,sans-serif" font-size="11" fill="#f1f5f9">Throttle Detent</text>
   <!-- callout:detent2 -->
   <line x1="595" y1="425" x2="775" y2="305" stroke="#00bfff" stroke-width="1.5" stroke-dasharray="5 3" opacity="0.75"/>
   <circle cx="595" cy="425" r="5" fill="#00bfff" stroke="#0f172a" stroke-width="1.5"/>
   <rect x="695" y="275" width="160" height="30" rx="4" fill="#1e293b" stroke="#00bfff" stroke-width="1.5"/>
-  <text id="lbl-detent2" x="775" y="290" text-anchor="middle" font-family="Arial,sans-serif" font-size="11" fill="#f1f5f9">Propeller Detent</text>
+  <text id="lbl-detent2" x="775" y="294" text-anchor="middle" font-family="Arial,sans-serif" font-size="11" fill="#f1f5f9">Propeller Detent</text>
   <!-- callout:t1 -->
   <line x1="550" y1="475" x2="240" y2="420" stroke="#00bfff" stroke-width="1.5" stroke-dasharray="5 3" opacity="0.75"/>
   <circle cx="550" cy="475" r="5" fill="#00bfff" stroke="#0f172a" stroke-width="1.5"/>
   <rect x="80" y="405" width="160" height="30" rx="4" fill="#1e293b" stroke="#00bfff" stroke-width="1.5"/>
-  <text id="lbl-t1" x="160" y="420" text-anchor="middle" font-family="Arial,sans-serif" font-size="11" fill="#f1f5f9">Left Rocker (Up)</text>
+  <text id="lbl-t1" x="160" y="424" text-anchor="middle" font-family="Arial,sans-serif" font-size="11" fill="#f1f5f9">Left Rocker (Up)</text>
   <!-- callout:t2 -->
   <line x1="550" y1="510" x2="240" y2="465" stroke="#00bfff" stroke-width="1.5" stroke-dasharray="5 3" opacity="0.75"/>
   <circle cx="550" cy="510" r="5" fill="#00bfff" stroke="#0f172a" stroke-width="1.5"/>
   <rect x="80" y="450" width="160" height="30" rx="4" fill="#1e293b" stroke="#00bfff" stroke-width="1.5"/>
-  <text id="lbl-t2" x="160" y="465" text-anchor="middle" font-family="Arial,sans-serif" font-size="11" fill="#f1f5f9">Left Rocker (Down)</text>
+  <text id="lbl-t2" x="160" y="469" text-anchor="middle" font-family="Arial,sans-serif" font-size="11" fill="#f1f5f9">Left Rocker (Down)</text>
   <!-- callout:lev3 -->
   <line x1="550" y1="105" x2="695" y2="110" stroke="#00bfff" stroke-width="1.5" stroke-dasharray="5 3" opacity="0.75"/>
   <circle cx="550" cy="105" r="5" fill="#00bfff" stroke="#0f172a" stroke-width="1.5"/>
   <rect x="695" y="95" width="160" height="30" rx="4" fill="#1e293b" stroke="#00bfff" stroke-width="1.5"/>
-  <text id="lbl-lev3" x="775" y="110" text-anchor="middle" font-family="Arial,sans-serif" font-size="11" fill="#f1f5f9">Mixture Axis</text>
+  <text id="lbl-lev3" x="775" y="114" text-anchor="middle" font-family="Arial,sans-serif" font-size="11" fill="#f1f5f9">Mixture Axis</text>
   <!-- callout:detent3 -->
   <line x1="640" y1="405" x2="775" y2="260" stroke="#00bfff" stroke-width="1.5" stroke-dasharray="5 3" opacity="0.75"/>
   <circle cx="640" cy="405" r="5" fill="#00bfff" stroke="#0f172a" stroke-width="1.5"/>
   <rect x="695" y="230" width="160" height="30" rx="4" fill="#1e293b" stroke="#00bfff" stroke-width="1.5"/>
-  <text id="lbl-detent3" x="775" y="245" text-anchor="middle" font-family="Arial,sans-serif" font-size="11" fill="#f1f5f9">Mixture Detent</text>
+  <text id="lbl-detent3" x="775" y="249" text-anchor="middle" font-family="Arial,sans-serif" font-size="11" fill="#f1f5f9">Mixture Detent</text>
   <!-- callout:t3 -->
   <line x1="595" y1="455" x2="775" y2="485" stroke="#00bfff" stroke-width="1.5" stroke-dasharray="5 3" opacity="0.75"/>
   <circle cx="595" cy="455" r="5" fill="#00bfff" stroke="#0f172a" stroke-width="1.5"/>
   <rect x="695" y="485" width="160" height="30" rx="4" fill="#1e293b" stroke="#00bfff" stroke-width="1.5"/>
-  <text id="lbl-t3" x="775" y="500" text-anchor="middle" font-family="Arial,sans-serif" font-size="11" fill="#f1f5f9">Center Rocker (Up)</text>
+  <text id="lbl-t3" x="775" y="504" text-anchor="middle" font-family="Arial,sans-serif" font-size="11" fill="#f1f5f9">Center Rocker (Up)</text>
   <!-- callout:t4 -->
   <line x1="595" y1="500" x2="775" y2="535" stroke="#00bfff" stroke-width="1.5" stroke-dasharray="5 3" opacity="0.75"/>
   <circle cx="595" cy="500" r="5" fill="#00bfff" stroke="#0f172a" stroke-width="1.5"/>
   <rect x="695" y="535" width="160" height="30" rx="4" fill="#1e293b" stroke="#00bfff" stroke-width="1.5"/>
-  <text id="lbl-t4" x="775" y="550" text-anchor="middle" font-family="Arial,sans-serif" font-size="11" fill="#f1f5f9">Center Rocker (Down)</text>
+  <text id="lbl-t4" x="775" y="554" text-anchor="middle" font-family="Arial,sans-serif" font-size="11" fill="#f1f5f9">Center Rocker (Down)</text>
   <!-- callout:t5 -->
   <line x1="640" y1="435" x2="775" y2="420" stroke="#00bfff" stroke-width="1.5" stroke-dasharray="5 3" opacity="0.75"/>
   <circle cx="640" cy="435" r="5" fill="#00bfff" stroke="#0f172a" stroke-width="1.5"/>
   <rect x="695" y="390" width="160" height="30" rx="4" fill="#1e293b" stroke="#00bfff" stroke-width="1.5"/>
-  <text id="lbl-t5" x="775" y="405" text-anchor="middle" font-family="Arial,sans-serif" font-size="11" fill="#f1f5f9">Right Rocker (Up)</text>
+  <text id="lbl-t5" x="775" y="409" text-anchor="middle" font-family="Arial,sans-serif" font-size="11" fill="#f1f5f9">Right Rocker (Up)</text>
   <!-- callout:t6 -->
   <line x1="640" y1="480" x2="775" y2="465" stroke="#00bfff" stroke-width="1.5" stroke-dasharray="5 3" opacity="0.75"/>
   <circle cx="640" cy="480" r="5" fill="#00bfff" stroke="#0f172a" stroke-width="1.5"/>
   <rect x="695" y="435" width="160" height="30" rx="4" fill="#1e293b" stroke="#00bfff" stroke-width="1.5"/>
-  <text id="lbl-t6" x="775" y="450" text-anchor="middle" font-family="Arial,sans-serif" font-size="11" fill="#f1f5f9">Right Rocker (Down)</text>
+  <text id="lbl-t6" x="775" y="454" text-anchor="middle" font-family="Arial,sans-serif" font-size="11" fill="#f1f5f9">Right Rocker (Down)</text>
   <text x="480" y="632" text-anchor="middle" font-family="Arial,sans-serif" font-size="12" fill="#475569">Logitech Throttle Quadrant • canonical shared template</text>
 </svg>

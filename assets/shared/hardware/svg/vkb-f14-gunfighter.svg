@@ -6,66 +6,66 @@
   <line x1="436" y1="96" x2="120" y2="61" stroke="#00bfff" stroke-width="1.5" stroke-dasharray="5 3" opacity="0.75"/>
   <circle cx="436" cy="96" r="5" fill="#00bfff" stroke="#0f172a" stroke-width="1.5"/>
   <rect x="15" y="35" width="210" height="26" rx="4" fill="#1e293b" stroke="#00bfff" stroke-width="1.5"/>
-  <text id="lbl-vkb-hat" x="120" y="50" text-anchor="middle" font-family="Arial,sans-serif" font-size="11" fill="#f1f5f9"></text>
+  <text id="lbl-vkb-hat" x="120" y="52" text-anchor="middle" font-family="Arial,sans-serif" font-size="11" fill="#f1f5f9"></text>
   <!-- callout:vkb-btn-red -->
   <line x1="535" y1="98" x2="225" y2="98" stroke="#00bfff" stroke-width="1.5" stroke-dasharray="5 3" opacity="0.75"/>
   <circle cx="535" cy="98" r="5" fill="#00bfff" stroke="#0f172a" stroke-width="1.5"/>
   <rect x="15" y="85" width="210" height="26" rx="4" fill="#1e293b" stroke="#00bfff" stroke-width="1.5"/>
-  <text id="lbl-vkb-btn-red" x="120" y="100" text-anchor="middle" font-family="Arial,sans-serif" font-size="11" fill="#f1f5f9"></text>
+  <text id="lbl-vkb-btn-red" x="120" y="102" text-anchor="middle" font-family="Arial,sans-serif" font-size="11" fill="#f1f5f9"></text>
   <!-- callout:vkb-btn-a -->
   <line x1="348" y1="317" x2="120" y2="730" stroke="#00bfff" stroke-width="1.5" stroke-dasharray="5 3" opacity="0.75"/>
   <circle cx="348" cy="317" r="5" fill="#00bfff" stroke="#0f172a" stroke-width="1.5"/>
   <rect x="15" y="730" width="210" height="26" rx="4" fill="#1e293b" stroke="#00bfff" stroke-width="1.5"/>
-  <text id="lbl-vkb-btn-a" x="120" y="745" text-anchor="middle" font-family="Arial,sans-serif" font-size="11" fill="#f1f5f9"></text>
+  <text id="lbl-vkb-btn-a" x="120" y="747" text-anchor="middle" font-family="Arial,sans-serif" font-size="11" fill="#f1f5f9"></text>
   <!-- callout:vkb-castle -->
   <line x1="326" y1="122" x2="780" y2="61" stroke="#00bfff" stroke-width="1.5" stroke-dasharray="5 3" opacity="0.75"/>
   <circle cx="326" cy="122" r="5" fill="#00bfff" stroke="#0f172a" stroke-width="1.5"/>
   <rect x="675" y="35" width="210" height="26" rx="4" fill="#1e293b" stroke="#00bfff" stroke-width="1.5"/>
-  <text id="lbl-vkb-castle" x="780" y="50" text-anchor="middle" font-family="Arial,sans-serif" font-size="11" fill="#f1f5f9"></text>
+  <text id="lbl-vkb-castle" x="780" y="52" text-anchor="middle" font-family="Arial,sans-serif" font-size="11" fill="#f1f5f9"></text>
   <!-- callout:vkb-sw1 -->
   <line x1="327" y1="99" x2="675" y2="98" stroke="#00bfff" stroke-width="1.5" stroke-dasharray="5 3" opacity="0.75"/>
   <circle cx="327" cy="99" r="5" fill="#00bfff" stroke="#0f172a" stroke-width="1.5"/>
   <rect x="675" y="85" width="210" height="26" rx="4" fill="#1e293b" stroke="#00bfff" stroke-width="1.5"/>
-  <text id="lbl-vkb-sw1" x="780" y="100" text-anchor="middle" font-family="Arial,sans-serif" font-size="11" fill="#f1f5f9"></text>
+  <text id="lbl-vkb-sw1" x="780" y="102" text-anchor="middle" font-family="Arial,sans-serif" font-size="11" fill="#f1f5f9"></text>
   <!-- callout:vkb-sw2 -->
   <line x1="326" y1="114" x2="675" y2="148" stroke="#00bfff" stroke-width="1.5" stroke-dasharray="5 3" opacity="0.75"/>
   <circle cx="326" cy="114" r="5" fill="#00bfff" stroke="#0f172a" stroke-width="1.5"/>
   <rect x="675" y="135" width="210" height="26" rx="4" fill="#1e293b" stroke="#00bfff" stroke-width="1.5"/>
-  <text id="lbl-vkb-sw2" x="780" y="150" text-anchor="middle" font-family="Arial,sans-serif" font-size="11" fill="#f1f5f9"></text>
+  <text id="lbl-vkb-sw2" x="780" y="152" text-anchor="middle" font-family="Arial,sans-serif" font-size="11" fill="#f1f5f9"></text>
   <!-- callout:vkb-sw3 -->
   <line x1="326" y1="130" x2="780" y2="185" stroke="#00bfff" stroke-width="1.5" stroke-dasharray="5 3" opacity="0.75"/>
   <circle cx="326" cy="130" r="5" fill="#00bfff" stroke="#0f172a" stroke-width="1.5"/>
   <rect x="675" y="185" width="210" height="26" rx="4" fill="#1e293b" stroke="#00bfff" stroke-width="1.5"/>
-  <text id="lbl-vkb-sw3" x="780" y="200" text-anchor="middle" font-family="Arial,sans-serif" font-size="11" fill="#f1f5f9"></text>
+  <text id="lbl-vkb-sw3" x="780" y="202" text-anchor="middle" font-family="Arial,sans-serif" font-size="11" fill="#f1f5f9"></text>
   <!-- callout:vkb-sw4 -->
   <line x1="326" y1="146" x2="780" y2="235" stroke="#00bfff" stroke-width="1.5" stroke-dasharray="5 3" opacity="0.75"/>
   <circle cx="326" cy="146" r="5" fill="#00bfff" stroke="#0f172a" stroke-width="1.5"/>
   <rect x="675" y="235" width="210" height="26" rx="4" fill="#1e293b" stroke="#00bfff" stroke-width="1.5"/>
-  <text id="lbl-vkb-sw4" x="780" y="250" text-anchor="middle" font-family="Arial,sans-serif" font-size="11" fill="#f1f5f9"></text>
+  <text id="lbl-vkb-sw4" x="780" y="252" text-anchor="middle" font-family="Arial,sans-serif" font-size="11" fill="#f1f5f9"></text>
   <!-- callout:vkb-grip-r -->
   <line x1="337" y1="887" x2="120" y2="706" stroke="#00bfff" stroke-width="1.5" stroke-dasharray="5 3" opacity="0.75"/>
   <circle cx="337" cy="887" r="5" fill="#00bfff" stroke="#0f172a" stroke-width="1.5"/>
   <rect x="15" y="680" width="210" height="26" rx="4" fill="#1e293b" stroke="#00bfff" stroke-width="1.5"/>
-  <text id="lbl-vkb-grip-r" x="120" y="695" text-anchor="middle" font-family="Arial,sans-serif" font-size="11" fill="#f1f5f9"></text>
+  <text id="lbl-vkb-grip-r" x="120" y="697" text-anchor="middle" font-family="Arial,sans-serif" font-size="11" fill="#f1f5f9"></text>
   <!-- callout:vkb-pinky -->
   <line x1="429" y1="1039" x2="120" y2="806" stroke="#00bfff" stroke-width="1.5" stroke-dasharray="5 3" opacity="0.75"/>
   <circle cx="429" cy="1039" r="5" fill="#00bfff" stroke="#0f172a" stroke-width="1.5"/>
   <rect x="15" y="780" width="210" height="26" rx="4" fill="#1e293b" stroke="#00bfff" stroke-width="1.5"/>
-  <text id="lbl-vkb-pinky" x="120" y="795" text-anchor="middle" font-family="Arial,sans-serif" font-size="11" fill="#f1f5f9"></text>
+  <text id="lbl-vkb-pinky" x="120" y="797" text-anchor="middle" font-family="Arial,sans-serif" font-size="11" fill="#f1f5f9"></text>
   <!-- callout:vkb-paddle -->
   <line x1="502" y1="1093" x2="120" y2="856" stroke="#00bfff" stroke-width="1.5" stroke-dasharray="5 3" opacity="0.75"/>
   <circle cx="502" cy="1093" r="5" fill="#00bfff" stroke="#0f172a" stroke-width="1.5"/>
   <rect x="15" y="830" width="210" height="26" rx="4" fill="#1e293b" stroke="#00bfff" stroke-width="1.5"/>
-  <text id="lbl-vkb-paddle" x="120" y="845" text-anchor="middle" font-family="Arial,sans-serif" font-size="11" fill="#f1f5f9"></text>
+  <text id="lbl-vkb-paddle" x="120" y="847" text-anchor="middle" font-family="Arial,sans-serif" font-size="11" fill="#f1f5f9"></text>
   <!-- callout:vkb-stage1 -->
   <line x1="548" y1="865" x2="780" y2="706" stroke="#00bfff" stroke-width="1.5" stroke-dasharray="5 3" opacity="0.75"/>
   <circle cx="548" cy="865" r="5" fill="#00bfff" stroke="#0f172a" stroke-width="1.5"/>
   <rect x="675" y="680" width="210" height="26" rx="4" fill="#1e293b" stroke="#00bfff" stroke-width="1.5"/>
-  <text id="lbl-vkb-stage1" x="780" y="695" text-anchor="middle" font-family="Arial,sans-serif" font-size="11" fill="#f1f5f9"></text>
+  <text id="lbl-vkb-stage1" x="780" y="697" text-anchor="middle" font-family="Arial,sans-serif" font-size="11" fill="#f1f5f9"></text>
   <!-- callout:vkb-stage2 -->
   <line x1="552" y1="895" x2="780" y2="756" stroke="#00bfff" stroke-width="1.5" stroke-dasharray="5 3" opacity="0.75"/>
   <circle cx="552" cy="895" r="5" fill="#00bfff" stroke="#0f172a" stroke-width="1.5"/>
   <rect x="675" y="730" width="210" height="26" rx="4" fill="#1e293b" stroke="#00bfff" stroke-width="1.5"/>
-  <text id="lbl-vkb-stage2" x="780" y="745" text-anchor="middle" font-family="Arial,sans-serif" font-size="11" fill="#f1f5f9"></text>
+  <text id="lbl-vkb-stage2" x="780" y="747" text-anchor="middle" font-family="Arial,sans-serif" font-size="11" fill="#f1f5f9"></text>
   <text x="450" y="1242" text-anchor="middle" font-family="Arial,sans-serif" font-size="12" fill="#475569">VKB F-14 Gunfighter Grip</text>
 </svg>
