@@ -90,7 +90,7 @@ jobs:
                 "deviceId": "tm-warthog-grip",
                 "title": "TM WARTHOG GRIP",
                 "kicker": "TEST DEVICE",
-                labels: [
+                "labels": [
                   "Slew push",
                   "MIC up",
                   "MIC right",
