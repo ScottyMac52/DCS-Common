@@ -132,7 +132,7 @@ for (const device of manifest.devices) {
 
   const ids = controls.map(({ id }) => id);
   const keys = controls.map(({ key }) => key);
-  const allowSharedIds = new Set(['vkb-f14-gunfighter', 'viper-tqs-mission-pack', 'tm-warthog-throttle']);
+  const allowSharedIds = new Set(['vkb-f14-gunfighter', 'tm-warthog-throttle']);
   if (!allowSharedIds.has(device.id)) {
     assert.equal(new Set(ids).size, ids.length, `${device.id} physical control IDs must be unique`);
   }
@@ -153,7 +153,7 @@ for (const device of manifest.devices) {
     : /id="connector-([^"]+)"/g;
   const drawioIds = [...drawio.matchAll(drawioIdPattern)].map((match) => match[1]).sort();
   const svgIds = [...svg.matchAll(/<!-- (?:callout|box):([^\s]+) -->/g)].map((match) => match[1]).sort();
-  const skipIdMatch = new Set(['vkb-f14-gunfighter', 'viper-tqs-mission-pack', 'tm-warthog-grip', 'grip-f18c', 'ava-base-f16c', 'ava-base-f18c', 'logitech-throttle-quadrant']);
+  const skipIdMatch = new Set(['vkb-f14-gunfighter', 'tm-warthog-grip', 'grip-f18c', 'ava-base-f16c', 'ava-base-f18c', 'logitech-throttle-quadrant']);
   if (!skipIdMatch.has(device.id)) {
     const luaUnique = [...new Set(luaIds)].sort();
     assert.deepEqual(luaUnique, [...new Set(drawioIds)].sort(), `${device.id} Lua controls must match draw.io IDs`);
@@ -186,6 +186,21 @@ for (const device of manifest.devices) {
     );
     assert.equal(controls.filter(({ type }) => type === 'axis').length, 5,
       'TM Warthog throttle must define five axes');
+  }
+
+  if (device.id === 'viper-tqs-mission-pack') {
+    assert.equal(controls.length, 68,
+      'Viper TQS + Mission Pack must define 62 button positions and six axes');
+    assert.deepEqual(
+      keys.filter((key) => /^JOY_BTN\d+$/.test(key)).map((key) => Number(key.slice(7))).sort((a, b) => a - b),
+      [...Array.from({ length: 19 }, (_, index) => index + 1), ...Array.from({ length: 43 }, (_, index) => index + 22)],
+      'Viper TQS + Mission Pack must define buttons 1-19 and 22-64 exactly once',
+    );
+    assert.deepEqual(
+      keys.filter((key) => /^JOY_(?:X|Y|Z|RX|RY|RZ)$/.test(key)).sort(),
+      ['JOY_RX', 'JOY_RY', 'JOY_RZ', 'JOY_X', 'JOY_Y', 'JOY_Z'],
+      'Viper TQS + Mission Pack must define all six axes',
+    );
   }
 
   if (device.id === 'winctrl-pto2') {

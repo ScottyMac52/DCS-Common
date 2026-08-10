@@ -35,7 +35,13 @@ test('all 14 hardware devices have native draw.io sources', () => {
 test('Viper TQS source has independently editable handle and Mission Pack image layers', () => {
   const xml = readFileSync(join(hardwareRoot, 'drawio/viper-tqs-mission-pack.drawio'), 'utf8');
   assert.equal((xml.match(/id="hardware-image-/g) ?? []).length, 2);
-  assert.ok((xml.match(/id="connector-viper-tqs-/g) ?? []).length >= 20);
+  assert.equal((xml.match(/id="connector-viper-tqs-/g) ?? []).length, 68);
+  assert.equal((xml.match(/id="connector-viper-tqs-button-/g) ?? []).length, 62);
+  assert.equal((xml.match(/id="connector-viper-tqs-axis-/g) ?? []).length, 6);
+  assert.equal((xml.match(/id="label-viper-tqs-[^"]+" value="[^"]+"/g) ?? []).length, 68,
+    'every Viper callout must have a default authoring watermark');
+  assert.equal((xml.match(/width="160" height="28"/g) ?? []).length, 68,
+    'Viper callouts must match the Logitech Throttle Quadrant width');
 });
 
 test('native sources and exported SVGs preserve callout identities', () => {
