@@ -7,6 +7,16 @@ const scriptDir = dirname(fileURLToPath(import.meta.url));
 const root = resolve(scriptDir, '..');
 const manifestPath = join(root, 'assets', 'shared', 'hardware', 'manifest.json');
 const manifest = JSON.parse(readFileSync(manifestPath, 'utf8'));
+const workflow = readFileSync(join(root, '.github', 'workflows', 'main.yml'), 'utf8');
+const mockConfigSource = workflow.match(/@"\r?\n([\s\S]*?)\r?\n\s*"@/)?.[1];
+assert.ok(mockConfigSource, 'main.yml must contain the embedded kneeboard JSON mock');
+const mockConfig = JSON.parse(mockConfigSource);
+const synchronizedWatermarkDevices = new Set([
+  'onyourtwelve-pdcp',
+  'moza-ab9',
+  'tm-mfd',
+  'winctrl-pto2',
+]);
 
 assert.ok(Array.isArray(manifest.devices), 'manifest should contain a devices array');
 assert.equal(manifest.devices.length, 14, 'expected 14 shared hardware definitions');
@@ -157,6 +167,30 @@ for (const device of manifest.devices) {
     const luaUnique = [...new Set(luaIds)].sort();
     assert.deepEqual(luaUnique, [...new Set(drawioIds)].sort(), `${device.id} Lua controls must match draw.io IDs`);
     assert.deepEqual(luaUnique, [...new Set(svgIds)].sort(), `${device.id} Lua controls must match exported SVG callout/box IDs`);
+  }
+
+  if (synchronizedWatermarkDevices.has(device.id)) {
+    const drawioLabels = new Map([...drawio.matchAll(/<mxCell\b([^>]*\bid="label-([^"]+)"[^>]*)>/g)].map((match) => {
+      const value = match[1].match(/\bvalue="([^"]*)"/)?.[1]
+        ?.replaceAll('&quot;', '"').replaceAll('&lt;', '<').replaceAll('&gt;', '>').replaceAll('&amp;', '&');
+      return [match[2], value];
+    }));
+    const svgLabels = new Map([...svg.matchAll(/<text id="lbl-([^"]+)"[^>]*>([^<]*)<\/text>/g)].map((match) => [
+      match[1],
+      match[2].replaceAll('&quot;', '"').replaceAll('&lt;', '<').replaceAll('&gt;', '>').replaceAll('&amp;', '&'),
+    ]));
+    const mockPage = mockConfig.pages.find(({ deviceId }) => deviceId === device.id);
+    assert.ok(mockPage, `${device.id} must have a main.yml mock page`);
+    assert.deepEqual(Object.keys(mockPage.labels).sort(), [...ids].sort(),
+      `${device.id} main.yml mock IDs must match its Lua controls`);
+    for (const { id, hardwareLabel } of controls) {
+      assert.equal(drawioLabels.get(id), hardwareLabel,
+        `${device.id} draw.io watermark must match Lua hardwareLabel for ${id}`);
+      assert.equal(svgLabels.get(id), hardwareLabel,
+        `${device.id} SVG watermark must match Lua hardwareLabel for ${id}`);
+      assert.equal(mockPage.labels[id], hardwareLabel,
+        `${device.id} main.yml mock label must match Lua hardwareLabel for ${id}`);
+    }
   }
 
   if (device.id === 'tm-warthog-throttle') {

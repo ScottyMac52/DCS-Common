@@ -5,141 +5,141 @@
   <line x1="390" y1="128" x2="146" y2="42" stroke="#00bfff" stroke-width="1.5" stroke-dasharray="5 3" opacity="0.75"/>
   <circle cx="390" cy="128" r="5" fill="#00bfff" stroke="#0f172a" stroke-width="1.5"/>
   <rect x="71" y="20" width="150" height="22" rx="4" fill="#1e293b" stroke="#00bfff" stroke-width="1.5"/>
-  <text id="lbl-mfd-osb-t1" x="146" y="35" text-anchor="middle" font-family="Arial,sans-serif" font-size="11" fill="#f1f5f9"></text>
+  <text id="lbl-mfd-osb-t1" x="146" y="35" text-anchor="middle" font-family="Arial,sans-serif" font-size="11" fill="#f1f5f9">Top OSB 1</text>
   <!-- callout:mfd-osb-t2 -->
   <line x1="437" y1="127" x2="317" y2="42" stroke="#00bfff" stroke-width="1.5" stroke-dasharray="5 3" opacity="0.75"/>
   <circle cx="437" cy="127" r="5" fill="#00bfff" stroke="#0f172a" stroke-width="1.5"/>
   <rect x="242" y="20" width="150" height="22" rx="4" fill="#1e293b" stroke="#00bfff" stroke-width="1.5"/>
-  <text id="lbl-mfd-osb-t2" x="317" y="35" text-anchor="middle" font-family="Arial,sans-serif" font-size="11" fill="#f1f5f9"></text>
+  <text id="lbl-mfd-osb-t2" x="317" y="35" text-anchor="middle" font-family="Arial,sans-serif" font-size="11" fill="#f1f5f9">Top OSB 2</text>
   <!-- callout:mfd-osb-t3 -->
   <line x1="485" y1="129" x2="486" y2="42" stroke="#00bfff" stroke-width="1.5" stroke-dasharray="5 3" opacity="0.75"/>
   <circle cx="485" cy="129" r="5" fill="#00bfff" stroke="#0f172a" stroke-width="1.5"/>
   <rect x="411" y="20" width="150" height="22" rx="4" fill="#1e293b" stroke="#00bfff" stroke-width="1.5"/>
-  <text id="lbl-mfd-osb-t3" x="486" y="35" text-anchor="middle" font-family="Arial,sans-serif" font-size="11" fill="#f1f5f9"></text>
+  <text id="lbl-mfd-osb-t3" x="486" y="35" text-anchor="middle" font-family="Arial,sans-serif" font-size="11" fill="#f1f5f9">Top OSB 3</text>
   <!-- callout:mfd-osb-t4 -->
   <line x1="533" y1="129" x2="650" y2="42" stroke="#00bfff" stroke-width="1.5" stroke-dasharray="5 3" opacity="0.75"/>
   <circle cx="533" cy="129" r="5" fill="#00bfff" stroke="#0f172a" stroke-width="1.5"/>
   <rect x="575" y="20" width="150" height="22" rx="4" fill="#1e293b" stroke="#00bfff" stroke-width="1.5"/>
-  <text id="lbl-mfd-osb-t4" x="650" y="35" text-anchor="middle" font-family="Arial,sans-serif" font-size="11" fill="#f1f5f9"></text>
+  <text id="lbl-mfd-osb-t4" x="650" y="35" text-anchor="middle" font-family="Arial,sans-serif" font-size="11" fill="#f1f5f9">Top OSB 4</text>
   <!-- callout:mfd-osb-t5 -->
   <line x1="579" y1="128" x2="820" y2="42" stroke="#00bfff" stroke-width="1.5" stroke-dasharray="5 3" opacity="0.75"/>
   <circle cx="579" cy="128" r="5" fill="#00bfff" stroke="#0f172a" stroke-width="1.5"/>
   <rect x="740" y="20" width="160" height="22" rx="4" fill="#1e293b" stroke="#00bfff" stroke-width="1.5"/>
-  <text id="lbl-mfd-osb-t5" x="820" y="35" text-anchor="middle" font-family="Arial,sans-serif" font-size="11" fill="#f1f5f9"></text>
+  <text id="lbl-mfd-osb-t5" x="820" y="35" text-anchor="middle" font-family="Arial,sans-serif" font-size="11" fill="#f1f5f9">Top OSB 5</text>
   <!-- callout:mfd-osb-r1 -->
   <line x1="663" y1="220" x2="750" y2="221" stroke="#00bfff" stroke-width="1.5" stroke-dasharray="5 3" opacity="0.75"/>
   <circle cx="663" cy="220" r="5" fill="#00bfff" stroke="#0f172a" stroke-width="1.5"/>
   <rect x="750" y="210" width="150" height="22" rx="4" fill="#1e293b" stroke="#00bfff" stroke-width="1.5"/>
-  <text id="lbl-mfd-osb-r1" x="825" y="225" text-anchor="middle" font-family="Arial,sans-serif" font-size="11" fill="#f1f5f9"></text>
+  <text id="lbl-mfd-osb-r1" x="825" y="225" text-anchor="middle" font-family="Arial,sans-serif" font-size="11" fill="#f1f5f9">Right OSB 1</text>
   <!-- callout:mfd-osb-r2 -->
   <line x1="663" y1="266" x2="750" y2="264" stroke="#00bfff" stroke-width="1.5" stroke-dasharray="5 3" opacity="0.75"/>
   <circle cx="663" cy="266" r="5" fill="#00bfff" stroke="#0f172a" stroke-width="1.5"/>
   <rect x="750" y="253" width="150" height="22" rx="4" fill="#1e293b" stroke="#00bfff" stroke-width="1.5"/>
-  <text id="lbl-mfd-osb-r2" x="825" y="268" text-anchor="middle" font-family="Arial,sans-serif" font-size="11" fill="#f1f5f9"></text>
+  <text id="lbl-mfd-osb-r2" x="825" y="268" text-anchor="middle" font-family="Arial,sans-serif" font-size="11" fill="#f1f5f9">Right OSB 2</text>
   <!-- callout:mfd-osb-r3 -->
   <line x1="664" y1="313" x2="750" y2="311" stroke="#00bfff" stroke-width="1.5" stroke-dasharray="5 3" opacity="0.75"/>
   <circle cx="664" cy="313" r="5" fill="#00bfff" stroke="#0f172a" stroke-width="1.5"/>
   <rect x="750" y="300" width="150" height="22" rx="4" fill="#1e293b" stroke="#00bfff" stroke-width="1.5"/>
-  <text id="lbl-mfd-osb-r3" x="825" y="315" text-anchor="middle" font-family="Arial,sans-serif" font-size="11" fill="#f1f5f9"></text>
+  <text id="lbl-mfd-osb-r3" x="825" y="315" text-anchor="middle" font-family="Arial,sans-serif" font-size="11" fill="#f1f5f9">Right OSB 3</text>
   <!-- callout:mfd-osb-r4 -->
   <line x1="665" y1="357" x2="750" y2="357" stroke="#00bfff" stroke-width="1.5" stroke-dasharray="5 3" opacity="0.75"/>
   <circle cx="665" cy="357" r="5" fill="#00bfff" stroke="#0f172a" stroke-width="1.5"/>
   <rect x="750" y="346" width="150" height="22" rx="4" fill="#1e293b" stroke="#00bfff" stroke-width="1.5"/>
-  <text id="lbl-mfd-osb-r4" x="825" y="361" text-anchor="middle" font-family="Arial,sans-serif" font-size="11" fill="#f1f5f9"></text>
+  <text id="lbl-mfd-osb-r4" x="825" y="361" text-anchor="middle" font-family="Arial,sans-serif" font-size="11" fill="#f1f5f9">Right OSB 4</text>
   <!-- callout:mfd-osb-r5 -->
   <line x1="663" y1="402" x2="750" y2="401" stroke="#00bfff" stroke-width="1.5" stroke-dasharray="5 3" opacity="0.75"/>
   <circle cx="663" cy="402" r="5" fill="#00bfff" stroke="#0f172a" stroke-width="1.5"/>
   <rect x="750" y="390" width="150" height="22" rx="4" fill="#1e293b" stroke="#00bfff" stroke-width="1.5"/>
-  <text id="lbl-mfd-osb-r5" x="825" y="405" text-anchor="middle" font-family="Arial,sans-serif" font-size="11" fill="#f1f5f9"></text>
+  <text id="lbl-mfd-osb-r5" x="825" y="405" text-anchor="middle" font-family="Arial,sans-serif" font-size="11" fill="#f1f5f9">Right OSB 5</text>
   <!-- callout:mfd-osb-l1 -->
   <line x1="303" y1="221" x2="220" y2="221" stroke="#00bfff" stroke-width="1.5" stroke-dasharray="5 3" opacity="0.75"/>
   <circle cx="303" cy="221" r="5" fill="#00bfff" stroke="#0f172a" stroke-width="1.5"/>
   <rect x="70" y="210" width="150" height="22" rx="4" fill="#1e293b" stroke="#00bfff" stroke-width="1.5"/>
-  <text id="lbl-mfd-osb-l1" x="145" y="225" text-anchor="middle" font-family="Arial,sans-serif" font-size="11" fill="#f1f5f9"></text>
+  <text id="lbl-mfd-osb-l1" x="145" y="225" text-anchor="middle" font-family="Arial,sans-serif" font-size="11" fill="#f1f5f9">Left OSB 1</text>
   <!-- callout:mfd-osb-l2 -->
   <line x1="301" y1="265" x2="220" y2="265" stroke="#00bfff" stroke-width="1.5" stroke-dasharray="5 3" opacity="0.75"/>
   <circle cx="301" cy="265" r="5" fill="#00bfff" stroke="#0f172a" stroke-width="1.5"/>
   <rect x="70" y="254" width="150" height="22" rx="4" fill="#1e293b" stroke="#00bfff" stroke-width="1.5"/>
-  <text id="lbl-mfd-osb-l2" x="145" y="269" text-anchor="middle" font-family="Arial,sans-serif" font-size="11" fill="#f1f5f9"></text>
+  <text id="lbl-mfd-osb-l2" x="145" y="269" text-anchor="middle" font-family="Arial,sans-serif" font-size="11" fill="#f1f5f9">Left OSB 2</text>
   <!-- callout:mfd-osb-l3 -->
   <line x1="301" y1="311" x2="220" y2="311" stroke="#00bfff" stroke-width="1.5" stroke-dasharray="5 3" opacity="0.75"/>
   <circle cx="301" cy="311" r="5" fill="#00bfff" stroke="#0f172a" stroke-width="1.5"/>
   <rect x="70" y="300" width="150" height="22" rx="4" fill="#1e293b" stroke="#00bfff" stroke-width="1.5"/>
-  <text id="lbl-mfd-osb-l3" x="145" y="315" text-anchor="middle" font-family="Arial,sans-serif" font-size="11" fill="#f1f5f9"></text>
+  <text id="lbl-mfd-osb-l3" x="145" y="315" text-anchor="middle" font-family="Arial,sans-serif" font-size="11" fill="#f1f5f9">Left OSB 3</text>
   <!-- callout:mfd-osb-l4 -->
   <line x1="301" y1="357" x2="220" y2="360" stroke="#00bfff" stroke-width="1.5" stroke-dasharray="5 3" opacity="0.75"/>
   <circle cx="301" cy="357" r="5" fill="#00bfff" stroke="#0f172a" stroke-width="1.5"/>
   <rect x="70" y="349" width="150" height="22" rx="4" fill="#1e293b" stroke="#00bfff" stroke-width="1.5"/>
-  <text id="lbl-mfd-osb-l4" x="145" y="364" text-anchor="middle" font-family="Arial,sans-serif" font-size="11" fill="#f1f5f9"></text>
+  <text id="lbl-mfd-osb-l4" x="145" y="364" text-anchor="middle" font-family="Arial,sans-serif" font-size="11" fill="#f1f5f9">Left OSB 4</text>
   <!-- callout:mfd-osb-l5 -->
   <line x1="300" y1="401" x2="220" y2="401" stroke="#00bfff" stroke-width="1.5" stroke-dasharray="5 3" opacity="0.75"/>
   <circle cx="300" cy="401" r="5" fill="#00bfff" stroke="#0f172a" stroke-width="1.5"/>
   <rect x="70" y="390" width="150" height="22" rx="4" fill="#1e293b" stroke="#00bfff" stroke-width="1.5"/>
-  <text id="lbl-mfd-osb-l5" x="145" y="405" text-anchor="middle" font-family="Arial,sans-serif" font-size="11" fill="#f1f5f9"></text>
+  <text id="lbl-mfd-osb-l5" x="145" y="405" text-anchor="middle" font-family="Arial,sans-serif" font-size="11" fill="#f1f5f9">Left OSB 5</text>
   <!-- callout:mfd-osb-b1 -->
   <line x1="386" y1="505" x2="145" y2="617" stroke="#00bfff" stroke-width="1.5" stroke-dasharray="5 3" opacity="0.75"/>
   <circle cx="386" cy="505" r="5" fill="#00bfff" stroke="#0f172a" stroke-width="1.5"/>
   <rect x="70" y="617" width="150" height="22" rx="4" fill="#1e293b" stroke="#00bfff" stroke-width="1.5"/>
-  <text id="lbl-mfd-osb-b1" x="145" y="632" text-anchor="middle" font-family="Arial,sans-serif" font-size="11" fill="#f1f5f9"></text>
+  <text id="lbl-mfd-osb-b1" x="145" y="632" text-anchor="middle" font-family="Arial,sans-serif" font-size="11" fill="#f1f5f9">Bottom OSB 1</text>
   <!-- callout:mfd-osb-b2 -->
   <line x1="435" y1="505" x2="331.5" y2="617" stroke="#00bfff" stroke-width="1.5" stroke-dasharray="5 3" opacity="0.75"/>
   <circle cx="435" cy="505" r="5" fill="#00bfff" stroke="#0f172a" stroke-width="1.5"/>
   <rect x="259" y="617" width="145" height="22" rx="4" fill="#1e293b" stroke="#00bfff" stroke-width="1.5"/>
-  <text id="lbl-mfd-osb-b2" x="331.5" y="632" text-anchor="middle" font-family="Arial,sans-serif" font-size="11" fill="#f1f5f9"></text>
+  <text id="lbl-mfd-osb-b2" x="331.5" y="632" text-anchor="middle" font-family="Arial,sans-serif" font-size="11" fill="#f1f5f9">Bottom OSB 2</text>
   <!-- callout:mfd-osb-b3 -->
   <line x1="485" y1="505" x2="488.5" y2="617" stroke="#00bfff" stroke-width="1.5" stroke-dasharray="5 3" opacity="0.75"/>
   <circle cx="485" cy="505" r="5" fill="#00bfff" stroke="#0f172a" stroke-width="1.5"/>
   <rect x="416" y="617" width="145" height="22" rx="4" fill="#1e293b" stroke="#00bfff" stroke-width="1.5"/>
-  <text id="lbl-mfd-osb-b3" x="488.5" y="632" text-anchor="middle" font-family="Arial,sans-serif" font-size="11" fill="#f1f5f9"></text>
+  <text id="lbl-mfd-osb-b3" x="488.5" y="632" text-anchor="middle" font-family="Arial,sans-serif" font-size="11" fill="#f1f5f9">Bottom OSB 3</text>
   <!-- callout:mfd-osb-b4 -->
   <line x1="533" y1="502" x2="656" y2="617" stroke="#00bfff" stroke-width="1.5" stroke-dasharray="5 3" opacity="0.75"/>
   <circle cx="533" cy="502" r="5" fill="#00bfff" stroke="#0f172a" stroke-width="1.5"/>
   <rect x="581" y="617" width="150" height="22" rx="4" fill="#1e293b" stroke="#00bfff" stroke-width="1.5"/>
-  <text id="lbl-mfd-osb-b4" x="656" y="632" text-anchor="middle" font-family="Arial,sans-serif" font-size="11" fill="#f1f5f9"></text>
+  <text id="lbl-mfd-osb-b4" x="656" y="632" text-anchor="middle" font-family="Arial,sans-serif" font-size="11" fill="#f1f5f9">Bottom OSB 4</text>
   <!-- callout:mfd-osb-b5 -->
   <line x1="579" y1="498.5" x2="825" y2="617" stroke="#00bfff" stroke-width="1.5" stroke-dasharray="5 3" opacity="0.75"/>
   <circle cx="579" cy="498.5" r="5" fill="#00bfff" stroke="#0f172a" stroke-width="1.5"/>
   <rect x="750" y="617" width="150" height="22" rx="4" fill="#1e293b" stroke="#00bfff" stroke-width="1.5"/>
-  <text id="lbl-mfd-osb-b5" x="825" y="632" text-anchor="middle" font-family="Arial,sans-serif" font-size="11" fill="#f1f5f9"></text>
+  <text id="lbl-mfd-osb-b5" x="825" y="632" text-anchor="middle" font-family="Arial,sans-serif" font-size="11" fill="#f1f5f9">Bottom OSB 5</text>
   <!-- callout:mfd-rocker-sym -->
   <line x1="300" y1="154" x2="145" y2="122" stroke="#00bfff" stroke-width="1.5" stroke-dasharray="5 3" opacity="0.75"/>
   <circle cx="300" cy="154" r="5" fill="#00bfff" stroke="#0f172a" stroke-width="1.5"/>
   <rect x="70" y="100" width="150" height="22" rx="4" fill="#1e293b" stroke="#00bfff" stroke-width="1.5"/>
-  <text id="lbl-mfd-rocker-sym" x="145" y="115" text-anchor="middle" font-family="Arial,sans-serif" font-size="11" fill="#f1f5f9"></text>
+  <text id="lbl-mfd-rocker-sym" x="145" y="115" text-anchor="middle" font-family="Arial,sans-serif" font-size="11" fill="#f1f5f9">SYM up</text>
   <!-- callout:mfd-rocker-int -->
   <line x1="300" y1="176" x2="145" y2="147.5" stroke="#00bfff" stroke-width="1.5" stroke-dasharray="5 3" opacity="0.75"/>
   <circle cx="300" cy="176" r="5" fill="#00bfff" stroke="#0f172a" stroke-width="1.5"/>
   <rect x="70" y="125.5" width="150" height="22" rx="4" fill="#1e293b" stroke="#00bfff" stroke-width="1.5"/>
-  <text id="lbl-mfd-rocker-int" x="145" y="140.5" text-anchor="middle" font-family="Arial,sans-serif" font-size="11" fill="#f1f5f9"></text>
+  <text id="lbl-mfd-rocker-int" x="145" y="140.5" text-anchor="middle" font-family="Arial,sans-serif" font-size="11" fill="#f1f5f9">INT down</text>
   <!-- callout:mfd-rocker-gain -->
   <line x1="665" y1="154" x2="825" y2="116.5" stroke="#00bfff" stroke-width="1.5" stroke-dasharray="5 3" opacity="0.75"/>
   <circle cx="665" cy="154" r="5" fill="#00bfff" stroke="#0f172a" stroke-width="1.5"/>
   <rect x="750" y="94.5" width="150" height="22" rx="4" fill="#1e293b" stroke="#00bfff" stroke-width="1.5"/>
-  <text id="lbl-mfd-rocker-gain" x="825" y="109.5" text-anchor="middle" font-family="Arial,sans-serif" font-size="11" fill="#f1f5f9"></text>
+  <text id="lbl-mfd-rocker-gain" x="825" y="109.5" text-anchor="middle" font-family="Arial,sans-serif" font-size="11" fill="#f1f5f9">GAIN up</text>
   <!-- callout:mfd-rocker-lvl -->
   <line x1="665" y1="176" x2="825" y2="147.5" stroke="#00bfff" stroke-width="1.5" stroke-dasharray="5 3" opacity="0.75"/>
   <circle cx="665" cy="176" r="5" fill="#00bfff" stroke="#0f172a" stroke-width="1.5"/>
   <rect x="750" y="125.5" width="150" height="22" rx="4" fill="#1e293b" stroke="#00bfff" stroke-width="1.5"/>
-  <text id="lbl-mfd-rocker-lvl" x="825" y="140.5" text-anchor="middle" font-family="Arial,sans-serif" font-size="11" fill="#f1f5f9"></text>
+  <text id="lbl-mfd-rocker-lvl" x="825" y="140.5" text-anchor="middle" font-family="Arial,sans-serif" font-size="11" fill="#f1f5f9">LVL down</text>
   <!-- callout:mfd-rocker-brt-up -->
   <line x1="298" y1="439" x2="145" y2="500" stroke="#00bfff" stroke-width="1.5" stroke-dasharray="5 3" opacity="0.75"/>
   <circle cx="298" cy="439" r="5" fill="#00bfff" stroke="#0f172a" stroke-width="1.5"/>
   <rect x="70" y="500" width="150" height="22" rx="4" fill="#1e293b" stroke="#00bfff" stroke-width="1.5"/>
-  <text id="lbl-mfd-rocker-brt-up" x="145" y="515" text-anchor="middle" font-family="Arial,sans-serif" font-size="11" fill="#f1f5f9"></text>
+  <text id="lbl-mfd-rocker-brt-up" x="145" y="515" text-anchor="middle" font-family="Arial,sans-serif" font-size="11" fill="#f1f5f9">BRT up</text>
   <!-- callout:mfd-rocker-brt-down -->
   <line x1="298" y1="460" x2="145" y2="538" stroke="#00bfff" stroke-width="1.5" stroke-dasharray="5 3" opacity="0.75"/>
   <circle cx="298" cy="460" r="5" fill="#00bfff" stroke="#0f172a" stroke-width="1.5"/>
   <rect x="70" y="538" width="150" height="22" rx="4" fill="#1e293b" stroke="#00bfff" stroke-width="1.5"/>
-  <text id="lbl-mfd-rocker-brt-down" x="145" y="553" text-anchor="middle" font-family="Arial,sans-serif" font-size="11" fill="#f1f5f9"></text>
+  <text id="lbl-mfd-rocker-brt-down" x="145" y="553" text-anchor="middle" font-family="Arial,sans-serif" font-size="11" fill="#f1f5f9">BRT down</text>
   <!-- callout:mfd-rocker-con-up -->
   <line x1="665" y1="439" x2="825" y2="503" stroke="#00bfff" stroke-width="1.5" stroke-dasharray="5 3" opacity="0.75"/>
   <circle cx="665" cy="439" r="5" fill="#00bfff" stroke="#0f172a" stroke-width="1.5"/>
   <rect x="750" y="503" width="150" height="22" rx="4" fill="#1e293b" stroke="#00bfff" stroke-width="1.5"/>
-  <text id="lbl-mfd-rocker-con-up" x="825" y="518" text-anchor="middle" font-family="Arial,sans-serif" font-size="11" fill="#f1f5f9"></text>
+  <text id="lbl-mfd-rocker-con-up" x="825" y="518" text-anchor="middle" font-family="Arial,sans-serif" font-size="11" fill="#f1f5f9">CON up</text>
   <!-- callout:mfd-rocker-con-down -->
   <line x1="665" y1="460" x2="825" y2="538" stroke="#00bfff" stroke-width="1.5" stroke-dasharray="5 3" opacity="0.75"/>
   <circle cx="665" cy="460" r="5" fill="#00bfff" stroke="#0f172a" stroke-width="1.5"/>
   <rect x="750" y="538" width="150" height="22" rx="4" fill="#1e293b" stroke="#00bfff" stroke-width="1.5"/>
-  <text id="lbl-mfd-rocker-con-down" x="825" y="553" text-anchor="middle" font-family="Arial,sans-serif" font-size="11" fill="#f1f5f9"></text>
+  <text id="lbl-mfd-rocker-con-down" x="825" y="553" text-anchor="middle" font-family="Arial,sans-serif" font-size="11" fill="#f1f5f9">CON down</text>
   <text x="480" y="712" text-anchor="middle" font-family="Arial,sans-serif" font-size="12" fill="#475569">Thrustmaster Cougar MFD</text>
 </svg>

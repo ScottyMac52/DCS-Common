@@ -5,11 +5,11 @@
   <line x1="380" y1="92" x2="170" y2="81" stroke="#00bfff" stroke-width="1.5" stroke-dasharray="5 3" opacity="0.75"/>
   <circle cx="380" cy="92" r="5" fill="#00bfff" stroke="#0f172a" stroke-width="1.5"/>
   <rect x="10" y="70" width="160" height="22" rx="4" fill="#1e293b" stroke="#00bfff" stroke-width="1.5"/>
-  <text id="lbl-moza-ab9-pitch-axis" x="90" y="85" text-anchor="middle" font-family="Arial,sans-serif" font-size="11" fill="#f1f5f9"></text>
+  <text id="lbl-moza-ab9-pitch-axis" x="90" y="85" text-anchor="middle" font-family="Arial,sans-serif" font-size="11" fill="#f1f5f9">Pitch Axis</text>
   <!-- callout:moza-ab9-roll-axis -->
   <line x1="340" y1="112" x2="590" y2="81" stroke="#00bfff" stroke-width="1.5" stroke-dasharray="5 3" opacity="0.75"/>
   <circle cx="340" cy="112" r="5" fill="#00bfff" stroke="#0f172a" stroke-width="1.5"/>
   <rect x="590" y="70" width="160" height="22" rx="4" fill="#1e293b" stroke="#00bfff" stroke-width="1.5"/>
-  <text id="lbl-moza-ab9-roll-axis" x="670" y="85" text-anchor="middle" font-family="Arial,sans-serif" font-size="11" fill="#f1f5f9"></text>
+  <text id="lbl-moza-ab9-roll-axis" x="670" y="85" text-anchor="middle" font-family="Arial,sans-serif" font-size="11" fill="#f1f5f9">Roll Axis</text>
   <text x="380" y="592" text-anchor="middle" font-family="Arial,sans-serif" font-size="12" fill="#475569">MOZA AB9 FFB Base</text>
 </svg>
