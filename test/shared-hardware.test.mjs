@@ -160,7 +160,7 @@ for (const device of manifest.devices) {
     : /id="connector-([^"]+)"/g;
   const drawioIds = [...drawio.matchAll(drawioIdPattern)].map((match) => match[1]).sort();
   const svgIds = [...svg.matchAll(/<!-- (?:callout|box):([^\s]+) -->/g)].map((match) => match[1]).sort();
-  const skipIdMatch = new Set(['tm-warthog-grip', 'grip-f18c', 'ava-base-f16c', 'ava-base-f18c', 'logitech-throttle-quadrant', 'viper-tqs-mission-pack']);
+  const skipIdMatch = new Set(['tm-warthog-grip', 'grip-f18c', 'ava-base-f16c', 'ava-base-f18c', 'viper-tqs-mission-pack']);
   if (!skipIdMatch.has(device.id)) {
     const luaUnique = [...new Set(luaIds)].sort();
     assert.deepEqual(luaUnique, [...new Set(drawioIds)].sort(), `${device.id} Lua controls must match draw.io IDs`);
