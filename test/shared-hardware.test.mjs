@@ -160,11 +160,16 @@ for (const device of manifest.devices) {
     : /id="connector-([^"]+)"/g;
   const drawioIds = [...drawio.matchAll(drawioIdPattern)].map((match) => match[1]).sort();
   const svgIds = [...svg.matchAll(/<!-- (?:callout|box):([^\s]+) -->/g)].map((match) => match[1]).sort();
-  const skipIdMatch = new Set(['tm-warthog-grip', 'grip-f18c', 'ava-base-f16c', 'ava-base-f18c', 'viper-tqs-mission-pack']);
-  if (!skipIdMatch.has(device.id)) {
+  const legacyIdMatchSkips = new Set(['tm-warthog-grip', 'grip-f18c', 'ava-base-f16c', 'ava-base-f18c']);
+  if (!legacyIdMatchSkips.has(device.id)) {
     const luaUnique = [...new Set(luaIds)].sort();
-    assert.deepEqual(luaUnique, [...new Set(drawioIds)].sort(), `${device.id} Lua controls must match draw.io IDs`);
-    assert.deepEqual(luaUnique, [...new Set(svgIds)].sort(), `${device.id} Lua controls must match exported SVG callout/box IDs`);
+    const expectedVisualIds = device.id === 'viper-tqs-mission-pack'
+      ? luaUnique.filter((id) => !/^viper-tqs-button-0[1-5]$/.test(id))
+      : luaUnique;
+    assert.deepEqual(expectedVisualIds, [...new Set(drawioIds)].sort(),
+      `${device.id} accepted Lua controls must match draw.io IDs`);
+    assert.deepEqual(expectedVisualIds, [...new Set(svgIds)].sort(),
+      `${device.id} accepted Lua controls must match exported SVG callout/box IDs`);
   }
 
   if (synchronizedWatermarkDevices.has(device.id)) {
@@ -189,6 +194,62 @@ for (const device of manifest.devices) {
       assert.equal(mockPage.labels[id], hardwareLabel,
         `${device.id} main.yml mock label must match Lua hardwareLabel for ${id}`);
     }
+  }
+
+  if (device.id === 'moza-ab9') {
+    assert.equal(controls.length, 2, 'MOZA AB9 base must define exactly its pitch and roll axes');
+    assert.deepEqual(keys.sort(), ['JOY_X', 'JOY_Y'],
+      'MOZA AB9 base must define JOY_X roll and JOY_Y pitch exactly once');
+    assert.ok(controls.every(({ type }) => type === 'axis'),
+      'MOZA AB9 base controls must both be axes');
+  }
+
+  if (device.id === 'vkb-f14-gunfighter') {
+    assert.equal(controls.length, 15,
+      'VKB F-14 Gunfighter must define 14 button positions and the DLC axis');
+    assert.deepEqual(
+      keys.filter((key) => /^JOY_BTN\d+$/.test(key)).map((key) => Number(key.slice(7))).sort((a, b) => a - b),
+      [1, 3, 4, 5, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16],
+      'VKB F-14 Gunfighter must define its accepted logical button enumeration exactly once',
+    );
+    assert.deepEqual(keys.filter((key) => key.startsWith('JOY_') && !key.startsWith('JOY_BTN')), ['JOY_RX'],
+      'VKB F-14 Gunfighter must define JOY_RX as its DLC axis');
+    assert.deepEqual([...new Set(ids)].sort(), drawioIds,
+      'VKB F-14 accepted aggregate callouts must cover every Lua control group');
+  }
+
+  if (device.id === 'winctrl-icp') {
+    assert.equal(controls.length, 38, 'WINCTRL ICP must define 34 buttons and four axes');
+    assert.deepEqual(
+      keys.filter((key) => /^JOY_BTN\d+$/.test(key)).map((key) => Number(key.slice(7))).sort((a, b) => a - b),
+      Array.from({ length: 34 }, (_, index) => index + 1),
+      'WINCTRL ICP must define JOY_BTN1 through JOY_BTN34 exactly once',
+    );
+    assert.deepEqual(
+      keys.filter((key) => /^JOY_(?:X|Y|RX|RY)$/.test(key)).sort(),
+      ['JOY_RX', 'JOY_RY', 'JOY_X', 'JOY_Y'],
+      'WINCTRL ICP must define X, Y, Rx, and Ry axes exactly once',
+    );
+  }
+
+  if (device.id === 'tm-tpr') {
+    assert.equal(controls.length, 3, 'TM TPR must define rudder and both toe-brake axes');
+    assert.deepEqual(keys.sort(), ['JOY_X', 'JOY_Y', 'JOY_Z'],
+      'TM TPR must define JOY_Z rudder, JOY_Y left brake, and JOY_X right brake');
+    assert.ok(controls.every(({ type }) => type === 'axis'),
+      'TM TPR controls must all be axes');
+  }
+
+  if (device.id === 'logitech-throttle-quadrant') {
+    assert.equal(controls.length, 12,
+      'Logitech throttle quadrant must define three axes, three detents, and six rocker directions');
+    assert.deepEqual(
+      keys.filter((key) => /^JOY_BTN\d+$/.test(key)).map((key) => Number(key.slice(7))).sort((a, b) => a - b),
+      Array.from({ length: 9 }, (_, index) => index + 1),
+      'Logitech throttle quadrant must define JOY_BTN1 through JOY_BTN9 exactly once',
+    );
+    assert.deepEqual(keys.filter((key) => /^JOY_[XYZ]$/.test(key)).sort(), ['JOY_X', 'JOY_Y', 'JOY_Z'],
+      'Logitech throttle quadrant must define its three lever axes exactly once');
   }
 
   if (device.id === 'tm-warthog-throttle') {
