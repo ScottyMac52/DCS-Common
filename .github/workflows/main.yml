@@ -44,8 +44,8 @@ jobs:
       - name: Generate Mock Configuration and Test Artifacts
         shell: pwsh
         run: |
-          # Generate every test page and profile from the authoritative Lua catalogs.
-          node "$env:DCS_COMMON_ROOT/scripts/generate-complete-build-mock.mjs" "$PWD" "$env:DCS_COMMON_ROOT"
+          # Generate every test page, profile, and rendered kneeboard from the authoritative Lua catalogs.
+          node "$env:DCS_COMMON_ROOT/scripts/generate-test-articles.mjs" "$PWD" "$env:DCS_COMMON_ROOT"
 
           # Mock package metadata files
           @"
@@ -61,85 +61,6 @@ jobs:
           Dummy release notes for testing.
           "@ | Out-File -Encoding utf8 "packaging/release/RELEASE-NOTES.md"
 
-          # Mock build-kneeboard.mjs (IMPORTS DCS-COMMON ENGINES & RENDERS REAL IMAGES)
-          @"
-          import { mkdirSync, rmSync, writeFileSync, readFileSync } from 'node:fs';
-          import { dirname, join, resolve, basename } from 'node:path';
-          import { fileURLToPath, pathToFileURL } from 'node:url';
-          import sharp from 'sharp';
-
-          const scriptDir = dirname(fileURLToPath(import.meta.url));
-          const root = resolve(scriptDir, '..');
-          const commonRoot = resolve(process.env.DCS_COMMON_ROOT || join(root, '.dcs-common'));
-
-          const sharedHardwareConsumerUrl = pathToFileURL(join(commonRoot, 'scripts/shared-hardware-consumer.mjs'));
-          const profileDrivenUrl = pathToFileURL(join(commonRoot, 'scripts/profile-driven-kneeboard.mjs'));
-          const kneeboardRendererUrl = pathToFileURL(join(commonRoot, 'scripts/kneeboard-renderer.mjs'));
-
-          const { renderSharedHardwarePage } = await import(sharedHardwareConsumerUrl.href);
-          const { loadProfileDrivenConfig } = await import(profileDrivenUrl.href);
-          const { renderKneeboard } = await import(kneeboardRendererUrl.href);
-
-          const rawConfig = JSON.parse(readFileSync(join(root, 'config/kneeboard.json'), 'utf8'));
-          const config = loadProfileDrivenConfig('config/kneeboard.json', { consumerRoot: root, commonRoot });
-
-          const aircraftFolder = config.aircraft.replace(/[^a-zA-Z0-9-]/g, '');
-          const pngDir = join(root, 'kneeboard', aircraftFolder);
-
-          rmSync(pngDir, { recursive: true, force: true });
-          mkdirSync(pngDir, { recursive: true });
-
-          const allPages = [
-            ...(rawConfig.summaryPages || []),
-            ...config.pages
-          ].sort((a, b) => a.file.localeCompare(b.file));
-
-          const totalPages = allPages.length;
-
-          for (const [index, page] of allPages.entries()) {
-            if (page.type === 'summary') {
-              const result = await renderKneeboard({
-                config: { 
-                  pages: [{ ...page, pageCount: totalPages }], 
-                  profiles: [] 
-                },
-                outputDir: pngDir,
-                rootDir: root,
-              });
-              
-              for (const svgFile of result.svgFiles) {
-                let svgContent = readFileSync(svgFile, 'utf8');
-                svgContent = svgContent.replace(/1 \/ 1/, (index + 1) + ' / ' + totalPages);
-                await sharp(Buffer.from(svgContent)).png().toFile(join(pngDir, page.file + '.png'));
-              }
-            } else if (page.deviceId) {
-              const hardwareRender = renderSharedHardwarePage({
-                ...page,
-                commonRoot,
-                provenance: { consumer: 'DCS-' + aircraftFolder + '-Components', page: (index + 1) + ' / ' + totalPages },
-              });
-              
-              await sharp(Buffer.from(hardwareRender.svg)).png().toFile(join(pngDir, page.file + '.png'));
-            }
-          }
-
-          console.log('Successfully compiled ' + totalPages + ' pages using actual DCS-Common assets.');
-          "@ | Out-File -Encoding utf8 "scripts/build-kneeboard.mjs"
-
-          # Mock package.json script registration
-          @"
-          {
-            "name": "dcs-common-test",
-            "version": "0.0.0",
-            "type": "module",
-            "scripts": {
-              "build:kneeboard": "node scripts/build-kneeboard.mjs"
-            }
-          }
-          "@ | Out-File -Encoding utf8 "package.json"
-
-      - name: Build Kneeboard
-        run: npm run build:kneeboard
 
       - name: Build OvGME Package
         shell: pwsh

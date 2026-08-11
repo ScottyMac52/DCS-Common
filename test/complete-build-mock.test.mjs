@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
-import { mkdtempSync, readFileSync } from 'node:fs';
+import { mkdtempSync, readdirSync, readFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { dirname, join } from 'node:path';
 import { spawnSync } from 'node:child_process';
@@ -8,6 +8,7 @@ import { fileURLToPath } from 'node:url';
 import { buildCompleteMock, parseHardwareControls, writeCompleteMock } from '../scripts/generate-complete-build-mock.mjs';
 import { loadProfileDrivenConfig } from '../scripts/profile-driven-kneeboard.mjs';
 import { loadSharedHardware } from '../scripts/shared-hardware-consumer.mjs';
+import { generateTestArticles } from '../scripts/generate-test-articles.mjs';
 
 const root = dirname(dirname(fileURLToPath(import.meta.url)));
 const hardwareRoot = join(root, 'assets', 'shared', 'hardware');
@@ -72,4 +73,15 @@ test('complete-build mock runs directly from the command line', () => {
   assert.equal(result.status, 0, result.stderr);
   assert.match(result.stdout, /Generated complete build mock at/);
   assert.ok(readFileSync(join(consumerRoot, 'config', 'kneeboard.json'), 'utf8'));
+});
+
+test('complete test articles render every configured page', async () => {
+  const consumerRoot = mkdtempSync(join(tmpdir(), 'dcs-complete-articles-'));
+  const result = await generateTestArticles({ commonRoot: root, consumerRoot });
+  const pngFiles = readdirSync(result.pngDir).filter((file) => file.endsWith('.png'));
+  const svgFiles = readdirSync(result.svgDir).filter((file) => file.endsWith('.svg'));
+
+  assert.equal(result.pageCount, buildCompleteMock(root).config.pages.length + 1);
+  assert.equal(pngFiles.length, result.pageCount);
+  assert.equal(svgFiles.length, result.pageCount);
 });
