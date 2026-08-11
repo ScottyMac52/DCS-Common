@@ -87,19 +87,17 @@ jobs:
                 "title": "VKB GUNFIGHTER • F-14 GRIP",
                 "kicker": "TEST DEVICE",
                 "labels": {
-                  "vkb-hat": "Trim hat",
-                  "vkb-btn-red": "Weapon release",
-                  "vkb-btn-a": "A / reject button",
-                  "vkb-castle": "Castle / mode",
-                  "vkb-sw1": "Mode switch 1",
-                  "vkb-sw2": "Mode switch 2",
-                  "vkb-sw3": "Mode switch 3",
-                  "vkb-sw4": "Mode switch 4",
-                  "vkb-grip-r": "Grip R button",
-                  "vkb-pinky": "Pinky / NWS",
-                  "vkb-paddle": "Paddle",
-                  "vkb-stage1": "Trigger stage 1",
-                  "vkb-stage2": "Trigger stage 2"
+                  "vkb-trigger": "Trigger",
+                  "vkb-btn-release": "Weapon release",
+                  "vkb-pinky": "Pinky",
+                  "vkb-btn-dlc": "DLC Enage / Disengage",
+                  "vkb-nws": "NWS / Shift",
+                  "vkb-hat": "Push hat / Trim hat right / Trim hat up / Trim hat down / Trim hat left",
+                  "vkb-sw4": "Weapons Off",
+                  "vkb-sw3": "Mode Guns",
+                  "vkb-sw2": "Mode Sidewinder",
+                  "vkb-sw1": "Mode Sparrow / Phoenix",
+                  "vkb-axis-dlc": "DLC"
                 }
               },
               {
