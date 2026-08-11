@@ -5,146 +5,146 @@
   <line x1="318" y1="137" x2="100" y2="44" stroke="#00bfff" stroke-width="1.5" stroke-dasharray="5 3" opacity="0.75"/>
   <circle cx="318" cy="137" r="5" fill="#00bfff" stroke="#0f172a" stroke-width="1.5"/>
   <rect x="15" y="20" width="170" height="24" rx="4" fill="#1e293b" stroke="#00bfff" stroke-width="1.5"/>
-  <text id="lbl-pdcp-to" x="100" y="36" text-anchor="middle" font-family="Arial,sans-serif" font-size="11" fill="#f1f5f9"></text>
+  <text id="lbl-pdcp-to" x="100" y="36" text-anchor="middle" font-family="Arial,sans-serif" font-size="11" fill="#f1f5f9">T.O.</text>
   <!-- callout:pdcp-cruise -->
   <line x1="318" y1="209" x2="100" y2="92" stroke="#00bfff" stroke-width="1.5" stroke-dasharray="5 3" opacity="0.75"/>
   <circle cx="318" cy="209" r="5" fill="#00bfff" stroke="#0f172a" stroke-width="1.5"/>
   <rect x="15" y="68" width="170" height="24" rx="4" fill="#1e293b" stroke="#00bfff" stroke-width="1.5"/>
-  <text id="lbl-pdcp-cruise" x="100" y="84" text-anchor="middle" font-family="Arial,sans-serif" font-size="11" fill="#f1f5f9"></text>
+  <text id="lbl-pdcp-cruise" x="100" y="84" text-anchor="middle" font-family="Arial,sans-serif" font-size="11" fill="#f1f5f9">CRUISE</text>
   <!-- callout:pdcp-aa -->
   <line x1="318" y1="281" x2="100" y2="140" stroke="#00bfff" stroke-width="1.5" stroke-dasharray="5 3" opacity="0.75"/>
   <circle cx="318" cy="281" r="5" fill="#00bfff" stroke="#0f172a" stroke-width="1.5"/>
   <rect x="15" y="116" width="170" height="24" rx="4" fill="#1e293b" stroke="#00bfff" stroke-width="1.5"/>
-  <text id="lbl-pdcp-aa" x="100" y="132" text-anchor="middle" font-family="Arial,sans-serif" font-size="11" fill="#f1f5f9"></text>
+  <text id="lbl-pdcp-aa" x="100" y="132" text-anchor="middle" font-family="Arial,sans-serif" font-size="11" fill="#f1f5f9">A/A</text>
   <!-- callout:pdcp-ag -->
   <line x1="318" y1="354" x2="100" y2="188" stroke="#00bfff" stroke-width="1.5" stroke-dasharray="5 3" opacity="0.75"/>
   <circle cx="318" cy="354" r="5" fill="#00bfff" stroke="#0f172a" stroke-width="1.5"/>
   <rect x="15" y="164" width="170" height="24" rx="4" fill="#1e293b" stroke="#00bfff" stroke-width="1.5"/>
-  <text id="lbl-pdcp-ag" x="100" y="180" text-anchor="middle" font-family="Arial,sans-serif" font-size="11" fill="#f1f5f9"></text>
+  <text id="lbl-pdcp-ag" x="100" y="180" text-anchor="middle" font-family="Arial,sans-serif" font-size="11" fill="#f1f5f9">A/G</text>
   <!-- callout:pdcp-ldg -->
   <line x1="318" y1="425" x2="100" y2="236" stroke="#00bfff" stroke-width="1.5" stroke-dasharray="5 3" opacity="0.75"/>
   <circle cx="318" cy="425" r="5" fill="#00bfff" stroke="#0f172a" stroke-width="1.5"/>
   <rect x="15" y="212" width="170" height="24" rx="4" fill="#1e293b" stroke="#00bfff" stroke-width="1.5"/>
-  <text id="lbl-pdcp-ldg" x="100" y="228" text-anchor="middle" font-family="Arial,sans-serif" font-size="11" fill="#f1f5f9"></text>
+  <text id="lbl-pdcp-ldg" x="100" y="228" text-anchor="middle" font-family="Arial,sans-serif" font-size="11" fill="#f1f5f9">LDG</text>
   <!-- callout:pdcp-hud-dec -->
   <line x1="447" y1="132" x2="800" y2="44" stroke="#00bfff" stroke-width="1.5" stroke-dasharray="5 3" opacity="0.75"/>
   <circle cx="447" cy="132" r="5" fill="#00bfff" stroke="#0f172a" stroke-width="1.5"/>
   <rect x="715" y="20" width="170" height="24" rx="4" fill="#1e293b" stroke="#00bfff" stroke-width="1.5"/>
-  <text id="lbl-pdcp-hud-dec" x="800" y="36" text-anchor="middle" font-family="Arial,sans-serif" font-size="11" fill="#f1f5f9"></text>
+  <text id="lbl-pdcp-hud-dec" x="800" y="36" text-anchor="middle" font-family="Arial,sans-serif" font-size="11" fill="#f1f5f9">HUD DIGITAL</text>
   <!-- callout:pdcp-vdi-mode -->
   <line x1="447" y1="242" x2="715" y2="224" stroke="#00bfff" stroke-width="1.5" stroke-dasharray="5 3" opacity="0.75"/>
   <circle cx="447" cy="242" r="5" fill="#00bfff" stroke="#0f172a" stroke-width="1.5"/>
   <rect x="715" y="212" width="170" height="24" rx="4" fill="#1e293b" stroke="#00bfff" stroke-width="1.5"/>
-  <text id="lbl-pdcp-vdi-mode" x="800" y="228" text-anchor="middle" font-family="Arial,sans-serif" font-size="11" fill="#f1f5f9"></text>
+  <text id="lbl-pdcp-vdi-mode" x="800" y="228" text-anchor="middle" font-family="Arial,sans-serif" font-size="11" fill="#f1f5f9">VDI NORM</text>
   <!-- callout:pdcp-hsd-mode -->
   <line x1="447" y1="369" x2="715" y2="416" stroke="#00bfff" stroke-width="1.5" stroke-dasharray="5 3" opacity="0.75"/>
   <circle cx="447" cy="369" r="5" fill="#00bfff" stroke="#0f172a" stroke-width="1.5"/>
   <rect x="715" y="404" width="170" height="24" rx="4" fill="#1e293b" stroke="#00bfff" stroke-width="1.5"/>
-  <text id="lbl-pdcp-hsd-mode" x="800" y="420" text-anchor="middle" font-family="Arial,sans-serif" font-size="11" fill="#f1f5f9"></text>
+  <text id="lbl-pdcp-hsd-mode" x="800" y="420" text-anchor="middle" font-family="Arial,sans-serif" font-size="11" fill="#f1f5f9">HSD NAV</text>
   <!-- callout:pdcp-pwr-vdi -->
   <line x1="318" y1="508" x2="100" y2="284" stroke="#00bfff" stroke-width="1.5" stroke-dasharray="5 3" opacity="0.75"/>
   <circle cx="318" cy="508" r="5" fill="#00bfff" stroke="#0f172a" stroke-width="1.5"/>
   <rect x="15" y="260" width="170" height="24" rx="4" fill="#1e293b" stroke="#00bfff" stroke-width="1.5"/>
-  <text id="lbl-pdcp-pwr-vdi" x="100" y="276" text-anchor="middle" font-family="Arial,sans-serif" font-size="11" fill="#f1f5f9"></text>
+  <text id="lbl-pdcp-pwr-vdi" x="100" y="276" text-anchor="middle" font-family="Arial,sans-serif" font-size="11" fill="#f1f5f9">VDI POWER OFF</text>
   <!-- callout:pdcp-hud-awl -->
   <line x1="598" y1="132" x2="715" y2="128" stroke="#00bfff" stroke-width="1.5" stroke-dasharray="5 3" opacity="0.75"/>
   <circle cx="598" cy="132" r="5" fill="#00bfff" stroke="#0f172a" stroke-width="1.5"/>
   <rect x="715" y="116" width="170" height="24" rx="4" fill="#1e293b" stroke="#00bfff" stroke-width="1.5"/>
-  <text id="lbl-pdcp-hud-awl" x="800" y="132" text-anchor="middle" font-family="Arial,sans-serif" font-size="11" fill="#f1f5f9"></text>
+  <text id="lbl-pdcp-hud-awl" x="800" y="132" text-anchor="middle" font-family="Arial,sans-serif" font-size="11" fill="#f1f5f9">HUD ALT RDR</text>
   <!-- callout:pdcp-vdi-awl -->
   <line x1="318" y1="607" x2="100" y2="476" stroke="#00bfff" stroke-width="1.5" stroke-dasharray="5 3" opacity="0.75"/>
   <circle cx="318" cy="607" r="5" fill="#00bfff" stroke="#0f172a" stroke-width="1.5"/>
   <rect x="15" y="452" width="170" height="24" rx="4" fill="#1e293b" stroke="#00bfff" stroke-width="1.5"/>
-  <text id="lbl-pdcp-vdi-awl" x="100" y="468" text-anchor="middle" font-family="Arial,sans-serif" font-size="11" fill="#f1f5f9"></text>
+  <text id="lbl-pdcp-vdi-awl" x="100" y="468" text-anchor="middle" font-family="Arial,sans-serif" font-size="11" fill="#f1f5f9">STEER TACAN</text>
   <!-- callout:pdcp-hsd-ecm -->
   <line x1="598" y1="369" x2="800" y2="548" stroke="#00bfff" stroke-width="1.5" stroke-dasharray="5 3" opacity="0.75"/>
   <circle cx="598" cy="369" r="5" fill="#00bfff" stroke="#0f172a" stroke-width="1.5"/>
   <rect x="715" y="548" width="170" height="24" rx="4" fill="#1e293b" stroke="#00bfff" stroke-width="1.5"/>
-  <text id="lbl-pdcp-hsd-ecm" x="800" y="564" text-anchor="middle" font-family="Arial,sans-serif" font-size="11" fill="#f1f5f9"></text>
+  <text id="lbl-pdcp-hsd-ecm" x="800" y="564" text-anchor="middle" font-family="Arial,sans-serif" font-size="11" fill="#f1f5f9">ECM OVERRIDE OFF</text>
   <!-- callout:pdcp-pwr-hud -->
   <line x1="447" y1="508" x2="800" y2="644" stroke="#00bfff" stroke-width="1.5" stroke-dasharray="5 3" opacity="0.75"/>
   <circle cx="447" cy="508" r="5" fill="#00bfff" stroke="#0f172a" stroke-width="1.5"/>
   <rect x="715" y="644" width="170" height="24" rx="4" fill="#1e293b" stroke="#00bfff" stroke-width="1.5"/>
-  <text id="lbl-pdcp-pwr-hud" x="800" y="660" text-anchor="middle" font-family="Arial,sans-serif" font-size="11" fill="#f1f5f9"></text>
+  <text id="lbl-pdcp-pwr-hud" x="800" y="660" text-anchor="middle" font-family="Arial,sans-serif" font-size="11" fill="#f1f5f9">HUD POWER OFF</text>
   <!-- callout:pdcp-hud-analog -->
   <line x1="463" y1="132" x2="800" y2="92" stroke="#00bfff" stroke-width="1.5" stroke-dasharray="5 3" opacity="0.75"/>
   <circle cx="463" cy="132" r="5" fill="#00bfff" stroke="#0f172a" stroke-width="1.5"/>
   <rect x="715" y="68" width="170" height="24" rx="4" fill="#1e293b" stroke="#00bfff" stroke-width="1.5"/>
-  <text id="lbl-pdcp-hud-analog" x="800" y="84" text-anchor="middle" font-family="Arial,sans-serif" font-size="11" fill="#f1f5f9"></text>
+  <text id="lbl-pdcp-hud-analog" x="800" y="84" text-anchor="middle" font-family="Arial,sans-serif" font-size="11" fill="#f1f5f9">HUD ANALOG</text>
   <!-- callout:pdcp-hud-alt-baro -->
   <line x1="614" y1="132" x2="800" y2="164" stroke="#00bfff" stroke-width="1.5" stroke-dasharray="5 3" opacity="0.75"/>
   <circle cx="614" cy="132" r="5" fill="#00bfff" stroke="#0f172a" stroke-width="1.5"/>
   <rect x="715" y="164" width="170" height="24" rx="4" fill="#1e293b" stroke="#00bfff" stroke-width="1.5"/>
-  <text id="lbl-pdcp-hud-alt-baro" x="800" y="180" text-anchor="middle" font-family="Arial,sans-serif" font-size="11" fill="#f1f5f9"></text>
+  <text id="lbl-pdcp-hud-alt-baro" x="800" y="180" text-anchor="middle" font-family="Arial,sans-serif" font-size="11" fill="#f1f5f9">HUD ALT BARO</text>
   <!-- callout:pdcp-vdi-tv -->
   <line x1="463" y1="242" x2="715" y2="272" stroke="#00bfff" stroke-width="1.5" stroke-dasharray="5 3" opacity="0.75"/>
   <circle cx="463" cy="242" r="5" fill="#00bfff" stroke="#0f172a" stroke-width="1.5"/>
   <rect x="715" y="260" width="170" height="24" rx="4" fill="#1e293b" stroke="#00bfff" stroke-width="1.5"/>
-  <text id="lbl-pdcp-vdi-tv" x="800" y="276" text-anchor="middle" font-family="Arial,sans-serif" font-size="11" fill="#f1f5f9"></text>
+  <text id="lbl-pdcp-vdi-tv" x="800" y="276" text-anchor="middle" font-family="Arial,sans-serif" font-size="11" fill="#f1f5f9">VDI TV</text>
   <!-- callout:pdcp-hud-night -->
   <line x1="598" y1="242" x2="800" y2="308" stroke="#00bfff" stroke-width="1.5" stroke-dasharray="5 3" opacity="0.75"/>
   <circle cx="598" cy="242" r="5" fill="#00bfff" stroke="#0f172a" stroke-width="1.5"/>
   <rect x="715" y="308" width="170" height="24" rx="4" fill="#1e293b" stroke="#00bfff" stroke-width="1.5"/>
-  <text id="lbl-pdcp-hud-night" x="800" y="324" text-anchor="middle" font-family="Arial,sans-serif" font-size="11" fill="#f1f5f9"></text>
+  <text id="lbl-pdcp-hud-night" x="800" y="324" text-anchor="middle" font-family="Arial,sans-serif" font-size="11" fill="#f1f5f9">HUD NIGHT</text>
   <!-- callout:pdcp-hud-day -->
   <line x1="614" y1="242" x2="800" y2="356" stroke="#00bfff" stroke-width="1.5" stroke-dasharray="5 3" opacity="0.75"/>
   <circle cx="614" cy="242" r="5" fill="#00bfff" stroke="#0f172a" stroke-width="1.5"/>
   <rect x="715" y="356" width="170" height="24" rx="4" fill="#1e293b" stroke="#00bfff" stroke-width="1.5"/>
-  <text id="lbl-pdcp-hud-day" x="800" y="372" text-anchor="middle" font-family="Arial,sans-serif" font-size="11" fill="#f1f5f9"></text>
+  <text id="lbl-pdcp-hud-day" x="800" y="372" text-anchor="middle" font-family="Arial,sans-serif" font-size="11" fill="#f1f5f9">HUD DAY</text>
   <!-- callout:pdcp-hsd-tid -->
   <line x1="455" y1="351" x2="800" y2="452" stroke="#00bfff" stroke-width="1.5" stroke-dasharray="5 3" opacity="0.75"/>
   <circle cx="455" cy="351" r="5" fill="#00bfff" stroke="#0f172a" stroke-width="1.5"/>
   <rect x="715" y="452" width="170" height="24" rx="4" fill="#1e293b" stroke="#00bfff" stroke-width="1.5"/>
-  <text id="lbl-pdcp-hsd-tid" x="800" y="468" text-anchor="middle" font-family="Arial,sans-serif" font-size="11" fill="#f1f5f9"></text>
+  <text id="lbl-pdcp-hsd-tid" x="800" y="468" text-anchor="middle" font-family="Arial,sans-serif" font-size="11" fill="#f1f5f9">HSD TID</text>
   <!-- callout:pdcp-ecm-on -->
   <line x1="614" y1="369" x2="800" y2="596" stroke="#00bfff" stroke-width="1.5" stroke-dasharray="5 3" opacity="0.75"/>
   <circle cx="614" cy="369" r="5" fill="#00bfff" stroke="#0f172a" stroke-width="1.5"/>
   <rect x="715" y="596" width="170" height="24" rx="4" fill="#1e293b" stroke="#00bfff" stroke-width="1.5"/>
-  <text id="lbl-pdcp-ecm-on" x="800" y="612" text-anchor="middle" font-family="Arial,sans-serif" font-size="11" fill="#f1f5f9"></text>
+  <text id="lbl-pdcp-ecm-on" x="800" y="612" text-anchor="middle" font-family="Arial,sans-serif" font-size="11" fill="#f1f5f9">ECM OVERRIDE ON</text>
   <!-- callout:pdcp-hud-power-on -->
   <line x1="463" y1="508" x2="800" y2="692" stroke="#00bfff" stroke-width="1.5" stroke-dasharray="5 3" opacity="0.75"/>
   <circle cx="463" cy="508" r="5" fill="#00bfff" stroke="#0f172a" stroke-width="1.5"/>
   <rect x="715" y="692" width="170" height="24" rx="4" fill="#1e293b" stroke="#00bfff" stroke-width="1.5"/>
-  <text id="lbl-pdcp-hud-power-on" x="800" y="708" text-anchor="middle" font-family="Arial,sans-serif" font-size="11" fill="#f1f5f9"></text>
+  <text id="lbl-pdcp-hud-power-on" x="800" y="708" text-anchor="middle" font-family="Arial,sans-serif" font-size="11" fill="#f1f5f9">HUD POWER ON</text>
   <!-- callout:pdcp-hsd-power-off -->
   <line x1="598" y1="508" x2="100" y2="380" stroke="#00bfff" stroke-width="1.5" stroke-dasharray="5 3" opacity="0.75"/>
   <circle cx="598" cy="508" r="5" fill="#00bfff" stroke="#0f172a" stroke-width="1.5"/>
   <rect x="15" y="356" width="170" height="24" rx="4" fill="#1e293b" stroke="#00bfff" stroke-width="1.5"/>
-  <text id="lbl-pdcp-hsd-power-off" x="100" y="372" text-anchor="middle" font-family="Arial,sans-serif" font-size="11" fill="#f1f5f9"></text>
+  <text id="lbl-pdcp-hsd-power-off" x="100" y="372" text-anchor="middle" font-family="Arial,sans-serif" font-size="11" fill="#f1f5f9">HSD/ECM POWER OFF</text>
   <!-- callout:pdcp-hsd-power-on -->
   <line x1="614" y1="508" x2="100" y2="428" stroke="#00bfff" stroke-width="1.5" stroke-dasharray="5 3" opacity="0.75"/>
   <circle cx="614" cy="508" r="5" fill="#00bfff" stroke="#0f172a" stroke-width="1.5"/>
   <rect x="15" y="404" width="170" height="24" rx="4" fill="#1e293b" stroke="#00bfff" stroke-width="1.5"/>
-  <text id="lbl-pdcp-hsd-power-on" x="100" y="420" text-anchor="middle" font-family="Arial,sans-serif" font-size="11" fill="#f1f5f9"></text>
+  <text id="lbl-pdcp-hsd-power-on" x="100" y="420" text-anchor="middle" font-family="Arial,sans-serif" font-size="11" fill="#f1f5f9">HSD/ECM POWER ON</text>
   <!-- callout:pdcp-vdi-power-on -->
   <line x1="334" y1="508" x2="100" y2="332" stroke="#00bfff" stroke-width="1.5" stroke-dasharray="5 3" opacity="0.75"/>
   <circle cx="334" cy="508" r="5" fill="#00bfff" stroke="#0f172a" stroke-width="1.5"/>
   <rect x="15" y="308" width="170" height="24" rx="4" fill="#1e293b" stroke="#00bfff" stroke-width="1.5"/>
-  <text id="lbl-pdcp-vdi-power-on" x="100" y="324" text-anchor="middle" font-family="Arial,sans-serif" font-size="11" fill="#f1f5f9"></text>
+  <text id="lbl-pdcp-vdi-power-on" x="100" y="324" text-anchor="middle" font-family="Arial,sans-serif" font-size="11" fill="#f1f5f9">VDI POWER ON</text>
   <!-- callout:pdcp-hsd-ecm-mode -->
   <line x1="463" y1="387" x2="800" y2="500" stroke="#00bfff" stroke-width="1.5" stroke-dasharray="5 3" opacity="0.75"/>
   <circle cx="463" cy="387" r="5" fill="#00bfff" stroke="#0f172a" stroke-width="1.5"/>
   <rect x="715" y="500" width="170" height="24" rx="4" fill="#1e293b" stroke="#00bfff" stroke-width="1.5"/>
-  <text id="lbl-pdcp-hsd-ecm-mode" x="800" y="516" text-anchor="middle" font-family="Arial,sans-serif" font-size="11" fill="#f1f5f9"></text>
+  <text id="lbl-pdcp-hsd-ecm-mode" x="800" y="516" text-anchor="middle" font-family="Arial,sans-serif" font-size="11" fill="#f1f5f9">HSD ECM</text>
   <!-- callout:pdcp-steer-dest -->
   <line x1="386" y1="607" x2="100" y2="524" stroke="#00bfff" stroke-width="1.5" stroke-dasharray="5 3" opacity="0.75"/>
   <circle cx="386" cy="607" r="5" fill="#00bfff" stroke="#0f172a" stroke-width="1.5"/>
   <rect x="15" y="500" width="170" height="24" rx="4" fill="#1e293b" stroke="#00bfff" stroke-width="1.5"/>
-  <text id="lbl-pdcp-steer-dest" x="100" y="516" text-anchor="middle" font-family="Arial,sans-serif" font-size="11" fill="#f1f5f9"></text>
+  <text id="lbl-pdcp-steer-dest" x="100" y="516" text-anchor="middle" font-family="Arial,sans-serif" font-size="11" fill="#f1f5f9">STEER DEST</text>
   <!-- callout:pdcp-steer-awl-pcd -->
   <line x1="455" y1="607" x2="185" y2="560" stroke="#00bfff" stroke-width="1.5" stroke-dasharray="5 3" opacity="0.75"/>
   <circle cx="455" cy="607" r="5" fill="#00bfff" stroke="#0f172a" stroke-width="1.5"/>
   <rect x="15" y="548" width="170" height="24" rx="4" fill="#1e293b" stroke="#00bfff" stroke-width="1.5"/>
-  <text id="lbl-pdcp-steer-awl-pcd" x="100" y="564" text-anchor="middle" font-family="Arial,sans-serif" font-size="11" fill="#f1f5f9"></text>
+  <text id="lbl-pdcp-steer-awl-pcd" x="100" y="564" text-anchor="middle" font-family="Arial,sans-serif" font-size="11" fill="#f1f5f9">STEER AWL/PCD</text>
   <!-- callout:pdcp-steer-vec -->
   <line x1="530" y1="607" x2="185" y2="608" stroke="#00bfff" stroke-width="1.5" stroke-dasharray="5 3" opacity="0.75"/>
   <circle cx="530" cy="607" r="5" fill="#00bfff" stroke="#0f172a" stroke-width="1.5"/>
   <rect x="15" y="596" width="170" height="24" rx="4" fill="#1e293b" stroke="#00bfff" stroke-width="1.5"/>
-  <text id="lbl-pdcp-steer-vec" x="100" y="612" text-anchor="middle" font-family="Arial,sans-serif" font-size="11" fill="#f1f5f9"></text>
+  <text id="lbl-pdcp-steer-vec" x="100" y="612" text-anchor="middle" font-family="Arial,sans-serif" font-size="11" fill="#f1f5f9">STEER VEC</text>
   <!-- callout:pdcp-steer-man -->
   <line x1="606" y1="607" x2="185" y2="656" stroke="#00bfff" stroke-width="1.5" stroke-dasharray="5 3" opacity="0.75"/>
   <circle cx="606" cy="607" r="5" fill="#00bfff" stroke="#0f172a" stroke-width="1.5"/>
   <rect x="15" y="644" width="170" height="24" rx="4" fill="#1e293b" stroke="#00bfff" stroke-width="1.5"/>
-  <text id="lbl-pdcp-steer-man" x="100" y="660" text-anchor="middle" font-family="Arial,sans-serif" font-size="11" fill="#f1f5f9"></text>
+  <text id="lbl-pdcp-steer-man" x="100" y="660" text-anchor="middle" font-family="Arial,sans-serif" font-size="11" fill="#f1f5f9">STEER MAN</text>
   <text x="450" y="752" text-anchor="middle" font-family="Arial,sans-serif" font-size="12" fill="#475569">DCS-Common shared hardware template</text>
 </svg>
