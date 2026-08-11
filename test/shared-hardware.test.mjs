@@ -54,9 +54,9 @@ for (const relativePath of requiredTemplateAssets) {
     'VKB F-14 SVG must render both supplied image views');
 
   const expectedIds = [
-    'vkb-hat', 'vkb-btn-red', 'vkb-btn-a', 'vkb-castle',
-    'vkb-sw1', 'vkb-sw2', 'vkb-sw3', 'vkb-sw4',
-    'vkb-grip-r', 'vkb-pinky', 'vkb-paddle', 'vkb-stage1', 'vkb-stage2',
+    'vkb-trigger', 'vkb-btn-release', 'vkb-pinky', 'vkb-btn-dlc',
+    'vkb-nws', 'vkb-hat', 'vkb-sw1', 'vkb-sw2', 'vkb-sw3',
+    'vkb-sw4', 'vkb-axis-dlc',
   ];
   const drawioIds = [...drawio.matchAll(/id="connector-([^"]+)"/g)].map((match) => match[1]);
   const svgIds = [...svg.matchAll(/<!-- (?:callout|box):([^\s]+) -->/g)].map((match) => match[1]);
@@ -96,10 +96,9 @@ for (const relativePath of requiredTemplateAssets) {
     'VKB F-14 callouts must not repeat a physical anchor');
 
   for (const group of [
-    ['vkb-hat', 'vkb-btn-red'],
-    ['vkb-castle', 'vkb-sw1', 'vkb-sw2', 'vkb-sw3', 'vkb-sw4'],
-    ['vkb-grip-r', 'vkb-btn-a', 'vkb-pinky', 'vkb-paddle'],
-    ['vkb-stage1', 'vkb-stage2'],
+    ['vkb-hat', 'vkb-btn-release'],
+    ['vkb-pinky', 'vkb-sw1', 'vkb-sw2', 'vkb-sw3', 'vkb-sw4'],
+    ['vkb-axis-dlc', 'vkb-btn-dlc', 'vkb-nws'],
   ]) {
     const positions = group.map((id) => geometry(`label-${id}`));
     assert.ok(positions.every(({ x }) => x === positions[0].x),
@@ -153,7 +152,7 @@ for (const device of manifest.devices) {
     : /id="connector-([^"]+)"/g;
   const drawioIds = [...drawio.matchAll(drawioIdPattern)].map((match) => match[1]).sort();
   const svgIds = [...svg.matchAll(/<!-- (?:callout|box):([^\s]+) -->/g)].map((match) => match[1]).sort();
-  const skipIdMatch = new Set(['vkb-f14-gunfighter', 'tm-warthog-grip', 'grip-f18c', 'ava-base-f16c', 'ava-base-f18c', 'logitech-throttle-quadrant', 'viper-tqs-mission-pack']);
+  const skipIdMatch = new Set(['tm-warthog-grip', 'grip-f18c', 'ava-base-f16c', 'ava-base-f18c', 'logitech-throttle-quadrant', 'viper-tqs-mission-pack']);
   if (!skipIdMatch.has(device.id)) {
     const luaUnique = [...new Set(luaIds)].sort();
     assert.deepEqual(luaUnique, [...new Set(drawioIds)].sort(), `${device.id} Lua controls must match draw.io IDs`);
