@@ -153,7 +153,7 @@ for (const device of manifest.devices) {
     : /id="connector-([^"]+)"/g;
   const drawioIds = [...drawio.matchAll(drawioIdPattern)].map((match) => match[1]).sort();
   const svgIds = [...svg.matchAll(/<!-- (?:callout|box):([^\s]+) -->/g)].map((match) => match[1]).sort();
-  const skipIdMatch = new Set(['vkb-f14-gunfighter', 'tm-warthog-grip', 'grip-f18c', 'ava-base-f16c', 'ava-base-f18c', 'logitech-throttle-quadrant']);
+  const skipIdMatch = new Set(['vkb-f14-gunfighter', 'tm-warthog-grip', 'grip-f18c', 'ava-base-f16c', 'ava-base-f18c', 'logitech-throttle-quadrant', 'viper-tqs-mission-pack']);
   if (!skipIdMatch.has(device.id)) {
     const luaUnique = [...new Set(luaIds)].sort();
     assert.deepEqual(luaUnique, [...new Set(drawioIds)].sort(), `${device.id} Lua controls must match draw.io IDs`);
@@ -200,6 +200,16 @@ for (const device of manifest.devices) {
       keys.filter((key) => /^JOY_(?:X|Y|Z|RX|RY|RZ)$/.test(key)).sort(),
       ['JOY_RX', 'JOY_RY', 'JOY_RZ', 'JOY_X', 'JOY_Y', 'JOY_Z'],
       'Viper TQS + Mission Pack must define all six axes',
+    );
+    assert.deepEqual(
+      [...new Set(drawioIds)].sort(),
+      luaIds.filter((id) => !/^viper-tqs-button-0[1-5]$/.test(id)),
+      'Viper draw.io must omit only MIC positions 1-5 handled by AutoHotkey',
+    );
+    assert.deepEqual(
+      [...new Set(svgIds)].sort(),
+      luaIds.filter((id) => !/^viper-tqs-button-0[1-5]$/.test(id)),
+      'Viper SVG must omit only MIC positions 1-5 handled by AutoHotkey',
     );
   }
 

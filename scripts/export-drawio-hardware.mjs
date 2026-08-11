@@ -38,13 +38,19 @@ function cells(xml) {
   return [...xml.matchAll(/<mxCell\b([^>]*?)(?:\/>|>([\s\S]*?)<\/mxCell>)/g)].map((match) => {
     const tag = match[1];
     const body = match[2] ?? '';
-    const geometryTag = body.match(/<mxGeometry\b([^>]*)\/>/)?.[1] ?? '';
+    const geometry = body.match(/<mxGeometry\b([^>]*?)(?:\/>|>([\s\S]*?)<\/mxGeometry>)/);
+    const geometryTag = geometry?.[1] ?? '';
+    const points = [...(geometry?.[2] ?? '').matchAll(/<mxPoint\b([^>]*)\/>/g)].map((point) => ({
+      x: Number(attr(point[1], 'x') || 0),
+      y: Number(attr(point[1], 'y') || 0),
+    }));
     return {
       id: attr(tag, 'id'), value: attr(tag, 'value'), style: attr(tag, 'style'),
       source: attr(tag, 'source'), target: attr(tag, 'target'),
       vertex: attr(tag, 'vertex') === '1', edge: attr(tag, 'edge') === '1',
       x: Number(attr(geometryTag, 'x') || 0), y: Number(attr(geometryTag, 'y') || 0),
       width: Number(attr(geometryTag, 'width') || 0), height: Number(attr(geometryTag, 'height') || 0),
+      points,
     };
   });
 }
@@ -130,7 +136,14 @@ function render(device, xml) {
     const ay = anchor.y + anchor.height / 2;
     const end = endpoint(label, anchor);
     lines.push(`  <!-- callout:${id} -->`);
-    lines.push(`  <line x1=\"${ax}\" y1=\"${ay}\" x2=\"${end.x}\" y2=\"${end.y}\" stroke=\"#00bfff\" stroke-width=\"1.5\" stroke-dasharray=\"5 3\" opacity=\"0.75\"/>`);
+    if (connector.points.length) {
+      const points = [{ x: ax, y: ay }, ...connector.points, end]
+        .map(({ x, y }) => `${x},${y}`)
+        .join(' ');
+      lines.push(`  <polyline points=\"${points}\" fill=\"none\" stroke=\"#00bfff\" stroke-width=\"1.5\" stroke-dasharray=\"5 3\" opacity=\"0.75\"/>`);
+    } else {
+      lines.push(`  <line x1=\"${ax}\" y1=\"${ay}\" x2=\"${end.x}\" y2=\"${end.y}\" stroke=\"#00bfff\" stroke-width=\"1.5\" stroke-dasharray=\"5 3\" opacity=\"0.75\"/>`);
+    }
     lines.push(`  <circle cx=\"${ax}\" cy=\"${ay}\" r=\"5\" fill=\"#00bfff\" stroke=\"#0f172a\" stroke-width=\"1.5\"/>`);
     renderLabelBox(lines, label, id);
   }
