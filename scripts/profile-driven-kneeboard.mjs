@@ -259,20 +259,28 @@ export function loadProfileDrivenConfig(configPath, options = {}) {
       throw new Error(`${page.file}: profile-driven controls require ID-keyed labels.`);
     }
     const layerModifiers = resolveModifierSet(page.modifierIds, modifierCatalog, page.file);
-    for (const [controlId, reference] of Object.entries(page.controls ?? {})) {
-      if (!calloutIds.includes(controlId)) throw new Error(`${page.file}: ${controlId} is not a ${page.deviceId} control.`);
-      const expectedModifiers = resolveModifierSet(reference.modifiers ?? page.modifierIds, modifierCatalog, `${page.file}:${controlId}`);
-      const matches = profile(reference.profile).bindings.flatMap((binding) => binding.added
-        .filter((input) => input.key === reference.key && sameChord(input.reformers, expectedModifiers))
-        .map((input) => ({ binding, input })))
-        .filter(({ binding }) => !reference.command || binding.command === reference.command);
-      if (matches.length !== 1) {
-        throw new Error(`${page.file}: ${reference.profile}:${reference.key} resolves to ${matches.length} bindings; specify command when ambiguous.`);
+    for (const [controlId, configuredReference] of Object.entries(page.controls ?? {})) {
+      if (!calloutIds.includes(controlId) && !page.allowUnrenderedControls) {
+        throw new Error(`${page.file}: ${controlId} is not a ${page.deviceId} control.`);
       }
+      const references = Array.isArray(configuredReference) ? configuredReference : [configuredReference];
+      if (references.length === 0) throw new Error(`${page.file}:${controlId} must reference at least one profile binding.`);
+      const resolvedLabels = references.map((reference) => {
+        const expectedModifiers = resolveModifierSet(reference.modifiers ?? page.modifierIds, modifierCatalog, `${page.file}:${controlId}`);
+        const matches = profile(reference.profile).bindings.flatMap((binding) => binding.added
+          .filter((input) => input.key === reference.key && sameChord(input.reformers, expectedModifiers))
+          .map((input) => ({ binding, input })))
+          .filter(({ binding }) => !reference.command || binding.command === reference.command);
+        if (matches.length !== 1) {
+          throw new Error(`${page.file}: ${reference.profile}:${reference.key} resolves to ${matches.length} bindings; specify command when ambiguous.`);
+        }
+        return reference.label ?? matches[0].binding.name;
+      });
+      const resolvedLabel = [...new Set(resolvedLabels)].join(' / ');
       if (labels[controlId] === undefined || labels[controlId] === '') {
-        labels[controlId] = reference.label ?? matches[0].binding.name;
-      } else if (reference.label) {
-        labels[controlId] = reference.label;
+        labels[controlId] = resolvedLabel;
+      } else if (references.some((reference) => reference.label !== undefined)) {
+        labels[controlId] = resolvedLabel;
       }
     }
 
@@ -284,7 +292,8 @@ export function loadProfileDrivenConfig(configPath, options = {}) {
       }
     };
     const labelColors = {};
-    for (const [controlId, reference] of Object.entries(page.controls ?? {})) {
+    for (const [controlId, configuredReference] of Object.entries(page.controls ?? {})) {
+      const reference = Array.isArray(configuredReference) ? configuredReference[0] : configuredReference;
       const modIds = page.controlModifiers?.[controlId] ?? reference.modifiers ?? page.modifierIds ?? [];
       if (!modIds.length) {
         // Leave base colour to the SVG default so light-background overlays

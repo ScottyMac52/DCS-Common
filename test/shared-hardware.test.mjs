@@ -2,15 +2,13 @@ import { strict as assert } from 'node:assert';
 import { readFileSync, existsSync } from 'node:fs';
 import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { buildCompleteMock } from '../scripts/generate-complete-build-mock.mjs';
 
 const scriptDir = dirname(fileURLToPath(import.meta.url));
 const root = resolve(scriptDir, '..');
 const manifestPath = join(root, 'assets', 'shared', 'hardware', 'manifest.json');
 const manifest = JSON.parse(readFileSync(manifestPath, 'utf8'));
-const workflow = readFileSync(join(root, '.github', 'workflows', 'main.yml'), 'utf8');
-const mockConfigSource = workflow.match(/@"\r?\n([\s\S]*?)\r?\n\s*"@/)?.[1];
-assert.ok(mockConfigSource, 'main.yml must contain the embedded kneeboard JSON mock');
-const mockConfig = JSON.parse(mockConfigSource);
+const { config: mockConfig } = buildCompleteMock(root);
 const synchronizedWatermarkDevices = new Set([
   'onyourtwelve-pdcp',
   'moza-ab9',
