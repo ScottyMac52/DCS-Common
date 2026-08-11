@@ -79,3 +79,26 @@ test('rejects ambiguous bindings for the same key and modifier chord', () => {
   writeFileSync(join(consumerRoot, 'kneeboard.json'), JSON.stringify({ schemaVersion: 1, aircraft: 'Test', profiles: { p: 'profile.diff.lua' }, pages: [{ file: 'mfd', deviceId: 'tm-mfd', controls: { 'mfd-osb-t1': { profile: 'p', key: 'JOY_BTN1' } } }] }));
   assert.throws(() => loadProfileDrivenConfig('kneeboard.json', { consumerRoot, commonRoot }), /resolves to 2 bindings/);
 });
+
+test('resolves every binding in a grouped control', () => {
+  const consumerRoot = mkdtempSync(join(tmpdir(), 'dcs-profile-grouped-'));
+  writeFileSync(join(consumerRoot, 'profile.diff.lua'), `local diff = { ["keyDiffs"] = {
+    ["first"] = { ["name"] = "First", ["added"] = { [1] = { ["key"] = "JOY_BTN1" } } },
+    ["second"] = { ["name"] = "Second", ["added"] = { [1] = { ["key"] = "JOY_BTN2" } } }
+  } }\nreturn diff\n`);
+  writeFileSync(join(consumerRoot, 'kneeboard.json'), JSON.stringify({
+    schemaVersion: 1,
+    aircraft: 'Test',
+    profiles: { grouped: 'profile.diff.lua' },
+    pages: [{
+      file: 'grouped', deviceId: 'vkb-f14-gunfighter',
+      labels: { 'vkb-hat': 'First / Second' },
+      controls: { 'vkb-hat': [
+        { profile: 'grouped', key: 'JOY_BTN1', label: 'First' },
+        { profile: 'grouped', key: 'JOY_BTN2', label: 'Second' },
+      ] },
+    }],
+  }));
+  const config = loadProfileDrivenConfig('kneeboard.json', { consumerRoot, commonRoot });
+  assert.equal(config.pages[0].labels['vkb-hat'], 'First / Second');
+});
