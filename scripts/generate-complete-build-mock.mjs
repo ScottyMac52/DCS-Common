@@ -1,5 +1,6 @@
 import { mkdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { join, resolve } from 'node:path';
+import { fileURLToPath } from 'node:url';
 
 const controlPattern = /\{\s*id = "([^"]+)",\s*key = "([^"]+)",\s*type = "([^"]+)",\s*hardwareLabel = "([^"]+)"/g;
 
@@ -108,9 +109,12 @@ export function writeCompleteMock({ commonRoot, consumerRoot }) {
   writeFileSync(join(consumerRoot, 'packaging', 'release', 'RELEASE-NOTES.md'), '# Release Notes\n\nDummy release notes for testing.\n');
 }
 
-if (process.argv[1] && resolve(process.argv[1]) === resolve(new URL(import.meta.url).pathname)) {
+if (process.argv[1] && resolve(process.argv[1]) === resolve(fileURLToPath(import.meta.url))) {
   const consumerRoot = resolve(process.argv[2] ?? process.cwd());
   const commonRoot = resolve(process.argv[3] ?? process.env.DCS_COMMON_ROOT ?? join(consumerRoot, '.dcs-common'));
   rmSync(join(consumerRoot, 'src', 'Config', 'Input', 'Test', 'joystick'), { recursive: true, force: true });
   writeCompleteMock({ commonRoot, consumerRoot });
+  console.log(`Generated complete build mock at ${consumerRoot}`);
+  console.log(`Kneeboard config: ${join(consumerRoot, 'config', 'kneeboard.json')}`);
+  console.log(`Mock profiles: ${join(consumerRoot, 'src', 'Config', 'Input', 'Test', 'joystick')}`);
 }

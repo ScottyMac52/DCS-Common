@@ -3,6 +3,7 @@ import test from 'node:test';
 import { mkdtempSync, readFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { dirname, join } from 'node:path';
+import { spawnSync } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
 import { buildCompleteMock, parseHardwareControls, writeCompleteMock } from '../scripts/generate-complete-build-mock.mjs';
 import { loadProfileDrivenConfig } from '../scripts/profile-driven-kneeboard.mjs';
@@ -61,4 +62,14 @@ test('generated profiles resolve identical labels and leave non-Lua callouts bla
       if (!Object.hasOwn(page.controls, id)) assert.equal(page.labels[id], undefined, `${page.deviceId}:${id} stays blank`);
     }
   }
+});
+
+test('complete-build mock runs directly from the command line', () => {
+  const consumerRoot = mkdtempSync(join(tmpdir(), 'dcs-complete-mock-cli-'));
+  const script = join(root, 'scripts', 'generate-complete-build-mock.mjs');
+  const result = spawnSync(process.execPath, [script, consumerRoot, root], { encoding: 'utf8' });
+
+  assert.equal(result.status, 0, result.stderr);
+  assert.match(result.stdout, /Generated complete build mock at/);
+  assert.ok(readFileSync(join(consumerRoot, 'config', 'kneeboard.json'), 'utf8'));
 });
