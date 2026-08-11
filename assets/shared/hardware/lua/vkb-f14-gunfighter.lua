@@ -17,5 +17,6 @@ return {
     { id = "vkb-sw3", key = "JOY_BTN15", type = "switch", hardwareLabel = "Mode Guns" },
     { id = "vkb-sw2", key = "JOY_BTN14", type = "switch", hardwareLabel = "Mode Sidewinder" },
     { id = "vkb-sw1", key = "JOY_BTN13", type = "switch", hardwareLabel = "Mode Sparrow / Phoenix" },
-  },
+    { id = "vkb-axis-dlc", key = "X-ROTATION", type = "axis", hardwareLabel = "DLC" }
+  }
 }
