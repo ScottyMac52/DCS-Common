@@ -83,6 +83,34 @@ test('MFD pilot has 20 OSBs and eight independently editable rocker positions', 
   assert.equal((xml.match(/id="connector-mfd-rocker-/g) ?? []).length, 8);
 });
 
+test('WINCTRL ICP source matches the 34-button and four-axis reference image', () => {
+  const xml = readFileSync(join(hardwareRoot, 'drawio/winctrl-icp.drawio'), 'utf8');
+  const lua = readFileSync(join(hardwareRoot, 'lua/winctrl-icp.lua'), 'utf8');
+  const expectedIds = [
+    ...Array.from({ length: 34 }, (_, index) => `winctrl-icp-btn-${String(index + 1).padStart(2, '0')}`),
+    'winctrl-icp-axis-x',
+    'winctrl-icp-axis-y',
+    'winctrl-icp-axis-rx',
+    'winctrl-icp-axis-ry',
+  ].sort();
+
+  const drawioIds = [...xml.matchAll(/id="connector-(winctrl-icp-[^"]+)"/g)]
+    .map((match) => match[1])
+    .sort();
+  const luaIds = [...lua.matchAll(/\{ id = "(winctrl-icp-[^"]+)"/g)]
+    .map((match) => match[1])
+    .sort();
+
+  assert.deepEqual(drawioIds, expectedIds);
+  assert.deepEqual(luaIds, expectedIds);
+  for (let button = 1; button <= 34; button += 1) {
+    assert.match(lua, new RegExp(`key = "JOY_BTN${button}"`));
+  }
+  for (const axis of ['JOY_X', 'JOY_Y', 'JOY_RX', 'JOY_RY']) {
+    assert.match(lua, new RegExp(`key = "${axis}"`));
+  }
+});
+
 
 test('TM MFD visible geometry stays inside a balanced viewport', () => {
   const xml = readFileSync(join(hardwareRoot, 'drawio/tm-mfd.drawio'), 'utf8');
