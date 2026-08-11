@@ -102,45 +102,45 @@
   <rect x="10" y="573" width="180" height="27" rx="4" fill="#1e293b" stroke="#00bfff" stroke-width="1.5"/>
   <text id="lbl-winctrl-icp-btn-20" x="100" y="591" text-anchor="middle" font-family="Arial,sans-serif" font-size="10" fill="#f1f5f9">Button 20 — C/P/BRT rocker down</text>
   <!-- callout:winctrl-icp-btn-21 -->
-  <line x1="659.6" y1="485.4" x2="100" y2="614" stroke="#00bfff" stroke-width="1.5" stroke-dasharray="5 3" opacity="0.75"/>
-  <circle cx="659.6" cy="485.4" r="5" fill="#00bfff" stroke="#0f172a" stroke-width="1.5"/>
-  <rect x="10" y="614" width="180" height="27" rx="4" fill="#1e293b" stroke="#00bfff" stroke-width="1.5"/>
-  <text id="lbl-winctrl-icp-btn-21" x="100" y="632" text-anchor="middle" font-family="Arial,sans-serif" font-size="10" fill="#f1f5f9">Button 21 — RTN/SEQ press</text>
+  <line x1="649" y1="585" x2="320" y2="688" stroke="#00bfff" stroke-width="1.5" stroke-dasharray="5 3" opacity="0.75"/>
+  <circle cx="649" cy="585" r="5" fill="#00bfff" stroke="#0f172a" stroke-width="1.5"/>
+  <rect x="230" y="688" width="180" height="27" rx="4" fill="#1e293b" stroke="#00bfff" stroke-width="1.5"/>
+  <text id="lbl-winctrl-icp-btn-21" x="320" y="706" text-anchor="middle" font-family="Arial,sans-serif" font-size="10" fill="#f1f5f9">Button 21 — RTN/SEQ press</text>
   <!-- callout:winctrl-icp-btn-22 -->
-  <line x1="659.6" y1="470.6" x2="100" y2="655" stroke="#00bfff" stroke-width="1.5" stroke-dasharray="5 3" opacity="0.75"/>
-  <circle cx="659.6" cy="470.6" r="5" fill="#00bfff" stroke="#0f172a" stroke-width="1.5"/>
-  <rect x="10" y="655" width="180" height="27" rx="4" fill="#1e293b" stroke="#00bfff" stroke-width="1.5"/>
-  <text id="lbl-winctrl-icp-btn-22" x="100" y="673" text-anchor="middle" font-family="Arial,sans-serif" font-size="10" fill="#f1f5f9">Button 22 — RTN/SEQ up</text>
+  <line x1="649" y1="550" x2="220" y2="650" stroke="#00bfff" stroke-width="1.5" stroke-dasharray="5 3" opacity="0.75"/>
+  <circle cx="649" cy="550" r="5" fill="#00bfff" stroke="#0f172a" stroke-width="1.5"/>
+  <rect x="130" y="650" width="180" height="27" rx="4" fill="#1e293b" stroke="#00bfff" stroke-width="1.5"/>
+  <text id="lbl-winctrl-icp-btn-22" x="220" y="668" text-anchor="middle" font-family="Arial,sans-serif" font-size="10" fill="#f1f5f9">Button 22 — RTN/SEQ up</text>
   <!-- callout:winctrl-icp-btn-23 -->
-  <line x1="674.5" y1="485.4" x2="1300" y2="313" stroke="#00bfff" stroke-width="1.5" stroke-dasharray="5 3" opacity="0.75"/>
-  <circle cx="674.5" cy="485.4" r="5" fill="#00bfff" stroke="#0f172a" stroke-width="1.5"/>
-  <rect x="1210" y="286" width="180" height="27" rx="4" fill="#1e293b" stroke="#00bfff" stroke-width="1.5"/>
-  <text id="lbl-winctrl-icp-btn-23" x="1300" y="304" text-anchor="middle" font-family="Arial,sans-serif" font-size="10" fill="#f1f5f9">Button 23 — RTN/SEQ right</text>
+  <line x1="686" y1="585" x2="520" y2="688" stroke="#00bfff" stroke-width="1.5" stroke-dasharray="5 3" opacity="0.75"/>
+  <circle cx="686" cy="585" r="5" fill="#00bfff" stroke="#0f172a" stroke-width="1.5"/>
+  <rect x="430" y="688" width="180" height="27" rx="4" fill="#1e293b" stroke="#00bfff" stroke-width="1.5"/>
+  <text id="lbl-winctrl-icp-btn-23" x="520" y="706" text-anchor="middle" font-family="Arial,sans-serif" font-size="10" fill="#f1f5f9">Button 23 — RTN/SEQ right</text>
   <!-- callout:winctrl-icp-btn-24 -->
-  <line x1="659.6" y1="500.3" x2="100" y2="696" stroke="#00bfff" stroke-width="1.5" stroke-dasharray="5 3" opacity="0.75"/>
-  <circle cx="659.6" cy="500.3" r="5" fill="#00bfff" stroke="#0f172a" stroke-width="1.5"/>
-  <rect x="10" y="696" width="180" height="27" rx="4" fill="#1e293b" stroke="#00bfff" stroke-width="1.5"/>
-  <text id="lbl-winctrl-icp-btn-24" x="100" y="714" text-anchor="middle" font-family="Arial,sans-serif" font-size="10" fill="#f1f5f9">Button 24 — RTN/SEQ down</text>
+  <line x1="649" y1="621" x2="420" y2="726" stroke="#00bfff" stroke-width="1.5" stroke-dasharray="5 3" opacity="0.75"/>
+  <circle cx="649" cy="621" r="5" fill="#00bfff" stroke="#0f172a" stroke-width="1.5"/>
+  <rect x="330" y="726" width="180" height="27" rx="4" fill="#1e293b" stroke="#00bfff" stroke-width="1.5"/>
+  <text id="lbl-winctrl-icp-btn-24" x="420" y="744" text-anchor="middle" font-family="Arial,sans-serif" font-size="10" fill="#f1f5f9">Button 24 — RTN/SEQ down</text>
   <!-- callout:winctrl-icp-btn-25 -->
-  <line x1="644.8" y1="485.4" x2="100" y2="737" stroke="#00bfff" stroke-width="1.5" stroke-dasharray="5 3" opacity="0.75"/>
-  <circle cx="644.8" cy="485.4" r="5" fill="#00bfff" stroke="#0f172a" stroke-width="1.5"/>
-  <rect x="10" y="737" width="180" height="27" rx="4" fill="#1e293b" stroke="#00bfff" stroke-width="1.5"/>
-  <text id="lbl-winctrl-icp-btn-25" x="100" y="755" text-anchor="middle" font-family="Arial,sans-serif" font-size="10" fill="#f1f5f9">Button 25 — RTN/SEQ left</text>
+  <line x1="613" y1="585" x2="120" y2="688" stroke="#00bfff" stroke-width="1.5" stroke-dasharray="5 3" opacity="0.75"/>
+  <circle cx="613" cy="585" r="5" fill="#00bfff" stroke="#0f172a" stroke-width="1.5"/>
+  <rect x="30" y="688" width="180" height="27" rx="4" fill="#1e293b" stroke="#00bfff" stroke-width="1.5"/>
+  <text id="lbl-winctrl-icp-btn-25" x="120" y="706" text-anchor="middle" font-family="Arial,sans-serif" font-size="10" fill="#f1f5f9">Button 25 — RTN/SEQ left</text>
   <!-- callout:winctrl-icp-btn-26 -->
-  <line x1="724.7" y1="470.6" x2="1300" y2="354" stroke="#00bfff" stroke-width="1.5" stroke-dasharray="5 3" opacity="0.75"/>
-  <circle cx="724.7" cy="470.6" r="5" fill="#00bfff" stroke="#0f172a" stroke-width="1.5"/>
-  <rect x="1210" y="327" width="180" height="27" rx="4" fill="#1e293b" stroke="#00bfff" stroke-width="1.5"/>
-  <text id="lbl-winctrl-icp-btn-26" x="1300" y="345" text-anchor="middle" font-family="Arial,sans-serif" font-size="10" fill="#f1f5f9">Button 26 — DRIFT C/O</text>
+  <line x1="738" y1="555" x2="880" y2="650" stroke="#00bfff" stroke-width="1.5" stroke-dasharray="5 3" opacity="0.75"/>
+  <circle cx="738" cy="555" r="5" fill="#00bfff" stroke="#0f172a" stroke-width="1.5"/>
+  <rect x="790" y="650" width="180" height="27" rx="4" fill="#1e293b" stroke="#00bfff" stroke-width="1.5"/>
+  <text id="lbl-winctrl-icp-btn-26" x="880" y="668" text-anchor="middle" font-family="Arial,sans-serif" font-size="10" fill="#f1f5f9">Button 26 — DRIFT C/O</text>
   <!-- callout:winctrl-icp-btn-27 -->
-  <line x1="724.7" y1="485.4" x2="1300" y2="395" stroke="#00bfff" stroke-width="1.5" stroke-dasharray="5 3" opacity="0.75"/>
-  <circle cx="724.7" cy="485.4" r="5" fill="#00bfff" stroke="#0f172a" stroke-width="1.5"/>
-  <rect x="1210" y="368" width="180" height="27" rx="4" fill="#1e293b" stroke="#00bfff" stroke-width="1.5"/>
-  <text id="lbl-winctrl-icp-btn-27" x="1300" y="386" text-anchor="middle" font-family="Arial,sans-serif" font-size="10" fill="#f1f5f9">Button 27 — NORM</text>
+  <line x1="738" y1="597" x2="880" y2="688" stroke="#00bfff" stroke-width="1.5" stroke-dasharray="5 3" opacity="0.75"/>
+  <circle cx="738" cy="597" r="5" fill="#00bfff" stroke="#0f172a" stroke-width="1.5"/>
+  <rect x="790" y="688" width="180" height="27" rx="4" fill="#1e293b" stroke="#00bfff" stroke-width="1.5"/>
+  <text id="lbl-winctrl-icp-btn-27" x="880" y="706" text-anchor="middle" font-family="Arial,sans-serif" font-size="10" fill="#f1f5f9">Button 27 — NORM</text>
   <!-- callout:winctrl-icp-btn-28 -->
-  <line x1="724.7" y1="500.3" x2="1210" y2="422.5" stroke="#00bfff" stroke-width="1.5" stroke-dasharray="5 3" opacity="0.75"/>
-  <circle cx="724.7" cy="500.3" r="5" fill="#00bfff" stroke="#0f172a" stroke-width="1.5"/>
-  <rect x="1210" y="409" width="180" height="27" rx="4" fill="#1e293b" stroke="#00bfff" stroke-width="1.5"/>
-  <text id="lbl-winctrl-icp-btn-28" x="1300" y="427" text-anchor="middle" font-family="Arial,sans-serif" font-size="10" fill="#f1f5f9">Button 28 — WARN RESET</text>
+  <line x1="738" y1="637" x2="880" y2="726" stroke="#00bfff" stroke-width="1.5" stroke-dasharray="5 3" opacity="0.75"/>
+  <circle cx="738" cy="637" r="5" fill="#00bfff" stroke="#0f172a" stroke-width="1.5"/>
+  <rect x="790" y="726" width="180" height="27" rx="4" fill="#1e293b" stroke="#00bfff" stroke-width="1.5"/>
+  <text id="lbl-winctrl-icp-btn-28" x="880" y="744" text-anchor="middle" font-family="Arial,sans-serif" font-size="10" fill="#f1f5f9">Button 28 — WARN RESET</text>
   <!-- callout:winctrl-icp-btn-29 -->
   <line x1="794" y1="384.8" x2="1300" y2="450" stroke="#00bfff" stroke-width="1.5" stroke-dasharray="5 3" opacity="0.75"/>
   <circle cx="794" cy="384.8" r="5" fill="#00bfff" stroke="#0f172a" stroke-width="1.5"/>
@@ -157,20 +157,20 @@
   <rect x="1210" y="532" width="180" height="27" rx="4" fill="#1e293b" stroke="#00bfff" stroke-width="1.5"/>
   <text id="lbl-winctrl-icp-btn-31" x="1300" y="550" text-anchor="middle" font-family="Arial,sans-serif" font-size="10" fill="#f1f5f9">Button 31 — FLIR rocker down</text>
   <!-- callout:winctrl-icp-btn-32 -->
-  <line x1="794" y1="456.6" x2="1300" y2="573" stroke="#00bfff" stroke-width="1.5" stroke-dasharray="5 3" opacity="0.75"/>
-  <circle cx="794" cy="456.6" r="5" fill="#00bfff" stroke="#0f172a" stroke-width="1.5"/>
-  <rect x="1210" y="573" width="180" height="27" rx="4" fill="#1e293b" stroke="#00bfff" stroke-width="1.5"/>
-  <text id="lbl-winctrl-icp-btn-32" x="1300" y="591" text-anchor="middle" font-family="Arial,sans-serif" font-size="10" fill="#f1f5f9">Button 32 — GAIN rocker up</text>
+  <line x1="807" y1="557" x2="1180" y2="650" stroke="#00bfff" stroke-width="1.5" stroke-dasharray="5 3" opacity="0.75"/>
+  <circle cx="807" cy="557" r="5" fill="#00bfff" stroke="#0f172a" stroke-width="1.5"/>
+  <rect x="1090" y="650" width="180" height="27" rx="4" fill="#1e293b" stroke="#00bfff" stroke-width="1.5"/>
+  <text id="lbl-winctrl-icp-btn-32" x="1180" y="668" text-anchor="middle" font-family="Arial,sans-serif" font-size="10" fill="#f1f5f9">Button 32 — GAIN rocker up</text>
   <!-- callout:winctrl-icp-btn-33 -->
-  <line x1="794" y1="470.6" x2="1300" y2="614" stroke="#00bfff" stroke-width="1.5" stroke-dasharray="5 3" opacity="0.75"/>
-  <circle cx="794" cy="470.6" r="5" fill="#00bfff" stroke="#0f172a" stroke-width="1.5"/>
-  <rect x="1210" y="614" width="180" height="27" rx="4" fill="#1e293b" stroke="#00bfff" stroke-width="1.5"/>
-  <text id="lbl-winctrl-icp-btn-33" x="1300" y="632" text-anchor="middle" font-family="Arial,sans-serif" font-size="10" fill="#f1f5f9">Button 33 — GAIN rocker press</text>
+  <line x1="807" y1="599" x2="1180" y2="688" stroke="#00bfff" stroke-width="1.5" stroke-dasharray="5 3" opacity="0.75"/>
+  <circle cx="807" cy="599" r="5" fill="#00bfff" stroke="#0f172a" stroke-width="1.5"/>
+  <rect x="1090" y="688" width="180" height="27" rx="4" fill="#1e293b" stroke="#00bfff" stroke-width="1.5"/>
+  <text id="lbl-winctrl-icp-btn-33" x="1180" y="706" text-anchor="middle" font-family="Arial,sans-serif" font-size="10" fill="#f1f5f9">Button 33 — GAIN rocker press</text>
   <!-- callout:winctrl-icp-btn-34 -->
-  <line x1="794" y1="484.6" x2="1300" y2="655" stroke="#00bfff" stroke-width="1.5" stroke-dasharray="5 3" opacity="0.75"/>
-  <circle cx="794" cy="484.6" r="5" fill="#00bfff" stroke="#0f172a" stroke-width="1.5"/>
-  <rect x="1210" y="655" width="180" height="27" rx="4" fill="#1e293b" stroke="#00bfff" stroke-width="1.5"/>
-  <text id="lbl-winctrl-icp-btn-34" x="1300" y="673" text-anchor="middle" font-family="Arial,sans-serif" font-size="10" fill="#f1f5f9">Button 34 — GAIN rocker down</text>
+  <line x1="807" y1="638" x2="1180" y2="726" stroke="#00bfff" stroke-width="1.5" stroke-dasharray="5 3" opacity="0.75"/>
+  <circle cx="807" cy="638" r="5" fill="#00bfff" stroke="#0f172a" stroke-width="1.5"/>
+  <rect x="1090" y="726" width="180" height="27" rx="4" fill="#1e293b" stroke="#00bfff" stroke-width="1.5"/>
+  <text id="lbl-winctrl-icp-btn-34" x="1180" y="744" text-anchor="middle" font-family="Arial,sans-serif" font-size="10" fill="#f1f5f9">Button 34 — GAIN rocker down</text>
   <!-- callout:winctrl-icp-axis-y -->
   <line x1="540.1" y1="338.7" x2="350" y2="36" stroke="#00bfff" stroke-width="1.5" stroke-dasharray="5 3" opacity="0.75"/>
   <circle cx="540.1" cy="338.7" r="5" fill="#00bfff" stroke="#0f172a" stroke-width="1.5"/>
