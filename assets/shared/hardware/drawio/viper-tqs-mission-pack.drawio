@@ -16,7 +16,7 @@
         <mxCell id="anchor-viper-tqs-button-06" value="" style="ellipse;whiteSpace=wrap;html=1;fillColor=#00bfff;strokeColor=#0f172a;strokeWidth=1.5;" vertex="1" parent="1">
           <mxGeometry x="555" y="83" width="10" height="10" as="geometry"/>
         </mxCell>
-        <mxCell id="label-viper-tqs-button-06" value="Button 6" style="rounded=1;arcSize=18;whiteSpace=wrap;html=1;fillColor=#1e293b;strokeColor=#00bfff;strokeWidth=1.5;fontColor=#f1f5f9;fontFamily=Arial;fontSize=10;align=center;verticalAlign=middle;buttonNumber=6;" vertex="1" parent="1">
+        <mxCell id="label-viper-tqs-button-06" value="Button 6 — UNCAGE" style="rounded=1;arcSize=18;whiteSpace=wrap;html=1;fillColor=#1e293b;strokeColor=#00bfff;strokeWidth=1.5;fontColor=#f1f5f9;fontFamily=Arial;fontSize=8;align=center;verticalAlign=middle;buttonNumber=6;" vertex="1" parent="1">
           <mxGeometry x="820" y="55" width="160" height="28" as="geometry"/>
         </mxCell>
         <mxCell id="connector-viper-tqs-button-06" value="" style="endArrow=none;html=1;strokeColor=#00bfff;strokeWidth=1.5;dashed=1;dashPattern=5 3;opacity=75;" edge="1" source="label-viper-tqs-button-06" target="anchor-viper-tqs-button-06" parent="1">
@@ -25,7 +25,7 @@
         <mxCell id="anchor-viper-tqs-button-07" value="" style="ellipse;whiteSpace=wrap;html=1;fillColor=#00bfff;strokeColor=#0f172a;strokeWidth=1.5;" vertex="1" parent="1">
           <mxGeometry x="582" y="259" width="10" height="10" as="geometry"/>
         </mxCell>
-        <mxCell id="label-viper-tqs-button-07" value="Button 7" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#1e293b;strokeColor=#00bfff;strokeWidth=1.5;fontColor=#f1f5f9;fontFamily=Arial;fontSize=10;align=center;verticalAlign=middle;buttonNumber=7;" vertex="1" parent="1">
+        <mxCell id="label-viper-tqs-button-07" value="Button 7 — DOGFIGHT" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#1e293b;strokeColor=#00bfff;strokeWidth=1.5;fontColor=#f1f5f9;fontFamily=Arial;fontSize=8;align=center;verticalAlign=middle;buttonNumber=7;" vertex="1" parent="1">
           <mxGeometry x="820" y="184" width="160" height="28" as="geometry"/>
         </mxCell>
         <mxCell id="connector-viper-tqs-button-07" value="" style="endArrow=none;html=1;strokeColor=#00bfff;strokeWidth=1.5;dashed=1;dashPattern=5 3;opacity=75;" edge="1" source="label-viper-tqs-button-07" target="anchor-viper-tqs-button-07" parent="1">
@@ -34,7 +34,7 @@
         <mxCell id="anchor-viper-tqs-button-08" value="" style="ellipse;whiteSpace=wrap;html=1;fillColor=#00bfff;strokeColor=#0f172a;strokeWidth=1.5;" vertex="1" parent="1">
           <mxGeometry x="626" y="250" width="10" height="10" as="geometry"/>
         </mxCell>
-        <mxCell id="label-viper-tqs-button-08" value="Button 8" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#1e293b;strokeColor=#00bfff;strokeWidth=1.5;fontColor=#f1f5f9;fontFamily=Arial;fontSize=10;align=center;verticalAlign=middle;buttonNumber=8;" vertex="1" parent="1">
+        <mxCell id="label-viper-tqs-button-08" value="Button 8 — MISSILE OVERRIDE" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#1e293b;strokeColor=#00bfff;strokeWidth=1.5;fontColor=#f1f5f9;fontFamily=Arial;fontSize=8;align=center;verticalAlign=middle;buttonNumber=8;" vertex="1" parent="1">
           <mxGeometry x="820" y="156" width="160" height="28" as="geometry"/>
         </mxCell>
         <mxCell id="connector-viper-tqs-button-08" value="" style="endArrow=none;html=1;strokeColor=#00bfff;strokeWidth=1.5;dashed=1;dashPattern=5 3;opacity=75;" edge="1" source="label-viper-tqs-button-08" target="anchor-viper-tqs-button-08" parent="1">
@@ -43,7 +43,7 @@
         <mxCell id="anchor-viper-tqs-button-09" value="" style="ellipse;whiteSpace=wrap;html=1;fillColor=#00bfff;strokeColor=#0f172a;strokeWidth=1.5;" vertex="1" parent="1">
           <mxGeometry x="616" y="216" width="10" height="10" as="geometry"/>
         </mxCell>
-        <mxCell id="label-viper-tqs-button-09" value="Button 9" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#1e293b;strokeColor=#00bfff;strokeWidth=1.5;fontColor=#f1f5f9;fontFamily=Arial;fontSize=10;align=center;verticalAlign=middle;buttonNumber=9;" vertex="1" parent="1">
+        <mxCell id="label-viper-tqs-button-09" value="Button 9 — SPD BRK EXTEND" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#1e293b;strokeColor=#00bfff;strokeWidth=1.5;fontColor=#f1f5f9;fontFamily=Arial;fontSize=8;align=center;verticalAlign=middle;buttonNumber=9;" vertex="1" parent="1">
           <mxGeometry x="820" y="128" width="160" height="28" as="geometry"/>
         </mxCell>
         <mxCell id="connector-viper-tqs-button-09" value="" style="endArrow=none;html=1;strokeColor=#00bfff;strokeWidth=1.5;dashed=1;dashPattern=5 3;opacity=75;" edge="1" source="label-viper-tqs-button-09" target="anchor-viper-tqs-button-09" parent="1">
@@ -52,7 +52,7 @@
         <mxCell id="anchor-viper-tqs-button-10" value="" style="ellipse;whiteSpace=wrap;html=1;fillColor=#00bfff;strokeColor=#0f172a;strokeWidth=1.5;" vertex="1" parent="1">
           <mxGeometry x="646" y="191" width="10" height="10" as="geometry"/>
         </mxCell>
-        <mxCell id="label-viper-tqs-button-10" value="Button 10" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#1e293b;strokeColor=#00bfff;strokeWidth=1.5;fontColor=#f1f5f9;fontFamily=Arial;fontSize=10;align=center;verticalAlign=middle;buttonNumber=10;" vertex="1" parent="1">
+        <mxCell id="label-viper-tqs-button-10" value="Button 10 — SPD BRK RETRACT" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#1e293b;strokeColor=#00bfff;strokeWidth=1.5;fontColor=#f1f5f9;fontFamily=Arial;fontSize=8;align=center;verticalAlign=middle;buttonNumber=10;" vertex="1" parent="1">
           <mxGeometry x="820" y="100" width="160" height="28" as="geometry"/>
         </mxCell>
         <mxCell id="connector-viper-tqs-button-10" value="" style="endArrow=none;html=1;strokeColor=#00bfff;strokeWidth=1.5;dashed=1;dashPattern=5 3;opacity=75;" edge="1" source="label-viper-tqs-button-10" target="anchor-viper-tqs-button-10" parent="1">
@@ -61,7 +61,7 @@
         <mxCell id="anchor-viper-tqs-button-11" value="" style="ellipse;whiteSpace=wrap;html=1;fillColor=#00bfff;strokeColor=#0f172a;strokeWidth=1.5;" vertex="1" parent="1">
           <mxGeometry x="574" y="450" width="10" height="10" as="geometry"/>
         </mxCell>
-        <mxCell id="label-viper-tqs-button-11" value="Button 11" style="rounded=1;arcSize=18;whiteSpace=wrap;html=1;fillColor=#1e293b;strokeColor=#00bfff;strokeWidth=1.5;fontColor=#f1f5f9;fontFamily=Arial;fontSize=10;align=center;verticalAlign=middle;buttonNumber=11;" vertex="1" parent="1">
+        <mxCell id="label-viper-tqs-button-11" value="Button 11 — Unassigned" style="rounded=1;arcSize=18;whiteSpace=wrap;html=1;fillColor=#1e293b;strokeColor=#00bfff;strokeWidth=1.5;fontColor=#f1f5f9;fontFamily=Arial;fontSize=8;align=center;verticalAlign=middle;buttonNumber=11;" vertex="1" parent="1">
           <mxGeometry x="820" y="260" width="160" height="28" as="geometry"/>
         </mxCell>
         <mxCell id="connector-viper-tqs-button-11" value="" style="endArrow=none;html=1;strokeColor=#00bfff;strokeWidth=1.5;dashed=1;dashPattern=5 3;opacity=75;" edge="1" source="label-viper-tqs-button-11" target="anchor-viper-tqs-button-11" parent="1">
@@ -70,7 +70,7 @@
         <mxCell id="anchor-viper-tqs-button-12" value="" style="ellipse;whiteSpace=wrap;html=1;fillColor=#00bfff;strokeColor=#0f172a;strokeWidth=1.5;" vertex="1" parent="1">
           <mxGeometry x="609" y="312" width="10" height="10" as="geometry"/>
         </mxCell>
-        <mxCell id="label-viper-tqs-button-12" value="Button 12" style="rounded=1;arcSize=18;whiteSpace=wrap;html=1;fillColor=#1e293b;strokeColor=#00bfff;strokeWidth=1.5;fontColor=#f1f5f9;fontFamily=Arial;fontSize=10;align=center;verticalAlign=middle;buttonNumber=12;" vertex="1" parent="1">
+        <mxCell id="label-viper-tqs-button-12" value="Button 12 — ENABLE" style="rounded=1;arcSize=18;whiteSpace=wrap;html=1;fillColor=#1e293b;strokeColor=#00bfff;strokeWidth=1.5;fontColor=#f1f5f9;fontFamily=Arial;fontSize=8;align=center;verticalAlign=middle;buttonNumber=12;" vertex="1" parent="1">
           <mxGeometry x="820" y="305" width="160" height="28" as="geometry"/>
         </mxCell>
         <mxCell id="connector-viper-tqs-button-12" value="" style="endArrow=none;html=1;strokeColor=#00bfff;strokeWidth=1.5;dashed=1;dashPattern=5 3;opacity=75;" edge="1" source="label-viper-tqs-button-12" target="anchor-viper-tqs-button-12" parent="1">
@@ -79,7 +79,7 @@
         <mxCell id="anchor-viper-tqs-button-13" value="" style="ellipse;whiteSpace=wrap;html=1;fillColor=#00bfff;strokeColor=#0f172a;strokeWidth=1.5;" vertex="1" parent="1">
           <mxGeometry x="561" y="235" width="10" height="10" as="geometry"/>
         </mxCell>
-        <mxCell id="label-viper-tqs-button-13" value="Button 13" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#1e293b;strokeColor=#00bfff;strokeWidth=1.5;fontColor=#f1f5f9;fontFamily=Arial;fontSize=10;align=center;verticalAlign=middle;buttonNumber=13;" vertex="1" parent="1">
+        <mxCell id="label-viper-tqs-button-13" value="Button 13 — DCS UP" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#1e293b;strokeColor=#00bfff;strokeWidth=1.5;fontColor=#f1f5f9;fontFamily=Arial;fontSize=8;align=center;verticalAlign=middle;buttonNumber=13;" vertex="1" parent="1">
           <mxGeometry x="20" y="100" width="160" height="28" as="geometry"/>
         </mxCell>
         <mxCell id="connector-viper-tqs-button-13" value="" style="endArrow=none;html=1;strokeColor=#00bfff;strokeWidth=1.5;dashed=1;dashPattern=5 3;opacity=75;" edge="1" source="label-viper-tqs-button-13" target="anchor-viper-tqs-button-13" parent="1">
@@ -88,7 +88,7 @@
         <mxCell id="anchor-viper-tqs-button-14" value="" style="ellipse;whiteSpace=wrap;html=1;fillColor=#00bfff;strokeColor=#0f172a;strokeWidth=1.5;" vertex="1" parent="1">
           <mxGeometry x="538" y="238" width="10" height="10" as="geometry"/>
         </mxCell>
-        <mxCell id="label-viper-tqs-button-14" value="Button 14" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#1e293b;strokeColor=#00bfff;strokeWidth=1.5;fontColor=#f1f5f9;fontFamily=Arial;fontSize=10;align=center;verticalAlign=middle;buttonNumber=14;" vertex="1" parent="1">
+        <mxCell id="label-viper-tqs-button-14" value="Button 14 — DCS SEQ" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#1e293b;strokeColor=#00bfff;strokeWidth=1.5;fontColor=#f1f5f9;fontFamily=Arial;fontSize=8;align=center;verticalAlign=middle;buttonNumber=14;" vertex="1" parent="1">
           <mxGeometry x="20" y="128" width="160" height="28" as="geometry"/>
         </mxCell>
         <mxCell id="connector-viper-tqs-button-14" value="" style="endArrow=none;html=1;strokeColor=#00bfff;strokeWidth=1.5;dashed=1;dashPattern=5 3;opacity=75;" edge="1" source="label-viper-tqs-button-14" target="anchor-viper-tqs-button-14" parent="1">
@@ -97,7 +97,7 @@
         <mxCell id="anchor-viper-tqs-button-15" value="" style="ellipse;whiteSpace=wrap;html=1;fillColor=#00bfff;strokeColor=#0f172a;strokeWidth=1.5;" vertex="1" parent="1">
           <mxGeometry x="511" y="242" width="10" height="10" as="geometry"/>
         </mxCell>
-        <mxCell id="label-viper-tqs-button-15" value="Button 15" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#1e293b;strokeColor=#00bfff;strokeWidth=1.5;fontColor=#f1f5f9;fontFamily=Arial;fontSize=10;align=center;verticalAlign=middle;buttonNumber=15;" vertex="1" parent="1">
+        <mxCell id="label-viper-tqs-button-15" value="Button 15 — DCS DOWN" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#1e293b;strokeColor=#00bfff;strokeWidth=1.5;fontColor=#f1f5f9;fontFamily=Arial;fontSize=8;align=center;verticalAlign=middle;buttonNumber=15;" vertex="1" parent="1">
           <mxGeometry x="20" y="156" width="160" height="28" as="geometry"/>
         </mxCell>
         <mxCell id="connector-viper-tqs-button-15" value="" style="endArrow=none;html=1;strokeColor=#00bfff;strokeWidth=1.5;dashed=1;dashPattern=5 3;opacity=75;" edge="1" source="label-viper-tqs-button-15" target="anchor-viper-tqs-button-15" parent="1">
@@ -106,7 +106,7 @@
         <mxCell id="anchor-viper-tqs-button-16" value="" style="ellipse;whiteSpace=wrap;html=1;fillColor=#00bfff;strokeColor=#0f172a;strokeWidth=1.5;" vertex="1" parent="1">
           <mxGeometry x="451" y="421" width="10" height="10" as="geometry"/>
         </mxCell>
-        <mxCell id="label-viper-tqs-button-16" value="Button 16" style="rounded=1;arcSize=18;whiteSpace=wrap;html=1;fillColor=#1e293b;strokeColor=#00bfff;strokeWidth=1.5;fontColor=#f1f5f9;fontFamily=Arial;fontSize=10;align=center;verticalAlign=middle;buttonNumber=16;" vertex="1" parent="1">
+        <mxCell id="label-viper-tqs-button-16" value="Button 16 — DCS RET" style="rounded=1;arcSize=18;whiteSpace=wrap;html=1;fillColor=#1e293b;strokeColor=#00bfff;strokeWidth=1.5;fontColor=#f1f5f9;fontFamily=Arial;fontSize=8;align=center;verticalAlign=middle;buttonNumber=16;" vertex="1" parent="1">
           <mxGeometry x="20" y="300" width="160" height="28" as="geometry"/>
         </mxCell>
         <mxCell id="connector-viper-tqs-button-16" value="" style="endArrow=none;html=1;strokeColor=#00bfff;strokeWidth=1.5;dashed=1;dashPattern=5 3;opacity=75;" edge="1" source="label-viper-tqs-button-16" target="anchor-viper-tqs-button-16" parent="1">
@@ -115,7 +115,7 @@
         <mxCell id="anchor-viper-tqs-button-17" value="" style="ellipse;whiteSpace=wrap;html=1;fillColor=#00bfff;strokeColor=#0f172a;strokeWidth=1.5;" vertex="1" parent="1">
           <mxGeometry x="385" y="479" width="10" height="10" as="geometry"/>
         </mxCell>
-        <mxCell id="label-viper-tqs-button-17" value="Button 17" style="rounded=1;arcSize=18;whiteSpace=wrap;html=1;fillColor=#1e293b;strokeColor=#00bfff;strokeWidth=1.5;fontColor=#f1f5f9;fontFamily=Arial;fontSize=10;align=center;verticalAlign=middle;buttonNumber=17;" vertex="1" parent="1">
+        <mxCell id="label-viper-tqs-button-17" value="Button 17 — CHAFF/FLARE" style="rounded=1;arcSize=18;whiteSpace=wrap;html=1;fillColor=#1e293b;strokeColor=#00bfff;strokeWidth=1.5;fontColor=#f1f5f9;fontFamily=Arial;fontSize=8;align=center;verticalAlign=middle;buttonNumber=17;" vertex="1" parent="1">
           <mxGeometry x="20" y="430" width="160" height="28" as="geometry"/>
         </mxCell>
         <mxCell id="connector-viper-tqs-button-17" value="" style="endArrow=none;html=1;strokeColor=#00bfff;strokeWidth=1.5;dashed=1;dashPattern=5 3;opacity=75;" edge="1" source="label-viper-tqs-button-17" target="anchor-viper-tqs-button-17" parent="1">
@@ -124,7 +124,7 @@
         <mxCell id="anchor-viper-tqs-button-18" value="" style="ellipse;whiteSpace=wrap;html=1;fillColor=#00bfff;strokeColor=#0f172a;strokeWidth=1.5;" vertex="1" parent="1">
           <mxGeometry x="291" y="507" width="10" height="10" as="geometry"/>
         </mxCell>
-        <mxCell id="label-viper-tqs-button-18" value="Button 18" style="rounded=1;arcSize=18;whiteSpace=wrap;html=1;fillColor=#1e293b;strokeColor=#00bfff;strokeWidth=1.5;fontColor=#f1f5f9;fontFamily=Arial;fontSize=10;align=center;verticalAlign=middle;buttonNumber=18;" vertex="1" parent="1">
+        <mxCell id="label-viper-tqs-button-18" value="Button 18 — THROTTLE OFF/IDLE" style="rounded=1;arcSize=18;whiteSpace=wrap;html=1;fillColor=#1e293b;strokeColor=#00bfff;strokeWidth=1.5;fontColor=#f1f5f9;fontFamily=Arial;fontSize=8;align=center;verticalAlign=middle;buttonNumber=18;" vertex="1" parent="1">
           <mxGeometry x="20" y="480" width="160" height="28" as="geometry"/>
         </mxCell>
         <mxCell id="connector-viper-tqs-button-18" value="" style="endArrow=none;html=1;strokeColor=#00bfff;strokeWidth=1.5;dashed=1;dashPattern=5 3;opacity=75;" edge="1" source="label-viper-tqs-button-18" target="anchor-viper-tqs-button-18" parent="1">
@@ -133,7 +133,7 @@
         <mxCell id="anchor-viper-tqs-button-19" value="" style="ellipse;whiteSpace=wrap;html=1;fillColor=#00bfff;strokeColor=#0f172a;strokeWidth=1.5;" vertex="1" parent="1">
           <mxGeometry x="678" y="490" width="10" height="10" as="geometry"/>
         </mxCell>
-        <mxCell id="label-viper-tqs-button-19" value="Button 19" style="rounded=1;arcSize=18;whiteSpace=wrap;html=1;fillColor=#1e293b;strokeColor=#00bfff;strokeWidth=1.5;fontColor=#f1f5f9;fontFamily=Arial;fontSize=10;align=center;verticalAlign=middle;buttonNumber=19;" vertex="1" parent="1">
+        <mxCell id="label-viper-tqs-button-19" value="Button 19 — Unassigned" style="rounded=1;arcSize=18;whiteSpace=wrap;html=1;fillColor=#1e293b;strokeColor=#00bfff;strokeWidth=1.5;fontColor=#f1f5f9;fontFamily=Arial;fontSize=8;align=center;verticalAlign=middle;buttonNumber=19;" vertex="1" parent="1">
           <mxGeometry x="820" y="480" width="160" height="28" as="geometry"/>
         </mxCell>
         <mxCell id="connector-viper-tqs-button-19" value="" style="endArrow=none;html=1;strokeColor=#00bfff;strokeWidth=1.5;dashed=1;dashPattern=5 3;opacity=75;" edge="1" source="label-viper-tqs-button-19" target="anchor-viper-tqs-button-19" parent="1">
@@ -142,7 +142,7 @@
         <mxCell id="anchor-viper-tqs-button-22" value="" style="ellipse;whiteSpace=wrap;html=1;fillColor=#00bfff;strokeColor=#0f172a;strokeWidth=1.5;" vertex="1" parent="1">
           <mxGeometry x="332" y="771" width="10" height="10" as="geometry"/>
         </mxCell>
-        <mxCell id="label-viper-tqs-button-22" value="Button 22" style="rounded=1;arcSize=18;whiteSpace=wrap;html=1;fillColor=#1e293b;strokeColor=#00bfff;strokeWidth=1.5;fontColor=#f1f5f9;fontFamily=Arial;fontSize=10;align=center;verticalAlign=middle;buttonNumber=22;" vertex="1" parent="1">
+        <mxCell id="label-viper-tqs-button-22" value="Button 22 — EMER STORES JETT" style="rounded=1;arcSize=18;whiteSpace=wrap;html=1;fillColor=#1e293b;strokeColor=#00bfff;strokeWidth=1.5;fontColor=#f1f5f9;fontFamily=Arial;fontSize=8;align=center;verticalAlign=middle;buttonNumber=22;" vertex="1" parent="1">
           <mxGeometry x="20" y="660" width="160" height="28" as="geometry"/>
         </mxCell>
         <mxCell id="connector-viper-tqs-button-22" value="" style="endArrow=none;html=1;strokeColor=#00bfff;strokeWidth=1.5;dashed=1;dashPattern=5 3;opacity=75;" edge="1" source="label-viper-tqs-button-22" target="anchor-viper-tqs-button-22" parent="1">
@@ -151,7 +151,7 @@
         <mxCell id="anchor-viper-tqs-button-23" value="" style="ellipse;whiteSpace=wrap;html=1;fillColor=#00bfff;strokeColor=#0f172a;strokeWidth=1.5;" vertex="1" parent="1">
           <mxGeometry x="330" y="902" width="10" height="10" as="geometry"/>
         </mxCell>
-        <mxCell id="label-viper-tqs-button-23" value="Button 23" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#1e293b;strokeColor=#00bfff;strokeWidth=1.5;fontColor=#f1f5f9;fontFamily=Arial;fontSize=10;align=center;verticalAlign=middle;buttonNumber=23;" vertex="1" parent="1">
+        <mxCell id="label-viper-tqs-button-23" value="Button 23 — MASTER ARM" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#1e293b;strokeColor=#00bfff;strokeWidth=1.5;fontColor=#f1f5f9;fontFamily=Arial;fontSize=8;align=center;verticalAlign=middle;buttonNumber=23;" vertex="1" parent="1">
           <mxGeometry x="20" y="693" width="160" height="28" as="geometry"/>
         </mxCell>
         <mxCell id="connector-viper-tqs-button-23" value="" style="endArrow=none;html=1;strokeColor=#00bfff;strokeWidth=1.5;dashed=1;dashPattern=5 3;opacity=75;" edge="1" source="label-viper-tqs-button-23" target="anchor-viper-tqs-button-23" parent="1">
@@ -160,7 +160,7 @@
         <mxCell id="anchor-viper-tqs-button-24" value="" style="ellipse;whiteSpace=wrap;html=1;fillColor=#00bfff;strokeColor=#0f172a;strokeWidth=1.5;" vertex="1" parent="1">
           <mxGeometry x="330" y="943" width="10" height="10" as="geometry"/>
         </mxCell>
-        <mxCell id="label-viper-tqs-button-24" value="Button 24" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#1e293b;strokeColor=#00bfff;strokeWidth=1.5;fontColor=#f1f5f9;fontFamily=Arial;fontSize=10;align=center;verticalAlign=middle;buttonNumber=24;" vertex="1" parent="1">
+        <mxCell id="label-viper-tqs-button-24" value="Button 24 — SIMULATE" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#1e293b;strokeColor=#00bfff;strokeWidth=1.5;fontColor=#f1f5f9;fontFamily=Arial;fontSize=8;align=center;verticalAlign=middle;buttonNumber=24;" vertex="1" parent="1">
           <mxGeometry x="20" y="749" width="160" height="28" as="geometry"/>
         </mxCell>
         <mxCell id="connector-viper-tqs-button-24" value="" style="endArrow=none;html=1;strokeColor=#00bfff;strokeWidth=1.5;dashed=1;dashPattern=5 3;opacity=75;" edge="1" source="label-viper-tqs-button-24" target="anchor-viper-tqs-button-24" parent="1">
@@ -169,7 +169,7 @@
         <mxCell id="anchor-viper-tqs-button-25" value="" style="ellipse;whiteSpace=wrap;html=1;fillColor=#00bfff;strokeColor=#0f172a;strokeWidth=1.5;" vertex="1" parent="1">
           <mxGeometry x="613" y="875" width="10" height="10" as="geometry"/>
         </mxCell>
-        <mxCell id="label-viper-tqs-button-25" value="Button 25" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#1e293b;strokeColor=#00bfff;strokeWidth=1.5;fontColor=#f1f5f9;fontFamily=Arial;fontSize=10;align=center;verticalAlign=middle;buttonNumber=25;" vertex="1" parent="1">
+        <mxCell id="label-viper-tqs-button-25" value="Button 25 — PROGRAM 1" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#1e293b;strokeColor=#00bfff;strokeWidth=1.5;fontColor=#f1f5f9;fontFamily=Arial;fontSize=8;align=center;verticalAlign=middle;buttonNumber=25;" vertex="1" parent="1">
           <mxGeometry x="820" y="726" width="160" height="28" as="geometry"/>
         </mxCell>
         <mxCell id="connector-viper-tqs-button-25" value="" style="endArrow=none;html=1;strokeColor=#00bfff;strokeWidth=1.5;dashed=1;dashPattern=5 3;opacity=75;" edge="1" source="label-viper-tqs-button-25" target="anchor-viper-tqs-button-25" parent="1">
@@ -178,7 +178,7 @@
         <mxCell id="anchor-viper-tqs-button-26" value="" style="ellipse;whiteSpace=wrap;html=1;fillColor=#00bfff;strokeColor=#0f172a;strokeWidth=1.5;" vertex="1" parent="1">
           <mxGeometry x="632" y="872" width="10" height="10" as="geometry"/>
         </mxCell>
-        <mxCell id="label-viper-tqs-button-26" value="Button 26" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#1e293b;strokeColor=#00bfff;strokeWidth=1.5;fontColor=#f1f5f9;fontFamily=Arial;fontSize=10;align=center;verticalAlign=middle;buttonNumber=26;" vertex="1" parent="1">
+        <mxCell id="label-viper-tqs-button-26" value="Button 26 — PROGRAM 2" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#1e293b;strokeColor=#00bfff;strokeWidth=1.5;fontColor=#f1f5f9;fontFamily=Arial;fontSize=8;align=center;verticalAlign=middle;buttonNumber=26;" vertex="1" parent="1">
           <mxGeometry x="820" y="754" width="160" height="28" as="geometry"/>
         </mxCell>
         <mxCell id="connector-viper-tqs-button-26" value="" style="endArrow=none;html=1;strokeColor=#00bfff;strokeWidth=1.5;dashed=1;dashPattern=5 3;opacity=75;" edge="1" source="label-viper-tqs-button-26" target="anchor-viper-tqs-button-26" parent="1">
@@ -187,7 +187,7 @@
         <mxCell id="anchor-viper-tqs-button-27" value="" style="ellipse;whiteSpace=wrap;html=1;fillColor=#00bfff;strokeColor=#0f172a;strokeWidth=1.5;" vertex="1" parent="1">
           <mxGeometry x="654" y="876" width="10" height="10" as="geometry"/>
         </mxCell>
-        <mxCell id="label-viper-tqs-button-27" value="Button 27" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#1e293b;strokeColor=#00bfff;strokeWidth=1.5;fontColor=#f1f5f9;fontFamily=Arial;fontSize=10;align=center;verticalAlign=middle;buttonNumber=27;" vertex="1" parent="1">
+        <mxCell id="label-viper-tqs-button-27" value="Button 27 — PROGRAM 3" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#1e293b;strokeColor=#00bfff;strokeWidth=1.5;fontColor=#f1f5f9;fontFamily=Arial;fontSize=8;align=center;verticalAlign=middle;buttonNumber=27;" vertex="1" parent="1">
           <mxGeometry x="820" y="782" width="160" height="28" as="geometry"/>
         </mxCell>
         <mxCell id="connector-viper-tqs-button-27" value="" style="endArrow=none;html=1;strokeColor=#00bfff;strokeWidth=1.5;dashed=1;dashPattern=5 3;opacity=75;" edge="1" source="label-viper-tqs-button-27" target="anchor-viper-tqs-button-27" parent="1">
@@ -196,7 +196,7 @@
         <mxCell id="anchor-viper-tqs-button-28" value="" style="ellipse;whiteSpace=wrap;html=1;fillColor=#00bfff;strokeColor=#0f172a;strokeWidth=1.5;" vertex="1" parent="1">
           <mxGeometry x="672" y="889" width="10" height="10" as="geometry"/>
         </mxCell>
-        <mxCell id="label-viper-tqs-button-28" value="Button 28" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#1e293b;strokeColor=#00bfff;strokeWidth=1.5;fontColor=#f1f5f9;fontFamily=Arial;fontSize=10;align=center;verticalAlign=middle;buttonNumber=28;" vertex="1" parent="1">
+        <mxCell id="label-viper-tqs-button-28" value="Button 28 — PROGRAM 4" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#1e293b;strokeColor=#00bfff;strokeWidth=1.5;fontColor=#f1f5f9;fontFamily=Arial;fontSize=8;align=center;verticalAlign=middle;buttonNumber=28;" vertex="1" parent="1">
           <mxGeometry x="820" y="810" width="160" height="28" as="geometry"/>
         </mxCell>
         <mxCell id="connector-viper-tqs-button-28" value="" style="endArrow=none;html=1;strokeColor=#00bfff;strokeWidth=1.5;dashed=1;dashPattern=5 3;opacity=75;" edge="1" source="label-viper-tqs-button-28" target="anchor-viper-tqs-button-28" parent="1">
@@ -205,7 +205,7 @@
         <mxCell id="anchor-viper-tqs-button-29" value="" style="ellipse;whiteSpace=wrap;html=1;fillColor=#00bfff;strokeColor=#0f172a;strokeWidth=1.5;" vertex="1" parent="1">
           <mxGeometry x="691" y="910" width="10" height="10" as="geometry"/>
         </mxCell>
-        <mxCell id="label-viper-tqs-button-29" value="Button 29" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#1e293b;strokeColor=#00bfff;strokeWidth=1.5;fontColor=#f1f5f9;fontFamily=Arial;fontSize=10;align=center;verticalAlign=middle;buttonNumber=29;" vertex="1" parent="1">
+        <mxCell id="label-viper-tqs-button-29" value="Button 29 — MODE STBY" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#1e293b;strokeColor=#00bfff;strokeWidth=1.5;fontColor=#f1f5f9;fontFamily=Arial;fontSize=8;align=center;verticalAlign=middle;buttonNumber=29;" vertex="1" parent="1">
           <mxGeometry x="820" y="871" width="160" height="28" as="geometry"/>
         </mxCell>
         <mxCell id="connector-viper-tqs-button-29" value="" style="endArrow=none;html=1;strokeColor=#00bfff;strokeWidth=1.5;dashed=1;dashPattern=5 3;opacity=75;" edge="1" source="label-viper-tqs-button-29" target="anchor-viper-tqs-button-29" parent="1">
@@ -214,7 +214,7 @@
         <mxCell id="anchor-viper-tqs-button-30" value="" style="ellipse;whiteSpace=wrap;html=1;fillColor=#00bfff;strokeColor=#0f172a;strokeWidth=1.5;" vertex="1" parent="1">
           <mxGeometry x="708" y="896" width="10" height="10" as="geometry"/>
         </mxCell>
-        <mxCell id="label-viper-tqs-button-30" value="Button 30" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#1e293b;strokeColor=#00bfff;strokeWidth=1.5;fontColor=#f1f5f9;fontFamily=Arial;fontSize=10;align=center;verticalAlign=middle;buttonNumber=30;" vertex="1" parent="1">
+        <mxCell id="label-viper-tqs-button-30" value="Button 30 — MODE MAN" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#1e293b;strokeColor=#00bfff;strokeWidth=1.5;fontColor=#f1f5f9;fontFamily=Arial;fontSize=8;align=center;verticalAlign=middle;buttonNumber=30;" vertex="1" parent="1">
           <mxGeometry x="820" y="899" width="160" height="28" as="geometry"/>
         </mxCell>
         <mxCell id="connector-viper-tqs-button-30" value="" style="endArrow=none;html=1;strokeColor=#00bfff;strokeWidth=1.5;dashed=1;dashPattern=5 3;opacity=75;" edge="1" source="label-viper-tqs-button-30" target="anchor-viper-tqs-button-30" parent="1">
@@ -223,7 +223,7 @@
         <mxCell id="anchor-viper-tqs-button-31" value="" style="ellipse;whiteSpace=wrap;html=1;fillColor=#00bfff;strokeColor=#0f172a;strokeWidth=1.5;" vertex="1" parent="1">
           <mxGeometry x="727" y="893" width="10" height="10" as="geometry"/>
         </mxCell>
-        <mxCell id="label-viper-tqs-button-31" value="Button 31" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#1e293b;strokeColor=#00bfff;strokeWidth=1.5;fontColor=#f1f5f9;fontFamily=Arial;fontSize=10;align=center;verticalAlign=middle;buttonNumber=31;" vertex="1" parent="1">
+        <mxCell id="label-viper-tqs-button-31" value="Button 31 — MODE SEMI" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#1e293b;strokeColor=#00bfff;strokeWidth=1.5;fontColor=#f1f5f9;fontFamily=Arial;fontSize=8;align=center;verticalAlign=middle;buttonNumber=31;" vertex="1" parent="1">
           <mxGeometry x="820" y="927" width="160" height="28" as="geometry"/>
         </mxCell>
         <mxCell id="connector-viper-tqs-button-31" value="" style="endArrow=none;html=1;strokeColor=#00bfff;strokeWidth=1.5;dashed=1;dashPattern=5 3;opacity=75;" edge="1" source="label-viper-tqs-button-31" target="anchor-viper-tqs-button-31" parent="1">
@@ -232,7 +232,7 @@
         <mxCell id="anchor-viper-tqs-button-32" value="" style="ellipse;whiteSpace=wrap;html=1;fillColor=#00bfff;strokeColor=#0f172a;strokeWidth=1.5;" vertex="1" parent="1">
           <mxGeometry x="750" y="897" width="10" height="10" as="geometry"/>
         </mxCell>
-        <mxCell id="label-viper-tqs-button-32" value="Button 32" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#1e293b;strokeColor=#00bfff;strokeWidth=1.5;fontColor=#f1f5f9;fontFamily=Arial;fontSize=10;align=center;verticalAlign=middle;buttonNumber=32;" vertex="1" parent="1">
+        <mxCell id="label-viper-tqs-button-32" value="Button 32 — MODE AUTO" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#1e293b;strokeColor=#00bfff;strokeWidth=1.5;fontColor=#f1f5f9;fontFamily=Arial;fontSize=8;align=center;verticalAlign=middle;buttonNumber=32;" vertex="1" parent="1">
           <mxGeometry x="820" y="955" width="160" height="28" as="geometry"/>
         </mxCell>
         <mxCell id="connector-viper-tqs-button-32" value="" style="endArrow=none;html=1;strokeColor=#00bfff;strokeWidth=1.5;dashed=1;dashPattern=5 3;opacity=75;" edge="1" source="label-viper-tqs-button-32" target="anchor-viper-tqs-button-32" parent="1">
@@ -241,7 +241,7 @@
         <mxCell id="anchor-viper-tqs-button-33" value="" style="ellipse;whiteSpace=wrap;html=1;fillColor=#00bfff;strokeColor=#0f172a;strokeWidth=1.5;" vertex="1" parent="1">
           <mxGeometry x="769" y="914" width="10" height="10" as="geometry"/>
         </mxCell>
-        <mxCell id="label-viper-tqs-button-33" value="Button 33" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#1e293b;strokeColor=#00bfff;strokeWidth=1.5;fontColor=#f1f5f9;fontFamily=Arial;fontSize=10;align=center;verticalAlign=middle;buttonNumber=33;" vertex="1" parent="1">
+        <mxCell id="label-viper-tqs-button-33" value="Button 33 — MODE BYP" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#1e293b;strokeColor=#00bfff;strokeWidth=1.5;fontColor=#f1f5f9;fontFamily=Arial;fontSize=8;align=center;verticalAlign=middle;buttonNumber=33;" vertex="1" parent="1">
           <mxGeometry x="820" y="983" width="160" height="28" as="geometry"/>
         </mxCell>
         <mxCell id="connector-viper-tqs-button-33" value="" style="endArrow=none;html=1;strokeColor=#00bfff;strokeWidth=1.5;dashed=1;dashPattern=5 3;opacity=75;" edge="1" source="label-viper-tqs-button-33" target="anchor-viper-tqs-button-33" parent="1">
@@ -250,7 +250,7 @@
         <mxCell id="anchor-viper-tqs-button-34" value="" style="ellipse;whiteSpace=wrap;html=1;fillColor=#00bfff;strokeColor=#0f172a;strokeWidth=1.5;" vertex="1" parent="1">
           <mxGeometry x="249" y="969" width="10" height="10" as="geometry"/>
         </mxCell>
-        <mxCell id="label-viper-tqs-button-34" value="Button 34" style="rounded=1;arcSize=18;whiteSpace=wrap;html=1;fillColor=#1e293b;strokeColor=#00bfff;strokeWidth=1.5;fontColor=#f1f5f9;fontFamily=Arial;fontSize=10;align=center;verticalAlign=middle;buttonNumber=34;" vertex="1" parent="1">
+        <mxCell id="label-viper-tqs-button-34" value="Button 34 — RWR SEARCH" style="rounded=1;arcSize=18;whiteSpace=wrap;html=1;fillColor=#1e293b;strokeColor=#00bfff;strokeWidth=1.5;fontColor=#f1f5f9;fontFamily=Arial;fontSize=8;align=center;verticalAlign=middle;buttonNumber=34;" vertex="1" parent="1">
           <mxGeometry x="20" y="782" width="160" height="28" as="geometry"/>
         </mxCell>
         <mxCell id="connector-viper-tqs-button-34" value="" style="endArrow=none;html=1;strokeColor=#00bfff;strokeWidth=1.5;dashed=1;dashPattern=5 3;opacity=75;" edge="1" source="label-viper-tqs-button-34" target="anchor-viper-tqs-button-34" parent="1">
@@ -259,7 +259,7 @@
         <mxCell id="anchor-viper-tqs-button-35" value="" style="ellipse;whiteSpace=wrap;html=1;fillColor=#00bfff;strokeColor=#0f172a;strokeWidth=1.5;" vertex="1" parent="1">
           <mxGeometry x="269" y="969" width="10" height="10" as="geometry"/>
         </mxCell>
-        <mxCell id="label-viper-tqs-button-35" value="Button 35" style="rounded=1;arcSize=18;whiteSpace=wrap;html=1;fillColor=#1e293b;strokeColor=#00bfff;strokeWidth=1.5;fontColor=#f1f5f9;fontFamily=Arial;fontSize=10;align=center;verticalAlign=middle;buttonNumber=35;" vertex="1" parent="1">
+        <mxCell id="label-viper-tqs-button-35" value="Button 35 — RWR ACT/PWR" style="rounded=1;arcSize=18;whiteSpace=wrap;html=1;fillColor=#1e293b;strokeColor=#00bfff;strokeWidth=1.5;fontColor=#f1f5f9;fontFamily=Arial;fontSize=8;align=center;verticalAlign=middle;buttonNumber=35;" vertex="1" parent="1">
           <mxGeometry x="20" y="815" width="160" height="28" as="geometry"/>
         </mxCell>
         <mxCell id="connector-viper-tqs-button-35" value="" style="endArrow=none;html=1;strokeColor=#00bfff;strokeWidth=1.5;dashed=1;dashPattern=5 3;opacity=75;" edge="1" source="label-viper-tqs-button-35" target="anchor-viper-tqs-button-35" parent="1">
@@ -268,7 +268,7 @@
         <mxCell id="anchor-viper-tqs-button-36" value="" style="ellipse;whiteSpace=wrap;html=1;fillColor=#00bfff;strokeColor=#0f172a;strokeWidth=1.5;" vertex="1" parent="1">
           <mxGeometry x="248" y="986" width="10" height="10" as="geometry"/>
         </mxCell>
-        <mxCell id="label-viper-tqs-button-36" value="Button 36" style="rounded=1;arcSize=18;whiteSpace=wrap;html=1;fillColor=#1e293b;strokeColor=#00bfff;strokeWidth=1.5;fontColor=#f1f5f9;fontFamily=Arial;fontSize=10;align=center;verticalAlign=middle;buttonNumber=36;" vertex="1" parent="1">
+        <mxCell id="label-viper-tqs-button-36" value="Button 36 — RWR ALTITUDE" style="rounded=1;arcSize=18;whiteSpace=wrap;html=1;fillColor=#1e293b;strokeColor=#00bfff;strokeWidth=1.5;fontColor=#f1f5f9;fontFamily=Arial;fontSize=8;align=center;verticalAlign=middle;buttonNumber=36;" vertex="1" parent="1">
           <mxGeometry x="20" y="848" width="160" height="28" as="geometry"/>
         </mxCell>
         <mxCell id="connector-viper-tqs-button-36" value="" style="endArrow=none;html=1;strokeColor=#00bfff;strokeWidth=1.5;dashed=1;dashPattern=5 3;opacity=75;" edge="1" source="label-viper-tqs-button-36" target="anchor-viper-tqs-button-36" parent="1">
@@ -277,7 +277,7 @@
         <mxCell id="anchor-viper-tqs-button-37" value="" style="ellipse;whiteSpace=wrap;html=1;fillColor=#00bfff;strokeColor=#0f172a;strokeWidth=1.5;" vertex="1" parent="1">
           <mxGeometry x="269" y="986" width="10" height="10" as="geometry"/>
         </mxCell>
-        <mxCell id="label-viper-tqs-button-37" value="Button 37" style="rounded=1;arcSize=18;whiteSpace=wrap;html=1;fillColor=#1e293b;strokeColor=#00bfff;strokeWidth=1.5;fontColor=#f1f5f9;fontFamily=Arial;fontSize=10;align=center;verticalAlign=middle;buttonNumber=37;" vertex="1" parent="1">
+        <mxCell id="label-viper-tqs-button-37" value="Button 37 — RWR POWER" style="rounded=1;arcSize=18;whiteSpace=wrap;html=1;fillColor=#1e293b;strokeColor=#00bfff;strokeWidth=1.5;fontColor=#f1f5f9;fontFamily=Arial;fontSize=8;align=center;verticalAlign=middle;buttonNumber=37;" vertex="1" parent="1">
           <mxGeometry x="20" y="881" width="160" height="28" as="geometry"/>
         </mxCell>
         <mxCell id="connector-viper-tqs-button-37" value="" style="endArrow=none;html=1;strokeColor=#00bfff;strokeWidth=1.5;dashed=1;dashPattern=5 3;opacity=75;" edge="1" source="label-viper-tqs-button-37" target="anchor-viper-tqs-button-37" parent="1">
@@ -286,7 +286,7 @@
         <mxCell id="anchor-viper-tqs-button-38" value="" style="ellipse;whiteSpace=wrap;html=1;fillColor=#00bfff;strokeColor=#0f172a;strokeWidth=1.5;" vertex="1" parent="1">
           <mxGeometry x="597" y="823" width="10" height="10" as="geometry"/>
         </mxCell>
-        <mxCell id="label-viper-tqs-button-38" value="Button 38" style="rounded=1;arcSize=18;whiteSpace=wrap;html=1;fillColor=#1e293b;strokeColor=#00bfff;strokeWidth=1.5;fontColor=#f1f5f9;fontFamily=Arial;fontSize=10;align=center;verticalAlign=middle;buttonNumber=38;" vertex="1" parent="1">
+        <mxCell id="label-viper-tqs-button-38" value="Button 38 — LG HANDLE UP" style="rounded=1;arcSize=18;whiteSpace=wrap;html=1;fillColor=#1e293b;strokeColor=#00bfff;strokeWidth=1.5;fontColor=#f1f5f9;fontFamily=Arial;fontSize=8;align=center;verticalAlign=middle;buttonNumber=38;" vertex="1" parent="1">
           <mxGeometry x="820" y="660" width="160" height="28" as="geometry"/>
         </mxCell>
         <mxCell id="connector-viper-tqs-button-38" value="" style="endArrow=none;html=1;strokeColor=#00bfff;strokeWidth=1.5;dashed=1;dashPattern=5 3;opacity=75;" edge="1" source="label-viper-tqs-button-38" target="anchor-viper-tqs-button-38" parent="1">
@@ -295,7 +295,7 @@
         <mxCell id="anchor-viper-tqs-button-39" value="" style="ellipse;whiteSpace=wrap;html=1;fillColor=#00bfff;strokeColor=#0f172a;strokeWidth=1.5;" vertex="1" parent="1">
           <mxGeometry x="612" y="1042" width="10" height="10" as="geometry"/>
         </mxCell>
-        <mxCell id="label-viper-tqs-button-39" value="Button 39" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#1e293b;strokeColor=#00bfff;strokeWidth=1.5;fontColor=#f1f5f9;fontFamily=Arial;fontSize=10;align=center;verticalAlign=middle;buttonNumber=39;" vertex="1" parent="1">
+        <mxCell id="label-viper-tqs-button-39" value="Button 39 — EXT LT ALL" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#1e293b;strokeColor=#00bfff;strokeWidth=1.5;fontColor=#f1f5f9;fontFamily=Arial;fontSize=8;align=center;verticalAlign=middle;buttonNumber=39;" vertex="1" parent="1">
           <mxGeometry x="820" y="1044" width="160" height="28" as="geometry"/>
         </mxCell>
         <mxCell id="connector-viper-tqs-button-39" value="" style="endArrow=none;html=1;strokeColor=#00bfff;strokeWidth=1.5;dashed=1;dashPattern=5 3;opacity=75;" edge="1" source="label-viper-tqs-button-39" target="anchor-viper-tqs-button-39" parent="1">
@@ -304,7 +304,7 @@
         <mxCell id="anchor-viper-tqs-button-40" value="" style="ellipse;whiteSpace=wrap;html=1;fillColor=#00bfff;strokeColor=#0f172a;strokeWidth=1.5;" vertex="1" parent="1">
           <mxGeometry x="632" y="1042" width="10" height="10" as="geometry"/>
         </mxCell>
-        <mxCell id="label-viper-tqs-button-40" value="Button 40" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#1e293b;strokeColor=#00bfff;strokeWidth=1.5;fontColor=#f1f5f9;fontFamily=Arial;fontSize=10;align=center;verticalAlign=middle;buttonNumber=40;" vertex="1" parent="1">
+        <mxCell id="label-viper-tqs-button-40" value="Button 40 — EXT LT FORM" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#1e293b;strokeColor=#00bfff;strokeWidth=1.5;fontColor=#f1f5f9;fontFamily=Arial;fontSize=8;align=center;verticalAlign=middle;buttonNumber=40;" vertex="1" parent="1">
           <mxGeometry x="820" y="1072" width="160" height="28" as="geometry"/>
         </mxCell>
         <mxCell id="connector-viper-tqs-button-40" value="" style="endArrow=none;html=1;strokeColor=#00bfff;strokeWidth=1.5;dashed=1;dashPattern=5 3;opacity=75;" edge="1" source="label-viper-tqs-button-40" target="anchor-viper-tqs-button-40" parent="1">
@@ -313,7 +313,7 @@
         <mxCell id="anchor-viper-tqs-button-41" value="" style="ellipse;whiteSpace=wrap;html=1;fillColor=#00bfff;strokeColor=#0f172a;strokeWidth=1.5;" vertex="1" parent="1">
           <mxGeometry x="654" y="1045" width="10" height="10" as="geometry"/>
         </mxCell>
-        <mxCell id="label-viper-tqs-button-41" value="Button 41" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#1e293b;strokeColor=#00bfff;strokeWidth=1.5;fontColor=#f1f5f9;fontFamily=Arial;fontSize=10;align=center;verticalAlign=middle;buttonNumber=41;" vertex="1" parent="1">
+        <mxCell id="label-viper-tqs-button-41" value="Button 41 — EXT LT NORM" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#1e293b;strokeColor=#00bfff;strokeWidth=1.5;fontColor=#f1f5f9;fontFamily=Arial;fontSize=8;align=center;verticalAlign=middle;buttonNumber=41;" vertex="1" parent="1">
           <mxGeometry x="820" y="1100" width="160" height="28" as="geometry"/>
         </mxCell>
         <mxCell id="connector-viper-tqs-button-41" value="" style="endArrow=none;html=1;strokeColor=#00bfff;strokeWidth=1.5;dashed=1;dashPattern=5 3;opacity=75;" edge="1" source="label-viper-tqs-button-41" target="anchor-viper-tqs-button-41" parent="1">
@@ -322,7 +322,7 @@
         <mxCell id="anchor-viper-tqs-button-42" value="" style="ellipse;whiteSpace=wrap;html=1;fillColor=#00bfff;strokeColor=#0f172a;strokeWidth=1.5;" vertex="1" parent="1">
           <mxGeometry x="700" y="1130" width="10" height="10" as="geometry"/>
         </mxCell>
-        <mxCell id="label-viper-tqs-button-42" value="Button 42" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#1e293b;strokeColor=#00bfff;strokeWidth=1.5;fontColor=#f1f5f9;fontFamily=Arial;fontSize=10;align=center;verticalAlign=middle;buttonNumber=42;" vertex="1" parent="1">
+        <mxCell id="label-viper-tqs-button-42" value="Button 42 — HDG CW" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#1e293b;strokeColor=#00bfff;strokeWidth=1.5;fontColor=#f1f5f9;fontFamily=Arial;fontSize=8;align=center;verticalAlign=middle;buttonNumber=42;" vertex="1" parent="1">
           <mxGeometry x="820" y="1250" width="160" height="28" as="geometry"/>
         </mxCell>
         <mxCell id="connector-viper-tqs-button-42" value="" style="endArrow=none;html=1;strokeColor=#00bfff;strokeWidth=1.5;dashed=1;dashPattern=5 3;opacity=75;" edge="1" source="label-viper-tqs-button-42" target="anchor-viper-tqs-button-42" parent="1">
@@ -331,7 +331,7 @@
         <mxCell id="anchor-viper-tqs-button-43" value="" style="ellipse;whiteSpace=wrap;html=1;fillColor=#00bfff;strokeColor=#0f172a;strokeWidth=1.5;" vertex="1" parent="1">
           <mxGeometry x="646" y="1130" width="10" height="10" as="geometry"/>
         </mxCell>
-        <mxCell id="label-viper-tqs-button-43" value="Button 43" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#1e293b;strokeColor=#00bfff;strokeWidth=1.5;fontColor=#f1f5f9;fontFamily=Arial;fontSize=10;align=center;verticalAlign=middle;buttonNumber=43;" vertex="1" parent="1">
+        <mxCell id="label-viper-tqs-button-43" value="Button 43 — HDG CCW" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#1e293b;strokeColor=#00bfff;strokeWidth=1.5;fontColor=#f1f5f9;fontFamily=Arial;fontSize=8;align=center;verticalAlign=middle;buttonNumber=43;" vertex="1" parent="1">
           <mxGeometry x="820" y="1222" width="160" height="28" as="geometry"/>
         </mxCell>
         <mxCell id="connector-viper-tqs-button-43" value="" style="endArrow=none;html=1;strokeColor=#00bfff;strokeWidth=1.5;dashed=1;dashPattern=5 3;opacity=75;" edge="1" source="label-viper-tqs-button-43" target="anchor-viper-tqs-button-43" parent="1">
@@ -340,7 +340,7 @@
         <mxCell id="anchor-viper-tqs-button-44" value="" style="ellipse;whiteSpace=wrap;html=1;fillColor=#00bfff;strokeColor=#0f172a;strokeWidth=1.5;" vertex="1" parent="1">
           <mxGeometry x="598" y="1129" width="10" height="10" as="geometry"/>
         </mxCell>
-        <mxCell id="label-viper-tqs-button-44" value="Button 44" style="rounded=1;arcSize=18;whiteSpace=wrap;html=1;fillColor=#1e293b;strokeColor=#00bfff;strokeWidth=1.5;fontColor=#f1f5f9;fontFamily=Arial;fontSize=10;align=center;verticalAlign=middle;buttonNumber=44;" vertex="1" parent="1">
+        <mxCell id="label-viper-tqs-button-44" value="Button 44 — HDG DEPRESS" style="rounded=1;arcSize=18;whiteSpace=wrap;html=1;fillColor=#1e293b;strokeColor=#00bfff;strokeWidth=1.5;fontColor=#f1f5f9;fontFamily=Arial;fontSize=8;align=center;verticalAlign=middle;buttonNumber=44;" vertex="1" parent="1">
           <mxGeometry x="820" y="1283" width="160" height="28" as="geometry"/>
         </mxCell>
         <mxCell id="connector-viper-tqs-button-44" value="" style="endArrow=none;html=1;strokeColor=#00bfff;strokeWidth=1.5;dashed=1;dashPattern=5 3;opacity=75;" edge="1" source="label-viper-tqs-button-44" target="anchor-viper-tqs-button-44" parent="1">
@@ -349,7 +349,7 @@
         <mxCell id="anchor-viper-tqs-button-45" value="" style="ellipse;whiteSpace=wrap;html=1;fillColor=#00bfff;strokeColor=#0f172a;strokeWidth=1.5;" vertex="1" parent="1">
           <mxGeometry x="332" y="1005" width="10" height="10" as="geometry"/>
         </mxCell>
-        <mxCell id="label-viper-tqs-button-45" value="Button 45" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#1e293b;strokeColor=#00bfff;strokeWidth=1.5;fontColor=#f1f5f9;fontFamily=Arial;fontSize=10;align=center;verticalAlign=middle;buttonNumber=45;" vertex="1" parent="1">
+        <mxCell id="label-viper-tqs-button-45" value="Button 45 — STORES CAT I" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#1e293b;strokeColor=#00bfff;strokeWidth=1.5;fontColor=#f1f5f9;fontFamily=Arial;fontSize=8;align=center;verticalAlign=middle;buttonNumber=45;" vertex="1" parent="1">
           <mxGeometry x="20" y="914" width="160" height="28" as="geometry"/>
         </mxCell>
         <mxCell id="connector-viper-tqs-button-45" value="" style="endArrow=none;html=1;strokeColor=#00bfff;strokeWidth=1.5;dashed=1;dashPattern=5 3;opacity=75;" edge="1" source="label-viper-tqs-button-45" target="anchor-viper-tqs-button-45" parent="1">
@@ -358,7 +358,7 @@
         <mxCell id="anchor-viper-tqs-button-46" value="" style="ellipse;whiteSpace=wrap;html=1;fillColor=#00bfff;strokeColor=#0f172a;strokeWidth=1.5;" vertex="1" parent="1">
           <mxGeometry x="259" y="1033" width="10" height="10" as="geometry"/>
         </mxCell>
-        <mxCell id="label-viper-tqs-button-46" value="Button 46" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#1e293b;strokeColor=#00bfff;strokeWidth=1.5;fontColor=#f1f5f9;fontFamily=Arial;fontSize=10;align=center;verticalAlign=middle;buttonNumber=46;" vertex="1" parent="1">
+        <mxCell id="label-viper-tqs-button-46" value="Button 46 — RF NORM" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#1e293b;strokeColor=#00bfff;strokeWidth=1.5;fontColor=#f1f5f9;fontFamily=Arial;fontSize=8;align=center;verticalAlign=middle;buttonNumber=46;" vertex="1" parent="1">
           <mxGeometry x="20" y="975" width="160" height="28" as="geometry"/>
         </mxCell>
         <mxCell id="connector-viper-tqs-button-46" value="" style="endArrow=none;html=1;strokeColor=#00bfff;strokeWidth=1.5;dashed=1;dashPattern=5 3;opacity=75;" edge="1" source="label-viper-tqs-button-46" target="anchor-viper-tqs-button-46" parent="1">
@@ -367,7 +367,7 @@
         <mxCell id="anchor-viper-tqs-button-47" value="" style="ellipse;whiteSpace=wrap;html=1;fillColor=#00bfff;strokeColor=#0f172a;strokeWidth=1.5;" vertex="1" parent="1">
           <mxGeometry x="258" y="1076" width="10" height="10" as="geometry"/>
         </mxCell>
-        <mxCell id="label-viper-tqs-button-47" value="Button 47" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#1e293b;strokeColor=#00bfff;strokeWidth=1.5;fontColor=#f1f5f9;fontFamily=Arial;fontSize=10;align=center;verticalAlign=middle;buttonNumber=47;" vertex="1" parent="1">
+        <mxCell id="label-viper-tqs-button-47" value="Button 47 — RF SILENT" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#1e293b;strokeColor=#00bfff;strokeWidth=1.5;fontColor=#f1f5f9;fontFamily=Arial;fontSize=8;align=center;verticalAlign=middle;buttonNumber=47;" vertex="1" parent="1">
           <mxGeometry x="20" y="1031" width="160" height="28" as="geometry"/>
         </mxCell>
         <mxCell id="connector-viper-tqs-button-47" value="" style="endArrow=none;html=1;strokeColor=#00bfff;strokeWidth=1.5;dashed=1;dashPattern=5 3;opacity=75;" edge="1" source="label-viper-tqs-button-47" target="anchor-viper-tqs-button-47" parent="1">
@@ -376,7 +376,7 @@
         <mxCell id="anchor-viper-tqs-button-48" value="" style="ellipse;whiteSpace=wrap;html=1;fillColor=#00bfff;strokeColor=#0f172a;strokeWidth=1.5;" vertex="1" parent="1">
           <mxGeometry x="332" y="1063" width="10" height="10" as="geometry"/>
         </mxCell>
-        <mxCell id="label-viper-tqs-button-48" value="Button 48" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#1e293b;strokeColor=#00bfff;strokeWidth=1.5;fontColor=#f1f5f9;fontFamily=Arial;fontSize=10;align=center;verticalAlign=middle;buttonNumber=48;" vertex="1" parent="1">
+        <mxCell id="label-viper-tqs-button-48" value="Button 48 — LASER ARM" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#1e293b;strokeColor=#00bfff;strokeWidth=1.5;fontColor=#f1f5f9;fontFamily=Arial;fontSize=8;align=center;verticalAlign=middle;buttonNumber=48;" vertex="1" parent="1">
           <mxGeometry x="20" y="1064" width="160" height="28" as="geometry"/>
         </mxCell>
         <mxCell id="connector-viper-tqs-button-48" value="" style="endArrow=none;html=1;strokeColor=#00bfff;strokeWidth=1.5;dashed=1;dashPattern=5 3;opacity=75;" edge="1" source="label-viper-tqs-button-48" target="anchor-viper-tqs-button-48" parent="1">
@@ -385,7 +385,7 @@
         <mxCell id="anchor-viper-tqs-button-49" value="" style="ellipse;whiteSpace=wrap;html=1;fillColor=#00bfff;strokeColor=#0f172a;strokeWidth=1.5;" vertex="1" parent="1">
           <mxGeometry x="586" y="1086" width="10" height="10" as="geometry"/>
         </mxCell>
-        <mxCell id="label-viper-tqs-button-49" value="Button 49" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#1e293b;strokeColor=#00bfff;strokeWidth=1.5;fontColor=#f1f5f9;fontFamily=Arial;fontSize=10;align=center;verticalAlign=middle;buttonNumber=49;" vertex="1" parent="1">
+        <mxCell id="label-viper-tqs-button-49" value="Button 49 — JMR ON" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#1e293b;strokeColor=#00bfff;strokeWidth=1.5;fontColor=#f1f5f9;fontFamily=Arial;fontSize=8;align=center;verticalAlign=middle;buttonNumber=49;" vertex="1" parent="1">
           <mxGeometry x="820" y="1161" width="160" height="28" as="geometry"/>
         </mxCell>
         <mxCell id="connector-viper-tqs-button-49" value="" style="endArrow=none;html=1;strokeColor=#00bfff;strokeWidth=1.5;dashed=1;dashPattern=5 3;opacity=75;" edge="1" source="label-viper-tqs-button-49" target="anchor-viper-tqs-button-49" parent="1">
@@ -394,7 +394,7 @@
         <mxCell id="anchor-viper-tqs-button-50" value="" style="ellipse;whiteSpace=wrap;html=1;fillColor=#00bfff;strokeColor=#0f172a;strokeWidth=1.5;" vertex="1" parent="1">
           <mxGeometry x="259" y="1112" width="10" height="10" as="geometry"/>
         </mxCell>
-        <mxCell id="label-viper-tqs-button-50" value="Button 50" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#1e293b;strokeColor=#00bfff;strokeWidth=1.5;fontColor=#f1f5f9;fontFamily=Arial;fontSize=10;align=center;verticalAlign=middle;buttonNumber=50;" vertex="1" parent="1">
+        <mxCell id="label-viper-tqs-button-50" value="Button 50 — AP ROLL HDG SEL" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#1e293b;strokeColor=#00bfff;strokeWidth=1.5;fontColor=#f1f5f9;fontFamily=Arial;fontSize=8;align=center;verticalAlign=middle;buttonNumber=50;" vertex="1" parent="1">
           <mxGeometry x="20" y="1125" width="160" height="28" as="geometry"/>
         </mxCell>
         <mxCell id="connector-viper-tqs-button-50" value="" style="endArrow=none;html=1;strokeColor=#00bfff;strokeWidth=1.5;dashed=1;dashPattern=5 3;opacity=75;" edge="1" source="label-viper-tqs-button-50" target="anchor-viper-tqs-button-50" parent="1">
@@ -403,7 +403,7 @@
         <mxCell id="anchor-viper-tqs-button-51" value="" style="ellipse;whiteSpace=wrap;html=1;fillColor=#00bfff;strokeColor=#0f172a;strokeWidth=1.5;" vertex="1" parent="1">
           <mxGeometry x="259" y="1155" width="10" height="10" as="geometry"/>
         </mxCell>
-        <mxCell id="label-viper-tqs-button-51" value="Button 51" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#1e293b;strokeColor=#00bfff;strokeWidth=1.5;fontColor=#f1f5f9;fontFamily=Arial;fontSize=10;align=center;verticalAlign=middle;buttonNumber=51;" vertex="1" parent="1">
+        <mxCell id="label-viper-tqs-button-51" value="Button 51 — AP ROLL STRG SEL" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#1e293b;strokeColor=#00bfff;strokeWidth=1.5;fontColor=#f1f5f9;fontFamily=Arial;fontSize=8;align=center;verticalAlign=middle;buttonNumber=51;" vertex="1" parent="1">
           <mxGeometry x="20" y="1181" width="160" height="28" as="geometry"/>
         </mxCell>
         <mxCell id="connector-viper-tqs-button-51" value="" style="endArrow=none;html=1;strokeColor=#00bfff;strokeWidth=1.5;dashed=1;dashPattern=5 3;opacity=75;" edge="1" source="label-viper-tqs-button-51" target="anchor-viper-tqs-button-51" parent="1">
@@ -412,7 +412,7 @@
         <mxCell id="anchor-viper-tqs-button-52" value="" style="ellipse;whiteSpace=wrap;html=1;fillColor=#00bfff;strokeColor=#0f172a;strokeWidth=1.5;" vertex="1" parent="1">
           <mxGeometry x="331" y="1133" width="10" height="10" as="geometry"/>
         </mxCell>
-        <mxCell id="label-viper-tqs-button-52" value="Button 52" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#1e293b;strokeColor=#00bfff;strokeWidth=1.5;fontColor=#f1f5f9;fontFamily=Arial;fontSize=10;align=center;verticalAlign=middle;buttonNumber=52;" vertex="1" parent="1">
+        <mxCell id="label-viper-tqs-button-52" value="Button 52 — AP PITCH ALT HOLD" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#1e293b;strokeColor=#00bfff;strokeWidth=1.5;fontColor=#f1f5f9;fontFamily=Arial;fontSize=8;align=center;verticalAlign=middle;buttonNumber=52;" vertex="1" parent="1">
           <mxGeometry x="20" y="1214" width="160" height="28" as="geometry"/>
         </mxCell>
         <mxCell id="connector-viper-tqs-button-52" value="" style="endArrow=none;html=1;strokeColor=#00bfff;strokeWidth=1.5;dashed=1;dashPattern=5 3;opacity=75;" edge="1" source="label-viper-tqs-button-52" target="anchor-viper-tqs-button-52" parent="1">
@@ -421,7 +421,7 @@
         <mxCell id="anchor-viper-tqs-button-53" value="" style="ellipse;whiteSpace=wrap;html=1;fillColor=#00bfff;strokeColor=#0f172a;strokeWidth=1.5;" vertex="1" parent="1">
           <mxGeometry x="331" y="1191" width="10" height="10" as="geometry"/>
         </mxCell>
-        <mxCell id="label-viper-tqs-button-53" value="Button 53" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#1e293b;strokeColor=#00bfff;strokeWidth=1.5;fontColor=#f1f5f9;fontFamily=Arial;fontSize=10;align=center;verticalAlign=middle;buttonNumber=53;" vertex="1" parent="1">
+        <mxCell id="label-viper-tqs-button-53" value="Button 53 — AP PITCH ATT HOLD" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#1e293b;strokeColor=#00bfff;strokeWidth=1.5;fontColor=#f1f5f9;fontFamily=Arial;fontSize=8;align=center;verticalAlign=middle;buttonNumber=53;" vertex="1" parent="1">
           <mxGeometry x="20" y="1270" width="160" height="28" as="geometry"/>
         </mxCell>
         <mxCell id="connector-viper-tqs-button-53" value="" style="endArrow=none;html=1;strokeColor=#00bfff;strokeWidth=1.5;dashed=1;dashPattern=5 3;opacity=75;" edge="1" source="label-viper-tqs-button-53" target="anchor-viper-tqs-button-53" parent="1">
@@ -430,7 +430,7 @@
         <mxCell id="anchor-viper-tqs-button-54" value="" style="ellipse;whiteSpace=wrap;html=1;fillColor=#00bfff;strokeColor=#0f172a;strokeWidth=1.5;" vertex="1" parent="1">
           <mxGeometry x="317" y="922" width="10" height="10" as="geometry"/>
         </mxCell>
-        <mxCell id="label-viper-tqs-button-54" value="Button 54" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#1e293b;strokeColor=#00bfff;strokeWidth=1.5;fontColor=#f1f5f9;fontFamily=Arial;fontSize=10;align=center;verticalAlign=middle;buttonNumber=54;" vertex="1" parent="1">
+        <mxCell id="label-viper-tqs-button-54" value="Button 54 — Unassigned" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#1e293b;strokeColor=#00bfff;strokeWidth=1.5;fontColor=#f1f5f9;fontFamily=Arial;fontSize=8;align=center;verticalAlign=middle;buttonNumber=54;" vertex="1" parent="1">
           <mxGeometry x="20" y="721" width="160" height="28" as="geometry"/>
         </mxCell>
         <mxCell id="connector-viper-tqs-button-54" value="" style="endArrow=none;html=1;strokeColor=#00bfff;strokeWidth=1.5;dashed=1;dashPattern=5 3;opacity=75;" edge="1" source="label-viper-tqs-button-54" target="anchor-viper-tqs-button-54" parent="1">
@@ -439,7 +439,7 @@
         <mxCell id="anchor-viper-tqs-button-55" value="" style="ellipse;whiteSpace=wrap;html=1;fillColor=#00bfff;strokeColor=#0f172a;strokeWidth=1.5;" vertex="1" parent="1">
           <mxGeometry x="597" y="888" width="10" height="10" as="geometry"/>
         </mxCell>
-        <mxCell id="label-viper-tqs-button-55" value="Button 55" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#1e293b;strokeColor=#00bfff;strokeWidth=1.5;fontColor=#f1f5f9;fontFamily=Arial;fontSize=10;align=center;verticalAlign=middle;buttonNumber=55;" vertex="1" parent="1">
+        <mxCell id="label-viper-tqs-button-55" value="Button 55 — PROGRAM BIT" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#1e293b;strokeColor=#00bfff;strokeWidth=1.5;fontColor=#f1f5f9;fontFamily=Arial;fontSize=8;align=center;verticalAlign=middle;buttonNumber=55;" vertex="1" parent="1">
           <mxGeometry x="820" y="838" width="160" height="28" as="geometry"/>
         </mxCell>
         <mxCell id="connector-viper-tqs-button-55" value="" style="endArrow=none;html=1;strokeColor=#00bfff;strokeWidth=1.5;dashed=1;dashPattern=5 3;opacity=75;" edge="1" source="label-viper-tqs-button-55" target="anchor-viper-tqs-button-55" parent="1">
@@ -448,7 +448,7 @@
         <mxCell id="anchor-viper-tqs-button-56" value="" style="ellipse;whiteSpace=wrap;html=1;fillColor=#00bfff;strokeColor=#0f172a;strokeWidth=1.5;" vertex="1" parent="1">
           <mxGeometry x="686" y="925" width="10" height="10" as="geometry"/>
         </mxCell>
-        <mxCell id="label-viper-tqs-button-56" value="Button 56" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#1e293b;strokeColor=#00bfff;strokeWidth=1.5;fontColor=#f1f5f9;fontFamily=Arial;fontSize=10;align=center;verticalAlign=middle;buttonNumber=56;" vertex="1" parent="1">
+        <mxCell id="label-viper-tqs-button-56" value="Button 56 — MODE OFF" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#1e293b;strokeColor=#00bfff;strokeWidth=1.5;fontColor=#f1f5f9;fontFamily=Arial;fontSize=8;align=center;verticalAlign=middle;buttonNumber=56;" vertex="1" parent="1">
           <mxGeometry x="820" y="1011" width="160" height="28" as="geometry"/>
         </mxCell>
         <mxCell id="connector-viper-tqs-button-56" value="" style="endArrow=none;html=1;strokeColor=#00bfff;strokeWidth=1.5;dashed=1;dashPattern=5 3;opacity=75;" edge="1" source="label-viper-tqs-button-56" target="anchor-viper-tqs-button-56" parent="1">
@@ -457,7 +457,7 @@
         <mxCell id="anchor-viper-tqs-button-57" value="" style="ellipse;whiteSpace=wrap;html=1;fillColor=#00bfff;strokeColor=#0f172a;strokeWidth=1.5;" vertex="1" parent="1">
           <mxGeometry x="596" y="855" width="10" height="10" as="geometry"/>
         </mxCell>
-        <mxCell id="label-viper-tqs-button-57" value="Button 57" style="rounded=1;arcSize=18;whiteSpace=wrap;html=1;fillColor=#1e293b;strokeColor=#00bfff;strokeWidth=1.5;fontColor=#f1f5f9;fontFamily=Arial;fontSize=10;align=center;verticalAlign=middle;buttonNumber=57;" vertex="1" parent="1">
+        <mxCell id="label-viper-tqs-button-57" value="Button 57 — LG HANDLE DN" style="rounded=1;arcSize=18;whiteSpace=wrap;html=1;fillColor=#1e293b;strokeColor=#00bfff;strokeWidth=1.5;fontColor=#f1f5f9;fontFamily=Arial;fontSize=8;align=center;verticalAlign=middle;buttonNumber=57;" vertex="1" parent="1">
           <mxGeometry x="820" y="693" width="160" height="28" as="geometry"/>
         </mxCell>
         <mxCell id="connector-viper-tqs-button-57" value="" style="endArrow=none;html=1;strokeColor=#00bfff;strokeWidth=1.5;dashed=1;dashPattern=5 3;opacity=75;" edge="1" source="label-viper-tqs-button-57" target="anchor-viper-tqs-button-57" parent="1">
@@ -466,7 +466,7 @@
         <mxCell id="anchor-viper-tqs-button-58" value="" style="ellipse;whiteSpace=wrap;html=1;fillColor=#00bfff;strokeColor=#0f172a;strokeWidth=1.5;" vertex="1" parent="1">
           <mxGeometry x="597" y="1056" width="10" height="10" as="geometry"/>
         </mxCell>
-        <mxCell id="label-viper-tqs-button-58" value="Button 58" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#1e293b;strokeColor=#00bfff;strokeWidth=1.5;fontColor=#f1f5f9;fontFamily=Arial;fontSize=10;align=center;verticalAlign=middle;buttonNumber=58;" vertex="1" parent="1">
+        <mxCell id="label-viper-tqs-button-58" value="Button 58 — EXT LT OFF" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#1e293b;strokeColor=#00bfff;strokeWidth=1.5;fontColor=#f1f5f9;fontFamily=Arial;fontSize=8;align=center;verticalAlign=middle;buttonNumber=58;" vertex="1" parent="1">
           <mxGeometry x="820" y="1128" width="160" height="28" as="geometry"/>
         </mxCell>
         <mxCell id="connector-viper-tqs-button-58" value="" style="endArrow=none;html=1;strokeColor=#00bfff;strokeWidth=1.5;dashed=1;dashPattern=5 3;opacity=75;" edge="1" source="label-viper-tqs-button-58" target="anchor-viper-tqs-button-58" parent="1">
@@ -475,7 +475,7 @@
         <mxCell id="anchor-viper-tqs-button-59" value="" style="ellipse;whiteSpace=wrap;html=1;fillColor=#00bfff;strokeColor=#0f172a;strokeWidth=1.5;" vertex="1" parent="1">
           <mxGeometry x="332" y="1046" width="10" height="10" as="geometry"/>
         </mxCell>
-        <mxCell id="label-viper-tqs-button-59" value="Button 59" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#1e293b;strokeColor=#00bfff;strokeWidth=1.5;fontColor=#f1f5f9;fontFamily=Arial;fontSize=10;align=center;verticalAlign=middle;buttonNumber=59;" vertex="1" parent="1">
+        <mxCell id="label-viper-tqs-button-59" value="Button 59 — STORES CAT III" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#1e293b;strokeColor=#00bfff;strokeWidth=1.5;fontColor=#f1f5f9;fontFamily=Arial;fontSize=8;align=center;verticalAlign=middle;buttonNumber=59;" vertex="1" parent="1">
           <mxGeometry x="20" y="942" width="160" height="28" as="geometry"/>
         </mxCell>
         <mxCell id="connector-viper-tqs-button-59" value="" style="endArrow=none;html=1;strokeColor=#00bfff;strokeWidth=1.5;dashed=1;dashPattern=5 3;opacity=75;" edge="1" source="label-viper-tqs-button-59" target="anchor-viper-tqs-button-59" parent="1">
@@ -484,7 +484,7 @@
         <mxCell id="anchor-viper-tqs-button-60" value="" style="ellipse;whiteSpace=wrap;html=1;fillColor=#00bfff;strokeColor=#0f172a;strokeWidth=1.5;" vertex="1" parent="1">
           <mxGeometry x="246" y="1055" width="10" height="10" as="geometry"/>
         </mxCell>
-        <mxCell id="label-viper-tqs-button-60" value="Button 60" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#1e293b;strokeColor=#00bfff;strokeWidth=1.5;fontColor=#f1f5f9;fontFamily=Arial;fontSize=10;align=center;verticalAlign=middle;buttonNumber=60;" vertex="1" parent="1">
+        <mxCell id="label-viper-tqs-button-60" value="Button 60 — Unassigned" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#1e293b;strokeColor=#00bfff;strokeWidth=1.5;fontColor=#f1f5f9;fontFamily=Arial;fontSize=8;align=center;verticalAlign=middle;buttonNumber=60;" vertex="1" parent="1">
           <mxGeometry x="20" y="1003" width="160" height="28" as="geometry"/>
         </mxCell>
         <mxCell id="connector-viper-tqs-button-60" value="" style="endArrow=none;html=1;strokeColor=#00bfff;strokeWidth=1.5;dashed=1;dashPattern=5 3;opacity=75;" edge="1" source="label-viper-tqs-button-60" target="anchor-viper-tqs-button-60" parent="1">
@@ -493,7 +493,7 @@
         <mxCell id="anchor-viper-tqs-button-61" value="" style="ellipse;whiteSpace=wrap;html=1;fillColor=#00bfff;strokeColor=#0f172a;strokeWidth=1.5;" vertex="1" parent="1">
           <mxGeometry x="331" y="1094" width="10" height="10" as="geometry"/>
         </mxCell>
-        <mxCell id="label-viper-tqs-button-61" value="Button 61" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#1e293b;strokeColor=#00bfff;strokeWidth=1.5;fontColor=#f1f5f9;fontFamily=Arial;fontSize=10;align=center;verticalAlign=middle;buttonNumber=61;" vertex="1" parent="1">
+        <mxCell id="label-viper-tqs-button-61" value="Button 61 — LASER OFF" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#1e293b;strokeColor=#00bfff;strokeWidth=1.5;fontColor=#f1f5f9;fontFamily=Arial;fontSize=8;align=center;verticalAlign=middle;buttonNumber=61;" vertex="1" parent="1">
           <mxGeometry x="20" y="1092" width="160" height="28" as="geometry"/>
         </mxCell>
         <mxCell id="connector-viper-tqs-button-61" value="" style="endArrow=none;html=1;strokeColor=#00bfff;strokeWidth=1.5;dashed=1;dashPattern=5 3;opacity=75;" edge="1" source="label-viper-tqs-button-61" target="anchor-viper-tqs-button-61" parent="1">
@@ -502,7 +502,7 @@
         <mxCell id="anchor-viper-tqs-button-62" value="" style="ellipse;whiteSpace=wrap;html=1;fillColor=#00bfff;strokeColor=#0f172a;strokeWidth=1.5;" vertex="1" parent="1">
           <mxGeometry x="586" y="1113" width="10" height="10" as="geometry"/>
         </mxCell>
-        <mxCell id="label-viper-tqs-button-62" value="Button 62" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#1e293b;strokeColor=#00bfff;strokeWidth=1.5;fontColor=#f1f5f9;fontFamily=Arial;fontSize=10;align=center;verticalAlign=middle;buttonNumber=62;" vertex="1" parent="1">
+        <mxCell id="label-viper-tqs-button-62" value="Button 62 — JMR OFF" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#1e293b;strokeColor=#00bfff;strokeWidth=1.5;fontColor=#f1f5f9;fontFamily=Arial;fontSize=8;align=center;verticalAlign=middle;buttonNumber=62;" vertex="1" parent="1">
           <mxGeometry x="820" y="1189" width="160" height="28" as="geometry"/>
         </mxCell>
         <mxCell id="connector-viper-tqs-button-62" value="" style="endArrow=none;html=1;strokeColor=#00bfff;strokeWidth=1.5;dashed=1;dashPattern=5 3;opacity=75;" edge="1" source="label-viper-tqs-button-62" target="anchor-viper-tqs-button-62" parent="1">
@@ -511,7 +511,7 @@
         <mxCell id="anchor-viper-tqs-button-63" value="" style="ellipse;whiteSpace=wrap;html=1;fillColor=#00bfff;strokeColor=#0f172a;strokeWidth=1.5;" vertex="1" parent="1">
           <mxGeometry x="246" y="1133" width="10" height="10" as="geometry"/>
         </mxCell>
-        <mxCell id="label-viper-tqs-button-63" value="Button 63" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#1e293b;strokeColor=#00bfff;strokeWidth=1.5;fontColor=#f1f5f9;fontFamily=Arial;fontSize=10;align=center;verticalAlign=middle;buttonNumber=63;" vertex="1" parent="1">
+        <mxCell id="label-viper-tqs-button-63" value="Button 63 — AP ROLL ATT HOLD" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#1e293b;strokeColor=#00bfff;strokeWidth=1.5;fontColor=#f1f5f9;fontFamily=Arial;fontSize=8;align=center;verticalAlign=middle;buttonNumber=63;" vertex="1" parent="1">
           <mxGeometry x="20" y="1153" width="160" height="28" as="geometry"/>
         </mxCell>
         <mxCell id="connector-viper-tqs-button-63" value="" style="endArrow=none;html=1;strokeColor=#00bfff;strokeWidth=1.5;dashed=1;dashPattern=5 3;opacity=75;" edge="1" source="label-viper-tqs-button-63" target="anchor-viper-tqs-button-63" parent="1">
@@ -520,7 +520,7 @@
         <mxCell id="anchor-viper-tqs-button-64" value="" style="ellipse;whiteSpace=wrap;html=1;fillColor=#00bfff;strokeColor=#0f172a;strokeWidth=1.5;" vertex="1" parent="1">
           <mxGeometry x="317" y="1172" width="10" height="10" as="geometry"/>
         </mxCell>
-        <mxCell id="label-viper-tqs-button-64" value="Button 64" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#1e293b;strokeColor=#00bfff;strokeWidth=1.5;fontColor=#f1f5f9;fontFamily=Arial;fontSize=10;align=center;verticalAlign=middle;buttonNumber=64;" vertex="1" parent="1">
+        <mxCell id="label-viper-tqs-button-64" value="Button 64 — AP PITCH OFF" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#1e293b;strokeColor=#00bfff;strokeWidth=1.5;fontColor=#f1f5f9;fontFamily=Arial;fontSize=8;align=center;verticalAlign=middle;buttonNumber=64;" vertex="1" parent="1">
           <mxGeometry x="20" y="1242" width="160" height="28" as="geometry"/>
         </mxCell>
         <mxCell id="connector-viper-tqs-button-64" value="" style="endArrow=none;html=1;strokeColor=#00bfff;strokeWidth=1.5;dashed=1;dashPattern=5 3;opacity=75;" edge="1" source="label-viper-tqs-button-64" target="anchor-viper-tqs-button-64" parent="1">
@@ -529,7 +529,7 @@
         <mxCell id="anchor-viper-tqs-axis-x" value="" style="ellipse;whiteSpace=wrap;html=1;fillColor=#00bfff;strokeColor=#0f172a;strokeWidth=1.5;" vertex="1" parent="1">
           <mxGeometry x="625" y="441" width="10" height="10" as="geometry"/>
         </mxCell>
-        <mxCell id="label-viper-tqs-axis-x" value="X axis" style="rounded=1;arcSize=18;whiteSpace=wrap;html=1;fillColor=#1e293b;strokeColor=#00bfff;strokeWidth=1.5;fontColor=#f1f5f9;fontFamily=Arial;fontSize=10;align=center;verticalAlign=middle;" vertex="1" parent="1">
+        <mxCell id="label-viper-tqs-axis-x" value="Axis X — RDR CURSOR X" style="rounded=1;arcSize=18;whiteSpace=wrap;html=1;fillColor=#1e293b;strokeColor=#00bfff;strokeWidth=1.5;fontColor=#f1f5f9;fontFamily=Arial;fontSize=8;align=center;verticalAlign=middle;" vertex="1" parent="1">
           <mxGeometry x="20" y="610" width="160" height="28" as="geometry"/>
         </mxCell>
         <mxCell id="connector-viper-tqs-axis-x" value="" style="endArrow=none;html=1;strokeColor=#00bfff;strokeWidth=1.5;dashed=1;dashPattern=5 3;opacity=75;" edge="1" source="label-viper-tqs-axis-x" target="anchor-viper-tqs-axis-x" parent="1">
@@ -538,7 +538,7 @@
         <mxCell id="anchor-viper-tqs-axis-y" value="" style="ellipse;whiteSpace=wrap;html=1;fillColor=#00bfff;strokeColor=#0f172a;strokeWidth=1.5;" vertex="1" parent="1">
           <mxGeometry x="435" y="435" width="10" height="10" as="geometry"/>
         </mxCell>
-        <mxCell id="label-viper-tqs-axis-y" value="Y axis" style="rounded=1;arcSize=18;whiteSpace=wrap;html=1;fillColor=#1e293b;strokeColor=#00bfff;strokeWidth=1.5;fontColor=#f1f5f9;fontFamily=Arial;fontSize=10;align=center;verticalAlign=middle;" vertex="1" parent="1">
+        <mxCell id="label-viper-tqs-axis-y" value="Axis Y — RDR CURSOR Y" style="rounded=1;arcSize=18;whiteSpace=wrap;html=1;fillColor=#1e293b;strokeColor=#00bfff;strokeWidth=1.5;fontColor=#f1f5f9;fontFamily=Arial;fontSize=8;align=center;verticalAlign=middle;" vertex="1" parent="1">
           <mxGeometry x="20" y="638" width="160" height="28" as="geometry"/>
         </mxCell>
         <mxCell id="connector-viper-tqs-axis-y" value="" style="endArrow=none;html=1;strokeColor=#00bfff;strokeWidth=1.5;dashed=1;dashPattern=5 3;opacity=75;" edge="1" source="label-viper-tqs-axis-y" target="anchor-viper-tqs-axis-y" parent="1">
@@ -547,7 +547,7 @@
         <mxCell id="anchor-viper-tqs-axis-z" value="" style="ellipse;whiteSpace=wrap;html=1;fillColor=#00bfff;strokeColor=#0f172a;strokeWidth=1.5;" vertex="1" parent="1">
           <mxGeometry x="408" y="558" width="10" height="10" as="geometry"/>
         </mxCell>
-        <mxCell id="label-viper-tqs-axis-z" value="Z axis" style="rounded=1;arcSize=18;whiteSpace=wrap;html=1;fillColor=#1e293b;strokeColor=#00bfff;strokeWidth=1.5;fontColor=#f1f5f9;fontFamily=Arial;fontSize=10;align=center;verticalAlign=middle;" vertex="1" parent="1">
+        <mxCell id="label-viper-tqs-axis-z" value="Axis Z — THROTTLE" style="rounded=1;arcSize=18;whiteSpace=wrap;html=1;fillColor=#1e293b;strokeColor=#00bfff;strokeWidth=1.5;fontColor=#f1f5f9;fontFamily=Arial;fontSize=8;align=center;verticalAlign=middle;" vertex="1" parent="1">
           <mxGeometry x="20" y="666" width="160" height="28" as="geometry"/>
         </mxCell>
         <mxCell id="connector-viper-tqs-axis-z" value="" style="endArrow=none;html=1;strokeColor=#00bfff;strokeWidth=1.5;dashed=1;dashPattern=5 3;opacity=75;" edge="1" source="label-viper-tqs-axis-z" target="anchor-viper-tqs-axis-z" parent="1">
@@ -556,7 +556,7 @@
         <mxCell id="anchor-viper-tqs-axis-rx" value="" style="ellipse;whiteSpace=wrap;html=1;fillColor=#00bfff;strokeColor=#0f172a;strokeWidth=1.5;" vertex="1" parent="1">
           <mxGeometry x="635" y="191" width="10" height="10" as="geometry"/>
         </mxCell>
-        <mxCell id="label-viper-tqs-axis-rx" value="Rx axis" style="rounded=1;arcSize=18;whiteSpace=wrap;html=1;fillColor=#1e293b;strokeColor=#00bfff;strokeWidth=1.5;fontColor=#f1f5f9;fontFamily=Arial;fontSize=10;align=center;verticalAlign=middle;" vertex="1" parent="1">
+        <mxCell id="label-viper-tqs-axis-rx" value="Axis RX — MAN RNG" style="rounded=1;arcSize=18;whiteSpace=wrap;html=1;fillColor=#1e293b;strokeColor=#00bfff;strokeWidth=1.5;fontColor=#f1f5f9;fontFamily=Arial;fontSize=8;align=center;verticalAlign=middle;" vertex="1" parent="1">
           <mxGeometry x="820" y="610" width="160" height="28" as="geometry"/>
         </mxCell>
         <mxCell id="connector-viper-tqs-axis-rx" value="" style="endArrow=none;html=1;strokeColor=#00bfff;strokeWidth=1.5;dashed=1;dashPattern=5 3;opacity=75;" edge="1" source="label-viper-tqs-axis-rx" target="anchor-viper-tqs-axis-rx" parent="1">
@@ -565,7 +565,7 @@
         <mxCell id="anchor-viper-tqs-axis-ry" value="" style="ellipse;whiteSpace=wrap;html=1;fillColor=#00bfff;strokeColor=#0f172a;strokeWidth=1.5;" vertex="1" parent="1">
           <mxGeometry x="655" y="235" width="10" height="10" as="geometry"/>
         </mxCell>
-        <mxCell id="label-viper-tqs-axis-ry" value="Ry axis" style="rounded=1;arcSize=18;whiteSpace=wrap;html=1;fillColor=#1e293b;strokeColor=#00bfff;strokeWidth=1.5;fontColor=#f1f5f9;fontFamily=Arial;fontSize=10;align=center;verticalAlign=middle;" vertex="1" parent="1">
+        <mxCell id="label-viper-tqs-axis-ry" value="Axis RY — ANT ELEV" style="rounded=1;arcSize=18;whiteSpace=wrap;html=1;fillColor=#1e293b;strokeColor=#00bfff;strokeWidth=1.5;fontColor=#f1f5f9;fontFamily=Arial;fontSize=8;align=center;verticalAlign=middle;" vertex="1" parent="1">
           <mxGeometry x="820" y="638" width="160" height="28" as="geometry"/>
         </mxCell>
         <mxCell id="connector-viper-tqs-axis-ry" value="" style="endArrow=none;html=1;strokeColor=#00bfff;strokeWidth=1.5;dashed=1;dashPattern=5 3;opacity=75;" edge="1" source="label-viper-tqs-axis-ry" target="anchor-viper-tqs-axis-ry" parent="1">
@@ -574,7 +574,7 @@
         <mxCell id="anchor-viper-tqs-axis-rz" value="" style="ellipse;whiteSpace=wrap;html=1;fillColor=#00bfff;strokeColor=#0f172a;strokeWidth=1.5;" vertex="1" parent="1">
           <mxGeometry x="615" y="880" width="10" height="10" as="geometry"/>
         </mxCell>
-        <mxCell id="label-viper-tqs-axis-rz" value="Rz axis" style="rounded=1;arcSize=18;whiteSpace=wrap;html=1;fillColor=#1e293b;strokeColor=#00bfff;strokeWidth=1.5;fontColor=#f1f5f9;fontFamily=Arial;fontSize=10;align=center;verticalAlign=middle;" vertex="1" parent="1">
+        <mxCell id="label-viper-tqs-axis-rz" value="Axis RZ — ZOOM VIEW" style="rounded=1;arcSize=18;whiteSpace=wrap;html=1;fillColor=#1e293b;strokeColor=#00bfff;strokeWidth=1.5;fontColor=#f1f5f9;fontFamily=Arial;fontSize=8;align=center;verticalAlign=middle;" vertex="1" parent="1">
           <mxGeometry x="820" y="666" width="160" height="28" as="geometry"/>
         </mxCell>
         <mxCell id="connector-viper-tqs-axis-rz" value="" style="endArrow=none;html=1;strokeColor=#00bfff;strokeWidth=1.5;dashed=1;dashPattern=5 3;opacity=75;" edge="1" source="label-viper-tqs-axis-rz" target="anchor-viper-tqs-axis-rz" parent="1">

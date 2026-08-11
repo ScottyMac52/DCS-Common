@@ -40,6 +40,10 @@ test('Viper TQS source has independently editable handle and Mission Pack image 
   assert.equal((xml.match(/id="connector-viper-tqs-axis-/g) ?? []).length, 6);
   assert.equal((xml.match(/id="label-viper-tqs-[^"]+" value="[^"]+"/g) ?? []).length, 63,
     'every Viper callout must have a default authoring watermark');
+  assert.equal((xml.match(/id="label-viper-tqs-button-\d{2}" value="Button \d+ — [^"]+"/g) ?? []).length, 57,
+    'every visible Viper button watermark must include its button number and F-16C function');
+  assert.equal((xml.match(/id="label-viper-tqs-axis-[^"]+" value="Axis [A-Z]+ — [^"]+"/g) ?? []).length, 6,
+    'every Viper axis watermark must include its axis name and F-16C function');
   assert.equal((xml.match(/width="160" height="28"/g) ?? []).length, 63,
     'Viper callouts must match the Logitech Throttle Quadrant width');
 });

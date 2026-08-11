@@ -211,6 +211,12 @@ for (const device of manifest.devices) {
       luaIds.filter((id) => !/^viper-tqs-button-0[1-5]$/.test(id)),
       'Viper SVG must omit only MIC positions 1-5 handled by AutoHotkey',
     );
+    assert.equal(controls.filter(({ key, hardwareLabel }) =>
+      /^JOY_BTN\d+$/.test(key) && /^Button \d+ — .+/.test(hardwareLabel)).length, 62,
+    'Viper button defaults must include both the button number and F-16C function');
+    assert.equal(controls.filter(({ key, hardwareLabel }) =>
+      /^JOY_(?:X|Y|Z|RX|RY|RZ)$/.test(key) && /^Axis [A-Z]+ — .+/.test(hardwareLabel)).length, 6,
+    'Viper axis defaults must include both the axis name and F-16C function');
   }
 
   if (device.id === 'winctrl-pto2') {

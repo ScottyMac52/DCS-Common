@@ -6,316 +6,316 @@
   <polyline points="560,88 800,88 800,69 820,69" fill="none" stroke="#00bfff" stroke-width="1.5" stroke-dasharray="5 3" opacity="0.75"/>
   <circle cx="560" cy="88" r="5" fill="#00bfff" stroke="#0f172a" stroke-width="1.5"/>
   <rect x="820" y="55" width="160" height="28" rx="4" fill="#1e293b" stroke="#00bfff" stroke-width="1.5"/>
-  <text id="lbl-viper-tqs-button-06" x="900" y="73" text-anchor="middle" font-family="Arial,sans-serif" font-size="10" fill="#f1f5f9">Button 6</text>
+  <text id="lbl-viper-tqs-button-06" x="900" y="73" text-anchor="middle" font-family="Arial,sans-serif" font-size="8" fill="#f1f5f9">Button 6 — UNCAGE</text>
   <!-- callout:viper-tqs-button-07 -->
   <polyline points="587,264 800,264 800,198 900,212" fill="none" stroke="#00bfff" stroke-width="1.5" stroke-dasharray="5 3" opacity="0.75"/>
   <circle cx="587" cy="264" r="5" fill="#00bfff" stroke="#0f172a" stroke-width="1.5"/>
   <rect x="820" y="184" width="160" height="28" rx="4" fill="#1e293b" stroke="#00bfff" stroke-width="1.5"/>
-  <text id="lbl-viper-tqs-button-07" x="900" y="202" text-anchor="middle" font-family="Arial,sans-serif" font-size="10" fill="#f1f5f9">Button 7</text>
+  <text id="lbl-viper-tqs-button-07" x="900" y="202" text-anchor="middle" font-family="Arial,sans-serif" font-size="8" fill="#f1f5f9">Button 7 — DOGFIGHT</text>
   <!-- callout:viper-tqs-button-08 -->
   <polyline points="631,255 800,255 800,170 900,184" fill="none" stroke="#00bfff" stroke-width="1.5" stroke-dasharray="5 3" opacity="0.75"/>
   <circle cx="631" cy="255" r="5" fill="#00bfff" stroke="#0f172a" stroke-width="1.5"/>
   <rect x="820" y="156" width="160" height="28" rx="4" fill="#1e293b" stroke="#00bfff" stroke-width="1.5"/>
-  <text id="lbl-viper-tqs-button-08" x="900" y="174" text-anchor="middle" font-family="Arial,sans-serif" font-size="10" fill="#f1f5f9">Button 8</text>
+  <text id="lbl-viper-tqs-button-08" x="900" y="174" text-anchor="middle" font-family="Arial,sans-serif" font-size="8" fill="#f1f5f9">Button 8 — MISSILE OVERRIDE</text>
   <!-- callout:viper-tqs-button-09 -->
   <polyline points="621,221 800,221 800,142 900,156" fill="none" stroke="#00bfff" stroke-width="1.5" stroke-dasharray="5 3" opacity="0.75"/>
   <circle cx="621" cy="221" r="5" fill="#00bfff" stroke="#0f172a" stroke-width="1.5"/>
   <rect x="820" y="128" width="160" height="28" rx="4" fill="#1e293b" stroke="#00bfff" stroke-width="1.5"/>
-  <text id="lbl-viper-tqs-button-09" x="900" y="146" text-anchor="middle" font-family="Arial,sans-serif" font-size="10" fill="#f1f5f9">Button 9</text>
+  <text id="lbl-viper-tqs-button-09" x="900" y="146" text-anchor="middle" font-family="Arial,sans-serif" font-size="8" fill="#f1f5f9">Button 9 — SPD BRK EXTEND</text>
   <!-- callout:viper-tqs-button-10 -->
   <polyline points="651,196 800,196 800,114 900,128" fill="none" stroke="#00bfff" stroke-width="1.5" stroke-dasharray="5 3" opacity="0.75"/>
   <circle cx="651" cy="196" r="5" fill="#00bfff" stroke="#0f172a" stroke-width="1.5"/>
   <rect x="820" y="100" width="160" height="28" rx="4" fill="#1e293b" stroke="#00bfff" stroke-width="1.5"/>
-  <text id="lbl-viper-tqs-button-10" x="900" y="118" text-anchor="middle" font-family="Arial,sans-serif" font-size="10" fill="#f1f5f9">Button 10</text>
+  <text id="lbl-viper-tqs-button-10" x="900" y="118" text-anchor="middle" font-family="Arial,sans-serif" font-size="8" fill="#f1f5f9">Button 10 — SPD BRK RETRACT</text>
   <!-- callout:viper-tqs-button-11 -->
   <polyline points="579,455 800,455 800,274 900,288" fill="none" stroke="#00bfff" stroke-width="1.5" stroke-dasharray="5 3" opacity="0.75"/>
   <circle cx="579" cy="455" r="5" fill="#00bfff" stroke="#0f172a" stroke-width="1.5"/>
   <rect x="820" y="260" width="160" height="28" rx="4" fill="#1e293b" stroke="#00bfff" stroke-width="1.5"/>
-  <text id="lbl-viper-tqs-button-11" x="900" y="278" text-anchor="middle" font-family="Arial,sans-serif" font-size="10" fill="#f1f5f9">Button 11</text>
+  <text id="lbl-viper-tqs-button-11" x="900" y="278" text-anchor="middle" font-family="Arial,sans-serif" font-size="8" fill="#f1f5f9">Button 11 — Unassigned</text>
   <!-- callout:viper-tqs-button-12 -->
   <polyline points="614,317 800,317 800,319 820,319" fill="none" stroke="#00bfff" stroke-width="1.5" stroke-dasharray="5 3" opacity="0.75"/>
   <circle cx="614" cy="317" r="5" fill="#00bfff" stroke="#0f172a" stroke-width="1.5"/>
   <rect x="820" y="305" width="160" height="28" rx="4" fill="#1e293b" stroke="#00bfff" stroke-width="1.5"/>
-  <text id="lbl-viper-tqs-button-12" x="900" y="323" text-anchor="middle" font-family="Arial,sans-serif" font-size="10" fill="#f1f5f9">Button 12</text>
+  <text id="lbl-viper-tqs-button-12" x="900" y="323" text-anchor="middle" font-family="Arial,sans-serif" font-size="8" fill="#f1f5f9">Button 12 — ENABLE</text>
   <!-- callout:viper-tqs-button-13 -->
   <polyline points="566,240 200,240 200,114 100,128" fill="none" stroke="#00bfff" stroke-width="1.5" stroke-dasharray="5 3" opacity="0.75"/>
   <circle cx="566" cy="240" r="5" fill="#00bfff" stroke="#0f172a" stroke-width="1.5"/>
   <rect x="20" y="100" width="160" height="28" rx="4" fill="#1e293b" stroke="#00bfff" stroke-width="1.5"/>
-  <text id="lbl-viper-tqs-button-13" x="100" y="118" text-anchor="middle" font-family="Arial,sans-serif" font-size="10" fill="#f1f5f9">Button 13</text>
+  <text id="lbl-viper-tqs-button-13" x="100" y="118" text-anchor="middle" font-family="Arial,sans-serif" font-size="8" fill="#f1f5f9">Button 13 — DCS UP</text>
   <!-- callout:viper-tqs-button-14 -->
   <polyline points="543,243 200,243 200,142 100,156" fill="none" stroke="#00bfff" stroke-width="1.5" stroke-dasharray="5 3" opacity="0.75"/>
   <circle cx="543" cy="243" r="5" fill="#00bfff" stroke="#0f172a" stroke-width="1.5"/>
   <rect x="20" y="128" width="160" height="28" rx="4" fill="#1e293b" stroke="#00bfff" stroke-width="1.5"/>
-  <text id="lbl-viper-tqs-button-14" x="100" y="146" text-anchor="middle" font-family="Arial,sans-serif" font-size="10" fill="#f1f5f9">Button 14</text>
+  <text id="lbl-viper-tqs-button-14" x="100" y="146" text-anchor="middle" font-family="Arial,sans-serif" font-size="8" fill="#f1f5f9">Button 14 — DCS SEQ</text>
   <!-- callout:viper-tqs-button-15 -->
   <polyline points="516,247 200,247 200,170 100,184" fill="none" stroke="#00bfff" stroke-width="1.5" stroke-dasharray="5 3" opacity="0.75"/>
   <circle cx="516" cy="247" r="5" fill="#00bfff" stroke="#0f172a" stroke-width="1.5"/>
   <rect x="20" y="156" width="160" height="28" rx="4" fill="#1e293b" stroke="#00bfff" stroke-width="1.5"/>
-  <text id="lbl-viper-tqs-button-15" x="100" y="174" text-anchor="middle" font-family="Arial,sans-serif" font-size="10" fill="#f1f5f9">Button 15</text>
+  <text id="lbl-viper-tqs-button-15" x="100" y="174" text-anchor="middle" font-family="Arial,sans-serif" font-size="8" fill="#f1f5f9">Button 15 — DCS DOWN</text>
   <!-- callout:viper-tqs-button-16 -->
   <polyline points="456,426 200,426 200,314 100,328" fill="none" stroke="#00bfff" stroke-width="1.5" stroke-dasharray="5 3" opacity="0.75"/>
   <circle cx="456" cy="426" r="5" fill="#00bfff" stroke="#0f172a" stroke-width="1.5"/>
   <rect x="20" y="300" width="160" height="28" rx="4" fill="#1e293b" stroke="#00bfff" stroke-width="1.5"/>
-  <text id="lbl-viper-tqs-button-16" x="100" y="318" text-anchor="middle" font-family="Arial,sans-serif" font-size="10" fill="#f1f5f9">Button 16</text>
+  <text id="lbl-viper-tqs-button-16" x="100" y="318" text-anchor="middle" font-family="Arial,sans-serif" font-size="8" fill="#f1f5f9">Button 16 — DCS RET</text>
   <!-- callout:viper-tqs-button-17 -->
   <polyline points="390,484 200,484 200,444 180,444" fill="none" stroke="#00bfff" stroke-width="1.5" stroke-dasharray="5 3" opacity="0.75"/>
   <circle cx="390" cy="484" r="5" fill="#00bfff" stroke="#0f172a" stroke-width="1.5"/>
   <rect x="20" y="430" width="160" height="28" rx="4" fill="#1e293b" stroke="#00bfff" stroke-width="1.5"/>
-  <text id="lbl-viper-tqs-button-17" x="100" y="448" text-anchor="middle" font-family="Arial,sans-serif" font-size="10" fill="#f1f5f9">Button 17</text>
+  <text id="lbl-viper-tqs-button-17" x="100" y="448" text-anchor="middle" font-family="Arial,sans-serif" font-size="8" fill="#f1f5f9">Button 17 — CHAFF/FLARE</text>
   <!-- callout:viper-tqs-button-18 -->
   <polyline points="296,512 200,512 200,494 180,494" fill="none" stroke="#00bfff" stroke-width="1.5" stroke-dasharray="5 3" opacity="0.75"/>
   <circle cx="296" cy="512" r="5" fill="#00bfff" stroke="#0f172a" stroke-width="1.5"/>
   <rect x="20" y="480" width="160" height="28" rx="4" fill="#1e293b" stroke="#00bfff" stroke-width="1.5"/>
-  <text id="lbl-viper-tqs-button-18" x="100" y="498" text-anchor="middle" font-family="Arial,sans-serif" font-size="10" fill="#f1f5f9">Button 18</text>
+  <text id="lbl-viper-tqs-button-18" x="100" y="498" text-anchor="middle" font-family="Arial,sans-serif" font-size="8" fill="#f1f5f9">Button 18 — THROTTLE OFF/IDLE</text>
   <!-- callout:viper-tqs-button-19 -->
   <polyline points="683,495 800,495 800,494 820,494" fill="none" stroke="#00bfff" stroke-width="1.5" stroke-dasharray="5 3" opacity="0.75"/>
   <circle cx="683" cy="495" r="5" fill="#00bfff" stroke="#0f172a" stroke-width="1.5"/>
   <rect x="820" y="480" width="160" height="28" rx="4" fill="#1e293b" stroke="#00bfff" stroke-width="1.5"/>
-  <text id="lbl-viper-tqs-button-19" x="900" y="498" text-anchor="middle" font-family="Arial,sans-serif" font-size="10" fill="#f1f5f9">Button 19</text>
+  <text id="lbl-viper-tqs-button-19" x="900" y="498" text-anchor="middle" font-family="Arial,sans-serif" font-size="8" fill="#f1f5f9">Button 19 — Unassigned</text>
   <!-- callout:viper-tqs-button-22 -->
   <polyline points="337,776 200,776 200,674 100,688" fill="none" stroke="#00bfff" stroke-width="1.5" stroke-dasharray="5 3" opacity="0.75"/>
   <circle cx="337" cy="776" r="5" fill="#00bfff" stroke="#0f172a" stroke-width="1.5"/>
   <rect x="20" y="660" width="160" height="28" rx="4" fill="#1e293b" stroke="#00bfff" stroke-width="1.5"/>
-  <text id="lbl-viper-tqs-button-22" x="100" y="678" text-anchor="middle" font-family="Arial,sans-serif" font-size="10" fill="#f1f5f9">Button 22</text>
+  <text id="lbl-viper-tqs-button-22" x="100" y="678" text-anchor="middle" font-family="Arial,sans-serif" font-size="8" fill="#f1f5f9">Button 22 — EMER STORES JETT</text>
   <!-- callout:viper-tqs-button-23 -->
   <polyline points="335,907 200,907 200,707 100,721" fill="none" stroke="#00bfff" stroke-width="1.5" stroke-dasharray="5 3" opacity="0.75"/>
   <circle cx="335" cy="907" r="5" fill="#00bfff" stroke="#0f172a" stroke-width="1.5"/>
   <rect x="20" y="693" width="160" height="28" rx="4" fill="#1e293b" stroke="#00bfff" stroke-width="1.5"/>
-  <text id="lbl-viper-tqs-button-23" x="100" y="711" text-anchor="middle" font-family="Arial,sans-serif" font-size="10" fill="#f1f5f9">Button 23</text>
+  <text id="lbl-viper-tqs-button-23" x="100" y="711" text-anchor="middle" font-family="Arial,sans-serif" font-size="8" fill="#f1f5f9">Button 23 — MASTER ARM</text>
   <!-- callout:viper-tqs-button-24 -->
   <polyline points="335,948 200,948 200,763 100,777" fill="none" stroke="#00bfff" stroke-width="1.5" stroke-dasharray="5 3" opacity="0.75"/>
   <circle cx="335" cy="948" r="5" fill="#00bfff" stroke="#0f172a" stroke-width="1.5"/>
   <rect x="20" y="749" width="160" height="28" rx="4" fill="#1e293b" stroke="#00bfff" stroke-width="1.5"/>
-  <text id="lbl-viper-tqs-button-24" x="100" y="767" text-anchor="middle" font-family="Arial,sans-serif" font-size="10" fill="#f1f5f9">Button 24</text>
+  <text id="lbl-viper-tqs-button-24" x="100" y="767" text-anchor="middle" font-family="Arial,sans-serif" font-size="8" fill="#f1f5f9">Button 24 — SIMULATE</text>
   <!-- callout:viper-tqs-button-25 -->
   <polyline points="618,880 800,880 800,740 900,754" fill="none" stroke="#00bfff" stroke-width="1.5" stroke-dasharray="5 3" opacity="0.75"/>
   <circle cx="618" cy="880" r="5" fill="#00bfff" stroke="#0f172a" stroke-width="1.5"/>
   <rect x="820" y="726" width="160" height="28" rx="4" fill="#1e293b" stroke="#00bfff" stroke-width="1.5"/>
-  <text id="lbl-viper-tqs-button-25" x="900" y="744" text-anchor="middle" font-family="Arial,sans-serif" font-size="10" fill="#f1f5f9">Button 25</text>
+  <text id="lbl-viper-tqs-button-25" x="900" y="744" text-anchor="middle" font-family="Arial,sans-serif" font-size="8" fill="#f1f5f9">Button 25 — PROGRAM 1</text>
   <!-- callout:viper-tqs-button-26 -->
   <polyline points="637,877 800,877 800,768 900,782" fill="none" stroke="#00bfff" stroke-width="1.5" stroke-dasharray="5 3" opacity="0.75"/>
   <circle cx="637" cy="877" r="5" fill="#00bfff" stroke="#0f172a" stroke-width="1.5"/>
   <rect x="820" y="754" width="160" height="28" rx="4" fill="#1e293b" stroke="#00bfff" stroke-width="1.5"/>
-  <text id="lbl-viper-tqs-button-26" x="900" y="772" text-anchor="middle" font-family="Arial,sans-serif" font-size="10" fill="#f1f5f9">Button 26</text>
+  <text id="lbl-viper-tqs-button-26" x="900" y="772" text-anchor="middle" font-family="Arial,sans-serif" font-size="8" fill="#f1f5f9">Button 26 — PROGRAM 2</text>
   <!-- callout:viper-tqs-button-27 -->
   <polyline points="659,881 800,881 800,796 900,810" fill="none" stroke="#00bfff" stroke-width="1.5" stroke-dasharray="5 3" opacity="0.75"/>
   <circle cx="659" cy="881" r="5" fill="#00bfff" stroke="#0f172a" stroke-width="1.5"/>
   <rect x="820" y="782" width="160" height="28" rx="4" fill="#1e293b" stroke="#00bfff" stroke-width="1.5"/>
-  <text id="lbl-viper-tqs-button-27" x="900" y="800" text-anchor="middle" font-family="Arial,sans-serif" font-size="10" fill="#f1f5f9">Button 27</text>
+  <text id="lbl-viper-tqs-button-27" x="900" y="800" text-anchor="middle" font-family="Arial,sans-serif" font-size="8" fill="#f1f5f9">Button 27 — PROGRAM 3</text>
   <!-- callout:viper-tqs-button-28 -->
   <polyline points="677,894 800,894 800,824 900,838" fill="none" stroke="#00bfff" stroke-width="1.5" stroke-dasharray="5 3" opacity="0.75"/>
   <circle cx="677" cy="894" r="5" fill="#00bfff" stroke="#0f172a" stroke-width="1.5"/>
   <rect x="820" y="810" width="160" height="28" rx="4" fill="#1e293b" stroke="#00bfff" stroke-width="1.5"/>
-  <text id="lbl-viper-tqs-button-28" x="900" y="828" text-anchor="middle" font-family="Arial,sans-serif" font-size="10" fill="#f1f5f9">Button 28</text>
+  <text id="lbl-viper-tqs-button-28" x="900" y="828" text-anchor="middle" font-family="Arial,sans-serif" font-size="8" fill="#f1f5f9">Button 28 — PROGRAM 4</text>
   <!-- callout:viper-tqs-button-29 -->
   <polyline points="696,915 800,915 800,885 820,885" fill="none" stroke="#00bfff" stroke-width="1.5" stroke-dasharray="5 3" opacity="0.75"/>
   <circle cx="696" cy="915" r="5" fill="#00bfff" stroke="#0f172a" stroke-width="1.5"/>
   <rect x="820" y="871" width="160" height="28" rx="4" fill="#1e293b" stroke="#00bfff" stroke-width="1.5"/>
-  <text id="lbl-viper-tqs-button-29" x="900" y="889" text-anchor="middle" font-family="Arial,sans-serif" font-size="10" fill="#f1f5f9">Button 29</text>
+  <text id="lbl-viper-tqs-button-29" x="900" y="889" text-anchor="middle" font-family="Arial,sans-serif" font-size="8" fill="#f1f5f9">Button 29 — MODE STBY</text>
   <!-- callout:viper-tqs-button-30 -->
   <polyline points="713,901 800,901 800,913 820,913" fill="none" stroke="#00bfff" stroke-width="1.5" stroke-dasharray="5 3" opacity="0.75"/>
   <circle cx="713" cy="901" r="5" fill="#00bfff" stroke="#0f172a" stroke-width="1.5"/>
   <rect x="820" y="899" width="160" height="28" rx="4" fill="#1e293b" stroke="#00bfff" stroke-width="1.5"/>
-  <text id="lbl-viper-tqs-button-30" x="900" y="917" text-anchor="middle" font-family="Arial,sans-serif" font-size="10" fill="#f1f5f9">Button 30</text>
+  <text id="lbl-viper-tqs-button-30" x="900" y="917" text-anchor="middle" font-family="Arial,sans-serif" font-size="8" fill="#f1f5f9">Button 30 — MODE MAN</text>
   <!-- callout:viper-tqs-button-31 -->
   <polyline points="732,898 800,898 800,941 900,927" fill="none" stroke="#00bfff" stroke-width="1.5" stroke-dasharray="5 3" opacity="0.75"/>
   <circle cx="732" cy="898" r="5" fill="#00bfff" stroke="#0f172a" stroke-width="1.5"/>
   <rect x="820" y="927" width="160" height="28" rx="4" fill="#1e293b" stroke="#00bfff" stroke-width="1.5"/>
-  <text id="lbl-viper-tqs-button-31" x="900" y="945" text-anchor="middle" font-family="Arial,sans-serif" font-size="10" fill="#f1f5f9">Button 31</text>
+  <text id="lbl-viper-tqs-button-31" x="900" y="945" text-anchor="middle" font-family="Arial,sans-serif" font-size="8" fill="#f1f5f9">Button 31 — MODE SEMI</text>
   <!-- callout:viper-tqs-button-32 -->
   <polyline points="755,902 800,902 800,969 900,955" fill="none" stroke="#00bfff" stroke-width="1.5" stroke-dasharray="5 3" opacity="0.75"/>
   <circle cx="755" cy="902" r="5" fill="#00bfff" stroke="#0f172a" stroke-width="1.5"/>
   <rect x="820" y="955" width="160" height="28" rx="4" fill="#1e293b" stroke="#00bfff" stroke-width="1.5"/>
-  <text id="lbl-viper-tqs-button-32" x="900" y="973" text-anchor="middle" font-family="Arial,sans-serif" font-size="10" fill="#f1f5f9">Button 32</text>
+  <text id="lbl-viper-tqs-button-32" x="900" y="973" text-anchor="middle" font-family="Arial,sans-serif" font-size="8" fill="#f1f5f9">Button 32 — MODE AUTO</text>
   <!-- callout:viper-tqs-button-33 -->
   <polyline points="774,919 800,919 800,997 900,983" fill="none" stroke="#00bfff" stroke-width="1.5" stroke-dasharray="5 3" opacity="0.75"/>
   <circle cx="774" cy="919" r="5" fill="#00bfff" stroke="#0f172a" stroke-width="1.5"/>
   <rect x="820" y="983" width="160" height="28" rx="4" fill="#1e293b" stroke="#00bfff" stroke-width="1.5"/>
-  <text id="lbl-viper-tqs-button-33" x="900" y="1001" text-anchor="middle" font-family="Arial,sans-serif" font-size="10" fill="#f1f5f9">Button 33</text>
+  <text id="lbl-viper-tqs-button-33" x="900" y="1001" text-anchor="middle" font-family="Arial,sans-serif" font-size="8" fill="#f1f5f9">Button 33 — MODE BYP</text>
   <!-- callout:viper-tqs-button-34 -->
   <polyline points="254,974 200,974 200,796 100,810" fill="none" stroke="#00bfff" stroke-width="1.5" stroke-dasharray="5 3" opacity="0.75"/>
   <circle cx="254" cy="974" r="5" fill="#00bfff" stroke="#0f172a" stroke-width="1.5"/>
   <rect x="20" y="782" width="160" height="28" rx="4" fill="#1e293b" stroke="#00bfff" stroke-width="1.5"/>
-  <text id="lbl-viper-tqs-button-34" x="100" y="800" text-anchor="middle" font-family="Arial,sans-serif" font-size="10" fill="#f1f5f9">Button 34</text>
+  <text id="lbl-viper-tqs-button-34" x="100" y="800" text-anchor="middle" font-family="Arial,sans-serif" font-size="8" fill="#f1f5f9">Button 34 — RWR SEARCH</text>
   <!-- callout:viper-tqs-button-35 -->
   <polyline points="274,974 200,974 200,829 100,843" fill="none" stroke="#00bfff" stroke-width="1.5" stroke-dasharray="5 3" opacity="0.75"/>
   <circle cx="274" cy="974" r="5" fill="#00bfff" stroke="#0f172a" stroke-width="1.5"/>
   <rect x="20" y="815" width="160" height="28" rx="4" fill="#1e293b" stroke="#00bfff" stroke-width="1.5"/>
-  <text id="lbl-viper-tqs-button-35" x="100" y="833" text-anchor="middle" font-family="Arial,sans-serif" font-size="10" fill="#f1f5f9">Button 35</text>
+  <text id="lbl-viper-tqs-button-35" x="100" y="833" text-anchor="middle" font-family="Arial,sans-serif" font-size="8" fill="#f1f5f9">Button 35 — RWR ACT/PWR</text>
   <!-- callout:viper-tqs-button-36 -->
   <polyline points="253,991 200,991 200,862 100,876" fill="none" stroke="#00bfff" stroke-width="1.5" stroke-dasharray="5 3" opacity="0.75"/>
   <circle cx="253" cy="991" r="5" fill="#00bfff" stroke="#0f172a" stroke-width="1.5"/>
   <rect x="20" y="848" width="160" height="28" rx="4" fill="#1e293b" stroke="#00bfff" stroke-width="1.5"/>
-  <text id="lbl-viper-tqs-button-36" x="100" y="866" text-anchor="middle" font-family="Arial,sans-serif" font-size="10" fill="#f1f5f9">Button 36</text>
+  <text id="lbl-viper-tqs-button-36" x="100" y="866" text-anchor="middle" font-family="Arial,sans-serif" font-size="8" fill="#f1f5f9">Button 36 — RWR ALTITUDE</text>
   <!-- callout:viper-tqs-button-37 -->
   <polyline points="274,991 200,991 200,895 100,909" fill="none" stroke="#00bfff" stroke-width="1.5" stroke-dasharray="5 3" opacity="0.75"/>
   <circle cx="274" cy="991" r="5" fill="#00bfff" stroke="#0f172a" stroke-width="1.5"/>
   <rect x="20" y="881" width="160" height="28" rx="4" fill="#1e293b" stroke="#00bfff" stroke-width="1.5"/>
-  <text id="lbl-viper-tqs-button-37" x="100" y="899" text-anchor="middle" font-family="Arial,sans-serif" font-size="10" fill="#f1f5f9">Button 37</text>
+  <text id="lbl-viper-tqs-button-37" x="100" y="899" text-anchor="middle" font-family="Arial,sans-serif" font-size="8" fill="#f1f5f9">Button 37 — RWR POWER</text>
   <!-- callout:viper-tqs-button-38 -->
   <polyline points="602,828 800,828 800,674 900,688" fill="none" stroke="#00bfff" stroke-width="1.5" stroke-dasharray="5 3" opacity="0.75"/>
   <circle cx="602" cy="828" r="5" fill="#00bfff" stroke="#0f172a" stroke-width="1.5"/>
   <rect x="820" y="660" width="160" height="28" rx="4" fill="#1e293b" stroke="#00bfff" stroke-width="1.5"/>
-  <text id="lbl-viper-tqs-button-38" x="900" y="678" text-anchor="middle" font-family="Arial,sans-serif" font-size="10" fill="#f1f5f9">Button 38</text>
+  <text id="lbl-viper-tqs-button-38" x="900" y="678" text-anchor="middle" font-family="Arial,sans-serif" font-size="8" fill="#f1f5f9">Button 38 — LG HANDLE UP</text>
   <!-- callout:viper-tqs-button-39 -->
   <polyline points="617,1047 800,1047 800,1058 820,1058" fill="none" stroke="#00bfff" stroke-width="1.5" stroke-dasharray="5 3" opacity="0.75"/>
   <circle cx="617" cy="1047" r="5" fill="#00bfff" stroke="#0f172a" stroke-width="1.5"/>
   <rect x="820" y="1044" width="160" height="28" rx="4" fill="#1e293b" stroke="#00bfff" stroke-width="1.5"/>
-  <text id="lbl-viper-tqs-button-39" x="900" y="1062" text-anchor="middle" font-family="Arial,sans-serif" font-size="10" fill="#f1f5f9">Button 39</text>
+  <text id="lbl-viper-tqs-button-39" x="900" y="1062" text-anchor="middle" font-family="Arial,sans-serif" font-size="8" fill="#f1f5f9">Button 39 — EXT LT ALL</text>
   <!-- callout:viper-tqs-button-40 -->
   <polyline points="637,1047 800,1047 800,1086 820,1086" fill="none" stroke="#00bfff" stroke-width="1.5" stroke-dasharray="5 3" opacity="0.75"/>
   <circle cx="637" cy="1047" r="5" fill="#00bfff" stroke="#0f172a" stroke-width="1.5"/>
   <rect x="820" y="1072" width="160" height="28" rx="4" fill="#1e293b" stroke="#00bfff" stroke-width="1.5"/>
-  <text id="lbl-viper-tqs-button-40" x="900" y="1090" text-anchor="middle" font-family="Arial,sans-serif" font-size="10" fill="#f1f5f9">Button 40</text>
+  <text id="lbl-viper-tqs-button-40" x="900" y="1090" text-anchor="middle" font-family="Arial,sans-serif" font-size="8" fill="#f1f5f9">Button 40 — EXT LT FORM</text>
   <!-- callout:viper-tqs-button-41 -->
   <polyline points="659,1050 800,1050 800,1114 900,1100" fill="none" stroke="#00bfff" stroke-width="1.5" stroke-dasharray="5 3" opacity="0.75"/>
   <circle cx="659" cy="1050" r="5" fill="#00bfff" stroke="#0f172a" stroke-width="1.5"/>
   <rect x="820" y="1100" width="160" height="28" rx="4" fill="#1e293b" stroke="#00bfff" stroke-width="1.5"/>
-  <text id="lbl-viper-tqs-button-41" x="900" y="1118" text-anchor="middle" font-family="Arial,sans-serif" font-size="10" fill="#f1f5f9">Button 41</text>
+  <text id="lbl-viper-tqs-button-41" x="900" y="1118" text-anchor="middle" font-family="Arial,sans-serif" font-size="8" fill="#f1f5f9">Button 41 — EXT LT NORM</text>
   <!-- callout:viper-tqs-button-42 -->
   <polyline points="705,1135 800,1135 800,1264 900,1250" fill="none" stroke="#00bfff" stroke-width="1.5" stroke-dasharray="5 3" opacity="0.75"/>
   <circle cx="705" cy="1135" r="5" fill="#00bfff" stroke="#0f172a" stroke-width="1.5"/>
   <rect x="820" y="1250" width="160" height="28" rx="4" fill="#1e293b" stroke="#00bfff" stroke-width="1.5"/>
-  <text id="lbl-viper-tqs-button-42" x="900" y="1268" text-anchor="middle" font-family="Arial,sans-serif" font-size="10" fill="#f1f5f9">Button 42</text>
+  <text id="lbl-viper-tqs-button-42" x="900" y="1268" text-anchor="middle" font-family="Arial,sans-serif" font-size="8" fill="#f1f5f9">Button 42 — HDG CW</text>
   <!-- callout:viper-tqs-button-43 -->
   <polyline points="651,1135 800,1135 800,1236 900,1222" fill="none" stroke="#00bfff" stroke-width="1.5" stroke-dasharray="5 3" opacity="0.75"/>
   <circle cx="651" cy="1135" r="5" fill="#00bfff" stroke="#0f172a" stroke-width="1.5"/>
   <rect x="820" y="1222" width="160" height="28" rx="4" fill="#1e293b" stroke="#00bfff" stroke-width="1.5"/>
-  <text id="lbl-viper-tqs-button-43" x="900" y="1240" text-anchor="middle" font-family="Arial,sans-serif" font-size="10" fill="#f1f5f9">Button 43</text>
+  <text id="lbl-viper-tqs-button-43" x="900" y="1240" text-anchor="middle" font-family="Arial,sans-serif" font-size="8" fill="#f1f5f9">Button 43 — HDG CCW</text>
   <!-- callout:viper-tqs-button-44 -->
   <polyline points="603,1134 800,1134 800,1297 900,1283" fill="none" stroke="#00bfff" stroke-width="1.5" stroke-dasharray="5 3" opacity="0.75"/>
   <circle cx="603" cy="1134" r="5" fill="#00bfff" stroke="#0f172a" stroke-width="1.5"/>
   <rect x="820" y="1283" width="160" height="28" rx="4" fill="#1e293b" stroke="#00bfff" stroke-width="1.5"/>
-  <text id="lbl-viper-tqs-button-44" x="900" y="1301" text-anchor="middle" font-family="Arial,sans-serif" font-size="10" fill="#f1f5f9">Button 44</text>
+  <text id="lbl-viper-tqs-button-44" x="900" y="1301" text-anchor="middle" font-family="Arial,sans-serif" font-size="8" fill="#f1f5f9">Button 44 — HDG DEPRESS</text>
   <!-- callout:viper-tqs-button-45 -->
   <polyline points="337,1010 200,1010 200,928 100,942" fill="none" stroke="#00bfff" stroke-width="1.5" stroke-dasharray="5 3" opacity="0.75"/>
   <circle cx="337" cy="1010" r="5" fill="#00bfff" stroke="#0f172a" stroke-width="1.5"/>
   <rect x="20" y="914" width="160" height="28" rx="4" fill="#1e293b" stroke="#00bfff" stroke-width="1.5"/>
-  <text id="lbl-viper-tqs-button-45" x="100" y="932" text-anchor="middle" font-family="Arial,sans-serif" font-size="10" fill="#f1f5f9">Button 45</text>
+  <text id="lbl-viper-tqs-button-45" x="100" y="932" text-anchor="middle" font-family="Arial,sans-serif" font-size="8" fill="#f1f5f9">Button 45 — STORES CAT I</text>
   <!-- callout:viper-tqs-button-46 -->
   <polyline points="264,1038 200,1038 200,989 100,1003" fill="none" stroke="#00bfff" stroke-width="1.5" stroke-dasharray="5 3" opacity="0.75"/>
   <circle cx="264" cy="1038" r="5" fill="#00bfff" stroke="#0f172a" stroke-width="1.5"/>
   <rect x="20" y="975" width="160" height="28" rx="4" fill="#1e293b" stroke="#00bfff" stroke-width="1.5"/>
-  <text id="lbl-viper-tqs-button-46" x="100" y="993" text-anchor="middle" font-family="Arial,sans-serif" font-size="10" fill="#f1f5f9">Button 46</text>
+  <text id="lbl-viper-tqs-button-46" x="100" y="993" text-anchor="middle" font-family="Arial,sans-serif" font-size="8" fill="#f1f5f9">Button 46 — RF NORM</text>
   <!-- callout:viper-tqs-button-47 -->
   <polyline points="263,1081 200,1081 200,1045 100,1059" fill="none" stroke="#00bfff" stroke-width="1.5" stroke-dasharray="5 3" opacity="0.75"/>
   <circle cx="263" cy="1081" r="5" fill="#00bfff" stroke="#0f172a" stroke-width="1.5"/>
   <rect x="20" y="1031" width="160" height="28" rx="4" fill="#1e293b" stroke="#00bfff" stroke-width="1.5"/>
-  <text id="lbl-viper-tqs-button-47" x="100" y="1049" text-anchor="middle" font-family="Arial,sans-serif" font-size="10" fill="#f1f5f9">Button 47</text>
+  <text id="lbl-viper-tqs-button-47" x="100" y="1049" text-anchor="middle" font-family="Arial,sans-serif" font-size="8" fill="#f1f5f9">Button 47 — RF SILENT</text>
   <!-- callout:viper-tqs-button-48 -->
   <polyline points="337,1068 200,1068 200,1078 180,1078" fill="none" stroke="#00bfff" stroke-width="1.5" stroke-dasharray="5 3" opacity="0.75"/>
   <circle cx="337" cy="1068" r="5" fill="#00bfff" stroke="#0f172a" stroke-width="1.5"/>
   <rect x="20" y="1064" width="160" height="28" rx="4" fill="#1e293b" stroke="#00bfff" stroke-width="1.5"/>
-  <text id="lbl-viper-tqs-button-48" x="100" y="1082" text-anchor="middle" font-family="Arial,sans-serif" font-size="10" fill="#f1f5f9">Button 48</text>
+  <text id="lbl-viper-tqs-button-48" x="100" y="1082" text-anchor="middle" font-family="Arial,sans-serif" font-size="8" fill="#f1f5f9">Button 48 — LASER ARM</text>
   <!-- callout:viper-tqs-button-49 -->
   <polyline points="591,1091 800,1091 800,1175 900,1161" fill="none" stroke="#00bfff" stroke-width="1.5" stroke-dasharray="5 3" opacity="0.75"/>
   <circle cx="591" cy="1091" r="5" fill="#00bfff" stroke="#0f172a" stroke-width="1.5"/>
   <rect x="820" y="1161" width="160" height="28" rx="4" fill="#1e293b" stroke="#00bfff" stroke-width="1.5"/>
-  <text id="lbl-viper-tqs-button-49" x="900" y="1179" text-anchor="middle" font-family="Arial,sans-serif" font-size="10" fill="#f1f5f9">Button 49</text>
+  <text id="lbl-viper-tqs-button-49" x="900" y="1179" text-anchor="middle" font-family="Arial,sans-serif" font-size="8" fill="#f1f5f9">Button 49 — JMR ON</text>
   <!-- callout:viper-tqs-button-50 -->
   <polyline points="264,1117 200,1117 200,1139 180,1139" fill="none" stroke="#00bfff" stroke-width="1.5" stroke-dasharray="5 3" opacity="0.75"/>
   <circle cx="264" cy="1117" r="5" fill="#00bfff" stroke="#0f172a" stroke-width="1.5"/>
   <rect x="20" y="1125" width="160" height="28" rx="4" fill="#1e293b" stroke="#00bfff" stroke-width="1.5"/>
-  <text id="lbl-viper-tqs-button-50" x="100" y="1143" text-anchor="middle" font-family="Arial,sans-serif" font-size="10" fill="#f1f5f9">Button 50</text>
+  <text id="lbl-viper-tqs-button-50" x="100" y="1143" text-anchor="middle" font-family="Arial,sans-serif" font-size="8" fill="#f1f5f9">Button 50 — AP ROLL HDG SEL</text>
   <!-- callout:viper-tqs-button-51 -->
   <polyline points="264,1160 200,1160 200,1195 100,1181" fill="none" stroke="#00bfff" stroke-width="1.5" stroke-dasharray="5 3" opacity="0.75"/>
   <circle cx="264" cy="1160" r="5" fill="#00bfff" stroke="#0f172a" stroke-width="1.5"/>
   <rect x="20" y="1181" width="160" height="28" rx="4" fill="#1e293b" stroke="#00bfff" stroke-width="1.5"/>
-  <text id="lbl-viper-tqs-button-51" x="100" y="1199" text-anchor="middle" font-family="Arial,sans-serif" font-size="10" fill="#f1f5f9">Button 51</text>
+  <text id="lbl-viper-tqs-button-51" x="100" y="1199" text-anchor="middle" font-family="Arial,sans-serif" font-size="8" fill="#f1f5f9">Button 51 — AP ROLL STRG SEL</text>
   <!-- callout:viper-tqs-button-52 -->
   <polyline points="336,1138 200,1138 200,1228 100,1214" fill="none" stroke="#00bfff" stroke-width="1.5" stroke-dasharray="5 3" opacity="0.75"/>
   <circle cx="336" cy="1138" r="5" fill="#00bfff" stroke="#0f172a" stroke-width="1.5"/>
   <rect x="20" y="1214" width="160" height="28" rx="4" fill="#1e293b" stroke="#00bfff" stroke-width="1.5"/>
-  <text id="lbl-viper-tqs-button-52" x="100" y="1232" text-anchor="middle" font-family="Arial,sans-serif" font-size="10" fill="#f1f5f9">Button 52</text>
+  <text id="lbl-viper-tqs-button-52" x="100" y="1232" text-anchor="middle" font-family="Arial,sans-serif" font-size="8" fill="#f1f5f9">Button 52 — AP PITCH ALT HOLD</text>
   <!-- callout:viper-tqs-button-53 -->
   <polyline points="336,1196 200,1196 200,1284 100,1270" fill="none" stroke="#00bfff" stroke-width="1.5" stroke-dasharray="5 3" opacity="0.75"/>
   <circle cx="336" cy="1196" r="5" fill="#00bfff" stroke="#0f172a" stroke-width="1.5"/>
   <rect x="20" y="1270" width="160" height="28" rx="4" fill="#1e293b" stroke="#00bfff" stroke-width="1.5"/>
-  <text id="lbl-viper-tqs-button-53" x="100" y="1288" text-anchor="middle" font-family="Arial,sans-serif" font-size="10" fill="#f1f5f9">Button 53</text>
+  <text id="lbl-viper-tqs-button-53" x="100" y="1288" text-anchor="middle" font-family="Arial,sans-serif" font-size="8" fill="#f1f5f9">Button 53 — AP PITCH ATT HOLD</text>
   <!-- callout:viper-tqs-button-54 -->
   <polyline points="322,927 200,927 200,735 100,749" fill="none" stroke="#00bfff" stroke-width="1.5" stroke-dasharray="5 3" opacity="0.75"/>
   <circle cx="322" cy="927" r="5" fill="#00bfff" stroke="#0f172a" stroke-width="1.5"/>
   <rect x="20" y="721" width="160" height="28" rx="4" fill="#1e293b" stroke="#00bfff" stroke-width="1.5"/>
-  <text id="lbl-viper-tqs-button-54" x="100" y="739" text-anchor="middle" font-family="Arial,sans-serif" font-size="10" fill="#f1f5f9">Button 54</text>
+  <text id="lbl-viper-tqs-button-54" x="100" y="739" text-anchor="middle" font-family="Arial,sans-serif" font-size="8" fill="#f1f5f9">Button 54 — Unassigned</text>
   <!-- callout:viper-tqs-button-55 -->
   <polyline points="602,893 800,893 800,852 820,852" fill="none" stroke="#00bfff" stroke-width="1.5" stroke-dasharray="5 3" opacity="0.75"/>
   <circle cx="602" cy="893" r="5" fill="#00bfff" stroke="#0f172a" stroke-width="1.5"/>
   <rect x="820" y="838" width="160" height="28" rx="4" fill="#1e293b" stroke="#00bfff" stroke-width="1.5"/>
-  <text id="lbl-viper-tqs-button-55" x="900" y="856" text-anchor="middle" font-family="Arial,sans-serif" font-size="10" fill="#f1f5f9">Button 55</text>
+  <text id="lbl-viper-tqs-button-55" x="900" y="856" text-anchor="middle" font-family="Arial,sans-serif" font-size="8" fill="#f1f5f9">Button 55 — PROGRAM BIT</text>
   <!-- callout:viper-tqs-button-56 -->
   <polyline points="691,930 800,930 800,1025 900,1011" fill="none" stroke="#00bfff" stroke-width="1.5" stroke-dasharray="5 3" opacity="0.75"/>
   <circle cx="691" cy="930" r="5" fill="#00bfff" stroke="#0f172a" stroke-width="1.5"/>
   <rect x="820" y="1011" width="160" height="28" rx="4" fill="#1e293b" stroke="#00bfff" stroke-width="1.5"/>
-  <text id="lbl-viper-tqs-button-56" x="900" y="1029" text-anchor="middle" font-family="Arial,sans-serif" font-size="10" fill="#f1f5f9">Button 56</text>
+  <text id="lbl-viper-tqs-button-56" x="900" y="1029" text-anchor="middle" font-family="Arial,sans-serif" font-size="8" fill="#f1f5f9">Button 56 — MODE OFF</text>
   <!-- callout:viper-tqs-button-57 -->
   <polyline points="601,860 800,860 800,707 900,721" fill="none" stroke="#00bfff" stroke-width="1.5" stroke-dasharray="5 3" opacity="0.75"/>
   <circle cx="601" cy="860" r="5" fill="#00bfff" stroke="#0f172a" stroke-width="1.5"/>
   <rect x="820" y="693" width="160" height="28" rx="4" fill="#1e293b" stroke="#00bfff" stroke-width="1.5"/>
-  <text id="lbl-viper-tqs-button-57" x="900" y="711" text-anchor="middle" font-family="Arial,sans-serif" font-size="10" fill="#f1f5f9">Button 57</text>
+  <text id="lbl-viper-tqs-button-57" x="900" y="711" text-anchor="middle" font-family="Arial,sans-serif" font-size="8" fill="#f1f5f9">Button 57 — LG HANDLE DN</text>
   <!-- callout:viper-tqs-button-58 -->
   <polyline points="602,1061 800,1061 800,1142 900,1128" fill="none" stroke="#00bfff" stroke-width="1.5" stroke-dasharray="5 3" opacity="0.75"/>
   <circle cx="602" cy="1061" r="5" fill="#00bfff" stroke="#0f172a" stroke-width="1.5"/>
   <rect x="820" y="1128" width="160" height="28" rx="4" fill="#1e293b" stroke="#00bfff" stroke-width="1.5"/>
-  <text id="lbl-viper-tqs-button-58" x="900" y="1146" text-anchor="middle" font-family="Arial,sans-serif" font-size="10" fill="#f1f5f9">Button 58</text>
+  <text id="lbl-viper-tqs-button-58" x="900" y="1146" text-anchor="middle" font-family="Arial,sans-serif" font-size="8" fill="#f1f5f9">Button 58 — EXT LT OFF</text>
   <!-- callout:viper-tqs-button-59 -->
   <polyline points="337,1051 200,1051 200,956 100,970" fill="none" stroke="#00bfff" stroke-width="1.5" stroke-dasharray="5 3" opacity="0.75"/>
   <circle cx="337" cy="1051" r="5" fill="#00bfff" stroke="#0f172a" stroke-width="1.5"/>
   <rect x="20" y="942" width="160" height="28" rx="4" fill="#1e293b" stroke="#00bfff" stroke-width="1.5"/>
-  <text id="lbl-viper-tqs-button-59" x="100" y="960" text-anchor="middle" font-family="Arial,sans-serif" font-size="10" fill="#f1f5f9">Button 59</text>
+  <text id="lbl-viper-tqs-button-59" x="100" y="960" text-anchor="middle" font-family="Arial,sans-serif" font-size="8" fill="#f1f5f9">Button 59 — STORES CAT III</text>
   <!-- callout:viper-tqs-button-60 -->
   <polyline points="251,1060 200,1060 200,1017 100,1031" fill="none" stroke="#00bfff" stroke-width="1.5" stroke-dasharray="5 3" opacity="0.75"/>
   <circle cx="251" cy="1060" r="5" fill="#00bfff" stroke="#0f172a" stroke-width="1.5"/>
   <rect x="20" y="1003" width="160" height="28" rx="4" fill="#1e293b" stroke="#00bfff" stroke-width="1.5"/>
-  <text id="lbl-viper-tqs-button-60" x="100" y="1021" text-anchor="middle" font-family="Arial,sans-serif" font-size="10" fill="#f1f5f9">Button 60</text>
+  <text id="lbl-viper-tqs-button-60" x="100" y="1021" text-anchor="middle" font-family="Arial,sans-serif" font-size="8" fill="#f1f5f9">Button 60 — Unassigned</text>
   <!-- callout:viper-tqs-button-61 -->
   <polyline points="336,1099 200,1099 200,1106 180,1106" fill="none" stroke="#00bfff" stroke-width="1.5" stroke-dasharray="5 3" opacity="0.75"/>
   <circle cx="336" cy="1099" r="5" fill="#00bfff" stroke="#0f172a" stroke-width="1.5"/>
   <rect x="20" y="1092" width="160" height="28" rx="4" fill="#1e293b" stroke="#00bfff" stroke-width="1.5"/>
-  <text id="lbl-viper-tqs-button-61" x="100" y="1110" text-anchor="middle" font-family="Arial,sans-serif" font-size="10" fill="#f1f5f9">Button 61</text>
+  <text id="lbl-viper-tqs-button-61" x="100" y="1110" text-anchor="middle" font-family="Arial,sans-serif" font-size="8" fill="#f1f5f9">Button 61 — LASER OFF</text>
   <!-- callout:viper-tqs-button-62 -->
   <polyline points="591,1118 800,1118 800,1203 900,1189" fill="none" stroke="#00bfff" stroke-width="1.5" stroke-dasharray="5 3" opacity="0.75"/>
   <circle cx="591" cy="1118" r="5" fill="#00bfff" stroke="#0f172a" stroke-width="1.5"/>
   <rect x="820" y="1189" width="160" height="28" rx="4" fill="#1e293b" stroke="#00bfff" stroke-width="1.5"/>
-  <text id="lbl-viper-tqs-button-62" x="900" y="1207" text-anchor="middle" font-family="Arial,sans-serif" font-size="10" fill="#f1f5f9">Button 62</text>
+  <text id="lbl-viper-tqs-button-62" x="900" y="1207" text-anchor="middle" font-family="Arial,sans-serif" font-size="8" fill="#f1f5f9">Button 62 — JMR OFF</text>
   <!-- callout:viper-tqs-button-63 -->
   <polyline points="251,1138 200,1138 200,1167 100,1153" fill="none" stroke="#00bfff" stroke-width="1.5" stroke-dasharray="5 3" opacity="0.75"/>
   <circle cx="251" cy="1138" r="5" fill="#00bfff" stroke="#0f172a" stroke-width="1.5"/>
   <rect x="20" y="1153" width="160" height="28" rx="4" fill="#1e293b" stroke="#00bfff" stroke-width="1.5"/>
-  <text id="lbl-viper-tqs-button-63" x="100" y="1171" text-anchor="middle" font-family="Arial,sans-serif" font-size="10" fill="#f1f5f9">Button 63</text>
+  <text id="lbl-viper-tqs-button-63" x="100" y="1171" text-anchor="middle" font-family="Arial,sans-serif" font-size="8" fill="#f1f5f9">Button 63 — AP ROLL ATT HOLD</text>
   <!-- callout:viper-tqs-button-64 -->
   <polyline points="322,1177 200,1177 200,1256 100,1242" fill="none" stroke="#00bfff" stroke-width="1.5" stroke-dasharray="5 3" opacity="0.75"/>
   <circle cx="322" cy="1177" r="5" fill="#00bfff" stroke="#0f172a" stroke-width="1.5"/>
   <rect x="20" y="1242" width="160" height="28" rx="4" fill="#1e293b" stroke="#00bfff" stroke-width="1.5"/>
-  <text id="lbl-viper-tqs-button-64" x="100" y="1260" text-anchor="middle" font-family="Arial,sans-serif" font-size="10" fill="#f1f5f9">Button 64</text>
+  <text id="lbl-viper-tqs-button-64" x="100" y="1260" text-anchor="middle" font-family="Arial,sans-serif" font-size="8" fill="#f1f5f9">Button 64 — AP PITCH OFF</text>
   <!-- callout:viper-tqs-axis-x -->
   <polyline points="630,446 800,88 800,69 100,610" fill="none" stroke="#00bfff" stroke-width="1.5" stroke-dasharray="5 3" opacity="0.75"/>
   <circle cx="630" cy="446" r="5" fill="#00bfff" stroke="#0f172a" stroke-width="1.5"/>
   <rect x="20" y="610" width="160" height="28" rx="4" fill="#1e293b" stroke="#00bfff" stroke-width="1.5"/>
-  <text id="lbl-viper-tqs-axis-x" x="100" y="628" text-anchor="middle" font-family="Arial,sans-serif" font-size="10" fill="#f1f5f9">X axis</text>
+  <text id="lbl-viper-tqs-axis-x" x="100" y="628" text-anchor="middle" font-family="Arial,sans-serif" font-size="8" fill="#f1f5f9">Axis X — RDR CURSOR X</text>
   <!-- callout:viper-tqs-axis-y -->
   <polyline points="440,440 800,196 800,114 100,638" fill="none" stroke="#00bfff" stroke-width="1.5" stroke-dasharray="5 3" opacity="0.75"/>
   <circle cx="440" cy="440" r="5" fill="#00bfff" stroke="#0f172a" stroke-width="1.5"/>
   <rect x="20" y="638" width="160" height="28" rx="4" fill="#1e293b" stroke="#00bfff" stroke-width="1.5"/>
-  <text id="lbl-viper-tqs-axis-y" x="100" y="656" text-anchor="middle" font-family="Arial,sans-serif" font-size="10" fill="#f1f5f9">Y axis</text>
+  <text id="lbl-viper-tqs-axis-y" x="100" y="656" text-anchor="middle" font-family="Arial,sans-serif" font-size="8" fill="#f1f5f9">Axis Y — RDR CURSOR Y</text>
   <!-- callout:viper-tqs-axis-z -->
   <polyline points="413,563 800,221 800,142 100,666" fill="none" stroke="#00bfff" stroke-width="1.5" stroke-dasharray="5 3" opacity="0.75"/>
   <circle cx="413" cy="563" r="5" fill="#00bfff" stroke="#0f172a" stroke-width="1.5"/>
   <rect x="20" y="666" width="160" height="28" rx="4" fill="#1e293b" stroke="#00bfff" stroke-width="1.5"/>
-  <text id="lbl-viper-tqs-axis-z" x="100" y="684" text-anchor="middle" font-family="Arial,sans-serif" font-size="10" fill="#f1f5f9">Z axis</text>
+  <text id="lbl-viper-tqs-axis-z" x="100" y="684" text-anchor="middle" font-family="Arial,sans-serif" font-size="8" fill="#f1f5f9">Axis Z — THROTTLE</text>
   <!-- callout:viper-tqs-axis-rx -->
   <polyline points="640,196 800,255 800,170 900,610" fill="none" stroke="#00bfff" stroke-width="1.5" stroke-dasharray="5 3" opacity="0.75"/>
   <circle cx="640" cy="196" r="5" fill="#00bfff" stroke="#0f172a" stroke-width="1.5"/>
   <rect x="820" y="610" width="160" height="28" rx="4" fill="#1e293b" stroke="#00bfff" stroke-width="1.5"/>
-  <text id="lbl-viper-tqs-axis-rx" x="900" y="628" text-anchor="middle" font-family="Arial,sans-serif" font-size="10" fill="#f1f5f9">Rx axis</text>
+  <text id="lbl-viper-tqs-axis-rx" x="900" y="628" text-anchor="middle" font-family="Arial,sans-serif" font-size="8" fill="#f1f5f9">Axis RX — MAN RNG</text>
   <!-- callout:viper-tqs-axis-ry -->
   <polyline points="660,240 800,264 800,198 900,638" fill="none" stroke="#00bfff" stroke-width="1.5" stroke-dasharray="5 3" opacity="0.75"/>
   <circle cx="660" cy="240" r="5" fill="#00bfff" stroke="#0f172a" stroke-width="1.5"/>
   <rect x="820" y="638" width="160" height="28" rx="4" fill="#1e293b" stroke="#00bfff" stroke-width="1.5"/>
-  <text id="lbl-viper-tqs-axis-ry" x="900" y="656" text-anchor="middle" font-family="Arial,sans-serif" font-size="10" fill="#f1f5f9">Ry axis</text>
+  <text id="lbl-viper-tqs-axis-ry" x="900" y="656" text-anchor="middle" font-family="Arial,sans-serif" font-size="8" fill="#f1f5f9">Axis RY — ANT ELEV</text>
   <!-- callout:viper-tqs-axis-rz -->
   <polyline points="620,885 200,240 200,114 900,694" fill="none" stroke="#00bfff" stroke-width="1.5" stroke-dasharray="5 3" opacity="0.75"/>
   <circle cx="620" cy="885" r="5" fill="#00bfff" stroke="#0f172a" stroke-width="1.5"/>
   <rect x="820" y="666" width="160" height="28" rx="4" fill="#1e293b" stroke="#00bfff" stroke-width="1.5"/>
-  <text id="lbl-viper-tqs-axis-rz" x="900" y="684" text-anchor="middle" font-family="Arial,sans-serif" font-size="10" fill="#f1f5f9">Rz axis</text>
+  <text id="lbl-viper-tqs-axis-rz" x="900" y="684" text-anchor="middle" font-family="Arial,sans-serif" font-size="8" fill="#f1f5f9">Axis RZ — ZOOM VIEW</text>
   <text x="500" y="1392" text-anchor="middle" font-family="Arial,sans-serif" font-size="12" fill="#475569">Viper TQS + Mission Pack • canonical shared template</text>
 </svg>
