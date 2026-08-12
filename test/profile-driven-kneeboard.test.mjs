@@ -57,7 +57,7 @@ test('expands base and S3 layers and resolves the same OSB by exact modifier cho
   } } return diff`);
   writeFileSync(join(consumerRoot, 'kneeboard.json'), JSON.stringify({
     schemaVersion: 1, aircraft: 'F-16C', modifiersFile: 'modifiers.lua',
-    modifiers: { S3: { nativeName: 'AVA_F16_S3', deviceId: 'ava-base-f16c', mode: 'hold' } },
+    modifiers: { S3: { nativeName: 'AVA_F16_S3', deviceId: 'tm-warthog-grip', mode: 'hold' } },
     profiles: { left: 'profiles/mfd.diff.lua' },
     pages: [{ file: '02-LEFT-MFD', deviceId: 'tm-mfd', title: 'LEFT MFD', layers: [
       { id: 'base', controls: { 'mfd-osb-t1': { profile: 'left', key: 'JOY_BTN1' } } },
@@ -65,9 +65,9 @@ test('expands base and S3 layers and resolves the same OSB by exact modifier cho
     ] }],
   }));
   const config = loadProfileDrivenConfig('kneeboard.json', { consumerRoot, commonRoot });
-  assert.equal(config.pages[0].labels['mfd-osb-t1'], 'Left MFD OSB 1');
-  assert.equal(config.pages[1].labels['mfd-osb-t1'], 'Markpoint shortcut');
-  assert.equal(config.pages[1].modifiers[0].mode, 'hold');
+  assert.equal(config.pages.length, 1, 'layers merge into a single page');
+  assert.equal(config.pages[0].labels['mfd-osb-t1'], 'Markpoint shortcut');
+  assert.equal(config.pages[0].modifiers[0].mode, 'hold');
 });
 
 test('rejects ambiguous bindings for the same key and modifier chord', () => {

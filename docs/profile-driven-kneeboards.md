@@ -34,7 +34,7 @@ Set `modifiersFile` to import native DCS modifier declarations and map stable co
 {
   "modifiersFile": "src/Config/Input/modifiers.lua",
   "modifiers": {
-    "S3": { "nativeName": "AVA_F16_S3", "deviceId": "ava-base-f16c", "mode": "hold" }
+    "S3": { "nativeName": "AVA_F16_S3", "deviceId": "tm-warthog-grip", "mode": "hold" }
   },
   "pages": [
     {
@@ -81,7 +81,7 @@ See the operator procedure below for hold vs toggle, exact-chord rules, and a fu
   "modifiers": {
     "MODE": {
       "nativeName": "WH_MODE",
-      "deviceId": "ava-base-f16c",
+      "deviceId": "tm-warthog-grip",
       "mode": "toggle",
       "label": "Warthog BTN3 mode"
     }

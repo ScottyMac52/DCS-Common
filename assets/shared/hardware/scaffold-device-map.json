@@ -23,10 +23,6 @@
       "patterns": ["MOZA AB9", "MOZA AB 9"]
     },
     {
-      "deviceId": "ava-base-f16c",
-      "patterns": ["Ava [R] Viper", "Ava Viper", "AVA Viper", "AVA F-16", "AVA F16"]
-    },
-    {
       "deviceId": "ava-base-f18c",
       "patterns": ["Ava [R] Hornet", "Ava Hornet", "AVA Hornet", "AVA F/A-18", "AVA F18"]
     },
@@ -40,7 +36,7 @@
     },
     {
       "deviceId": "tm-warthog-grip",
-      "patterns": ["Joystick - HOTAS Warthog", "HOTAS Warthog", "Warthog Joystick", "Warthog Grip"]
+      "patterns": ["Joystick - HOTAS Warthog", "HOTAS Warthog", "Warthog Joystick", "Warthog Grip", "Ava [R] Viper", "Ava Viper", "AVA Viper", "AVA F-16", "AVA F16", "AVA Base", "F-16C Grip", "F16C Grip"]
     },
     {
       "deviceId": "grip-f18c",

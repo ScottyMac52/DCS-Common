@@ -57,7 +57,7 @@ test('merges base and S3 layers onto one page with shift color and legend', () =
   } } return diff`);
   writeFileSync(join(consumerRoot, 'kneeboard.json'), JSON.stringify({
     schemaVersion: 1, aircraft: 'F-16C', modifiersFile: 'modifiers.lua',
-    modifiers: { S3: { nativeName: 'AVA_F16_S3', deviceId: 'ava-base-f16c', mode: 'hold', label: 'S3' } },
+    modifiers: { S3: { nativeName: 'AVA_F16_S3', deviceId: 'tm-warthog-grip', mode: 'hold', label: 'S3' } },
     profiles: { left: 'profiles/mfd.diff.lua' },
     pages: [{ file: '02-LEFT-MFD', deviceId: 'tm-mfd', title: 'LEFT MFD', layers: [
       { id: 'base', controls: { 'mfd-osb-t1': { profile: 'left', key: 'JOY_BTN1' } } },
@@ -67,7 +67,7 @@ test('merges base and S3 layers onto one page with shift color and legend', () =
   // t2 only on shifted layer needs a binding - simplify: only t1 on both layers
   writeFileSync(join(consumerRoot, 'kneeboard.json'), JSON.stringify({
     schemaVersion: 1, aircraft: 'F-16C', modifiersFile: 'modifiers.lua',
-    modifiers: { S3: { nativeName: 'AVA_F16_S3', deviceId: 'ava-base-f16c', mode: 'hold', label: 'S3' } },
+    modifiers: { S3: { nativeName: 'AVA_F16_S3', deviceId: 'tm-warthog-grip', mode: 'hold', label: 'S3' } },
     profiles: { left: 'profiles/mfd.diff.lua' },
     pages: [{ file: '02-LEFT-MFD', deviceId: 'tm-mfd', title: 'LEFT MFD', layers: [
       { id: 'base', controls: { 'mfd-osb-t1': { profile: 'left', key: 'JOY_BTN1' } }, labels: { 'mfd-osb-t1': 'Left MFD OSB 1' } },
@@ -94,7 +94,7 @@ test('separateModifierPages still emits one file per layer', () => {
   } } return diff`);
   writeFileSync(join(consumerRoot, 'kneeboard.json'), JSON.stringify({
     schemaVersion: 1, aircraft: 'F-16C', modifiersFile: 'modifiers.lua',
-    modifiers: { S3: { nativeName: 'AVA_F16_S3', deviceId: 'ava-base-f16c', mode: 'hold' } },
+    modifiers: { S3: { nativeName: 'AVA_F16_S3', deviceId: 'tm-warthog-grip', mode: 'hold' } },
     profiles: { left: 'profiles/mfd.diff.lua' },
     pages: [{ file: '02-LEFT-MFD', deviceId: 'tm-mfd', title: 'LEFT MFD', separateModifierPages: true, layers: [
       { id: 'base', controls: { 'mfd-osb-t1': { profile: 'left', key: 'JOY_BTN1' } } },

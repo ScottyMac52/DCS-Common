@@ -13,3 +13,5 @@ Manufacturer product images are included for product identification and diagram 
 
 | `source/tm-warthog-throttle-blank.png` | User-provided annotated device diagram (Blank2) | Conversation attachment supplied by repository owner | Native 1625 × 2201 PNG (scaled to 1000 × 1354 for template) with numbered empty label boxes, JOY_BTN1–32, POV, axes; base callouts use black text overlays only |
 | `source/pto2-buttons.png` (and RGB variant) | WINCTRL / user-provided | Issue #87 attachment | Clean panel diagram with numbered button bubbles (767 × 553) supplied for external callout redesign |
+
+The TM Warthog Joystick, TM Warthog Throttle, and Cougar MFD draw.io artwork was redefined from the user-supplied Inkscape SVG templates documented in issue #103. The MFD source contains left and right examples; the shared definition uses one MFD because physical instances reuse the same canonical device ID.
