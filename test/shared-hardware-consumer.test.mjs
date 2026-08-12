@@ -12,6 +12,18 @@ test('consumer API resolves stable device IDs and fills shared labels', () => {
   assert.match(loaded.svg, /Test binding/);
 });
 
+test('consumer API resolves AVA Base + F-16C to the TM Warthog Joystick', () => {
+  const loaded = loadSharedHardware('ava-base-f16c', { commonRoot });
+  assert.equal(loaded.device.id, 'tm-warthog-grip');
+  assert.equal(loaded.calloutIds.length, 25);
+});
+
+test('consumer API resolves AVA Base + F/A-18C to the Hornet Grip', () => {
+  const loaded = loadSharedHardware('ava-base-f18c', { commonRoot });
+  assert.equal(loaded.device.id, 'grip-f18c');
+  assert.equal(loaded.calloutIds.length, 29);
+});
+
 test('consumer API rejects physical button prefixes in displayed callouts', () => {
   assert.throws(
     () => loadSharedHardware('tm-mfd', { commonRoot, labels: { 'mfd-osb-t1': 'BTN 1: Test binding' } }),
