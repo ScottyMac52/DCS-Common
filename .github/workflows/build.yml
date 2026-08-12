@@ -7,6 +7,10 @@ on:
         required: false
         type: string
         default: 0.0.0-ci.${{ github.run_number }}
+      dcs-common-ref:
+        required: false
+        type: string
+        default: main
       install-lua-parser:
         required: false
         type: boolean
@@ -107,7 +111,7 @@ jobs:
         uses: actions/checkout@v4
         with:
           repository: ScottyMac52/DCS-Common
-          ref: main
+          ref: ${{ inputs.dcs-common-ref }}
           path: .dcs-common
       - uses: actions/setup-node@v4
         with:
