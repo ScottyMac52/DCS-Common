@@ -41,7 +41,7 @@ test('parseArgs accepts write-mode identity flags', () => {
   assert.equal(options.inputModuleId, 'F-16C_50');
 });
 
-test('device map resolves Warthog throttle and MFD instance hints', () => {
+test('device map resolves shared Thrustmaster definitions and MFD instance hints', () => {
   const map = loadDeviceMap(commonRoot);
   const throttle = resolveDeviceMapping(
     'Throttle - HOTAS Warthog {5200C960-CB32-11ed-8020-444553540000}.diff.lua',
@@ -49,6 +49,12 @@ test('device map resolves Warthog throttle and MFD instance hints', () => {
   );
   assert.equal(throttle.deviceId, 'tm-warthog-throttle');
   assert.equal(throttle.source, 'pattern');
+
+  const avaViper = resolveDeviceMapping('AVA Viper {GUID}.diff.lua', map);
+  assert.equal(avaViper.deviceId, 'tm-warthog-grip');
+
+  const f16cGrip = resolveDeviceMapping('F-16C Grip {GUID}.diff.lua', map);
+  assert.equal(f16cGrip.deviceId, 'tm-warthog-grip');
 
   const mfd = resolveDeviceMapping(
     'F16 MFD 1 {C5BE49A0-2342-11ee-8001-444553540000}.diff.lua',
@@ -112,6 +118,7 @@ test('buildPreview emits base and modifier rows with hold mode', () => {
   assert.equal(base.calloutId, 'mfd-osb-t1');
   assert.equal(base.status, 'OK');
   assert.equal(shifted.name, 'Markpoint shortcut');
+  assert.equal(shifted.calloutId, 'mfd-osb-t1-shifted');
   assert.deepEqual(shifted.modifierModes, ['hold']);
   assert.equal(shifted.status, 'OK');
   assert.equal(preview.modifiers[0].mode, 'hold');

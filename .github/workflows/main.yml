@@ -34,18 +34,30 @@ jobs:
         with:
           node-version: '22'
           cache: 'npm'
+          cache-dependency-path: .dcs-common/package-lock.json
 
-      - name: Install Dependencies
-        run: npm ci
-
-      - name: Install Image Processor
-        run: npm install sharp
+      - name: Install DCS-Common Dependencies
+        run: npm ci --prefix "$env:DCS_COMMON_ROOT"
 
       - name: Generate Mock Configuration and Test Artifacts
         shell: pwsh
         run: |
           # Generate every test page, profile, and rendered kneeboard from the authoritative Lua catalogs.
           node "$env:DCS_COMMON_ROOT/scripts/generate-test-articles.mjs" "$PWD" "$env:DCS_COMMON_ROOT"
+
+          # Verify that every manifest device produced a mock profile and a rendered kneeboard.
+          node --test "$env:DCS_COMMON_ROOT/test/complete-build-mock.test.mjs"
+
+          $manifest = Get-Content "$env:DCS_COMMON_ROOT/assets/shared/hardware/manifest.json" | ConvertFrom-Json
+          foreach ($device in $manifest.devices) {
+            $profile = "src/Config/Input/Test/joystick/$($device.id).diff.lua"
+            $pngPattern = "kneeboard/Test/*-$($device.id.ToUpper()).png"
+            $lua = Get-Content "$env:DCS_COMMON_ROOT/assets/shared/hardware/$($device.lua)" -Raw
+            if ($lua -match 'schemaVersion\s*=\s*1' -and -not (Test-Path $profile)) {
+              throw "Missing mocked profile: $profile"
+            }
+            if (-not (Get-ChildItem $pngPattern -ErrorAction SilentlyContinue)) { throw "Missing rendered kneeboard: $pngPattern" }
+          }
 
           # Mock package metadata files
           @"

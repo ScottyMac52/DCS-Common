@@ -11,7 +11,7 @@
     },
     "S3": {
       "nativeName": "AVA_F16_S3",
-      "deviceId": "ava-base-f16c",
+      "deviceId": "tm-warthog-grip",
       "mode": "hold",
       "label": "AVA S3 hold"
     }

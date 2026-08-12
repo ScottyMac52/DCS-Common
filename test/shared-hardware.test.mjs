@@ -17,7 +17,7 @@ const synchronizedWatermarkDevices = new Set([
 ]);
 
 assert.ok(Array.isArray(manifest.devices), 'manifest should contain a devices array');
-assert.equal(manifest.devices.length, 14, 'expected 14 shared hardware definitions');
+assert.equal(manifest.devices.length, 13, 'expected 11 defined catalogs plus two unchanged undefined Hornet entries');
 
 for (const device of manifest.devices) {
   const svgPath = join(root, 'assets', 'shared', 'hardware', device.svg);
@@ -139,13 +139,11 @@ for (const device of manifest.devices) {
 
   const ids = controls.map(({ id }) => id);
   const keys = controls.map(({ key }) => key);
-  const allowSharedIds = new Set(['vkb-f14-gunfighter', 'tm-warthog-throttle']);
+  const allowSharedIds = new Set(['vkb-f14-gunfighter', 'tm-warthog-throttle', 'tm-warthog-grip']);
   if (!allowSharedIds.has(device.id)) {
     assert.equal(new Set(ids).size, ids.length, `${device.id} physical control IDs must be unique`);
   }
-  if (!allowSharedIds.has(device.id)) {
-    assert.equal(new Set(keys).size, keys.length, `${device.id} physical input keys must be unique`);
-  }
+  assert.equal(new Set(keys).size, keys.length, `${device.id} physical input keys must be unique`);
   for (const control of controls) {
     assert.ok(control.id && control.key && control.type && control.hardwareLabel,
       `${device.id} controls require id, key, type, and hardwareLabel`);
@@ -154,18 +152,20 @@ for (const device of manifest.devices) {
   const drawio = readFileSync(join(root, 'assets', 'shared', 'hardware', device.drawio), 'utf8');
   const svg = readFileSync(join(root, 'assets', 'shared', 'hardware', device.svg), 'utf8');
   const luaIds = [...ids].sort();
-  const labelBasedDrawio = new Set(['tm-warthog-throttle']);
+  const labelBasedDrawio = new Set(['tm-warthog-throttle', 'tm-mfd']);
   const drawioIdPattern = labelBasedDrawio.has(device.id)
     ? /id="label-([^"]+)"/g
     : /id="connector-([^"]+)"/g;
   const drawioIds = [...drawio.matchAll(drawioIdPattern)].map((match) => match[1]).sort();
   const svgIds = [...svg.matchAll(/<!-- (?:callout|box):([^\s]+) -->/g)].map((match) => match[1]).sort();
-  const legacyIdMatchSkips = new Set(['tm-warthog-grip', 'grip-f18c', 'ava-base-f16c', 'ava-base-f18c']);
+  const legacyIdMatchSkips = new Set(['tm-warthog-grip']);
   if (!legacyIdMatchSkips.has(device.id)) {
     const luaUnique = [...new Set(luaIds)].sort();
     const expectedVisualIds = device.id === 'viper-tqs-mission-pack'
       ? luaUnique.filter((id) => !/^viper-tqs-button-0[1-5]$/.test(id))
-      : luaUnique;
+      : device.id === 'tm-mfd'
+        ? [...luaUnique, ...luaUnique.filter((id) => id.startsWith('mfd-osb-')).map((id) => `${id}-shifted`)].sort()
+        : luaUnique;
     assert.deepEqual(expectedVisualIds, [...new Set(drawioIds)].sort(),
       `${device.id} accepted Lua controls must match draw.io IDs`);
     assert.deepEqual(expectedVisualIds, [...new Set(svgIds)].sort(),

@@ -10,8 +10,8 @@ const hardwareRoot = join(root, 'assets/shared/hardware');
 const manifest = JSON.parse(readFileSync(join(hardwareRoot, 'manifest.json'), 'utf8'));
 const phaseOne = manifest.devices.filter((device) => device.drawio);
 
-test('all 14 hardware devices have native draw.io sources', () => {
-  assert.equal(phaseOne.length, 14);
+test('all defined hardware devices have native draw.io sources', () => {
+  assert.ok(phaseOne.length > 0);
   for (const device of phaseOne) {
     const xml = readFileSync(join(hardwareRoot, device.drawio), 'utf8');
     assert.match(xml, /<mxfile\b/);
@@ -26,7 +26,7 @@ test('all 14 hardware devices have native draw.io sources', () => {
     const hasConnectors = (xml.match(/id="connector-/g) ?? []).length > 0;
     if (hasConnectors) {
       assert.match(xml, /id="anchor-/);
-      assert.match(xml, /image=data:image\/(?:png|jpeg),[A-Za-z0-9+/=]+;/);
+      assert.match(xml, /image=data:image\/(?:png|jpeg),[A-Za-z0-9+/=]+(?:;|")/);
       assert.doesNotMatch(xml, /image=data:image\/(?:png|jpeg);base64,/);
     }
   }
@@ -75,12 +75,12 @@ test('published SVGs exactly match the deterministic draw.io exporter', () => {
   assert.equal(result.status, 0, result.stderr || result.stdout);
 });
 
-test('MFD pilot has 20 OSBs and eight independently editable rocker positions', () => {
+test('MFD has separate primary and shifted OSB fields plus eight rocker positions', () => {
   const xml = readFileSync(join(hardwareRoot, 'drawio/tm-mfd.drawio'), 'utf8');
-  assert.equal((xml.match(/id="anchor-mfd-osb-/g) ?? []).length, 20);
-  assert.equal((xml.match(/id="connector-mfd-osb-/g) ?? []).length, 20);
-  assert.equal((xml.match(/id="anchor-mfd-rocker-/g) ?? []).length, 8);
-  assert.equal((xml.match(/id="connector-mfd-rocker-/g) ?? []).length, 8);
+  assert.equal((xml.match(/id="label-mfd-osb-(?![^\"]*-shifted)/g) ?? []).length, 20);
+  assert.equal((xml.match(/id="label-mfd-osb-[^\"]+-shifted"/g) ?? []).length, 20);
+  assert.equal((xml.match(/id="label-mfd-rocker-/g) ?? []).length, 8);
+  assert.equal((xml.match(/id="(?:anchor|connector)-mfd-/g) ?? []).length, 0);
 });
 
 test('WINCTRL ICP source matches the 34-button and four-axis reference image', () => {

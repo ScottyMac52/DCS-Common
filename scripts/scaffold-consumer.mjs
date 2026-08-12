@@ -307,7 +307,9 @@ export function buildPreview({ profilesDir, modifiersPath = null, mapPath = null
           reformers,
           chord: chordKey(reformers),
           modifierModes,
-          calloutId: calloutIds[0] ?? null,
+          calloutId: reformers.length > 0 && mapping.deviceId === 'tm-mfd' && calloutIds[0]?.startsWith('mfd-osb-')
+            ? `${calloutIds[0]}-shifted`
+            : calloutIds[0] ?? null,
           calloutIds,
           status,
         });
