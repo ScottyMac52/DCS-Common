@@ -88,7 +88,7 @@ export function loadSharedHardware(deviceId, { commonRoot = resolveDcsCommonRoot
   validateDisplayLabels(labels);
   const hardwareRoot = join(commonRoot, 'assets/shared/hardware');
   const manifest = JSON.parse(readFileSync(join(hardwareRoot, 'manifest.json'), 'utf8'));
-  const device = manifest.devices.find((entry) => entry.id === deviceId);
+  const device = manifest.devices.find((entry) => entry.id === deviceId || entry.aliases?.includes(deviceId));
   if (!device) throw new Error(`Unknown shared hardware device: ${deviceId}`);
   let svg = readFileSync(join(hardwareRoot, device.svg), 'utf8');
   const calloutIds = [...svg.matchAll(/<text id="lbl-([^"]+)"/g)].map((match) => match[1]);

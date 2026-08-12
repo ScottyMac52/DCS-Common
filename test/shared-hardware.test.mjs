@@ -15,11 +15,10 @@ const synchronizedWatermarkDevices = new Set([
   'tm-mfd',
   'winctrl-pto2',
   'grip-f18c',
-  'ava-base-f18c',
 ]);
 
 assert.ok(Array.isArray(manifest.devices), 'manifest should contain a devices array');
-assert.equal(manifest.devices.length, 13, 'expected 13 complete shared hardware catalogs');
+assert.equal(manifest.devices.length, 12, 'expected 12 canonical shared hardware catalogs');
 
 for (const device of manifest.devices) {
   const svgPath = join(root, 'assets', 'shared', 'hardware', device.svg);
@@ -359,7 +358,7 @@ for (const device of manifest.devices) {
       'TM MFD must define eight rocker positions');
   }
 
-  if (device.id === 'grip-f18c' || device.id === 'ava-base-f18c') {
+  if (device.id === 'grip-f18c') {
     assert.equal(controls.length, 29, `${device.id} must define all 29 Hornet grip inputs`);
     assert.deepEqual(
       keys.filter((key) => /^JOY_BTN\d+$/.test(key)).map((key) => Number(key.slice(7))).sort((a, b) => a - b),
@@ -420,7 +419,6 @@ for (const device of manifest.devices) {
 
 assert.ok(completeCatalogs.includes('tm-mfd'), 'TM MFD must remain a complete schema-versioned catalog');
 assert.ok(completeCatalogs.includes('grip-f18c'), 'F/A-18C Hornet Grip must be a complete schema-versioned catalog');
-assert.ok(completeCatalogs.includes('ava-base-f18c'), 'AVA Base + F/A-18C Hornet Grip must be a complete schema-versioned catalog');
 assert.deepEqual(legacyCatalogs, [], 'all manifest hardware catalogs must be schema-versioned');
 console.log(`Validated complete physical catalogs: ${completeCatalogs.join(', ')}`);
 console.log(`Legacy incomplete physical catalogs: ${legacyCatalogs.join(', ')}`);
