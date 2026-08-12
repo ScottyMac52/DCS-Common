@@ -89,6 +89,15 @@ test('TM Warthog joystick uses the supplied artwork label fields without callout
   assert.equal((xml.match(/id="(?:anchor|connector)-warthog-grip-/g) ?? []).length, 0);
 });
 
+test('Hornet grip definitions use all supplied artwork fields without callouts', () => {
+  for (const [file, prefix] of [['grip-f18c.drawio', 'hornet-grip'], ['ava-base-f18c.drawio', 'ava-hornet']]) {
+    const xml = readFileSync(join(hardwareRoot, 'drawio', file), 'utf8');
+    assert.equal((xml.match(new RegExp(`id="label-${prefix}-`, 'g')) ?? []).length, 29);
+    assert.equal((xml.match(new RegExp(`id="(?:anchor|connector)-${prefix}-`, 'g')) ?? []).length, 0);
+    assert.match(xml, /image=data:image\/jpeg,[A-Za-z0-9+/=]+/);
+  }
+});
+
 test('WINCTRL ICP source matches the 34-button and four-axis reference image', () => {
   const xml = readFileSync(join(hardwareRoot, 'drawio/winctrl-icp.drawio'), 'utf8');
   const lua = readFileSync(join(hardwareRoot, 'lua/winctrl-icp.lua'), 'utf8');
