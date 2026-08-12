@@ -83,6 +83,12 @@ test('MFD has separate primary and shifted OSB fields plus eight rocker position
   assert.equal((xml.match(/id="(?:anchor|connector)-mfd-/g) ?? []).length, 0);
 });
 
+test('TM Warthog joystick uses the supplied artwork label fields without callouts', () => {
+  const xml = readFileSync(join(hardwareRoot, 'drawio/tm-warthog-grip.drawio'), 'utf8');
+  assert.equal((xml.match(/id="label-warthog-grip-/g) ?? []).length, 25);
+  assert.equal((xml.match(/id="(?:anchor|connector)-warthog-grip-/g) ?? []).length, 0);
+});
+
 test('WINCTRL ICP source matches the 34-button and four-axis reference image', () => {
   const xml = readFileSync(join(hardwareRoot, 'drawio/winctrl-icp.drawio'), 'utf8');
   const lua = readFileSync(join(hardwareRoot, 'lua/winctrl-icp.lua'), 'utf8');
