@@ -75,18 +75,18 @@ test('published SVGs exactly match the deterministic draw.io exporter', () => {
   assert.equal(result.status, 0, result.stderr || result.stdout);
 });
 
-test('MFD has separate primary and shifted OSB fields plus eight rocker positions', () => {
+test('MFD has routed primary and shifted OSB fields plus eight rocker positions', () => {
   const xml = readFileSync(join(hardwareRoot, 'drawio/tm-mfd.drawio'), 'utf8');
   assert.equal((xml.match(/id="label-mfd-osb-(?![^\"]*-shifted)/g) ?? []).length, 20);
   assert.equal((xml.match(/id="label-mfd-osb-[^\"]+-shifted"/g) ?? []).length, 20);
   assert.equal((xml.match(/id="label-mfd-rocker-/g) ?? []).length, 8);
-  assert.equal((xml.match(/id="(?:anchor|connector)-mfd-/g) ?? []).length, 0);
+  assert.equal((xml.match(/id="(?:anchor|connector)-mfd-/g) ?? []).length, 96);
 });
 
-test('TM Warthog joystick uses the supplied artwork label fields without callouts', () => {
+test('TM Warthog joystick uses clean shared images with routed callouts', () => {
   const xml = readFileSync(join(hardwareRoot, 'drawio/tm-warthog-grip.drawio'), 'utf8');
   assert.equal((xml.match(/id="label-warthog-grip-/g) ?? []).length, 25);
-  assert.equal((xml.match(/id="(?:anchor|connector)-warthog-grip-/g) ?? []).length, 0);
+  assert.equal((xml.match(/id="(?:anchor|connector)-warthog-grip-/g) ?? []).length, 50);
 });
 
 test('Hornet grip definitions use all supplied artwork fields without callouts', () => {

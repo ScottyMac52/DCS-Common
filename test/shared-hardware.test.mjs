@@ -1,4 +1,5 @@
 import { strict as assert } from 'node:assert';
+import { createHash } from 'node:crypto';
 import { readFileSync, existsSync } from 'node:fs';
 import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -52,6 +53,14 @@ for (const relativePath of requiredTemplateAssets) {
   const device = manifest.devices.find(({ id }) => id === 'vkb-f14-gunfighter');
   const drawio = readFileSync(join(root, 'assets', 'shared', 'hardware', device.drawio), 'utf8');
   const svg = readFileSync(join(root, 'assets', 'shared', 'hardware', device.svg), 'utf8');
+  if (device.sourceImages) {
+    const embeddedImages = [...drawio.matchAll(/id="hardware-image-[^"]+"[^>]*style="[^"]*image=data:image\/[^,;]+,([A-Za-z0-9+/=]+)/g)]
+      .map((match) => createHash('sha256').update(Buffer.from(match[1], 'base64')).digest('hex'));
+    const declaredImages = device.sourceImages.map((name) =>
+      createHash('sha256').update(readFileSync(join(root, 'assets', 'shared', 'hardware', 'source', name))).digest('hex'));
+    assert.deepEqual(embeddedImages, declaredImages,
+      `${device.id} draw.io must embed exactly its manifest-declared clean source images`);
+  }
   const hardwareRoot = join(root, 'assets', 'shared', 'hardware');
   assert.ok(existsSync(join(hardwareRoot, 'source', 'vkb-f14-grip-side.png')),
     'VKB F-14 side-view authoring source is missing');

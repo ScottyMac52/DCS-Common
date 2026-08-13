@@ -98,6 +98,12 @@ export function loadSharedHardware(deviceId, { commonRoot = resolveDcsCommonRoot
   for (const id of calloutIds) {
     const value = escapeXml(values[id] ?? '');
     const color = labelColors[id];
+    if (!value) {
+      svg = svg.replace(
+        new RegExp(`(<g data-control-id="${id}")([^>]*>)`),
+        '$1 display="none"$2',
+      );
+    }
     svg = svg.replace(new RegExp(`(<text id="lbl-${id}"[^>]*>)[\\s\\S]*?(</text>)`), (match, open, close) => {
       let tag = open;
       if (color) {

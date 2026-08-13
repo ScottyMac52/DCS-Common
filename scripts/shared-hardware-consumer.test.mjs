@@ -10,6 +10,9 @@ test('consumer API resolves stable device IDs and fills shared labels', () => {
   const loaded = loadSharedHardware('tm-mfd', { commonRoot, labels: { 'mfd-osb-t1': 'Test binding' } });
   assert.equal(loaded.calloutIds.length, 48);
   assert.match(loaded.svg, /Test binding/);
+  assert.match(loaded.svg, /data-control-id="mfd-osb-t1"/);
+  assert.doesNotMatch(loaded.svg, /data-control-id="mfd-osb-t1" display="none"/);
+  assert.match(loaded.svg, /data-control-id="mfd-osb-t2" display="none"/);
 });
 
 test('consumer API rejects physical button prefixes in displayed callouts', () => {

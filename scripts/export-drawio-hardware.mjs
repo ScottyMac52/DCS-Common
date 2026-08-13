@@ -136,6 +136,7 @@ function render(device, xml) {
     const ay = anchor.y + anchor.height / 2;
     const end = endpoint(label, anchor);
     lines.push(`  <!-- callout:${id} -->`);
+    lines.push(`  <g data-control-id="${esc(id)}">`);
     if (connector.points.length) {
       const points = [{ x: ax, y: ay }, ...connector.points, end]
         .map(({ x, y }) => `${x},${y}`)
@@ -146,6 +147,7 @@ function render(device, xml) {
     }
     lines.push(`  <circle cx=\"${ax}\" cy=\"${ay}\" r=\"5\" fill=\"#00bfff\" stroke=\"#0f172a\" stroke-width=\"1.5\"/>`);
     renderLabelBox(lines, label, id);
+    lines.push('  </g>');
   }
 
   // Standalone label boxes (no callout lines) — used when the photo already has control artwork.
@@ -153,7 +155,9 @@ function render(device, xml) {
     if (labelsViaConnector.has(label.id)) continue;
     const id = label.id.startsWith('label-') ? label.id.slice('label-'.length) : label.id;
     lines.push(`  <!-- box:${id} -->`);
+    lines.push(`  <g data-control-id="${esc(id)}">`);
     renderLabelBox(lines, label, id);
+    lines.push('  </g>');
   }
 
   lines.push(`  <text x=\"${width / 2}\" y=\"${height - 8}\" text-anchor=\"middle\" font-family=\"Arial,sans-serif\" font-size=\"12\" fill=\"#475569\">${esc(footer.value)}</text>`);

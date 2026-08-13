@@ -18,6 +18,7 @@
       "id": "tm-warthog-grip",
       "aliases": ["ava-base-f16c"],
       "label": "TM Warthog Joystick",
+      "sourceImages": ["f16c-warthog-grip-front.png", "f16c-warthog-grip-rear.png"],
       "drawio": "drawio/tm-warthog-grip.drawio",
       "svg": "svg/tm-warthog-grip.svg",
       "lua": "lua/tm-warthog-grip.lua"
@@ -33,6 +34,7 @@
     {
       "id": "tm-mfd",
       "label": "TM MFD",
+      "sourceImages": ["mfd-clean.png"],
       "drawio": "drawio/tm-mfd.drawio",
       "svg": "svg/tm-mfd.svg",
       "lua": "lua/tm-mfd.lua"
@@ -47,6 +49,7 @@
     {
       "id": "winctrl-pto2",
       "label": "WINCTRL PTO2",
+      "sourceImages": ["pto2-clean.png"],
       "drawio": "drawio/winctrl-pto2.drawio",
       "svg": "svg/winctrl-pto2.svg",
       "lua": "lua/winctrl-pto2.lua"
@@ -54,6 +57,7 @@
     {
       "id": "winctrl-icp",
       "label": "WINCTRL ViperAce ICP",
+      "sourceImages": ["f16c-icp-clean.png"],
       "drawio": "drawio/winctrl-icp.drawio",
       "svg": "svg/winctrl-icp.svg",
       "lua": "lua/winctrl-icp.lua"
@@ -82,6 +86,7 @@
     {
       "id": "viper-tqs-mission-pack",
       "label": "Viper TQS + Mission Pack",
+      "sourceImages": ["viper-tqs-handle-controls.png", "viper-mission-pack-controls.png"],
       "drawio": "drawio/viper-tqs-mission-pack.drawio",
       "svg": "svg/viper-tqs-mission-pack.svg",
       "lua": "lua/viper-tqs-mission-pack.lua"
