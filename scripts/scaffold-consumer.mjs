@@ -143,6 +143,10 @@ export function resolveDeviceMapping(profileFileName, deviceMap, overrides = {})
   return { deviceId: null, matchedPattern: null, source: 'unmapped', stem };
 }
 
+export function resolveCatalogInputKey(deviceId, inputKey, deviceMap) {
+  return deviceMap.inputKeyAliases?.[deviceId]?.[inputKey] ?? inputKey;
+}
+
 export function resolveInstanceHint(stem, deviceId, deviceMap) {
   for (const entry of deviceMap.instancePatterns ?? []) {
     if (entry.deviceId !== deviceId) continue;
@@ -297,7 +301,8 @@ export function buildPreview({ profilesDir, modifiersPath = null, mapPath = null
       for (const input of binding.added) {
         const reformers = input.reformers ?? [];
         const modifierModes = reformers.map((name) => modifierByName.get(name)?.mode ?? null);
-        const calloutIds = catalog.byKey.get(input.key) ?? [];
+        const catalogKey = resolveCatalogInputKey(mapping.deviceId, input.key, deviceMap);
+        const calloutIds = catalog.byKey.get(catalogKey) ?? [];
         let status = 'OK';
         if (!mapping.deviceId) status = 'Unmapped device';
         else if (calloutIds.length === 0) status = 'No callout';
@@ -320,6 +325,7 @@ export function buildPreview({ profilesDir, modifiersPath = null, mapPath = null
           command: binding.command,
           name: binding.name,
           key: input.key,
+          catalogKey,
           reformers,
           chord: chordKey(reformers),
           modifierModes,
