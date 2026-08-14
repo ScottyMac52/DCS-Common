@@ -50,6 +50,14 @@ test('parseArgs accepts a consumer-owned device override map', () => {
   assert.equal(options.mapPath, 'config/scaffold-device-overrides.json');
 });
 
+test('parseArgs accepts physical instance roles', () => {
+  const options = parseArgs([
+    '--preview-json', 'out.json', '--profiles-dir', 'profiles',
+    '--roles', 'config/scaffold-instance-roles.json',
+  ]);
+  assert.equal(options.rolesPath, 'config/scaffold-instance-roles.json');
+});
+
 test('device map resolves conservative base and grip combinations', () => {
   const map = loadDeviceMap(commonRoot);
   const cases = [
@@ -493,4 +501,108 @@ test('writeConsumer materializes profiles, kneeboard.json, and report', () => {
   const packageJson = JSON.parse(readFileSync(join(out, 'package.json'), 'utf8'));
   assert.equal(packageJson.name, 'DCS-F-16C-Components');
   assert.ok(result.plannedFiles.length > 5);
+});
+
+
+test('repeated identical hardware gets one stable profile and kneeboard page per GUID', () => {
+  const root = mkdtempSync(join(tmpdir(), 'scaffold-repeated-quadrant-'));
+  const profilesDir = join(root, 'joystick');
+  mkdirSync(profilesDir);
+  const first = 'Logitech Flight Quadrant {11111111-1111-1111-1111-111111111111}.diff.lua';
+  const second = 'Logitech Flight Quadrant {22222222-2222-2222-2222-222222222222}.diff.lua';
+  writeFileSync(join(profilesDir, first), `local diff = { ["axisDiffs"] = {
+    ["a1"] = { ["added"] = { [1] = { ["key"] = "JOY_Z" }, }, ["name"] = "Supercharger handle", },
+  } } return diff`);
+  writeFileSync(join(profilesDir, second), `local diff = { ["axisDiffs"] = {
+    ["a2"] = { ["added"] = { [1] = { ["key"] = "JOY_Z" }, }, ["name"] = "Mixture handle", },
+  } } return diff`);
+
+  const preview = buildPreview({ profilesDir, commonRoot });
+  assert.equal(preview.devices.length, 2);
+  assert.equal(preview.devices[0].deviceId, preview.devices[1].deviceId);
+  assert.notEqual(preview.devices[0].guid, preview.devices[1].guid);
+  assert.notEqual(preview.devices[0].profileKey, preview.devices[1].profileKey);
+  assert.deepEqual(preview.rows.map((row) => row.key), ['JOY_Z', 'JOY_Z']);
+
+  const config = buildDraftKneeboardConfig(preview, {
+    displayName: 'Combined Arms',
+    inputModuleId: 'CombinedArms',
+  });
+  assert.equal(Object.keys(config.profiles).length, 2);
+  assert.equal(config.pages.length, 2);
+  assert.notEqual(config.pages[0].profile, config.pages[1].profile);
+  assert.equal(config.pages[0].deviceId, config.pages[1].deviceId);
+});
+
+test('semantic roles distinguish two Warthog sticks while reusing canonical hardware', () => {
+  const root = mkdtempSync(join(tmpdir(), 'scaffold-role-sticks-'));
+  const profilesDir = join(root, 'joystick');
+  mkdirSync(profilesDir);
+  const left = 'Joystick - HOTAS Warthog {AAAAAAAA-AAAA-AAAA-AAAA-AAAAAAAAAAAA}.diff.lua';
+  const right = 'Joystick - HOTAS Warthog {BBBBBBBB-BBBB-BBBB-BBBB-BBBBBBBBBBBB}.diff.lua';
+  for (const profile of [left, right]) {
+    writeFileSync(join(profilesDir, profile), `local diff = { ["keyDiffs"] = {
+      ["d1"] = { ["added"] = { [1] = { ["key"] = "JOY_BTN1" }, }, ["name"] = "Fire", },
+    } } return diff`);
+  }
+  const rolesPath = join(root, 'roles.json');
+  writeFileSync(rolesPath, JSON.stringify({
+    [left]: 'left-tank-control',
+    'BBBBBBBB-BBBB-BBBB-BBBB-BBBBBBBBBBBB': 'right-tank-control',
+  }));
+
+  const preview = buildPreview({ profilesDir, rolesPath, commonRoot });
+  assert.deepEqual(preview.devices.map((device) => device.role), [
+    'left-tank-control',
+    'right-tank-control',
+  ]);
+  assert.deepEqual(preview.devices.map((device) => device.profileKey), [
+    'tm-warthog-grip-left-tank-control',
+    'tm-warthog-grip-right-tank-control',
+  ]);
+  const config = buildDraftKneeboardConfig(preview, {
+    displayName: 'Combined Arms',
+    inputModuleId: 'CombinedArms',
+  });
+  assert.equal(config.pages.length, 2);
+  assert.ok(config.profiles['tm-warthog-grip-left-tank-control']);
+  assert.ok(config.profiles['tm-warthog-grip-right-tank-control']);
+  assert.ok(config.pages.every((page) => page.deviceId === 'tm-warthog-grip'));
+});
+
+test('duplicate semantic roles are rejected for the same canonical device', () => {
+  const root = mkdtempSync(join(tmpdir(), 'scaffold-duplicate-roles-'));
+  const profilesDir = join(root, 'joystick');
+  mkdirSync(profilesDir);
+  const profiles = [
+    'Joystick - HOTAS Warthog {CCCCCCCC-CCCC-CCCC-CCCC-CCCCCCCCCCCC}.diff.lua',
+    'Joystick - HOTAS Warthog {DDDDDDDD-DDDD-DDDD-DDDD-DDDDDDDDDDDD}.diff.lua',
+  ];
+  for (const profile of profiles) {
+    writeFileSync(join(profilesDir, profile), `local diff = { ["keyDiffs"] = {
+      ["d1"] = { ["added"] = { [1] = { ["key"] = "JOY_BTN1" }, }, ["name"] = "Fire", },
+    } } return diff`);
+  }
+  const rolesPath = join(root, 'roles.json');
+  writeFileSync(rolesPath, JSON.stringify(Object.fromEntries(profiles.map((profile) => [profile, 'tank-control']))));
+
+  const preview = buildPreview({ profilesDir, rolesPath, commonRoot });
+  assert.ok(preview.errors.some((error) => /profile key conflict/i.test(error)));
+});
+
+test('numbered MFD instance hints keep their established profile aliases', () => {
+  const root = mkdtempSync(join(tmpdir(), 'scaffold-mfd-instances-'));
+  const profilesDir = join(root, 'joystick');
+  mkdirSync(profilesDir);
+  for (const number of [1, 2]) {
+    writeFileSync(
+      join(profilesDir, `F16 MFD ${number} {EEEEEEEE-EEEE-EEEE-EEEE-EEEEEEEEEEE${number}}.diff.lua`),
+      `local diff = { ["keyDiffs"] = {
+        ["d1"] = { ["added"] = { [1] = { ["key"] = "JOY_BTN1" }, }, ["name"] = "OSB 1", },
+      } } return diff`,
+    );
+  }
+
+  const preview = buildPreview({ profilesDir, commonRoot });
+  assert.deepEqual(preview.devices.map((device) => device.profileKey), ['tm-mfd-1', 'tm-mfd-2']);
 });
