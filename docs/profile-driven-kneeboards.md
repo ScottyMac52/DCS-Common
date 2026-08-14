@@ -37,6 +37,8 @@ When scaffolding a consumer, pass a consumer-owned `--map` JSON file that maps t
 
 The chosen alias is retained as the generated page `deviceId` and resolves to the canonical grip Lua, draw.io, and SVG assets. Without an override, a bare AB9 filename resolves to `moza-ab9`, whose catalog contains only the base pitch and roll axes. The separately connected VKB F-14 controller uses `vkb-f14-gunfighter`.
 
+MOZA profiles may expose the cardinal POV directions as `JOY_BTN_POV1_U/R/D/L`, while the canonical Hornet and Warthog/Viper catalogs use `JOY_POV1_U/R/D/L`. During scaffold callout lookup, the two MOZA composite aliases translate only those verified keys to the canonical catalog keys. Generated `controls` retain the original `JOY_BTN_POV1_*` values so binding resolution still targets the native DCS profile. Other device identities are not normalized.
+
 See [Consumer repository setup](consumer-repository-setup.md#generic-moza-ab9-grip-selection) for copyable CLI and WPF instructions.
 
 ## Modifier layers (overview)
