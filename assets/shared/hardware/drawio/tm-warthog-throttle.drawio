@@ -124,11 +124,11 @@
         <mxCell id="label-warthog-thr-axis-slew-y" parent="1" style="text;whiteSpace=wrap;html=1;strokeColor=none;fillColor=none;fontColor=#111827;fontFamily=Arial;fontSize=8;align=center;verticalAlign=middle;" value="AXIS_SLEW_Y" vertex="1">
           <mxGeometry height="15" width="65.5" x="714.5" y="66" as="geometry" />
         </mxCell>
-        <mxCell id="label-warthog-thr-axis-right-throttle" parent="1" style="text;whiteSpace=wrap;html=1;strokeColor=none;fillColor=none;fontColor=#111827;fontFamily=Arial;fontSize=8;align=center;verticalAlign=middle;rotation=270;" value="AXIS_RIGHT_THROTTLE" vertex="1">
-          <mxGeometry height="116" width="27" x="442" y="548" as="geometry" />
+        <mxCell id="label-warthog-thr-axis-right-throttle" parent="1" style="text;whiteSpace=wrap;html=1;strokeColor=none;fillColor=none;fontColor=#111827;fontFamily=Arial;fontSize=8;align=center;verticalAlign=middle;" value="AXIS_RIGHT_THROTTLE" vertex="1">
+          <mxGeometry height="16" width="57" x="442" y="548" as="geometry" />
         </mxCell>
-        <mxCell id="label-warthog-thr-axis-left-throttle" parent="1" style="text;whiteSpace=wrap;html=1;strokeColor=none;fillColor=none;fontColor=#111827;fontFamily=Arial;fontSize=8;align=center;verticalAlign=middle;rotation=270;" value="AXIS_LEFT_THROTTLE" vertex="1">
-          <mxGeometry height="116" width="27" x="412" y="548" as="geometry" />
+        <mxCell id="label-warthog-thr-axis-left-throttle" parent="1" style="text;whiteSpace=wrap;html=1;strokeColor=none;fillColor=none;fontColor=#111827;fontFamily=Arial;fontSize=8;align=center;verticalAlign=middle;" value="AXIS_LEFT_THROTTLE" vertex="1">
+          <mxGeometry height="16" width="57" x="382" y="548" as="geometry" />
         </mxCell>
         <mxCell id="label-warthog-thr-axis-friction" parent="1" style="text;whiteSpace=wrap;html=1;strokeColor=none;fillColor=none;fontColor=#111827;fontFamily=Arial;fontSize=8;align=center;verticalAlign=middle;" value="AXIS_FRICTION" vertex="1">
           <mxGeometry height="16" width="95" x="685" y="635" as="geometry" />
