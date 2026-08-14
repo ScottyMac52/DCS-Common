@@ -37,6 +37,30 @@ node scripts/scaffold-consumer.mjs \
 
 Scaffold output is a **draft**: review `SCAFFOLD-REPORT.md` and `config/kneeboard.json`, fix any **UNMAPPED** devices (or re-run with `--map`), then complete sections 6–12 below (build, package, CI).
 
+### Multiple physical instances of shared hardware
+
+The importer treats the canonical hardware model, the GUID-qualified physical instance, and the operator role as separate identities. Two devices may therefore share one `deviceId` and the same `JOY_*` keys while receiving separate profile aliases and kneeboard pages.
+
+The WPF preview lists every physical instance. For repeated hardware, optionally enter roles such as `left-tank-control` and `right-tank-control` before selecting **Proceed**. With no role, the scaffold uses a stable GUID-backed profile key. Existing numbered devices such as MFD 1–4 keep their established aliases.
+
+CLI users can provide the same choices with `--roles`:
+
+```json
+{
+  "Joystick - HOTAS Warthog {AAAAAAAA-AAAA-AAAA-AAAA-AAAAAAAAAAAA}.diff.lua": "left-tank-control",
+  "BBBBBBBB-BBBB-BBBB-BBBB-BBBBBBBBBBBB": "right-tank-control"
+}
+```
+
+```bash
+node scripts/scaffold-consumer.mjs \
+  --preview-json preview.json \
+  --profiles-dir ./joystick \
+  --roles ./instance-roles.json
+```
+
+Keys may be a complete profile filename or a physical device GUID. Roles distinguish use, not hardware type: both examples still resolve to the same canonical Warthog device and reuse its shared assets and callouts. The roles file is copied to `config/scaffold-instance-roles.json` when the consumer is written.
+
 App releases use **four-part** tags (`v1.0.0.0`) and Inno Setup via [shared-github-workflows](https://github.com/ScottyMac52/shared-github-workflows). Consumer **package** tags remain `vMAJOR.MINOR.PATCH`.
 
 ## 1. Decide the DCS identities first
