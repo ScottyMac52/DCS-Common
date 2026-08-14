@@ -114,7 +114,7 @@ export function loadDeviceMap(commonRoot) {
 export function loadManifestDeviceIds(commonRoot) {
   const path = join(commonRoot, 'assets/shared/hardware/manifest.json');
   const manifest = JSON.parse(readFileSync(path, 'utf8'));
-  return new Set((manifest.devices ?? []).map((device) => device.id));
+  return new Set((manifest.devices ?? []).flatMap((device) => [device.id, ...(device.aliases ?? [])]));
 }
 
 export function resolveDeviceMapping(profileFileName, deviceMap, overrides = {}) {
@@ -149,7 +149,7 @@ export function resolveInstanceHint(stem, deviceId, deviceMap) {
 export function loadCalloutCatalog(commonRoot, deviceId) {
   if (!deviceId) return { byKey: new Map(), controls: [] };
   const manifest = JSON.parse(readFileSync(join(commonRoot, 'assets/shared/hardware/manifest.json'), 'utf8'));
-  const device = manifest.devices.find((entry) => entry.id === deviceId);
+  const device = manifest.devices.find((entry) => entry.id === deviceId || entry.aliases?.includes(deviceId));
   if (!device?.lua) return { byKey: new Map(), controls: [] };
   const luaPath = join(commonRoot, 'assets/shared/hardware', device.lua);
   if (!existsSync(luaPath)) return { byKey: new Map(), controls: [] };
