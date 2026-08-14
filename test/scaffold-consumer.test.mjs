@@ -307,7 +307,7 @@ test('writeConsumer preserves the consumer-owned device override map', () => {
 
   assert.equal(
     readFileSync(join(out, 'config/scaffold-device-overrides.json'), 'utf8'),
-    `${readFileSync(mapPath, 'utf8')}\n`,
+    readFileSync(mapPath, 'utf8'),
   );
   const config = JSON.parse(readFileSync(join(out, 'config/kneeboard.json'), 'utf8'));
   assert.equal(config.pages[0].deviceId, 'moza-ab9-hornet-grip');
