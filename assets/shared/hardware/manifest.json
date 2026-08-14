@@ -16,7 +16,7 @@
     },
     {
       "id": "tm-warthog-grip",
-      "aliases": ["ava-base-f16c"],
+      "aliases": ["ava-base-f16c", "ava-base-warthog-grip", "warthog-base-warthog-grip", "moza-ab9-warthog-grip"],
       "label": "TM Warthog Joystick",
       "drawio": "drawio/tm-warthog-grip.drawio",
       "svg": "svg/tm-warthog-grip.svg",
@@ -24,7 +24,7 @@
     },
     {
       "id": "grip-f18c",
-      "aliases": ["ava-base-f18c"],
+      "aliases": ["ava-base-f18c", "ava-base-hornet-grip", "warthog-base-hornet-grip", "moza-ab9-hornet-grip"],
       "label": "Thrustmaster F/A-18C Hornet Grip",
       "drawio": "drawio/grip-f18c.drawio",
       "svg": "svg/grip-f18c.svg",

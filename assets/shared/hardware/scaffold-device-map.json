@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "description": "Ordered pattern list: first case-insensitive substring match on the DCS profile filename (GUID stripped) wins. Never invent deviceIds outside the shared hardware manifest.",
+  "description": "Ordered pattern list: first case-insensitive substring match on the DCS profile filename (GUID stripped) wins. Base/grip combinations must use a specific pattern or an explicit override; a bare MOZA AB9 name resolves to the standalone base because its filename does not identify an attached grip. Never invent deviceIds outside the shared hardware manifest or its aliases.",
   "mappings": [
     {
       "deviceId": "winctrl-pto2",
@@ -19,12 +19,28 @@
       "patterns": ["VKBSim Gunfighter F14", "Gunfighter F14", "VKB F14", "VKBSim Gunfighter"]
     },
     {
+      "deviceId": "moza-ab9-hornet-grip",
+      "patterns": ["MOZA AB9 F/A-18C", "MOZA AB9 Hornet"]
+    },
+    {
+      "deviceId": "moza-ab9-warthog-grip",
+      "patterns": ["MOZA AB9 F-16C", "MOZA AB9 F16C", "MOZA AB9 A-10C", "MOZA AB9 A10C", "MOZA AB9 Warthog"]
+    },
+    {
       "deviceId": "moza-ab9",
-      "patterns": ["MOZA AB9", "MOZA AB 9"]
+      "patterns": ["MOZA AB9 FFB Flight Base", "MOZA AB9 FFB Base", "MOZA AB9"]
     },
     {
       "deviceId": "ava-base-f18c",
-      "patterns": ["Ava [R] Hornet", "Ava Hornet", "AVA Hornet", "AVA F/A-18", "AVA F18"]
+      "patterns": ["Ava [R] Hornet"]
+    },
+    {
+      "deviceId": "ava-base-f16c",
+      "patterns": ["Ava [R] Viper"]
+    },
+    {
+      "deviceId": "warthog-base-hornet-grip",
+      "patterns": ["Joystick - HOTAS Warthog F/A-18C", "Warthog Base F/A-18C", "Warthog Base Hornet"]
     },
     {
       "deviceId": "tm-mfd",
@@ -36,11 +52,11 @@
     },
     {
       "deviceId": "tm-warthog-grip",
-      "patterns": ["Joystick - HOTAS Warthog", "HOTAS Warthog", "Warthog Joystick", "Warthog Grip", "Ava [R] Viper", "Ava Viper", "AVA Viper", "AVA F-16", "AVA F16", "AVA Base", "F-16C Grip", "F16C Grip"]
+      "patterns": ["Joystick - HOTAS Warthog"]
     },
     {
       "deviceId": "grip-f18c",
-      "patterns": ["F/A-18C", "FA-18C Grip", "Hornet Grip", "Thrustmaster F/A-18"]
+      "patterns": ["F/A-18C Hornet Flightstick", "Joystick - F/A-18C Hornet"]
     },
     {
       "deviceId": "onyourtwelve-pdcp",
@@ -51,14 +67,14 @@
       "patterns": ["T-Pendular", "TPR", "Pendular Rudder", "Thrustmaster TPR"]
     },
     {
-	  "deviceId": "logitech-throttle-quadrant",
-  	  "patterns": [
-    		"Logitech Throttle Quadrant",
-    		"Logitech Flight Quadrant",
-    		"Saitek Pro Flight Quadrant",
-    		"Throttle Quadrant"
-  		]
-  }	  
+      "deviceId": "logitech-throttle-quadrant",
+      "patterns": [
+        "Logitech Throttle Quadrant",
+        "Logitech Flight Quadrant",
+        "Saitek Pro Flight Quadrant",
+        "Throttle Quadrant"
+      ]
+    }
   ],
   "instancePatterns": [
     {
