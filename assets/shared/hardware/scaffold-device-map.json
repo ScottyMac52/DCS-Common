@@ -28,6 +28,7 @@
     },
     {
       "deviceId": "moza-ab9",
+      "source": "standalone-fallback",
       "patterns": ["MOZA AB9 FFB Flight Base", "MOZA AB9 FFB Base", "MOZA AB9"]
     },
     {
