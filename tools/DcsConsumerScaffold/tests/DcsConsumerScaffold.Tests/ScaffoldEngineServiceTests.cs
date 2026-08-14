@@ -15,6 +15,7 @@ public class ScaffoldEngineServiceTests
             profilesDir: "C:\\profiles",
             modifiersPath: "C:\\modifiers.lua",
             mozaGrip: "hornet",
+            rolesPath: "C:\\roles.json",
             commonRoot: "C:\\repo");
 
         Assert.Contains("--preview-json", args);
@@ -25,6 +26,8 @@ public class ScaffoldEngineServiceTests
         Assert.Contains("C:\\modifiers.lua", args);
         Assert.Contains("--moza-grip", args);
         Assert.Contains("hornet", args);
+        Assert.Contains("--roles", args);
+        Assert.Contains("C:\\roles.json", args);
         Assert.Contains("--common-root", args);
         Assert.Contains("C:\\repo", args);
     }
@@ -33,7 +36,7 @@ public class ScaffoldEngineServiceTests
     public void BuildPreviewArguments_OmitsModifiersWhenNull()
     {
         var args = ScaffoldEngineService.BuildPreviewArguments(
-            "script.mjs", "out.json", "profiles", null, null, "root");
+            "script.mjs", "out.json", "profiles", null, null, null, "root");
 
         Assert.DoesNotContain("--modifiers", args);
     }
@@ -46,6 +49,7 @@ public class ScaffoldEngineServiceTests
             profilesDir: "profiles",
             modifiersPath: "modifiers.lua",
             mozaGrip: "viper",
+            rolesPath: "roles.json",
             commonRoot: "root",
             outputDir: "out",
             displayName: "F-16C",
@@ -60,6 +64,8 @@ public class ScaffoldEngineServiceTests
         Assert.Contains("--input-module-id", args);
         Assert.Contains("F-16C_50", args);
         Assert.Contains("--kneeboard-id", args);
+        Assert.Contains("--roles", args);
+        Assert.Contains("roles.json", args);
         Assert.Contains("--repo-name", args);
         Assert.Contains("DCS-F-16C-Components", args);
         Assert.Contains("--modifiers", args);
