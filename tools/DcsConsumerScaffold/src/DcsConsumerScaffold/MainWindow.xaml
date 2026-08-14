@@ -41,12 +41,15 @@
         <TextBox Text="{Binding ModifiersPath, UpdateSourceTrigger=PropertyChanged}" />
       </DockPanel>
 
-      <TextBlock Grid.Row="2" Grid.Column="0" VerticalAlignment="Center" Text="Device overrides (optional)" />
-      <DockPanel Grid.Row="2" Grid.Column="1" Margin="8,2,0,2">
-        <Button DockPanel.Dock="Right" Content="Browse…" Width="90" Margin="8,0,0,0" Click="BrowseMap_Click" />
-        <TextBox Text="{Binding MapPath, UpdateSourceTrigger=PropertyChanged}"
-                 ToolTip="Consumer-owned JSON map from profile filename or GUID-stripped stem to a manifest deviceId." />
-      </DockPanel>
+      <TextBlock Grid.Row="2" Grid.Column="0" VerticalAlignment="Center" Text="MOZA AB9 configuration" />
+      <ComboBox Grid.Row="2" Grid.Column="1" Margin="8,2,0,2"
+                SelectedValue="{Binding MozaGrip, UpdateSourceTrigger=PropertyChanged}"
+                SelectedValuePath="Tag"
+                ToolTip="Applied only when a generic MOZA AB9 profile is present.">
+        <ComboBoxItem Content="Standalone / no grip selection" Tag="standalone" />
+        <ComboBoxItem Content="F-16C Viper Grip" Tag="viper" />
+        <ComboBoxItem Content="F/A-18C/E/F Grip" Tag="hornet" />
+      </ComboBox>
 
       <TextBlock Grid.Row="3" Grid.Column="0" VerticalAlignment="Center" Text="DCS-Common root (optional)" />
       <DockPanel Grid.Row="3" Grid.Column="1" Margin="8,2,0,2">

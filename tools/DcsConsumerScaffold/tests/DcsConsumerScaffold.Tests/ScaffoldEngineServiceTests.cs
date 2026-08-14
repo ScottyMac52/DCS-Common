@@ -14,7 +14,7 @@ public class ScaffoldEngineServiceTests
             previewJsonPath: "C:\\temp\\preview.json",
             profilesDir: "C:\\profiles",
             modifiersPath: "C:\\modifiers.lua",
-            mapPath: "C:\\device-overrides.json",
+            mozaGrip: "hornet",
             commonRoot: "C:\\repo");
 
         Assert.Contains("--preview-json", args);
@@ -23,8 +23,8 @@ public class ScaffoldEngineServiceTests
         Assert.Contains("C:\\profiles", args);
         Assert.Contains("--modifiers", args);
         Assert.Contains("C:\\modifiers.lua", args);
-        Assert.Contains("--map", args);
-        Assert.Contains("C:\\device-overrides.json", args);
+        Assert.Contains("--moza-grip", args);
+        Assert.Contains("hornet", args);
         Assert.Contains("--common-root", args);
         Assert.Contains("C:\\repo", args);
     }
@@ -45,7 +45,7 @@ public class ScaffoldEngineServiceTests
             scriptPath: "script.mjs",
             profilesDir: "profiles",
             modifiersPath: "modifiers.lua",
-            mapPath: "device-overrides.json",
+            mozaGrip: "viper",
             commonRoot: "root",
             outputDir: "out",
             displayName: "F-16C",
@@ -63,8 +63,8 @@ public class ScaffoldEngineServiceTests
         Assert.Contains("--repo-name", args);
         Assert.Contains("DCS-F-16C-Components", args);
         Assert.Contains("--modifiers", args);
-        Assert.Contains("--map", args);
-        Assert.Contains("device-overrides.json", args);
+        Assert.Contains("--moza-grip", args);
+        Assert.Contains("viper", args);
     }
 
     [Fact]

@@ -216,9 +216,15 @@ node scripts/scaffold-consumer.mjs \
 
 The override key may be the exact `.diff.lua` filename, its filename without `.diff.lua`, or its GUID-stripped stem. The generated consumer preserves the map as `config/scaffold-device-overrides.json` and retains the selected composite alias in each generated page's `deviceId`.
 
-The WPF importer exposes the same file as **Device overrides (optional)**. Its preview grid reports `override`, `pattern`, `standalone-fallback`, or `invalid-override` as the mapping source.
+The WPF importer does not require an override file. Select one value under **MOZA AB9 configuration** before loading the preview:
 
-A bare generic AB9 profile without an override intentionally resolves to `moza-ab9`, the two-axis standalone base. Descriptive filenames containing F-16C/Warthog or F/A-18C/Hornet continue to use pattern matching. The separately connected VKB F-14 Gunfighter remains `vkb-f14-gunfighter` and is never an AB9 grip alias.
+- **Standalone / no grip selection** → `moza-ab9`
+- **F-16C Viper Grip** → `moza-ab9-warthog-grip`
+- **F/A-18C/E/F Grip** → `moza-ab9-hornet-grip`
+
+The choice applies only to a generic AB9 profile and is preserved in the generated page `deviceId`. The preview grid reports `ui-selection` for either selected grip and `standalone-fallback` for the standalone choice.
+
+The JSON `--map` mechanism remains available for CLI scaffolding and other ambiguous devices. A bare generic AB9 profile without either mechanism intentionally resolves to `moza-ab9`, the two-axis standalone base. Descriptive filenames containing F-16C/Warthog or F/A-18C/Hornet continue to use pattern matching. The separately connected VKB F-14 Gunfighter remains `vkb-f14-gunfighter` and is never an AB9 grip alias.
 
 ### Modifiers and layered pages
 

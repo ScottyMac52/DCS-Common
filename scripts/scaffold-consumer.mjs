@@ -48,6 +48,7 @@ Required (write):
 Optional:
   --modifiers <path>
   --map <path>                consumer-owned profile filename/stem to deviceId overrides (JSON)
+  --moza-grip <value>          standalone, viper, or hornet; applies to generic AB9 profiles
   --common-root <path>
   --repo-name <name>          default: derived from display name
   --dry-run                   report planned writes without creating files
@@ -64,6 +65,7 @@ export function parseArgs(argv = process.argv.slice(2)) {
     profilesDir: null,
     modifiersPath: null,
     mapPath: null,
+    mozaGrip: null,
     commonRoot: defaultCommonRoot,
     displayName: null,
     inputModuleId: null,
@@ -85,6 +87,7 @@ export function parseArgs(argv = process.argv.slice(2)) {
     else if (arg === '--profiles-dir') options.profilesDir = next();
     else if (arg === '--modifiers') options.modifiersPath = next();
     else if (arg === '--map') options.mapPath = next();
+    else if (arg === '--moza-grip') options.mozaGrip = next().toLowerCase();
     else if (arg === '--common-root') options.commonRoot = resolve(next());
     else if (arg === '--display-name') options.displayName = next();
     else if (arg === '--input-module-id') options.inputModuleId = next();
@@ -92,6 +95,9 @@ export function parseArgs(argv = process.argv.slice(2)) {
     else if (arg === '--repo-name') options.repoName = next();
     else if (arg === '--dry-run') options.dryRun = true;
     else throw new Error(`Unknown argument: ${arg}`);
+  }
+  if (options.mozaGrip && !['standalone', 'viper', 'hornet'].includes(options.mozaGrip)) {
+    throw new Error('--moza-grip must be standalone, viper, or hornet');
   }
   return options;
 }
@@ -205,7 +211,7 @@ function profileKeyFromDevice(device) {
   return base;
 }
 
-export function buildPreview({ profilesDir, modifiersPath = null, mapPath = null, commonRoot = defaultCommonRoot }) {
+export function buildPreview({ profilesDir, modifiersPath = null, mapPath = null, mozaGrip = null, commonRoot = defaultCommonRoot }) {
   if (!profilesDir || !existsSync(profilesDir) || !statSync(profilesDir).isDirectory()) {
     throw new Error(`profiles directory not found: ${profilesDir}`);
   }
@@ -237,6 +243,16 @@ export function buildPreview({ profilesDir, modifiersPath = null, mapPath = null
   for (const fileName of profileFiles) {
     const absolute = join(profilesDir, fileName);
     const mapping = resolveDeviceMapping(fileName, deviceMap, overrides);
+    if (mapping.deviceId === 'moza-ab9' && mapping.source === 'standalone-fallback' && mozaGrip) {
+      const selectedDeviceId = {
+        standalone: 'moza-ab9',
+        viper: 'moza-ab9-warthog-grip',
+        hornet: 'moza-ab9-hornet-grip',
+      }[mozaGrip];
+      if (!selectedDeviceId) throw new Error('mozaGrip must be standalone, viper, or hornet');
+      mapping.deviceId = selectedDeviceId;
+      mapping.source = mozaGrip === 'standalone' ? 'standalone-fallback' : 'ui-selection';
+    }
     if (mapping.deviceId && !knownIds.has(mapping.deviceId)) {
       errors.push(`${fileName}: mapped deviceId '${mapping.deviceId}' is not in the shared hardware manifest`);
       mapping.deviceId = null;
@@ -325,6 +341,7 @@ export function buildPreview({ profilesDir, modifiersPath = null, mapPath = null
     profilesDir: resolve(profilesDir),
     modifiersPath: modifiersPath ? resolve(modifiersPath) : null,
     mapPath: mapPath ? resolve(mapPath) : null,
+    mozaGrip,
     modifiers: modifiers.map(({ name, device, key, mode }) => ({ name, device, key, mode })),
     devices,
     rows,
@@ -596,6 +613,7 @@ export function main(argv = process.argv.slice(2)) {
     profilesDir: options.profilesDir,
     modifiersPath: options.modifiersPath,
     mapPath: options.mapPath,
+    mozaGrip: options.mozaGrip,
     commonRoot: options.commonRoot,
   });
 

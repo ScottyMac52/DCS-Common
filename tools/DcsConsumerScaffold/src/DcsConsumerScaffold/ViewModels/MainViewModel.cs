@@ -12,7 +12,7 @@ public sealed class MainViewModel : INotifyPropertyChanged
     private readonly ScaffoldEngineService _engine;
     private string _profilesDir = string.Empty;
     private string _modifiersPath = string.Empty;
-    private string _mapPath = string.Empty;
+    private string _mozaGrip = "standalone";
     private string _commonRoot = string.Empty;
     private string _outputDir = string.Empty;
     private string _displayName = string.Empty;
@@ -53,10 +53,10 @@ public sealed class MainViewModel : INotifyPropertyChanged
         set => Set(ref _modifiersPath, value);
     }
 
-    public string MapPath
+    public string MozaGrip
     {
-        get => _mapPath;
-        set => Set(ref _mapPath, value);
+        get => _mozaGrip;
+        set => Set(ref _mozaGrip, value);
     }
 
     public string CommonRoot
@@ -186,7 +186,7 @@ public sealed class MainViewModel : INotifyPropertyChanged
             var (document, stdout, stderr, exitCode) = await _engine.RunPreviewAsync(
                 ProfilesDir,
                 string.IsNullOrWhiteSpace(ModifiersPath) ? null : ModifiersPath,
-                string.IsNullOrWhiteSpace(MapPath) ? null : MapPath,
+                MozaGrip,
                 string.IsNullOrWhiteSpace(CommonRoot) ? null : CommonRoot);
 
             if (document?.Rows != null)
@@ -237,7 +237,7 @@ public sealed class MainViewModel : INotifyPropertyChanged
             var (stdout, stderr, exitCode) = await _engine.RunWriteAsync(
                 ProfilesDir,
                 string.IsNullOrWhiteSpace(ModifiersPath) ? null : ModifiersPath,
-                string.IsNullOrWhiteSpace(MapPath) ? null : MapPath,
+                MozaGrip,
                 string.IsNullOrWhiteSpace(CommonRoot) ? null : CommonRoot,
                 OutputDir,
                 DisplayName.Trim(),
