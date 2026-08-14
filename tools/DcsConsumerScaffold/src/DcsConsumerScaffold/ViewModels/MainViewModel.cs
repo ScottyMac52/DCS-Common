@@ -12,6 +12,7 @@ public sealed class MainViewModel : INotifyPropertyChanged
     private readonly ScaffoldEngineService _engine;
     private string _profilesDir = string.Empty;
     private string _modifiersPath = string.Empty;
+    private string _mapPath = string.Empty;
     private string _commonRoot = string.Empty;
     private string _outputDir = string.Empty;
     private string _displayName = string.Empty;
@@ -50,6 +51,12 @@ public sealed class MainViewModel : INotifyPropertyChanged
     {
         get => _modifiersPath;
         set => Set(ref _modifiersPath, value);
+    }
+
+    public string MapPath
+    {
+        get => _mapPath;
+        set => Set(ref _mapPath, value);
     }
 
     public string CommonRoot
@@ -179,6 +186,7 @@ public sealed class MainViewModel : INotifyPropertyChanged
             var (document, stdout, stderr, exitCode) = await _engine.RunPreviewAsync(
                 ProfilesDir,
                 string.IsNullOrWhiteSpace(ModifiersPath) ? null : ModifiersPath,
+                string.IsNullOrWhiteSpace(MapPath) ? null : MapPath,
                 string.IsNullOrWhiteSpace(CommonRoot) ? null : CommonRoot);
 
             if (document?.Rows != null)
@@ -229,6 +237,7 @@ public sealed class MainViewModel : INotifyPropertyChanged
             var (stdout, stderr, exitCode) = await _engine.RunWriteAsync(
                 ProfilesDir,
                 string.IsNullOrWhiteSpace(ModifiersPath) ? null : ModifiersPath,
+                string.IsNullOrWhiteSpace(MapPath) ? null : MapPath,
                 string.IsNullOrWhiteSpace(CommonRoot) ? null : CommonRoot,
                 OutputDir,
                 DisplayName.Trim(),
