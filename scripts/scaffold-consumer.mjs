@@ -247,11 +247,9 @@ export function assignDeviceInstances(devices, rows, roleOverrides = {}, errors 
         null;
       const role = requestedRole
         ? normalizedRole(requestedRole)
-        : device.instanceHint
-          ? `instance-${normalizedRole(device.instanceHint)}`
-          : repeated
-            ? `instance-${guid ?? normalizedRole(device.profileFile)}`
-            : null;
+        : !device.instanceHint && repeated
+          ? `instance-${guid ?? normalizedRole(device.profileFile)}`
+          : null;
       const profileKey = requestedRole
         ? `${deviceId}-${role}`
         : device.instanceHint
