@@ -228,6 +228,9 @@ function normalizedRole(value) {
 }
 
 export function assignDeviceInstances(devices, rows, roleOverrides = {}, errors = []) {
+  const normalizedRoleOverrides = new Map(
+    Object.entries(roleOverrides).map(([key, value]) => [key.toLowerCase(), value]),
+  );
   const groups = new Map();
   for (const device of devices) {
     if (!device.deviceId) continue;
@@ -242,8 +245,8 @@ export function assignDeviceInstances(devices, rows, roleOverrides = {}, errors 
       const guid = extractProfileGuid(device.profileFile);
       const physicalInstance = guid ?? device.profileFile;
       const requestedRole =
-        roleOverrides[device.profileFile] ??
-        (guid ? roleOverrides[guid] : null) ??
+        normalizedRoleOverrides.get(device.profileFile.toLowerCase()) ??
+        (guid ? normalizedRoleOverrides.get(guid) : null) ??
         null;
       const role = requestedRole
         ? normalizedRole(requestedRole)
