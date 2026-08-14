@@ -97,7 +97,7 @@ function renderLabelBox(lines, label, id) {
 }
 
 function render(device, xml) {
-  if (!xml.includes('compressed=\"false\"')) throw new Error(`${device.id}: draw.io source must be uncompressed XML`);
+  if (!/<diagram\\b[^>]*>\\s*<mxGraphModel\\b/.test(xml)) throw new Error(`${device.id}: draw.io source must contain an uncompressed mxGraphModel`);
   const modelTag = xml.match(/<mxGraphModel\b([^>]*)>/)?.[1];
   const width = Number(attr(modelTag, 'pageWidth'));
   const height = Number(attr(modelTag, 'pageHeight'));
