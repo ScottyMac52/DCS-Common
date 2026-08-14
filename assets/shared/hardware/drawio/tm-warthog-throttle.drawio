@@ -11,127 +11,127 @@
 +          <mxGeometry height="844" width="1008" x="0" y="0" as="geometry" />
 +        </mxCell>
         <mxCell id="label-warthog-thr-slew-push" parent="1" style="text;whiteSpace=wrap;html=1;strokeColor=none;fillColor=none;fontColor=#111827;fontFamily=Arial;fontSize=8;align=center;verticalAlign=middle;" value="SLEW_PUSH" vertex="1">
-          <mxGeometry height="20" width="59" x="653" y="597" as="geometry" />
+          <mxGeometry height="15" width="131" x="649" y="100" as="geometry" />
         </mxCell>
         <mxCell id="label-warthog-thr-mic-up" parent="1" style="text;whiteSpace=wrap;html=1;strokeColor=none;fillColor=none;fontColor=#111827;fontFamily=Arial;fontSize=8;align=center;verticalAlign=middle;" value="TX2" vertex="1">
-          <mxGeometry height="20" width="48" x="295" y="577" as="geometry" />
+          <mxGeometry height="13" width="75" x="276" y="90" as="geometry" />
         </mxCell>
         <mxCell id="label-warthog-thr-mic-right" parent="1" style="text;whiteSpace=wrap;html=1;strokeColor=none;fillColor=none;fontColor=#111827;fontFamily=Arial;fontSize=8;align=center;verticalAlign=middle;" value="TX3" vertex="1">
-          <mxGeometry height="20" width="45" x="336" y="600" as="geometry" />
+          <mxGeometry height="13" width="74" x="331" y="113" as="geometry" />
         </mxCell>
         <mxCell id="label-warthog-thr-mic-down" parent="1" style="text;whiteSpace=wrap;html=1;strokeColor=none;fillColor=none;fontColor=#111827;fontFamily=Arial;fontSize=8;align=center;verticalAlign=middle;" value="TX5" vertex="1">
-          <mxGeometry height="20" width="46" x="315" y="627" as="geometry" />
+          <mxGeometry height="12" width="75" x="265" y="144" as="geometry" />
         </mxCell>
         <mxCell id="label-warthog-thr-mic-left" parent="1" style="text;whiteSpace=wrap;html=1;strokeColor=none;fillColor=none;fontColor=#111827;fontFamily=Arial;fontSize=8;align=center;verticalAlign=middle;" value="TX1" vertex="1">
-          <mxGeometry height="20" width="47" x="254" y="600" as="geometry" />
+          <mxGeometry height="13" width="74" x="222" y="113" as="geometry" />
         </mxCell>
         <mxCell id="label-warthog-thr-mic-push" parent="1" style="text;whiteSpace=wrap;html=1;strokeColor=none;fillColor=none;fontColor=#111827;fontFamily=Arial;fontSize=8;align=center;verticalAlign=middle;" value="TX4" vertex="1">
-          <mxGeometry height="20" width="46" x="259" y="624" as="geometry" />
+          <mxGeometry height="12" width="74" x="341" y="165" as="geometry" />
         </mxCell>
         <mxCell id="label-warthog-thr-speedbrake-forward" parent="1" style="text;whiteSpace=wrap;html=1;strokeColor=none;fillColor=none;fontColor=#111827;fontFamily=Arial;fontSize=8;align=center;verticalAlign=middle;" value="SPEEDBRAKE_FORWARD" vertex="1">
-          <mxGeometry height="20" width="53" x="295" y="645" as="geometry" />
+          <mxGeometry height="13" width="100" x="264" y="208" as="geometry" />
         </mxCell>
         <mxCell id="label-warthog-thr-speedbrake-back" parent="1" style="text;whiteSpace=wrap;html=1;strokeColor=none;fillColor=none;fontColor=#111827;fontFamily=Arial;fontSize=8;align=center;verticalAlign=middle;" value="SPEEDBRAKE_BACK" vertex="1">
-          <mxGeometry height="20" width="53" x="295" y="661" as="geometry" />
+          <mxGeometry height="12" width="100" x="264" y="242" as="geometry" />
         </mxCell>
         <mxCell id="label-warthog-thr-boat-forward" parent="1" style="text;whiteSpace=wrap;html=1;strokeColor=none;fillColor=none;fontColor=#111827;fontFamily=Arial;fontSize=8;align=center;verticalAlign=middle;" value="BOAT_FORWARD" vertex="1">
-          <mxGeometry height="20" width="53" x="295" y="680" as="geometry" />
+          <mxGeometry height="12" width="100" x="264" y="265" as="geometry" />
         </mxCell>
         <mxCell id="label-warthog-thr-boat-back" parent="1" style="text;whiteSpace=wrap;html=1;strokeColor=none;fillColor=none;fontColor=#111827;fontFamily=Arial;fontSize=8;align=center;verticalAlign=middle;" value="BOAT_BACK" vertex="1">
-          <mxGeometry height="20" width="53" x="295" y="696" as="geometry" />
+          <mxGeometry height="12" width="100" x="264" y="298" as="geometry" />
         </mxCell>
         <mxCell id="label-warthog-thr-china-forward" parent="1" style="text;whiteSpace=wrap;html=1;strokeColor=none;fillColor=none;fontColor=#111827;fontFamily=Arial;fontSize=8;align=center;verticalAlign=middle;" value="CHINA_FORWARD" vertex="1">
-          <mxGeometry height="20" width="53" x="295" y="716" as="geometry" />
+          <mxGeometry height="12" width="100" x="264" y="321" as="geometry" />
         </mxCell>
         <mxCell id="label-warthog-thr-china-back" parent="1" style="text;whiteSpace=wrap;html=1;strokeColor=none;fillColor=none;fontColor=#111827;fontFamily=Arial;fontSize=8;align=center;verticalAlign=middle;" value="CHINA_BACK" vertex="1">
-          <mxGeometry height="20" width="53" x="295" y="732" as="geometry" />
+          <mxGeometry height="13" width="100" x="264" y="354" as="geometry" />
         </mxCell>
         <mxCell id="label-warthog-thr-pinky-forward" parent="1" style="text;whiteSpace=wrap;html=1;strokeColor=none;fillColor=none;fontColor=#111827;fontFamily=Arial;fontSize=8;align=center;verticalAlign=middle;" value="PINKY_FORWARD" vertex="1">
-          <mxGeometry height="20" width="58" x="712" y="696" as="geometry" />
+          <mxGeometry height="15" width="106" x="674" y="259" as="geometry" />
         </mxCell>
         <mxCell id="label-warthog-thr-pinky-back" parent="1" style="text;whiteSpace=wrap;html=1;strokeColor=none;fillColor=none;fontColor=#111827;fontFamily=Arial;fontSize=8;align=center;verticalAlign=middle;" value="PINKY_BACK" vertex="1">
-          <mxGeometry height="20" width="58" x="712" y="718" as="geometry" />
+          <mxGeometry height="16" width="106" x="674" y="299" as="geometry" />
         </mxCell>
         <mxCell id="label-warthog-thr-left-throttle-button" parent="1" style="text;whiteSpace=wrap;html=1;strokeColor=none;fillColor=none;fontColor=#111827;fontFamily=Arial;fontSize=8;align=center;verticalAlign=middle;" value="LEFT_THROTTLE_BUTTON" vertex="1">
-          <mxGeometry height="20" width="59" x="695" y="562" as="geometry" />
+          <mxGeometry height="16" width="96" x="684" y="139" as="geometry" />
         </mxCell>
         <mxCell id="label-warthog-thr-fuel-flow-left" parent="1" style="text;whiteSpace=wrap;html=1;strokeColor=none;fillColor=none;fontColor=#111827;fontFamily=Arial;fontSize=8;align=center;verticalAlign=middle;" value="FUEL_FLOW_LEFT" vertex="1">
-          <mxGeometry height="20" width="58" x="446" y="40" as="geometry" />
+          <mxGeometry height="15" width="99" x="419" y="403" as="geometry" />
         </mxCell>
         <mxCell id="label-warthog-thr-fuel-flow-right" parent="1" style="text;whiteSpace=wrap;html=1;strokeColor=none;fillColor=none;fontColor=#111827;fontFamily=Arial;fontSize=8;align=center;verticalAlign=middle;" value="FUEL_FLOW_RIGHT" vertex="1">
-          <mxGeometry height="20" width="58" x="527" y="40" as="geometry" />
+          <mxGeometry height="15" width="99" x="534" y="403" as="geometry" />
         </mxCell>
         <mxCell id="label-warthog-thr-engine-operate-left-down" parent="1" style="text;whiteSpace=wrap;html=1;strokeColor=none;fillColor=none;fontColor=#111827;fontFamily=Arial;fontSize=8;align=center;verticalAlign=middle;" value="ENGINE_OPERATE_LEFT_DOWN" vertex="1">
-          <mxGeometry height="20" width="58" x="693" y="163" as="geometry" />
+          <mxGeometry height="15" width="106" x="674" y="475" as="geometry" />
         </mxCell>
         <mxCell id="label-warthog-thr-engine-operate-right-down" parent="1" style="text;whiteSpace=wrap;html=1;strokeColor=none;fillColor=none;fontColor=#111827;fontFamily=Arial;fontSize=8;align=center;verticalAlign=middle;" value="ENGINE_OPERATE_RIGHT_DOWN" vertex="1">
-          <mxGeometry height="20" width="58" x="693" y="205" as="geometry" />
+          <mxGeometry height="15" width="106" x="674" y="545" as="geometry" />
         </mxCell>
         <mxCell id="label-warthog-thr-apu-start" parent="1" style="text;whiteSpace=wrap;html=1;strokeColor=none;fillColor=none;fontColor=#111827;fontFamily=Arial;fontSize=8;align=center;verticalAlign=middle;" value="APU_START" vertex="1">
-          <mxGeometry height="20" width="58" x="655" y="228" as="geometry" />
+          <mxGeometry height="15" width="108" x="672" y="577" as="geometry" />
         </mxCell>
         <mxCell id="label-warthog-thr-landing-horn-silence" parent="1" style="text;whiteSpace=wrap;html=1;strokeColor=none;fillColor=none;fontColor=#111827;fontFamily=Arial;fontSize=8;align=center;verticalAlign=middle;" value="LANDING_HORN_SILENCE" vertex="1">
-          <mxGeometry height="20" width="58" x="690" y="299" as="geometry" />
+          <mxGeometry height="16" width="95" x="685" y="673" as="geometry" />
         </mxCell>
         <mxCell id="label-warthog-thr-flaps-up" parent="1" style="text;whiteSpace=wrap;html=1;strokeColor=none;fillColor=none;fontColor=#111827;fontFamily=Arial;fontSize=8;align=center;verticalAlign=middle;" value="FLAPS_UP" vertex="1">
-          <mxGeometry height="20" width="57" x="288" y="281" as="geometry" />
+          <mxGeometry height="15" width="98" x="243" y="602" as="geometry" />
         </mxCell>
         <mxCell id="label-warthog-thr-flaps-down" parent="1" style="text;whiteSpace=wrap;html=1;strokeColor=none;fillColor=none;fontColor=#111827;fontFamily=Arial;fontSize=8;align=center;verticalAlign=middle;" value="FLAPS_DOWN" vertex="1">
-          <mxGeometry height="20" width="57" x="288" y="298" as="geometry" />
+          <mxGeometry height="16" width="98" x="243" y="642" as="geometry" />
         </mxCell>
         <mxCell id="label-warthog-thr-eac-on" parent="1" style="text;whiteSpace=wrap;html=1;strokeColor=none;fillColor=none;fontColor=#111827;fontFamily=Arial;fontSize=8;align=center;verticalAlign=middle;" value="EAC_ON" vertex="1">
-          <mxGeometry height="20" width="58" x="275" y="389" as="geometry" />
+          <mxGeometry height="15" width="102" x="239" y="706" as="geometry" />
         </mxCell>
         <mxCell id="label-warthog-thr-rdr-alt-normal" parent="1" style="text;whiteSpace=wrap;html=1;strokeColor=none;fillColor=none;fontColor=#111827;fontFamily=Arial;fontSize=8;align=center;verticalAlign=middle;" value="RDR_ALT_NORMAL" vertex="1">
-          <mxGeometry height="20" width="58" x="338" y="457" as="geometry" />
+          <mxGeometry height="15" width="113" x="244" y="795" as="geometry" />
         </mxCell>
         <mxCell id="label-warthog-thr-ap-engage" parent="1" style="text;whiteSpace=wrap;html=1;strokeColor=none;fillColor=none;fontColor=#111827;fontFamily=Arial;fontSize=8;align=center;verticalAlign=middle;" value="AP_ENGAGE" vertex="1">
-          <mxGeometry height="20" width="58" x="584" y="457" as="geometry" />
+          <mxGeometry height="15" width="114" x="619" y="814" as="geometry" />
         </mxCell>
         <mxCell id="label-warthog-thr-ap-select-up" parent="1" style="text;whiteSpace=wrap;html=1;strokeColor=none;fillColor=none;fontColor=#111827;fontFamily=Arial;fontSize=8;align=center;verticalAlign=middle;" value="AP_SELECT_UP" vertex="1">
-          <mxGeometry height="20" width="58" x="699" y="370" as="geometry" />
+          <mxGeometry height="15" width="95" x="685" y="713" as="geometry" />
         </mxCell>
         <mxCell id="label-warthog-thr-ap-select-down" parent="1" style="text;whiteSpace=wrap;html=1;strokeColor=none;fillColor=none;fontColor=#111827;fontFamily=Arial;fontSize=8;align=center;verticalAlign=middle;" value="AP_SELECT_DOWN" vertex="1">
-          <mxGeometry height="20" width="58" x="699" y="389" as="geometry" />
+          <mxGeometry height="16" width="95" x="685" y="753" as="geometry" />
         </mxCell>
         <mxCell id="label-warthog-thr-left-engine-idle-off" parent="1" style="text;whiteSpace=wrap;html=1;strokeColor=none;fillColor=none;fontColor=#111827;fontFamily=Arial;fontSize=8;align=center;verticalAlign=middle;" value="LEFT_ENGINE_IDLE_OFF" vertex="1">
-          <mxGeometry height="20" width="42" x="417" y="271" as="geometry" />
+          <mxGeometry height="10" width="46" x="387" y="674" as="geometry" />
         </mxCell>
         <mxCell id="label-warthog-thr-right-engine-idle-off" parent="1" style="text;whiteSpace=wrap;html=1;strokeColor=none;fillColor=none;fontColor=#111827;fontFamily=Arial;fontSize=8;align=center;verticalAlign=middle;" value="RIGHT_ENGINE_IDLE_OFF" vertex="1">
-          <mxGeometry height="20" width="62" x="490" y="271" as="geometry" />
+          <mxGeometry height="10" width="46" x="438" y="674" as="geometry" />
         </mxCell>
         <mxCell id="label-warthog-thr-engine-operate-left-up" parent="1" style="text;whiteSpace=wrap;html=1;strokeColor=none;fillColor=none;fontColor=#111827;fontFamily=Arial;fontSize=8;align=center;verticalAlign=middle;" value="ENGINE_OPERATE_LEFT_UP" vertex="1">
-          <mxGeometry height="20" width="58" x="693" y="143" as="geometry" />
+          <mxGeometry height="16" width="106" x="674" y="434" as="geometry" />
         </mxCell>
         <mxCell id="label-warthog-thr-engine-operate-right-up" parent="1" style="text;whiteSpace=wrap;html=1;strokeColor=none;fillColor=none;fontColor=#111827;fontFamily=Arial;fontSize=8;align=center;verticalAlign=middle;" value="ENGINE_OPERATE_RIGHT_UP" vertex="1">
-          <mxGeometry height="20" width="58" x="693" y="185" as="geometry" />
+          <mxGeometry height="16" width="106" x="674" y="504" as="geometry" />
         </mxCell>
         <mxCell id="label-warthog-thr-coolie-up" parent="1" style="text;whiteSpace=wrap;html=1;strokeColor=none;fillColor=none;fontColor=#111827;fontFamily=Arial;fontSize=8;align=center;verticalAlign=middle;" value="COOLIE_UP" vertex="1">
-          <mxGeometry height="20" width="57" x="411" y="487" as="geometry" />
+          <mxGeometry height="16" width="89" x="446" y="16" as="geometry" />
         </mxCell>
         <mxCell id="label-warthog-thr-coolie-right" parent="1" style="text;whiteSpace=wrap;html=1;strokeColor=none;fillColor=none;fontColor=#111827;fontFamily=Arial;fontSize=8;align=center;verticalAlign=middle;" value="COOLIE_RIGHT" vertex="1">
-          <mxGeometry height="20" width="58" x="468" y="506" as="geometry" />
+          <mxGeometry height="16" width="89" x="528" y="56" as="geometry" />
         </mxCell>
         <mxCell id="label-warthog-thr-coolie-down" parent="1" style="text;whiteSpace=wrap;html=1;strokeColor=none;fillColor=none;fontColor=#111827;fontFamily=Arial;fontSize=8;align=center;verticalAlign=middle;" value="COOLIE_DOWN" vertex="1">
-          <mxGeometry height="20" width="59" x="409" y="562" as="geometry" />
+          <mxGeometry height="16" width="89" x="446" y="96" as="geometry" />
         </mxCell>
         <mxCell id="label-warthog-thr-coolie-left" parent="1" style="text;whiteSpace=wrap;html=1;strokeColor=none;fillColor=none;fontColor=#111827;fontFamily=Arial;fontSize=8;align=center;verticalAlign=middle;" value="COOLIE_LEFT" vertex="1">
-          <mxGeometry height="20" width="57" x="356" y="506" as="geometry" />
+          <mxGeometry height="16" width="89" x="370" y="56" as="geometry" />
         </mxCell>
         <mxCell id="label-warthog-thr-axis-slew-x" parent="1" style="text;whiteSpace=wrap;html=1;strokeColor=none;fillColor=none;fontColor=#111827;fontFamily=Arial;fontSize=8;align=center;verticalAlign=middle;" value="AXIS_SLEW_X" vertex="1">
-          <mxGeometry height="20" width="59" x="554" y="578" as="geometry" />
+          <mxGeometry height="15" width="65.5" x="649" y="66" as="geometry" />
         </mxCell>
         <mxCell id="label-warthog-thr-axis-slew-y" parent="1" style="text;whiteSpace=wrap;html=1;strokeColor=none;fillColor=none;fontColor=#111827;fontFamily=Arial;fontSize=8;align=center;verticalAlign=middle;" value="AXIS_SLEW_Y" vertex="1">
-          <mxGeometry height="20" width="59" x="625" y="577" as="geometry" />
+          <mxGeometry height="15" width="65.5" x="714.5" y="66" as="geometry" />
         </mxCell>
-        <mxCell id="label-warthog-thr-axis-right-throttle" parent="1" style="text;whiteSpace=wrap;html=1;strokeColor=none;fillColor=none;fontColor=#111827;fontFamily=Arial;fontSize=8;align=center;verticalAlign=middle;" value="AXIS_RIGHT_THROTTLE" vertex="1">
-          <mxGeometry height="20" width="84" x="409" y="784" as="geometry" />
+        <mxCell id="label-warthog-thr-axis-right-throttle" parent="1" style="text;whiteSpace=wrap;html=1;strokeColor=none;fillColor=none;fontColor=#111827;fontFamily=Arial;fontSize=8;align=center;verticalAlign=middle;rotation=270;" value="AXIS_RIGHT_THROTTLE" vertex="1">
+          <mxGeometry height="116" width="27" x="442" y="548" as="geometry" />
         </mxCell>
-        <mxCell id="label-warthog-thr-axis-left-throttle" parent="1" style="text;whiteSpace=wrap;html=1;strokeColor=none;fillColor=none;fontColor=#111827;fontFamily=Arial;fontSize=8;align=center;verticalAlign=middle;" value="AXIS_LEFT_THROTTLE" vertex="1">
-          <mxGeometry height="20" width="84" x="606" y="752" as="geometry" />
+        <mxCell id="label-warthog-thr-axis-left-throttle" parent="1" style="text;whiteSpace=wrap;html=1;strokeColor=none;fillColor=none;fontColor=#111827;fontFamily=Arial;fontSize=8;align=center;verticalAlign=middle;rotation=270;" value="AXIS_LEFT_THROTTLE" vertex="1">
+          <mxGeometry height="116" width="27" x="412" y="548" as="geometry" />
         </mxCell>
         <mxCell id="label-warthog-thr-axis-friction" parent="1" style="text;whiteSpace=wrap;html=1;strokeColor=none;fillColor=none;fontColor=#111827;fontFamily=Arial;fontSize=8;align=center;verticalAlign=middle;" value="AXIS_FRICTION" vertex="1">
-          <mxGeometry height="20" width="58" x="700" y="265" as="geometry" />
+          <mxGeometry height="16" width="95" x="685" y="635" as="geometry" />
         </mxCell>
         <mxCell id="footer" parent="1" style="text;html=1;align=center;verticalAlign=middle;fontFamily=Arial;fontSize=12;fontColor=#475569;strokeColor=none;fillColor=none;" value="TM Warthog Throttle" vertex="1">
           <mxGeometry height="20" width="1008" y="820" as="geometry" />
