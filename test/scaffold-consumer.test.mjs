@@ -41,7 +41,48 @@ test('parseArgs accepts write-mode identity flags', () => {
   assert.equal(options.inputModuleId, 'F-16C_50');
 });
 
-test('device map resolves shared Thrustmaster definitions and MFD instance hints', () => {
+test('device map resolves conservative base and grip combinations', () => {
+  const map = loadDeviceMap(commonRoot);
+  const cases = [
+    ['Ava [R] Viper {GUID}.diff.lua', 'ava-base-f16c'],
+    ['Ava [R] Hornet {GUID}.diff.lua', 'ava-base-f18c'],
+    ['Joystick - HOTAS Warthog {GUID}.diff.lua', 'tm-warthog-grip'],
+    ['Joystick - HOTAS Warthog F/A-18C {GUID}.diff.lua', 'warthog-base-hornet-grip'],
+    ['MOZA AB9 FFB Base {GUID}.diff.lua', 'moza-ab9'],
+    ['MOZA AB9 F-16C {GUID}.diff.lua', 'moza-ab9-warthog-grip'],
+    ['MOZA AB9 Hornet {GUID}.diff.lua', 'moza-ab9-hornet-grip'],
+  ];
+  for (const [filename, deviceId] of cases) {
+    const resolved = resolveDeviceMapping(filename, map);
+    assert.equal(resolved.deviceId, deviceId, filename);
+    assert.equal(resolved.source, 'pattern', filename);
+  }
+
+  for (const ambiguous of ['AVA Base {GUID}.diff.lua', 'Warthog Grip {GUID}.diff.lua', 'F-16C Grip {GUID}.diff.lua']) {
+    assert.equal(resolveDeviceMapping(ambiguous, map).deviceId, null, ambiguous);
+  }
+});
+
+test('manifest aliases support every base and grip override', () => {
+  const map = loadDeviceMap(commonRoot);
+  const aliases = [
+    ['ava-base-warthog-grip', 25],
+    ['warthog-base-warthog-grip', 25],
+    ['moza-ab9-warthog-grip', 25],
+    ['ava-base-hornet-grip', 29],
+    ['warthog-base-hornet-grip', 29],
+    ['moza-ab9-hornet-grip', 29],
+  ];
+  for (const [deviceId, calloutCount] of aliases) {
+    const filename = `${deviceId}.diff.lua`;
+    const resolved = resolveDeviceMapping(filename, map, { [filename]: deviceId });
+    assert.equal(resolved.deviceId, deviceId);
+    assert.equal(resolved.source, 'override');
+    assert.equal(loadCalloutCatalog(commonRoot, deviceId).controls.length, calloutCount);
+  }
+});
+
+test('device map resolves the Warthog throttle and MFD instance hints', () => {
   const map = loadDeviceMap(commonRoot);
   const throttle = resolveDeviceMapping(
     'Throttle - HOTAS Warthog {5200C960-CB32-11ed-8020-444553540000}.diff.lua',
@@ -49,12 +90,6 @@ test('device map resolves shared Thrustmaster definitions and MFD instance hints
   );
   assert.equal(throttle.deviceId, 'tm-warthog-throttle');
   assert.equal(throttle.source, 'pattern');
-
-  const avaViper = resolveDeviceMapping('AVA Viper {GUID}.diff.lua', map);
-  assert.equal(avaViper.deviceId, 'tm-warthog-grip');
-
-  const f16cGrip = resolveDeviceMapping('F-16C Grip {GUID}.diff.lua', map);
-  assert.equal(f16cGrip.deviceId, 'tm-warthog-grip');
 
   const mfd = resolveDeviceMapping(
     'F16 MFD 1 {C5BE49A0-2342-11ee-8001-444553540000}.diff.lua',
