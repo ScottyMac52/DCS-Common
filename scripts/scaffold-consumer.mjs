@@ -48,6 +48,7 @@ Required (write):
 Optional:
   --modifiers <path>
   --map <path>                consumer-owned profile filename/stem to deviceId overrides (JSON)
+  --roles <path>              consumer-owned profile filename/GUID to semantic instance roles (JSON)
   --moza-grip <value>          standalone, viper, or hornet; applies to generic AB9 profiles
   --common-root <path>
   --repo-name <name>          default: derived from display name
@@ -65,6 +66,7 @@ export function parseArgs(argv = process.argv.slice(2)) {
     profilesDir: null,
     modifiersPath: null,
     mapPath: null,
+    rolesPath: null,
     mozaGrip: null,
     commonRoot: defaultCommonRoot,
     displayName: null,
@@ -87,6 +89,7 @@ export function parseArgs(argv = process.argv.slice(2)) {
     else if (arg === '--profiles-dir') options.profilesDir = next();
     else if (arg === '--modifiers') options.modifiersPath = next();
     else if (arg === '--map') options.mapPath = next();
+    else if (arg === '--roles') options.rolesPath = next();
     else if (arg === '--moza-grip') options.mozaGrip = next().toLowerCase();
     else if (arg === '--common-root') options.commonRoot = resolve(next());
     else if (arg === '--display-name') options.displayName = next();
@@ -100,6 +103,10 @@ export function parseArgs(argv = process.argv.slice(2)) {
     throw new Error('--moza-grip must be standalone, viper, or hornet');
   }
   return options;
+}
+
+export function extractProfileGuid(filename) {
+  return filename.match(/\{([0-9A-Fa-f-]{36})\}(?=\.diff\.lua$)/iu)?.[1]?.toLowerCase() ?? null;
 }
 
 function stripGuidSuffix(filename) {
@@ -210,18 +217,89 @@ function slugifyId(value) {
 }
 
 function profileKeyFromDevice(device) {
+  if (device.profileKey) return device.profileKey;
   const base = device.deviceId ?? slugifyId(device.stem || 'device').toLowerCase();
   if (device.instanceHint) return `${base}-${device.instanceHint}`;
   return base;
 }
 
-export function buildPreview({ profilesDir, modifiersPath = null, mapPath = null, mozaGrip = null, commonRoot = defaultCommonRoot }) {
+function normalizedRole(value) {
+  return slugifyId(value).toLowerCase();
+}
+
+export function assignDeviceInstances(devices, rows, roleOverrides = {}, errors = []) {
+  const groups = new Map();
+  for (const device of devices) {
+    if (!device.deviceId) continue;
+    if (!groups.has(device.deviceId)) groups.set(device.deviceId, []);
+    groups.get(device.deviceId).push(device);
+  }
+
+  const usedProfileKeys = new Map();
+  for (const [deviceId, group] of groups) {
+    const repeated = group.length > 1;
+    for (const device of group) {
+      const guid = extractProfileGuid(device.profileFile);
+      const physicalInstance = guid ?? device.profileFile;
+      const requestedRole =
+        roleOverrides[device.profileFile] ??
+        (guid ? roleOverrides[guid] : null) ??
+        null;
+      const role = requestedRole
+        ? normalizedRole(requestedRole)
+        : device.instanceHint
+          ? `instance-${normalizedRole(device.instanceHint)}`
+          : repeated
+            ? `instance-${guid ?? normalizedRole(device.profileFile)}`
+            : null;
+      const profileKey = requestedRole
+        ? `${deviceId}-${role}`
+        : device.instanceHint
+          ? `${deviceId}-${normalizedRole(device.instanceHint)}`
+          : repeated
+            ? `${deviceId}-${guid ?? normalizedRole(device.profileFile)}`
+            : deviceId;
+
+      if (!role && requestedRole !== null) {
+        errors.push(`${device.profileFile}: instance role must contain at least one letter or number`);
+      }
+      const previous = usedProfileKeys.get(profileKey);
+      if (previous) {
+        errors.push(
+          `${device.profileFile}: generated profile key '${profileKey}' conflicts with ${previous}; assign unique instance roles`,
+        );
+      } else {
+        usedProfileKeys.set(profileKey, device.profileFile);
+      }
+
+      Object.assign(device, {
+        guid,
+        physicalInstance,
+        role,
+        profileKey,
+        repeatedDevice: repeated,
+      });
+      for (const row of rows) {
+        if (row.profileFile !== device.profileFile) continue;
+        Object.assign(row, {
+          guid,
+          physicalInstance,
+          role,
+          profileKey,
+        });
+      }
+    }
+  }
+}
+
+export function buildPreview({ profilesDir, modifiersPath = null, mapPath = null, rolesPath = null, mozaGrip = null, commonRoot = defaultCommonRoot }) {
   if (!profilesDir || !existsSync(profilesDir) || !statSync(profilesDir).isDirectory()) {
     throw new Error(`profiles directory not found: ${profilesDir}`);
   }
   const deviceMap = loadDeviceMap(commonRoot);
   const knownIds = loadManifestDeviceIds(commonRoot);
   const overrides = mapPath ? JSON.parse(readFileSync(mapPath, 'utf8')) : {};
+  const roleOverrides = rolesPath ? JSON.parse(readFileSync(rolesPath, 'utf8')) : {};
 
   let modifiers = [];
   const modifierErrors = [];
@@ -339,6 +417,8 @@ export function buildPreview({ profilesDir, modifiersPath = null, mapPath = null
     }
   }
 
+  assignDeviceInstances(devices, rows, roleOverrides, errors);
+
   return {
     schemaVersion: 1,
     generatedBy: 'scaffold-consumer.mjs',
@@ -347,6 +427,7 @@ export function buildPreview({ profilesDir, modifiersPath = null, mapPath = null
     profilesDir: resolve(profilesDir),
     modifiersPath: modifiersPath ? resolve(modifiersPath) : null,
     mapPath: mapPath ? resolve(mapPath) : null,
+    rolesPath: rolesPath ? resolve(rolesPath) : null,
     mozaGrip,
     modifiers: modifiers.map(({ name, device, key, mode }) => ({ name, device, key, mode })),
     devices,
@@ -408,7 +489,7 @@ export function buildDraftKneeboardConfig(preview, { displayName, inputModuleId 
   for (const device of preview.devices) {
     if (!device.deviceId) continue;
     const profileKey = profileKeyFromDevice(device);
-    const title = device.stem || device.deviceId;
+    const title = device.role ? `${device.stem || device.deviceId} — ${device.role}` : device.stem || device.deviceId;
     const file = `${String(pageIndex).padStart(2, '0')}-${slugifyId(profileKey).toUpperCase()}`;
     pageIndex += 1;
 
@@ -444,7 +525,7 @@ export function buildDraftKneeboardConfig(preview, { displayName, inputModuleId 
       file,
       deviceId: device.deviceId,
       title,
-      kicker: device.instanceHint ? `INSTANCE ${device.instanceHint}` : 'SCAFFOLD DRAFT',
+      kicker: device.role ? `ROLE ${device.role.toUpperCase()}` : device.instanceHint ? `INSTANCE ${device.instanceHint}` : 'SCAFFOLD DRAFT',
       _comment:
         'labels are pre-filled from DCS binding names via controls. Edit any string to override display text; ' +
         'keep callout IDs in sync with controls. You can also set "label" on a controls entry.',
@@ -530,6 +611,9 @@ export function writeConsumer({ preview, outputDir, displayName, inputModuleId, 
   if (preview.mapPath && existsSync(preview.mapPath)) {
     copy(preview.mapPath, 'config/scaffold-device-overrides.json');
   }
+  if (preview.rolesPath && existsSync(preview.rolesPath)) {
+    copy(preview.rolesPath, 'config/scaffold-instance-roles.json');
+  }
 
   const kneeboard = buildDraftKneeboardConfig(preview, { displayName, inputModuleId });
   write('config/kneeboard.json', JSON.stringify(kneeboard, null, 2));
@@ -574,14 +658,14 @@ export function writeConsumer({ preview, outputDir, displayName, inputModuleId, 
     '',
     ...preview.devices.map(
       (d) =>
-        `- \`${d.profileFile}\` → ${d.deviceId ?? '**UNMAPPED**'} (${d.mappingSource}${d.instanceHint ? `, instance ${d.instanceHint}` : ''}${d.mappingSource === 'standalone-fallback' ? '; generic AB9 profile—use --map to select the installed grip' : ''})`,
+        `- \`${d.profileFile}\` → profile \`${d.profileKey ?? '**UNMAPPED**'}\` → ${d.deviceId ?? '**UNMAPPED**'} (${d.mappingSource}${d.role ? `, role ${d.role}` : ''}${d.guid ? `, GUID ${d.guid}` : ''}${d.mappingSource === 'standalone-fallback' ? '; generic AB9 profile—select the installed grip' : ''})`,
     ),
     '',
     '## Next steps',
     '',
     '1. Review `config/kneeboard.json` (draft controls/layers).',
     '2. Review pre-filled `labels` (from DCS binding names). Edit strings to shorten display text; IDs must stay aligned with `controls`.',
-    '3. Map any UNMAPPED device or generic AB9 profile via `--map` and re-run. The selected alias is preserved in `config/kneeboard.json`.',
+    '3. Review repeated-device roles. Supply `--roles` to replace GUID-backed defaults with semantic names such as left-tank-control.',
     '4. `npm ci` and set `DCS_COMMON_ROOT` to a DCS-Common checkout.',
     '5. `npm run build:kneeboard` / `npm run test:kneeboard` / `npm run test:versioning`.',
     '6. Flesh out packaging scripts if the stubs need consumer-specific inventory checks.',
@@ -619,6 +703,7 @@ export function main(argv = process.argv.slice(2)) {
     profilesDir: options.profilesDir,
     modifiersPath: options.modifiersPath,
     mapPath: options.mapPath,
+    rolesPath: options.rolesPath,
     mozaGrip: options.mozaGrip,
     commonRoot: options.commonRoot,
   });
