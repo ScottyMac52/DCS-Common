@@ -15,7 +15,7 @@ test('all defined hardware devices have native draw.io sources', () => {
   for (const device of phaseOne) {
     const xml = readFileSync(join(hardwareRoot, device.drawio), 'utf8');
     assert.match(xml, /<mxfile\b/);
-    assert.match(xml, /compressed="false"/);
+    assert.match(xml, /<diagram\\b[^>]*>\\s*<mxGraphModel\\b/);
     assert.match(xml, /id="hardware-image-1"/);
     assert.match(xml, /id="label-/);
     assert.match(xml, /image=data:image\/(?:png|jpeg|jpg),[A-Za-z0-9+/=]+/);
