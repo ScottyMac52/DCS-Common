@@ -78,9 +78,9 @@
   <!-- box:warthog-thr-axis-slew-y -->
   <text id="lbl-warthog-thr-axis-slew-y" x="747.25" y="78" text-anchor="middle" font-family="Arial,sans-serif" font-size="8" fill="#111827">AXIS_SLEW_Y</text>
   <!-- box:warthog-thr-axis-right-throttle -->
-  <text id="lbl-warthog-thr-axis-right-throttle" x="455.5" y="610" transform="rotate(270 455.5 606)" text-anchor="middle" font-family="Arial,sans-serif" font-size="8" fill="#111827">AXIS_RIGHT_THROTTLE</text>
+  <text id="lbl-warthog-thr-axis-right-throttle" x="470.5" y="560" text-anchor="middle" font-family="Arial,sans-serif" font-size="8" fill="#111827">AXIS_RIGHT_THROTTLE</text>
   <!-- box:warthog-thr-axis-left-throttle -->
-  <text id="lbl-warthog-thr-axis-left-throttle" x="425.5" y="610" transform="rotate(270 425.5 606)" text-anchor="middle" font-family="Arial,sans-serif" font-size="8" fill="#111827">AXIS_LEFT_THROTTLE</text>
+  <text id="lbl-warthog-thr-axis-left-throttle" x="410.5" y="560" text-anchor="middle" font-family="Arial,sans-serif" font-size="8" fill="#111827">AXIS_LEFT_THROTTLE</text>
   <!-- box:warthog-thr-axis-friction -->
   <text id="lbl-warthog-thr-axis-friction" x="732.5" y="647" text-anchor="middle" font-family="Arial,sans-serif" font-size="8" fill="#111827">AXIS_FRICTION</text>
   <text x="504" y="836" text-anchor="middle" font-family="Arial,sans-serif" font-size="12" fill="#475569">TM Warthog Throttle</text>
