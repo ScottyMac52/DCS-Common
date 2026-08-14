@@ -36,6 +36,19 @@ public partial class MainWindow : Window
         }
     }
 
+    private void BrowseMap_Click(object sender, RoutedEventArgs e)
+    {
+        var dialog = new OpenFileDialog
+        {
+            Title = "Select device override map",
+            Filter = "JSON files (*.json)|*.json|All files (*.*)|*.*",
+        };
+        if (dialog.ShowDialog(this) == true)
+        {
+            _viewModel.MapPath = dialog.FileName;
+        }
+    }
+
     private void BrowseCommon_Click(object sender, RoutedEventArgs e)
     {
         var dialog = new OpenFolderDialog { Title = "Select DCS-Common repository root" };

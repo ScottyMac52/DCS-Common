@@ -61,6 +61,9 @@ public sealed class PreviewRow
     [JsonPropertyName("instanceHint")]
     public string? InstanceHint { get; set; }
 
+    [JsonPropertyName("mappingSource")]
+    public string? MappingSource { get; set; }
+
     [JsonPropertyName("key")]
     public string? Key { get; set; }
 

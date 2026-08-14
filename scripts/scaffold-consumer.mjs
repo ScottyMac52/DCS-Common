@@ -47,7 +47,7 @@ Required (write):
 
 Optional:
   --modifiers <path>
-  --map <path>
+  --map <path>                consumer-owned profile filename/stem to deviceId overrides (JSON)
   --common-root <path>
   --repo-name <name>          default: derived from display name
   --dry-run                   report planned writes without creating files
@@ -130,7 +130,7 @@ export function resolveDeviceMapping(profileFileName, deviceMap, overrides = {})
   for (const entry of deviceMap.mappings) {
     for (const pattern of entry.patterns ?? []) {
       if (haystack.includes(String(pattern).toLocaleLowerCase())) {
-        return { deviceId: entry.deviceId, matchedPattern: pattern, source: 'pattern', stem };
+        return { deviceId: entry.deviceId, matchedPattern: pattern, source: entry.source ?? 'pattern', stem };
       }
     }
   }
@@ -324,6 +324,7 @@ export function buildPreview({ profilesDir, modifiersPath = null, mapPath = null
     commonRoot,
     profilesDir: resolve(profilesDir),
     modifiersPath: modifiersPath ? resolve(modifiersPath) : null,
+    mapPath: mapPath ? resolve(mapPath) : null,
     modifiers: modifiers.map(({ name, device, key, mode }) => ({ name, device, key, mode })),
     devices,
     rows,
@@ -503,6 +504,9 @@ export function writeConsumer({ preview, outputDir, displayName, inputModuleId, 
   if (preview.modifiersPath && existsSync(preview.modifiersPath)) {
     copy(preview.modifiersPath, `src/Config/Input/${inputModuleId}/modifiers.lua`);
   }
+  if (preview.mapPath && existsSync(preview.mapPath)) {
+    copy(preview.mapPath, 'config/scaffold-device-overrides.json');
+  }
 
   const kneeboard = buildDraftKneeboardConfig(preview, { displayName, inputModuleId });
   write('config/kneeboard.json', JSON.stringify(kneeboard, null, 2));
@@ -547,14 +551,14 @@ export function writeConsumer({ preview, outputDir, displayName, inputModuleId, 
     '',
     ...preview.devices.map(
       (d) =>
-        `- \`${d.profileFile}\` → ${d.deviceId ?? '**UNMAPPED**'} (${d.mappingSource}${d.instanceHint ? `, instance ${d.instanceHint}` : ''})`,
+        `- \`${d.profileFile}\` → ${d.deviceId ?? '**UNMAPPED**'} (${d.mappingSource}${d.instanceHint ? `, instance ${d.instanceHint}` : ''}${d.mappingSource === 'standalone-fallback' ? '; generic AB9 profile—use --map to select the installed grip' : ''})`,
     ),
     '',
     '## Next steps',
     '',
     '1. Review `config/kneeboard.json` (draft controls/layers).',
     '2. Review pre-filled `labels` (from DCS binding names). Edit strings to shorten display text; IDs must stay aligned with `controls`.',
-    '3. Map any UNMAPPED devices via `--map` and re-run, or edit JSON by hand.',
+    '3. Map any UNMAPPED device or generic AB9 profile via `--map` and re-run. The selected alias is preserved in `config/kneeboard.json`.',
     '4. `npm ci` and set `DCS_COMMON_ROOT` to a DCS-Common checkout.',
     '5. `npm run build:kneeboard` / `npm run test:kneeboard` / `npm run test:versioning`.',
     '6. Flesh out packaging scripts if the stubs need consumer-specific inventory checks.',

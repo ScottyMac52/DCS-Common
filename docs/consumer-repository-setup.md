@@ -177,6 +177,49 @@ Notes:
 - Callout labels must describe **functions**, not physical button prefixes (`JOY_BTN12: ...` is rejected).
 - Keep output filenames and page order stable after publication because OpenKneeboard and user documentation may depend on them.
 
+### Generic MOZA AB9 grip selection
+
+DCS exposes the MOZA AB9 profile under a generic filename that does not identify the installed grip. Keep the choice consumer-owned: map the generic filename or GUID-stripped stem explicitly instead of guessing from the aircraft or bindings.
+
+For an F-16C/Viper-style grip, create a JSON override file:
+
+```json
+{
+  "MOZA AB9 FFB Flight Base": "moza-ab9-warthog-grip"
+}
+```
+
+For an F/A-18C Hornet grip, use the same generic stem with the Hornet alias:
+
+```json
+{
+  "MOZA AB9 FFB Flight Base": "moza-ab9-hornet-grip"
+}
+```
+
+Pass the file to preview and write modes:
+
+```bash
+node scripts/scaffold-consumer.mjs \
+  --preview-json scaffold-preview.json \
+  --profiles-dir src/Config/Input/F-16C_50/joystick \
+  --map config/scaffold-device-overrides.json
+
+node scripts/scaffold-consumer.mjs \
+  --output-dir ../DCS-F-16C-Components \
+  --profiles-dir src/Config/Input/F-16C_50/joystick \
+  --display-name "F-16C" \
+  --input-module-id F-16C_50 \
+  --kneeboard-id F-16C_50 \
+  --map config/scaffold-device-overrides.json
+```
+
+The override key may be the exact `.diff.lua` filename, its filename without `.diff.lua`, or its GUID-stripped stem. The generated consumer preserves the map as `config/scaffold-device-overrides.json` and retains the selected composite alias in each generated page's `deviceId`.
+
+The WPF importer exposes the same file as **Device overrides (optional)**. Its preview grid reports `override`, `pattern`, `standalone-fallback`, or `invalid-override` as the mapping source.
+
+A bare generic AB9 profile without an override intentionally resolves to `moza-ab9`, the two-axis standalone base. Descriptive filenames containing F-16C/Warthog or F/A-18C/Hornet continue to use pattern matching. The separately connected VKB F-14 Gunfighter remains `vkb-f14-gunfighter` and is never an AB9 grip alias.
+
 ### Modifiers and layered pages
 
 When a physical control is a DCS modifier (hold or toggle) and other bindings use that reformer chord, wire `modifiersFile`, stable aliases under `modifiers`, and `pages[].layers` so each chord becomes its own kneeboard page.

@@ -26,6 +26,19 @@ When a page uses `controls`, any page-level `labels` map must be **ID-keyed** (c
 
 Control IDs come from the shared hardware catalog. Profile aliases and paths belong to the consuming repository. A build fails when a profile is missing, a joystick key is unbound or ambiguous, or a control ID is not present on the selected shared device.
 
+## Generic MOZA AB9 profiles
+
+A generic `MOZA AB9 FFB Flight Base {GUID}.diff.lua` filename identifies the AB9 interface, but not the attached grip. Do not infer the grip from the aircraft name or binding inventory.
+
+When scaffolding a consumer, pass a consumer-owned `--map` JSON file that maps the exact filename or GUID-stripped stem to:
+
+- `moza-ab9-warthog-grip` for the F-16C/Viper-style grip;
+- `moza-ab9-hornet-grip` for the F/A-18C Hornet grip.
+
+The chosen alias is retained as the generated page `deviceId` and resolves to the canonical grip Lua, draw.io, and SVG assets. Without an override, a bare AB9 filename resolves to `moza-ab9`, whose catalog contains only the base pitch and roll axes. The separately connected VKB F-14 controller uses `vkb-f14-gunfighter`.
+
+See [Consumer repository setup](consumer-repository-setup.md#generic-moza-ab9-grip-selection) for copyable CLI and WPF instructions.
+
 ## Modifier layers (overview)
 
 Set `modifiersFile` to import native DCS modifier declarations and map stable consumer aliases through `modifiers`. A page may define `layers`; each layer resolves the same physical controls using an exact modifier chord and becomes a deterministic output page.

@@ -41,26 +41,55 @@ test('parseArgs accepts write-mode identity flags', () => {
   assert.equal(options.inputModuleId, 'F-16C_50');
 });
 
+test('parseArgs accepts a consumer-owned device override map', () => {
+  const options = parseArgs([
+    '--preview-json', 'out.json', '--profiles-dir', 'profiles',
+    '--map', 'config/scaffold-device-overrides.json',
+  ]);
+  assert.equal(options.mapPath, 'config/scaffold-device-overrides.json');
+});
+
 test('device map resolves conservative base and grip combinations', () => {
   const map = loadDeviceMap(commonRoot);
   const cases = [
-    ['Ava [R] Viper {GUID}.diff.lua', 'ava-base-f16c'],
-    ['Ava [R] Hornet {GUID}.diff.lua', 'ava-base-f18c'],
-    ['Joystick - HOTAS Warthog {GUID}.diff.lua', 'tm-warthog-grip'],
-    ['Joystick - HOTAS Warthog F/A-18C {GUID}.diff.lua', 'warthog-base-hornet-grip'],
-    ['MOZA AB9 FFB Base {GUID}.diff.lua', 'moza-ab9'],
-    ['MOZA AB9 F-16C {GUID}.diff.lua', 'moza-ab9-warthog-grip'],
-    ['MOZA AB9 Hornet {GUID}.diff.lua', 'moza-ab9-hornet-grip'],
+    ['Ava [R] Viper {GUID}.diff.lua', 'ava-base-f16c', 'pattern'],
+    ['Ava [R] Hornet {GUID}.diff.lua', 'ava-base-f18c', 'pattern'],
+    ['Joystick - HOTAS Warthog {GUID}.diff.lua', 'tm-warthog-grip', 'pattern'],
+    ['Joystick - HOTAS Warthog F/A-18C {GUID}.diff.lua', 'warthog-base-hornet-grip', 'pattern'],
+    ['MOZA AB9 FFB Base {GUID}.diff.lua', 'moza-ab9', 'standalone-fallback'],
+    ['MOZA AB9 F-16C {GUID}.diff.lua', 'moza-ab9-warthog-grip', 'pattern'],
+    ['MOZA AB9 Hornet {GUID}.diff.lua', 'moza-ab9-hornet-grip', 'pattern'],
   ];
-  for (const [filename, deviceId] of cases) {
+  for (const [filename, deviceId, source] of cases) {
     const resolved = resolveDeviceMapping(filename, map);
     assert.equal(resolved.deviceId, deviceId, filename);
-    assert.equal(resolved.source, 'pattern', filename);
+    assert.equal(resolved.source, source, filename);
   }
 
   for (const ambiguous of ['AVA Base {GUID}.diff.lua', 'Warthog Grip {GUID}.diff.lua', 'F-16C Grip {GUID}.diff.lua']) {
     assert.equal(resolveDeviceMapping(ambiguous, map).deviceId, null, ambiguous);
   }
+});
+
+test('the same generic AB9 filename resolves per consumer override', () => {
+  const map = loadDeviceMap(commonRoot);
+  const filename = 'MOZA AB9 FFB Flight Base {5200C960-CB32-11ed-8020-444553540000}.diff.lua';
+
+  const standalone = resolveDeviceMapping(filename, map);
+  assert.equal(standalone.deviceId, 'moza-ab9');
+  assert.equal(standalone.source, 'standalone-fallback');
+
+  const viper = resolveDeviceMapping(filename, map, {
+    'MOZA AB9 FFB Flight Base': 'moza-ab9-warthog-grip',
+  });
+  assert.equal(viper.deviceId, 'moza-ab9-warthog-grip');
+  assert.equal(viper.source, 'override');
+
+  const hornet = resolveDeviceMapping(filename, map, {
+    [filename]: 'moza-ab9-hornet-grip',
+  });
+  assert.equal(hornet.deviceId, 'moza-ab9-hornet-grip');
+  assert.equal(hornet.source, 'override');
 });
 
 test('manifest aliases support every base and grip override', () => {
@@ -159,6 +188,44 @@ test('buildPreview emits base and modifier rows with hold mode', () => {
   assert.equal(preview.modifiers[0].mode, 'hold');
 });
 
+test('buildPreview preserves an AB9 grip alias and rejects an invalid override', () => {
+  const root = mkdtempSync(join(tmpdir(), 'scaffold-moza-'));
+  const profilesDir = join(root, 'joystick');
+  mkdirSync(profilesDir);
+  const profileName = 'MOZA AB9 FFB Flight Base {5200C960-CB32-11ed-8020-444553540000}.diff.lua';
+  writeFileSync(
+    join(profilesDir, profileName),
+    `local diff = { ["keyDiffs"] = {
+      ["d1"] = { ["added"] = { [1] = { ["key"] = "JOY_BTN1" }, }, ["name"] = "Trigger", },
+    } } return diff`,
+  );
+
+  const viperMap = join(root, 'viper-map.json');
+  writeFileSync(viperMap, JSON.stringify({
+    'MOZA AB9 FFB Flight Base': 'moza-ab9-warthog-grip',
+  }));
+  const viper = buildPreview({ profilesDir, mapPath: viperMap, commonRoot });
+  assert.equal(viper.devices[0].deviceId, 'moza-ab9-warthog-grip');
+  assert.equal(viper.devices[0].mappingSource, 'override');
+  assert.equal(viper.rows[0].deviceId, 'moza-ab9-warthog-grip');
+  assert.equal(viper.rows[0].mappingSource, 'override');
+  const config = buildDraftKneeboardConfig(viper, {
+    displayName: 'F-16C',
+    inputModuleId: 'F-16C_50',
+  });
+  assert.equal(config.pages[0].deviceId, 'moza-ab9-warthog-grip');
+
+  const invalidMap = join(root, 'invalid-map.json');
+  writeFileSync(invalidMap, JSON.stringify({
+    'MOZA AB9 FFB Flight Base': 'invented-moza-grip',
+  }));
+  const invalid = buildPreview({ profilesDir, mapPath: invalidMap, commonRoot });
+  assert.equal(invalid.devices[0].deviceId, null);
+  assert.equal(invalid.devices[0].mappingSource, 'invalid-override');
+  assert.ok(invalid.errors[0].includes(profileName));
+  assert.ok(invalid.errors[0].includes('invented-moza-grip'));
+});
+
 test('buildPreview flags unmapped devices without inventing deviceIds', () => {
   const root = mkdtempSync(join(tmpdir(), 'scaffold-unmapped-'));
   const profilesDir = join(root, 'joystick');
@@ -209,6 +276,42 @@ test('buildDraftKneeboardConfig includes base layer and modifier layer', () => {
   assert.equal(config.pages[0].layers[0].controls['mfd-osb-t1'].key, 'JOY_BTN1');
   assert.ok(config.modifiersFile);
   assert.equal(config.modifiers.AVA_F16_S3.mode, 'hold');
+});
+
+test('writeConsumer preserves the consumer-owned device override map', () => {
+  const root = mkdtempSync(join(tmpdir(), 'scaffold-map-copy-'));
+  const profilesDir = join(root, 'joystick');
+  mkdirSync(profilesDir);
+  const profileName = 'MOZA AB9 FFB Flight Base.diff.lua';
+  writeFileSync(
+    join(profilesDir, profileName),
+    `local diff = { ["keyDiffs"] = {
+      ["d1"] = { ["added"] = { [1] = { ["key"] = "JOY_BTN1" }, }, ["name"] = "Trigger", },
+    } } return diff`,
+  );
+  const mapPath = join(root, 'device-overrides.json');
+  writeFileSync(mapPath, JSON.stringify({
+    'MOZA AB9 FFB Flight Base': 'moza-ab9-hornet-grip',
+  }, null, 2));
+
+  const preview = buildPreview({ profilesDir, mapPath, commonRoot });
+  const out = join(root, 'consumer');
+  writeConsumer({
+    preview,
+    outputDir: out,
+    displayName: 'F/A-18C',
+    inputModuleId: 'FA-18C_hornet',
+    kneeboardId: 'FA-18C_hornet',
+    commonRoot,
+  });
+
+  assert.equal(
+    readFileSync(join(out, 'config/scaffold-device-overrides.json'), 'utf8'),
+    readFileSync(mapPath, 'utf8'),
+  );
+  const config = JSON.parse(readFileSync(join(out, 'config/kneeboard.json'), 'utf8'));
+  assert.equal(config.pages[0].deviceId, 'moza-ab9-hornet-grip');
+  assert.match(readFileSync(join(out, 'SCAFFOLD-REPORT.md'), 'utf8'), /moza-ab9-hornet-grip \(override\)/);
 });
 
 test('writeConsumer materializes profiles, kneeboard.json, and report', () => {

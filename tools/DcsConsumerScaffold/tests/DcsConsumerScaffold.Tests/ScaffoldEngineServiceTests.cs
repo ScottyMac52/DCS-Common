@@ -14,6 +14,7 @@ public class ScaffoldEngineServiceTests
             previewJsonPath: "C:\\temp\\preview.json",
             profilesDir: "C:\\profiles",
             modifiersPath: "C:\\modifiers.lua",
+            mapPath: "C:\\device-overrides.json",
             commonRoot: "C:\\repo");
 
         Assert.Contains("--preview-json", args);
@@ -22,6 +23,8 @@ public class ScaffoldEngineServiceTests
         Assert.Contains("C:\\profiles", args);
         Assert.Contains("--modifiers", args);
         Assert.Contains("C:\\modifiers.lua", args);
+        Assert.Contains("--map", args);
+        Assert.Contains("C:\\device-overrides.json", args);
         Assert.Contains("--common-root", args);
         Assert.Contains("C:\\repo", args);
     }
@@ -30,7 +33,7 @@ public class ScaffoldEngineServiceTests
     public void BuildPreviewArguments_OmitsModifiersWhenNull()
     {
         var args = ScaffoldEngineService.BuildPreviewArguments(
-            "script.mjs", "out.json", "profiles", null, "root");
+            "script.mjs", "out.json", "profiles", null, null, "root");
 
         Assert.DoesNotContain("--modifiers", args);
     }
@@ -42,6 +45,7 @@ public class ScaffoldEngineServiceTests
             scriptPath: "script.mjs",
             profilesDir: "profiles",
             modifiersPath: "modifiers.lua",
+            mapPath: "device-overrides.json",
             commonRoot: "root",
             outputDir: "out",
             displayName: "F-16C",
@@ -59,6 +63,8 @@ public class ScaffoldEngineServiceTests
         Assert.Contains("--repo-name", args);
         Assert.Contains("DCS-F-16C-Components", args);
         Assert.Contains("--modifiers", args);
+        Assert.Contains("--map", args);
+        Assert.Contains("device-overrides.json", args);
     }
 
     [Fact]

@@ -47,6 +47,7 @@ public sealed class ScaffoldEngineService
     public async Task<(PreviewDocument? Document, string StdOut, string StdErr, int ExitCode)> RunPreviewAsync(
         string profilesDir,
         string? modifiersPath,
+        string? mapPath,
         string? commonRoot,
         CancellationToken cancellationToken = default)
     {
@@ -57,7 +58,7 @@ public sealed class ScaffoldEngineService
         var script = Path.Combine(root, "scripts", "scaffold-consumer.mjs");
         var previewPath = Path.Combine(Path.GetTempPath(), $"dcs-scaffold-preview-{Guid.NewGuid():N}.json");
 
-        var args = BuildPreviewArguments(script, previewPath, profilesDir, modifiersPath, root);
+        var args = BuildPreviewArguments(script, previewPath, profilesDir, modifiersPath, mapPath, root);
         var (exitCode, stdout, stderr) = await RunNodeAsync(root, args, cancellationToken).ConfigureAwait(false);
 
         PreviewDocument? document = null;
@@ -81,6 +82,7 @@ public sealed class ScaffoldEngineService
     public async Task<(string StdOut, string StdErr, int ExitCode)> RunWriteAsync(
         string profilesDir,
         string? modifiersPath,
+        string? mapPath,
         string? commonRoot,
         string outputDir,
         string displayName,
@@ -95,7 +97,7 @@ public sealed class ScaffoldEngineService
 
         var script = Path.Combine(root, "scripts", "scaffold-consumer.mjs");
         var args = BuildWriteArguments(
-            script, profilesDir, modifiersPath, root, outputDir, displayName, inputModuleId, kneeboardId, repoName);
+            script, profilesDir, modifiersPath, mapPath, root, outputDir, displayName, inputModuleId, kneeboardId, repoName);
         var (exitCode, stdout, stderr) = await RunNodeAsync(root, args, cancellationToken).ConfigureAwait(false);
         return (stdout, stderr, exitCode);
     }
@@ -141,6 +143,7 @@ public sealed class ScaffoldEngineService
         string previewJsonPath,
         string profilesDir,
         string? modifiersPath,
+        string? mapPath,
         string commonRoot)
     {
         var list = new List<string>
@@ -159,6 +162,12 @@ public sealed class ScaffoldEngineService
             list.Add(modifiersPath);
         }
 
+        if (!string.IsNullOrWhiteSpace(mapPath))
+        {
+            list.Add("--map");
+            list.Add(mapPath);
+        }
+
         return list;
     }
 
@@ -166,6 +175,7 @@ public sealed class ScaffoldEngineService
         string scriptPath,
         string profilesDir,
         string? modifiersPath,
+        string? mapPath,
         string commonRoot,
         string outputDir,
         string displayName,
@@ -193,6 +203,12 @@ public sealed class ScaffoldEngineService
         {
             list.Add("--modifiers");
             list.Add(modifiersPath);
+        }
+
+        if (!string.IsNullOrWhiteSpace(mapPath))
+        {
+            list.Add("--map");
+            list.Add(mapPath);
         }
 
         if (!string.IsNullOrWhiteSpace(repoName))
