@@ -26,6 +26,7 @@
         <RowDefinition Height="Auto" />
         <RowDefinition Height="Auto" />
         <RowDefinition Height="Auto" />
+        <RowDefinition Height="Auto" />
       </Grid.RowDefinitions>
 
       <TextBlock Grid.Row="0" Grid.Column="0" VerticalAlignment="Center" Text="Profiles directory" />
@@ -40,31 +41,38 @@
         <TextBox Text="{Binding ModifiersPath, UpdateSourceTrigger=PropertyChanged}" />
       </DockPanel>
 
-      <TextBlock Grid.Row="2" Grid.Column="0" VerticalAlignment="Center" Text="DCS-Common root (optional)" />
+      <TextBlock Grid.Row="2" Grid.Column="0" VerticalAlignment="Center" Text="Device overrides (optional)" />
       <DockPanel Grid.Row="2" Grid.Column="1" Margin="8,2,0,2">
+        <Button DockPanel.Dock="Right" Content="Browse…" Width="90" Margin="8,0,0,0" Click="BrowseMap_Click" />
+        <TextBox Text="{Binding MapPath, UpdateSourceTrigger=PropertyChanged}"
+                 ToolTip="Consumer-owned JSON map from profile filename or GUID-stripped stem to a manifest deviceId." />
+      </DockPanel>
+
+      <TextBlock Grid.Row="3" Grid.Column="0" VerticalAlignment="Center" Text="DCS-Common root (optional)" />
+      <DockPanel Grid.Row="3" Grid.Column="1" Margin="8,2,0,2">
         <Button DockPanel.Dock="Right" Content="Browse…" Width="90" Margin="8,0,0,0" Click="BrowseCommon_Click" />
         <TextBox Text="{Binding CommonRoot, UpdateSourceTrigger=PropertyChanged}" />
       </DockPanel>
 
-      <TextBlock Grid.Row="3" Grid.Column="0" VerticalAlignment="Center" Text="Output directory" />
-      <DockPanel Grid.Row="3" Grid.Column="1" Margin="8,2,0,2">
+      <TextBlock Grid.Row="4" Grid.Column="0" VerticalAlignment="Center" Text="Output directory" />
+      <DockPanel Grid.Row="4" Grid.Column="1" Margin="8,2,0,2">
         <Button DockPanel.Dock="Right" Content="Browse…" Width="90" Margin="8,0,0,0" Click="BrowseOutput_Click" />
         <TextBox Text="{Binding OutputDir, UpdateSourceTrigger=PropertyChanged}" />
       </DockPanel>
 
-      <TextBlock Grid.Row="4" Grid.Column="0" VerticalAlignment="Center" Text="Display name" />
-      <TextBox Grid.Row="4" Grid.Column="1" Margin="8,2,0,2"
+      <TextBlock Grid.Row="5" Grid.Column="0" VerticalAlignment="Center" Text="Display name" />
+      <TextBox Grid.Row="5" Grid.Column="1" Margin="8,2,0,2"
                Text="{Binding DisplayName, UpdateSourceTrigger=PropertyChanged}" />
 
-      <TextBlock Grid.Row="5" Grid.Column="0" VerticalAlignment="Center" Text="Input module ID" />
-      <TextBox Grid.Row="5" Grid.Column="1" Margin="8,2,0,2"
+      <TextBlock Grid.Row="6" Grid.Column="0" VerticalAlignment="Center" Text="Input module ID" />
+      <TextBox Grid.Row="6" Grid.Column="1" Margin="8,2,0,2"
                Text="{Binding InputModuleId, UpdateSourceTrigger=PropertyChanged}" />
 
-      <TextBlock Grid.Row="6" Grid.Column="0" VerticalAlignment="Center" Text="Kneeboard ID" />
-      <TextBox Grid.Row="6" Grid.Column="1" Margin="8,2,0,2"
+      <TextBlock Grid.Row="7" Grid.Column="0" VerticalAlignment="Center" Text="Kneeboard ID" />
+      <TextBox Grid.Row="7" Grid.Column="1" Margin="8,2,0,2"
                Text="{Binding KneeboardId, UpdateSourceTrigger=PropertyChanged}" />
 
-      <StackPanel Grid.Row="7" Grid.Column="0" Grid.ColumnSpan="2" Orientation="Horizontal" Margin="0,8,0,0">
+      <StackPanel Grid.Row="8" Grid.Column="0" Grid.ColumnSpan="2" Orientation="Horizontal" Margin="0,8,0,0">
         <Button Content="Load Preview" Padding="16,6" Command="{Binding LoadPreviewCommand}" />
         <Button Content="Proceed" Padding="16,6" Margin="8,0,0,0" Command="{Binding ProceedCommand}" />
         <TextBlock Margin="16,0,0,0" VerticalAlignment="Center" Text="{Binding SummaryText}" FontWeight="SemiBold" />
@@ -84,6 +92,7 @@
       <DataGrid.Columns>
         <DataGridTextColumn Header="Device / stem" Binding="{Binding Stem}" Width="1.4*" />
         <DataGridTextColumn Header="deviceId" Binding="{Binding DeviceId}" Width="*" />
+        <DataGridTextColumn Header="Mapping" Binding="{Binding MappingSource}" Width="110" />
         <DataGridTextColumn Header="Inst" Binding="{Binding InstanceHint}" Width="50" />
         <DataGridTextColumn Header="Key" Binding="{Binding Key}" Width="90" />
         <DataGridTextColumn Header="Chord" Binding="{Binding Chord}" Width="100" />
