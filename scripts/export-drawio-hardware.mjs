@@ -81,12 +81,8 @@ function renderLabelBox(lines, label, id) {
   }
 
   // Vertical centering approximation for pure-text overlays and chips
-  const textX = label.x + label.width / 2;
-  const textCenterY = label.y + label.height / 2;
   const textY = label.y + Math.round(Number(label.height) / 2) + 4;
-  const rotation = Number(styleValue(style, 'rotation') || 0);
-  const transform = rotation ? ` transform=\"rotate(${rotation} ${textX} ${textCenterY})\"` : '';
-  lines.push(`  <text id=\"lbl-${esc(id)}\" x=\"${textX}\" y=\"${textY}\"${transform} text-anchor=\"middle\" font-family=\"Arial,sans-serif\" font-size=\"${esc(fontSize)}\" fill=\"${esc(fontColor)}\">${esc(label.value)}</text>`);
+  lines.push(`  <text id=\"lbl-${esc(id)}\" x=\"${label.x + label.width / 2}\" y=\"${textY}\" text-anchor=\"middle\" font-family=\"Arial,sans-serif\" font-size=\"${esc(fontSize)}\" fill=\"${esc(fontColor)}\">${esc(label.value)}</text>`);
 
   // Optional button-number watermark (controlled by export-config.json or --watermarks).
   // Data lives in the draw.io label style as buttonNumber=N.
