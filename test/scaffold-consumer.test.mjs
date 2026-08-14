@@ -8,6 +8,7 @@ import {
   buildPreview,
   loadDeviceMap,
   resolveDeviceMapping,
+  resolveCatalogInputKey,
   resolveInstanceHint,
   loadCalloutCatalog,
   parseArgs,
@@ -119,6 +120,121 @@ test('built-in MOZA grip selection applies only to a generic AB9 profile', () =>
   const hornet = buildPreview({ profilesDir, mozaGrip: 'hornet', commonRoot });
   assert.equal(hornet.devices[0].deviceId, 'moza-ab9-hornet-grip');
   assert.equal(hornet.devices[0].mappingSource, 'ui-selection');
+});
+
+test('MOZA grip aliases translate only their verified POV keys', () => {
+  const map = loadDeviceMap(commonRoot);
+  for (const deviceId of ['moza-ab9-hornet-grip', 'moza-ab9-warthog-grip']) {
+    assert.equal(resolveCatalogInputKey(deviceId, 'JOY_BTN_POV1_U', map), 'JOY_POV1_U');
+    assert.equal(resolveCatalogInputKey(deviceId, 'JOY_BTN_POV1_R', map), 'JOY_POV1_R');
+    assert.equal(resolveCatalogInputKey(deviceId, 'JOY_BTN_POV1_D', map), 'JOY_POV1_D');
+    assert.equal(resolveCatalogInputKey(deviceId, 'JOY_BTN_POV1_L', map), 'JOY_POV1_L');
+    assert.equal(resolveCatalogInputKey(deviceId, 'JOY_BTN1', map), 'JOY_BTN1');
+  }
+  assert.equal(
+    resolveCatalogInputKey('grip-f18c', 'JOY_BTN_POV1_U', map),
+    'JOY_BTN_POV1_U',
+    'native catalog IDs must not receive MOZA-only normalization',
+  );
+});
+
+test('MOZA POV bindings resolve base and modified callouts for both grips', () => {
+  const root = mkdtempSync(join(tmpdir(), 'scaffold-moza-pov-'));
+  const profilesDir = join(root, 'joystick');
+  mkdirSync(profilesDir);
+  const profileName = 'MOZA AB9 FFB Flight Base {5200C960-CB32-11ed-8020-444553540000}.diff.lua';
+  writeFileSync(
+    join(profilesDir, profileName),
+    `local diff = { ["keyDiffs"] = {
+      ["trim-up"] = {
+        ["added"] = { [1] = { ["key"] = "JOY_BTN_POV1_U" }, },
+        ["name"] = "Trim, nose up",
+      },
+      ["trim-down"] = {
+        ["added"] = { [1] = { ["key"] = "JOY_BTN_POV1_D" }, },
+        ["name"] = "Trim, nose down",
+      },
+      ["trim-left"] = {
+        ["added"] = { [1] = { ["key"] = "JOY_BTN_POV1_L" }, },
+        ["name"] = "Trim, left bank",
+      },
+      ["trim-right"] = {
+        ["added"] = { [1] = { ["key"] = "JOY_BTN_POV1_R" }, },
+        ["name"] = "Trim, right bank",
+      },
+      ["glance-left"] = {
+        ["added"] = {
+          [1] = { ["key"] = "JOY_BTN_POV1_L", ["reformers"] = { [1] = "LOOK_MODE" } },
+        },
+        ["name"] = "Glance left",
+      },
+    } } return diff`,
+  );
+  const modifiersPath = join(root, 'modifiers.lua');
+  writeFileSync(
+    modifiersPath,
+    `local modifiers = {
+      ["LOOK_MODE"] = {
+        ["device"] = "MOZA AB9 FFB Flight Base {5200C960-CB32-11ed-8020-444553540000}",
+        ["key"] = "JOY_BTN3",
+        ["switch"] = false,
+      },
+    } return modifiers`,
+  );
+
+  const cases = [
+    {
+      grip: 'hornet',
+      deviceId: 'moza-ab9-hornet-grip',
+      callouts: {
+        JOY_BTN_POV1_U: 'hornet-grip-trim-up',
+        JOY_BTN_POV1_D: 'hornet-grip-trim-down',
+        JOY_BTN_POV1_L: 'hornet-grip-trim-left',
+        JOY_BTN_POV1_R: 'hornet-grip-trim-right',
+      },
+    },
+    {
+      grip: 'viper',
+      deviceId: 'moza-ab9-warthog-grip',
+      callouts: {
+        JOY_BTN_POV1_U: 'warthog-grip-trim-up',
+        JOY_BTN_POV1_D: 'warthog-grip-trim-down',
+        JOY_BTN_POV1_L: 'warthog-grip-trim-left',
+        JOY_BTN_POV1_R: 'warthog-grip-trim-right',
+      },
+    },
+  ];
+
+  for (const expected of cases) {
+    const preview = buildPreview({
+      profilesDir,
+      modifiersPath,
+      mozaGrip: expected.grip,
+      commonRoot,
+    });
+    assert.equal(preview.devices[0].deviceId, expected.deviceId);
+    for (const row of preview.rows) {
+      assert.equal(row.calloutId, expected.callouts[row.key], `${expected.grip}: ${row.name}`);
+      assert.equal(row.catalogKey, row.key.replace('JOY_BTN_POV1_', 'JOY_POV1_'));
+      assert.equal(row.status, 'OK', `${expected.grip}: ${row.name}`);
+    }
+
+    const config = buildDraftKneeboardConfig(preview, {
+      displayName: expected.grip,
+      inputModuleId: 'TEST',
+    });
+    assert.equal(config.pages[0].deviceId, expected.deviceId);
+    assert.ok(config.pages[0].layers);
+    assert.equal(
+      config.pages[0].layers[0].controls[expected.callouts.JOY_BTN_POV1_U].key,
+      'JOY_BTN_POV1_U',
+      'generated controls must retain the native DCS profile key',
+    );
+    assert.equal(
+      config.pages[0].layers[1].controls[expected.callouts.JOY_BTN_POV1_L].key,
+      'JOY_BTN_POV1_L',
+    );
+  }
 });
 
 test('parseArgs validates the built-in MOZA grip selection', () => {
