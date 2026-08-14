@@ -40,6 +40,21 @@ public sealed class PreviewDevice
     [JsonPropertyName("instanceHint")]
     public string? InstanceHint { get; set; }
 
+    [JsonPropertyName("guid")]
+    public string? Guid { get; set; }
+
+    [JsonPropertyName("physicalInstance")]
+    public string? PhysicalInstance { get; set; }
+
+    [JsonPropertyName("role")]
+    public string? Role { get; set; }
+
+    [JsonPropertyName("profileKey")]
+    public string? ProfileKey { get; set; }
+
+    [JsonPropertyName("repeatedDevice")]
+    public bool RepeatedDevice { get; set; }
+
     [JsonPropertyName("mappingSource")]
     public string? MappingSource { get; set; }
 

@@ -58,7 +58,7 @@ public sealed class ScaffoldEngineService
         var script = Path.Combine(root, "scripts", "scaffold-consumer.mjs");
         var previewPath = Path.Combine(Path.GetTempPath(), $"dcs-scaffold-preview-{Guid.NewGuid():N}.json");
 
-        var args = BuildPreviewArguments(script, previewPath, profilesDir, modifiersPath, mozaGrip, root);
+        var args = BuildPreviewArguments(script, previewPath, profilesDir, modifiersPath, mozaGrip, null, root);
         var (exitCode, stdout, stderr) = await RunNodeAsync(root, args, cancellationToken).ConfigureAwait(false);
 
         PreviewDocument? document = null;
@@ -83,6 +83,7 @@ public sealed class ScaffoldEngineService
         string profilesDir,
         string? modifiersPath,
         string? mozaGrip,
+        IReadOnlyDictionary<string, string>? instanceRoles,
         string? commonRoot,
         string outputDir,
         string displayName,
@@ -96,10 +97,28 @@ public sealed class ScaffoldEngineService
                 "Could not find DCS-Common root (scripts/scaffold-consumer.mjs). Set DCS_COMMON_ROOT or browse to the repo.");
 
         var script = Path.Combine(root, "scripts", "scaffold-consumer.mjs");
-        var args = BuildWriteArguments(
-            script, profilesDir, modifiersPath, mozaGrip, root, outputDir, displayName, inputModuleId, kneeboardId, repoName);
-        var (exitCode, stdout, stderr) = await RunNodeAsync(root, args, cancellationToken).ConfigureAwait(false);
-        return (stdout, stderr, exitCode);
+        string? rolesPath = null;
+        try
+        {
+            if (instanceRoles is { Count: > 0 })
+            {
+                rolesPath = Path.Combine(Path.GetTempPath(), $"dcs-scaffold-roles-{Guid.NewGuid():N}.json");
+                var json = JsonSerializer.Serialize(instanceRoles, new JsonSerializerOptions { WriteIndented = true });
+                await File.WriteAllTextAsync(rolesPath, json, cancellationToken).ConfigureAwait(false);
+            }
+
+            var args = BuildWriteArguments(
+                script, profilesDir, modifiersPath, mozaGrip, rolesPath, root, outputDir, displayName, inputModuleId, kneeboardId, repoName);
+            var (exitCode, stdout, stderr) = await RunNodeAsync(root, args, cancellationToken).ConfigureAwait(false);
+            return (stdout, stderr, exitCode);
+        }
+        finally
+        {
+            if (rolesPath != null)
+            {
+                try { File.Delete(rolesPath); } catch { /* ignore */ }
+            }
+        }
     }
 
     private static async Task<(int ExitCode, string StdOut, string StdErr)> RunNodeAsync(
@@ -144,6 +163,7 @@ public sealed class ScaffoldEngineService
         string profilesDir,
         string? modifiersPath,
         string? mozaGrip,
+        string? rolesPath,
         string commonRoot)
     {
         var list = new List<string>
@@ -168,6 +188,12 @@ public sealed class ScaffoldEngineService
             list.Add(mozaGrip);
         }
 
+        if (!string.IsNullOrWhiteSpace(rolesPath))
+        {
+            list.Add("--roles");
+            list.Add(rolesPath);
+        }
+
         return list;
     }
 
@@ -176,6 +202,7 @@ public sealed class ScaffoldEngineService
         string profilesDir,
         string? modifiersPath,
         string? mozaGrip,
+        string? rolesPath,
         string commonRoot,
         string outputDir,
         string displayName,
@@ -209,6 +236,12 @@ public sealed class ScaffoldEngineService
         {
             list.Add("--moza-grip");
             list.Add(mozaGrip);
+        }
+
+        if (!string.IsNullOrWhiteSpace(rolesPath))
+        {
+            list.Add("--roles");
+            list.Add(rolesPath);
         }
 
         if (!string.IsNullOrWhiteSpace(repoName))
