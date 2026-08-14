@@ -51,9 +51,14 @@
       "patterns": ["T-Pendular", "TPR", "Pendular Rudder", "Thrustmaster TPR"]
     },
     {
-      "deviceId": "logitech-throttle-quadrant",
-      "patterns": ["Logitech Throttle Quadrant", "Throttle Quadrant"]
-    }
+	  "deviceId": "logitech-throttle-quadrant",
+  	  "patterns": [
+    		"Logitech Throttle Quadrant",
+    		"Logitech Flight Quadrant",
+    		"Saitek Pro Flight Quadrant",
+    		"Throttle Quadrant"
+  		]
+  }	  
   ],
   "instancePatterns": [
     {
