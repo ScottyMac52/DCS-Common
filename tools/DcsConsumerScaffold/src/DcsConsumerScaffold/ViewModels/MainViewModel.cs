@@ -28,11 +28,13 @@ public sealed class MainViewModel : INotifyPropertyChanged
         _engine = engine ?? new ScaffoldEngineService();
         LoadPreviewCommand = new RelayCommand(async () => await LoadPreviewAsync(), CanLoadPreview);
         ProceedCommand = new RelayCommand(async () => await ProceedAsync(), CanProceed);
+        Devices = new ObservableCollection<PreviewDevice>();
         Rows = new ObservableCollection<PreviewRow>();
     }
 
     public event PropertyChangedEventHandler? PropertyChanged;
 
+    public ObservableCollection<PreviewDevice> Devices { get; }
     public ObservableCollection<PreviewRow> Rows { get; }
 
     public string ProfilesDir
@@ -179,6 +181,7 @@ public sealed class MainViewModel : INotifyPropertyChanged
 
         IsBusy = true;
         StatusText = "Running Node scaffold engine (preview)…";
+        Devices.Clear();
         Rows.Clear();
         HasPreview = false;
         try
@@ -188,6 +191,14 @@ public sealed class MainViewModel : INotifyPropertyChanged
                 string.IsNullOrWhiteSpace(ModifiersPath) ? null : ModifiersPath,
                 MozaGrip,
                 string.IsNullOrWhiteSpace(CommonRoot) ? null : CommonRoot);
+
+            if (document?.Devices != null)
+            {
+                foreach (var device in document.Devices)
+                {
+                    Devices.Add(device);
+                }
+            }
 
             if (document?.Rows != null)
             {
@@ -234,10 +245,15 @@ public sealed class MainViewModel : INotifyPropertyChanged
         StatusText = "Writing consumer repository…";
         try
         {
+            var instanceRoles = Devices
+                .Where(device => !string.IsNullOrWhiteSpace(device.ProfileFile) && !string.IsNullOrWhiteSpace(device.Role))
+                .ToDictionary(device => device.ProfileFile!, device => device.Role!.Trim(), StringComparer.OrdinalIgnoreCase);
+
             var (stdout, stderr, exitCode) = await _engine.RunWriteAsync(
                 ProfilesDir,
                 string.IsNullOrWhiteSpace(ModifiersPath) ? null : ModifiersPath,
                 MozaGrip,
+                instanceRoles,
                 string.IsNullOrWhiteSpace(CommonRoot) ? null : CommonRoot,
                 OutputDir,
                 DisplayName.Trim(),
