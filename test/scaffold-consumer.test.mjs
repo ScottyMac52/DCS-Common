@@ -92,6 +92,40 @@ test('the same generic AB9 filename resolves per consumer override', () => {
   assert.equal(hornet.source, 'override');
 });
 
+test('built-in MOZA grip selection applies only to a generic AB9 profile', () => {
+  const root = mkdtempSync(join(tmpdir(), 'scaffold-moza-selection-'));
+  const profilesDir = join(root, 'joystick');
+  mkdirSync(profilesDir);
+  const profileName = 'MOZA AB9 FFB Flight Base {5200C960-CB32-11ed-8020-444553540000}.diff.lua';
+  writeFileSync(
+    join(profilesDir, profileName),
+    `local diff = { ["keyDiffs"] = {
+      ["d1"] = { ["added"] = { [1] = { ["key"] = "JOY_BTN1" }, }, ["name"] = "Trigger", },
+    } } return diff`,
+  );
+
+  const standalone = buildPreview({ profilesDir, mozaGrip: 'standalone', commonRoot });
+  assert.equal(standalone.devices[0].deviceId, 'moza-ab9');
+  assert.equal(standalone.devices[0].mappingSource, 'standalone-fallback');
+
+  const viper = buildPreview({ profilesDir, mozaGrip: 'viper', commonRoot });
+  assert.equal(viper.devices[0].deviceId, 'moza-ab9-warthog-grip');
+  assert.equal(viper.devices[0].mappingSource, 'ui-selection');
+  assert.equal(
+    buildDraftKneeboardConfig(viper, { displayName: 'F-16C', inputModuleId: 'F-16C_50' }).pages[0].deviceId,
+    'moza-ab9-warthog-grip',
+  );
+
+  const hornet = buildPreview({ profilesDir, mozaGrip: 'hornet', commonRoot });
+  assert.equal(hornet.devices[0].deviceId, 'moza-ab9-hornet-grip');
+  assert.equal(hornet.devices[0].mappingSource, 'ui-selection');
+});
+
+test('parseArgs validates the built-in MOZA grip selection', () => {
+  assert.equal(parseArgs(['--moza-grip', 'viper']).mozaGrip, 'viper');
+  assert.throws(() => parseArgs(['--moza-grip', 'unknown']), /standalone, viper, or hornet/);
+});
+
 test('manifest aliases support every base and grip override', () => {
   const map = loadDeviceMap(commonRoot);
   const aliases = [
