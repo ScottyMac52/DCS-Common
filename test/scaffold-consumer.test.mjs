@@ -304,9 +304,10 @@ test('callout catalog maps JOY_BTN1 to mfd-osb-t1', () => {
   assert.deepEqual(catalog.byKey.get('JOY_BTN1'), ['mfd-osb-t1']);
 });
 
-test('Viper TQS nonvisual MIC inputs are not scaffolded as callouts', () => {
+test('Viper TQS MIC inputs remain renderable when DCS binds them directly', () => {
   const catalog = loadCalloutCatalog(commonRoot, 'viper-tqs-mission-pack');
-  assert.equal(catalog.byKey.has('JOY_BTN5'), false);
+  assert.deepEqual(catalog.byKey.get('JOY_BTN4'), ['viper-tqs-button-04']);
+  assert.deepEqual(catalog.byKey.get('JOY_BTN5'), ['viper-tqs-button-05']);
   assert.deepEqual(catalog.byKey.get('JOY_BTN6'), ['viper-tqs-button-06']);
 
   const root = mkdtempSync(join(tmpdir(), 'scaffold-viper-nonvisual-'));
@@ -321,10 +322,10 @@ test('Viper TQS nonvisual MIC inputs are not scaffolded as callouts', () => {
   );
 
   const preview = buildPreview({ profilesDir, commonRoot });
-  const nonvisual = preview.rows.find((row) => row.key === 'JOY_BTN5');
+  const mic = preview.rows.find((row) => row.key === 'JOY_BTN5');
   const visible = preview.rows.find((row) => row.key === 'JOY_BTN6');
-  assert.equal(nonvisual.calloutId, null);
-  assert.equal(nonvisual.status, 'No callout');
+  assert.equal(mic.calloutId, 'viper-tqs-button-05');
+  assert.equal(mic.status, 'OK');
   assert.equal(visible.calloutId, 'viper-tqs-button-06');
   assert.equal(visible.status, 'OK');
 
@@ -332,8 +333,66 @@ test('Viper TQS nonvisual MIC inputs are not scaffolded as callouts', () => {
     displayName: 'F-100D',
     inputModuleId: 'F-100D',
   });
-  assert.equal(config.pages[0].controls['viper-tqs-button-05'], undefined);
+  assert.equal(config.pages[0].controls['viper-tqs-button-05'].key, 'JOY_BTN5');
   assert.equal(config.pages[0].controls['viper-tqs-button-06'].key, 'JOY_BTN6');
+});
+
+test('UiLayer shared hardware bindings resolve every reported callout and modifier layer', () => {
+  const root = mkdtempSync(join(tmpdir(), 'scaffold-ui-layer-'));
+  const profilesDir = join(root, 'joystick');
+  mkdirSync(profilesDir);
+  writeFileSync(
+    join(profilesDir, ' VKBSim Gunfighter F14 {2D5CEC70-5189-11f1-8001-444553540000}.diff.lua'),
+    `local diff = { ["keyDiffs"] = {
+      ["d216pnilunilcdnilvdnilvpnilvunil"] = { ["added"] = {
+        [1] = { ["key"] = "JOY_BTN6", ["reformers"] = { [1] = "JOY_BTN7" } },
+      }, ["name"] = "recenter VR Headset" },
+    } } return diff`,
+  );
+  writeFileSync(
+    join(profilesDir, 'Viper TQS {C0A33440-3F54-11f1-8001-444553540000}.diff.lua'),
+    `local diff = { ["keyDiffs"] = {
+      ["d2604pnilu2604cdnilvd1vpnilvu0"] = { ["added"] = {
+        [1] = { ["key"] = "JOY_BTN5", ["reformers"] = { [1] = "JOY_BTN3" } },
+        [2] = { ["key"] = "JOY_BTN5", ["reformers"] = { [1] = "JOY_BTN7" } },
+      }, ["name"] = "toggle VR Zoom" },
+      ["d2605pnilu2605cdnilvd1vpnilvu0"] = { ["added"] = {
+        [1] = { ["key"] = "JOY_BTN4", ["reformers"] = { [1] = "JOY_BTN3" } },
+        [2] = { ["key"] = "JOY_BTN4", ["reformers"] = { [1] = "JOY_BTN7" } },
+      }, ["name"] = "toggle VR Spyglass Zoom" },
+    } } return diff`,
+  );
+  const modifiersPath = join(root, 'modifiers.lua');
+  writeFileSync(
+    modifiersPath,
+    `local modifiers = {
+      ["JOY_BTN3"] = { ["device"] = "Ava [R] Viper {F77212B0-00A8-11f1-8001-444553540000}", ["key"] = "JOY_BTN3", ["switch"] = false },
+      ["JOY_BTN7"] = { ["device"] = "VKBSim Gunfighter F14 {2D5CEC70-5189-11f1-8001-444553540000}", ["key"] = "JOY_BTN7", ["switch"] = false },
+    } return modifiers`,
+  );
+
+  const preview = buildPreview({ profilesDir, modifiersPath, commonRoot });
+  assert.equal(preview.rows.length, 5);
+  assert.ok(preview.rows.every((row) => row.status === 'OK'));
+  assert.deepEqual(preview.rows.map((row) => row.calloutId), [
+    'vkb-trigger',
+    'viper-tqs-button-05',
+    'viper-tqs-button-05',
+    'viper-tqs-button-04',
+    'viper-tqs-button-04',
+  ]);
+
+  const config = buildDraftKneeboardConfig(preview, {
+    displayName: 'UiLayer',
+    inputModuleId: 'UiLayer',
+  });
+  const vkbPage = config.pages.find((page) => page.deviceId === 'vkb-f14-gunfighter');
+  const viperPage = config.pages.find((page) => page.deviceId === 'viper-tqs-mission-pack');
+  assert.deepEqual(vkbPage.layers.map((layer) => layer.id), ['base', 'JOY_BTN7']);
+  assert.deepEqual(viperPage.layers.map((layer) => layer.id), ['base', 'JOY_BTN3', 'JOY_BTN7']);
+  assert.equal(vkbPage.layers[1].controls['vkb-trigger'].key, 'JOY_BTN6');
+  assert.equal(viperPage.layers[1].controls['viper-tqs-button-05'].key, 'JOY_BTN5');
+  assert.equal(viperPage.layers[2].controls['viper-tqs-button-04'].key, 'JOY_BTN4');
 });
 
 test('buildPreview emits base and modifier rows with hold mode', () => {
