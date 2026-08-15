@@ -110,7 +110,9 @@
               HeadersVisibility="Column"
               AlternatingRowBackground="#F5F7FA">
       <DataGrid.Columns>
-        <DataGridTextColumn Header="Device / stem" Binding="{Binding Stem}" Width="1.4*" />
+        <DataGridTextColumn Header="Device / stem" Binding="{Binding Stem}" Width="1.2*" />
+        <DataGridTextColumn Header="Physical profile" Binding="{Binding ProfileKey}" Width="1.8*" />
+        <DataGridTextColumn Header="Role" Binding="{Binding Role}" Width="1.1*" />
         <DataGridTextColumn Header="deviceId" Binding="{Binding DeviceId}" Width="*" />
         <DataGridTextColumn Header="Mapping" Binding="{Binding MappingSource}" Width="110" />
         <DataGridTextColumn Header="Inst" Binding="{Binding InstanceHint}" Width="50" />

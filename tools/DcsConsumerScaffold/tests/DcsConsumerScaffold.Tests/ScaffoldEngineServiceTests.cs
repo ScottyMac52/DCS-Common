@@ -1,3 +1,4 @@
+using System.Text.Json;
 using DcsConsumerScaffold.Models;
 using DcsConsumerScaffold.Services;
 using Xunit;
@@ -71,6 +72,27 @@ public class ScaffoldEngineServiceTests
         Assert.Contains("--modifiers", args);
         Assert.Contains("--moza-grip", args);
         Assert.Contains("viper", args);
+    }
+
+    [Fact]
+    public void PreviewRow_DeserializesPhysicalInstanceIdentity()
+    {
+        const string json = """
+            {
+              "profileFile": "Logitech Flight Quadrant {1C8A8840-5386-11F1-8001-444553540000}.diff.lua",
+              "guid": "1c8a8840-5386-11f1-8001-444553540000",
+              "physicalInstance": "1c8a8840-5386-11f1-8001-444553540000",
+              "role": "supercharger",
+              "profileKey": "logitech-throttle-quadrant-supercharger"
+            }
+            """;
+
+        var row = JsonSerializer.Deserialize<PreviewRow>(json);
+
+        Assert.NotNull(row);
+        Assert.Equal("1c8a8840-5386-11f1-8001-444553540000", row.PhysicalInstance);
+        Assert.Equal("supercharger", row.Role);
+        Assert.Equal("logitech-throttle-quadrant-supercharger", row.ProfileKey);
     }
 
     [Fact]
