@@ -65,9 +65,9 @@ for (const relativePath of requiredTemplateAssets) {
     'VKB F-14 SVG must render both supplied image views');
 
   const expectedIds = [
-    'vkb-trigger', 'vkb-btn-release', 'vkb-pinky', 'vkb-btn-dlc',
-    'vkb-nws', 'vkb-hat', 'vkb-sw1', 'vkb-sw2', 'vkb-sw3',
-    'vkb-sw4', 'vkb-axis-dlc',
+    'vkb-trigger', 'vkb-trigger-stage2', 'vkb-btn-release', 'vkb-pinky',
+    'vkb-btn-dlc', 'vkb-paddle', 'vkb-nws', 'vkb-hat', 'vkb-sw1',
+    'vkb-sw2', 'vkb-sw3', 'vkb-sw4', 'vkb-axis-dlc',
   ];
   const drawioIds = [...drawio.matchAll(/id="connector-([^"]+)"/g)].map((match) => match[1]);
   const svgIds = [...svg.matchAll(/<!-- (?:callout|box):([^\s]+) -->/g)].map((match) => match[1]);
@@ -110,6 +110,7 @@ for (const relativePath of requiredTemplateAssets) {
     ['vkb-hat', 'vkb-btn-release'],
     ['vkb-pinky', 'vkb-sw1', 'vkb-sw2', 'vkb-sw3', 'vkb-sw4'],
     ['vkb-axis-dlc', 'vkb-btn-dlc', 'vkb-nws'],
+    ['vkb-trigger', 'vkb-trigger-stage2', 'vkb-paddle'],
   ]) {
     const positions = group.map((id) => geometry(`label-${id}`));
     assert.ok(positions.every(({ x }) => x === positions[0].x),
@@ -166,9 +167,7 @@ for (const device of manifest.devices) {
   const legacyIdMatchSkips = new Set();
   if (!legacyIdMatchSkips.has(device.id)) {
     const luaUnique = [...new Set(luaIds)].sort();
-    const expectedVisualIds = device.id === 'viper-tqs-mission-pack'
-      ? luaUnique.filter((id) => !/^viper-tqs-button-0[1-5]$/.test(id))
-      : device.id === 'tm-mfd'
+    const expectedVisualIds = device.id === 'tm-mfd'
         ? [...luaUnique, ...luaUnique.filter((id) => id.startsWith('mfd-osb-')).map((id) => `${id}-shifted`)].sort()
         : luaUnique;
     assert.deepEqual(expectedVisualIds, [...new Set(drawioIds)].sort(),
@@ -210,15 +209,38 @@ for (const device of manifest.devices) {
   }
 
   if (device.id === 'vkb-f14-gunfighter') {
-    assert.equal(controls.length, 15,
-      'VKB F-14 Gunfighter must define 14 button positions and the DLC axis');
+    assert.equal(controls.length, 17,
+      'VKB F-14 Gunfighter must define all 16 buttons and the DLC axis');
     assert.deepEqual(
       keys.filter((key) => /^JOY_BTN\d+$/.test(key)).map((key) => Number(key.slice(7))).sort((a, b) => a - b),
-      [1, 3, 4, 5, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16],
+      Array.from({ length: 16 }, (_, index) => index + 1),
       'VKB F-14 Gunfighter must define its accepted logical button enumeration exactly once',
     );
     assert.deepEqual(keys.filter((key) => key.startsWith('JOY_') && !key.startsWith('JOY_BTN')), ['JOY_RX'],
       'VKB F-14 Gunfighter must define JOY_RX as its DLC axis');
+    assert.deepEqual(
+      Object.fromEntries(controls.map(({ key, id }) => [key, id])),
+      {
+        JOY_BTN1: 'vkb-trigger',
+        JOY_BTN2: 'vkb-trigger-stage2',
+        JOY_BTN3: 'vkb-btn-release',
+        JOY_BTN4: 'vkb-pinky',
+        JOY_BTN5: 'vkb-btn-dlc',
+        JOY_BTN6: 'vkb-paddle',
+        JOY_BTN7: 'vkb-nws',
+        JOY_BTN8: 'vkb-hat',
+        JOY_BTN9: 'vkb-hat',
+        JOY_BTN10: 'vkb-hat',
+        JOY_BTN11: 'vkb-hat',
+        JOY_BTN12: 'vkb-hat',
+        JOY_BTN13: 'vkb-sw1',
+        JOY_BTN14: 'vkb-sw2',
+        JOY_BTN15: 'vkb-sw3',
+        JOY_BTN16: 'vkb-sw4',
+        JOY_RX: 'vkb-axis-dlc',
+      },
+      'VKB F-14 logical inputs must retain the verified physical-callout assignment',
+    );
     assert.deepEqual([...new Set(ids)].sort(), drawioIds,
       'VKB F-14 accepted aggregate callouts must cover every Lua control group');
   }
@@ -300,13 +322,13 @@ for (const device of manifest.devices) {
     );
     assert.deepEqual(
       [...new Set(drawioIds)].sort(),
-      luaIds.filter((id) => !/^viper-tqs-button-0[1-5]$/.test(id)),
-      'Viper draw.io must omit only MIC positions 1-5 handled by AutoHotkey',
+      luaIds,
+      'Viper draw.io must cover every physical input, including MIC positions usable by DCS or AutoHotkey',
     );
     assert.deepEqual(
       [...new Set(svgIds)].sort(),
-      luaIds.filter((id) => !/^viper-tqs-button-0[1-5]$/.test(id)),
-      'Viper SVG must omit only MIC positions 1-5 handled by AutoHotkey',
+      luaIds,
+      'Viper SVG must cover every physical input, including MIC positions usable by DCS or AutoHotkey',
     );
     assert.equal(controls.filter(({ key, hardwareLabel }) =>
       /^JOY_BTN\d+$/.test(key) && /^Button \d+ — .+/.test(hardwareLabel)).length, 62,
