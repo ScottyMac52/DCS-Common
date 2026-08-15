@@ -96,6 +96,23 @@ public class ScaffoldEngineServiceTests
     }
 
     [Fact]
+    public void ApplicationDisplayTitle_UsesOnlyFourPartAssemblyVersion()
+    {
+        var title = ApplicationDisplayTitle.Format(new Version(1, 7, 0, 0));
+
+        Assert.Equal("DCS Input Profile Importer version 1.7.0.0", title);
+        Assert.DoesNotContain("+", title);
+    }
+
+    [Fact]
+    public void ApplicationDisplayTitle_FillsMissingVersionPartsWithZero()
+    {
+        Assert.Equal(
+            "DCS Input Profile Importer version 1.7.0.0",
+            ApplicationDisplayTitle.Format(new Version(1, 7)));
+    }
+
+    [Fact]
     public void PreviewRow_ModifierModesDisplay_JoinsValues()
     {
         var row = new PreviewRow { ModifierModes = ["hold", null, "toggle"] };
