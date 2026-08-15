@@ -66,8 +66,9 @@ for (const relativePath of requiredTemplateAssets) {
 
   const expectedIds = [
     'vkb-trigger', 'vkb-trigger-stage2', 'vkb-btn-release', 'vkb-pinky',
-    'vkb-btn-dlc', 'vkb-paddle', 'vkb-nws', 'vkb-hat', 'vkb-sw1',
-    'vkb-sw2', 'vkb-sw3', 'vkb-sw4', 'vkb-axis-dlc',
+    'vkb-btn-dlc', 'vkb-paddle', 'vkb-nws', 'vkb-hat', 'vkb-trim-right',
+    'vkb-trim-up', 'vkb-trim-down', 'vkb-trim-left', 'vkb-sw1', 'vkb-sw2',
+    'vkb-sw3', 'vkb-sw4', 'vkb-axis-dlc',
   ];
   const drawioIds = [...drawio.matchAll(/id="connector-([^"]+)"/g)].map((match) => match[1]);
   const svgIds = [...svg.matchAll(/<!-- (?:callout|box):([^\s]+) -->/g)].map((match) => match[1]);
@@ -107,9 +108,8 @@ for (const relativePath of requiredTemplateAssets) {
     'VKB F-14 callouts must not repeat a physical anchor');
 
   for (const group of [
-    ['vkb-hat', 'vkb-btn-release'],
-    ['vkb-pinky', 'vkb-sw1', 'vkb-sw2', 'vkb-sw3', 'vkb-sw4'],
-    ['vkb-axis-dlc', 'vkb-btn-dlc', 'vkb-nws'],
+    ['vkb-axis-dlc', 'vkb-btn-dlc', 'vkb-sw1', 'vkb-sw2', 'vkb-sw3', 'vkb-sw4'],
+    ['vkb-btn-release', 'vkb-hat', 'vkb-trim-right', 'vkb-trim-up', 'vkb-trim-down', 'vkb-trim-left', 'vkb-pinky'],
     ['vkb-trigger', 'vkb-trigger-stage2', 'vkb-paddle'],
   ]) {
     const positions = group.map((id) => geometry(`label-${id}`));
@@ -229,10 +229,10 @@ for (const device of manifest.devices) {
         JOY_BTN6: 'vkb-paddle',
         JOY_BTN7: 'vkb-nws',
         JOY_BTN8: 'vkb-hat',
-        JOY_BTN9: 'vkb-hat',
-        JOY_BTN10: 'vkb-hat',
-        JOY_BTN11: 'vkb-hat',
-        JOY_BTN12: 'vkb-hat',
+        JOY_BTN9: 'vkb-trim-right',
+        JOY_BTN10: 'vkb-trim-up',
+        JOY_BTN11: 'vkb-trim-down',
+        JOY_BTN12: 'vkb-trim-left',
         JOY_BTN13: 'vkb-sw1',
         JOY_BTN14: 'vkb-sw2',
         JOY_BTN15: 'vkb-sw3',
