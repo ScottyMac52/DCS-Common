@@ -375,7 +375,7 @@ test('UiLayer shared hardware bindings resolve every reported callout and modifi
   assert.equal(preview.rows.length, 5);
   assert.ok(preview.rows.every((row) => row.status === 'OK'));
   assert.deepEqual(preview.rows.map((row) => row.calloutId), [
-    'vkb-trigger',
+    'vkb-paddle',
     'viper-tqs-button-05',
     'viper-tqs-button-05',
     'viper-tqs-button-04',
@@ -390,7 +390,7 @@ test('UiLayer shared hardware bindings resolve every reported callout and modifi
   const viperPage = config.pages.find((page) => page.deviceId === 'viper-tqs-mission-pack');
   assert.deepEqual(vkbPage.layers.map((layer) => layer.id), ['base', 'JOY_BTN7']);
   assert.deepEqual(viperPage.layers.map((layer) => layer.id), ['base', 'JOY_BTN3', 'JOY_BTN7']);
-  assert.equal(vkbPage.layers[1].controls['vkb-trigger'].key, 'JOY_BTN6');
+  assert.equal(vkbPage.layers[1].controls['vkb-paddle'].key, 'JOY_BTN6');
   assert.equal(viperPage.layers[1].controls['viper-tqs-button-05'].key, 'JOY_BTN5');
   assert.equal(viperPage.layers[2].controls['viper-tqs-button-04'].key, 'JOY_BTN4');
 });
