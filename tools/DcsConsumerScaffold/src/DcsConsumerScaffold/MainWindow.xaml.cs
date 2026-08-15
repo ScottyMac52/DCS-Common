@@ -11,6 +11,7 @@ public partial class MainWindow : Window
     public MainWindow()
     {
         InitializeComponent();
+        Title = ApplicationDisplayTitle.Format(typeof(MainWindow).Assembly.GetName().Version);
         DataContext = _viewModel;
     }
 
