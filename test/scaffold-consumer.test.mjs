@@ -304,6 +304,38 @@ test('callout catalog maps JOY_BTN1 to mfd-osb-t1', () => {
   assert.deepEqual(catalog.byKey.get('JOY_BTN1'), ['mfd-osb-t1']);
 });
 
+test('Viper TQS nonvisual MIC inputs are not scaffolded as callouts', () => {
+  const catalog = loadCalloutCatalog(commonRoot, 'viper-tqs-mission-pack');
+  assert.equal(catalog.byKey.has('JOY_BTN5'), false);
+  assert.deepEqual(catalog.byKey.get('JOY_BTN6'), ['viper-tqs-button-06']);
+
+  const root = mkdtempSync(join(tmpdir(), 'scaffold-viper-nonvisual-'));
+  const profilesDir = join(root, 'joystick');
+  mkdirSync(profilesDir);
+  writeFileSync(
+    join(profilesDir, 'Viper TQS {C0A33440-3F54-11f1-8001-444553540000}.diff.lua'),
+    `local diff = { ["keyDiffs"] = {
+      ["d1"] = { ["added"] = { [1] = { ["key"] = "JOY_BTN5" }, }, ["name"] = "Afterburner toggle", },
+      ["d2"] = { ["added"] = { [1] = { ["key"] = "JOY_BTN6" }, }, ["name"] = "Sight cage", },
+    } } return diff`,
+  );
+
+  const preview = buildPreview({ profilesDir, commonRoot });
+  const nonvisual = preview.rows.find((row) => row.key === 'JOY_BTN5');
+  const visible = preview.rows.find((row) => row.key === 'JOY_BTN6');
+  assert.equal(nonvisual.calloutId, null);
+  assert.equal(nonvisual.status, 'No callout');
+  assert.equal(visible.calloutId, 'viper-tqs-button-06');
+  assert.equal(visible.status, 'OK');
+
+  const config = buildDraftKneeboardConfig(preview, {
+    displayName: 'F-100D',
+    inputModuleId: 'F-100D',
+  });
+  assert.equal(config.pages[0].controls['viper-tqs-button-05'], undefined);
+  assert.equal(config.pages[0].controls['viper-tqs-button-06'].key, 'JOY_BTN6');
+});
+
 test('buildPreview emits base and modifier rows with hold mode', () => {
   const root = mkdtempSync(join(tmpdir(), 'scaffold-preview-'));
   const profilesDir = join(root, 'joystick');

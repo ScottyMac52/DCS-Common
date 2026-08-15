@@ -171,6 +171,12 @@ export function loadCalloutCatalog(commonRoot, deviceId) {
   const luaPath = join(commonRoot, 'assets/shared/hardware', device.lua);
   if (!existsSync(luaPath)) return { byKey: new Map(), controls: [] };
   const source = readFileSync(luaPath, 'utf8');
+  const svgPath = device.svg ? join(commonRoot, 'assets/shared/hardware', device.svg) : null;
+  const renderableIds = new Set();
+  if (svgPath && existsSync(svgPath)) {
+    const svg = readFileSync(svgPath, 'utf8');
+    for (const match of svg.matchAll(/<text id="lbl-([^"]+)"/g)) renderableIds.add(match[1]);
+  }
   const controls = [];
   // Full schema: { id = "...", key = "..." } (either field order)
   const withId = /\{\s*(?:id\s*=\s*"((?:\\.|[^"])*)"\s*,\s*key\s*=\s*"((?:\\.|[^"])*)"|key\s*=\s*"((?:\\.|[^"])*)"\s*,\s*id\s*=\s*"((?:\\.|[^"])*)")/g;
@@ -182,12 +188,7 @@ export function loadCalloutCatalog(commonRoot, deviceId) {
   // Lightweight bindings fallback when no id+key pairs found
   if (controls.length === 0) {
     const bindingPattern = /\{\s*key\s*=\s*"((?:\\.|[^"])*)"[^}]*\}/g;
-    const svgPath = device.svg ? join(commonRoot, 'assets/shared/hardware', device.svg) : null;
-    const svgIds = [];
-    if (svgPath && existsSync(svgPath)) {
-      const svg = readFileSync(svgPath, 'utf8');
-      for (const m of svg.matchAll(/<text id="lbl-([^"]+)"/g)) svgIds.push(m[1]);
-    }
+    const svgIds = [...renderableIds];
     let index = 0;
     for (let match; (match = bindingPattern.exec(source));) {
       const key = match[1];
@@ -197,12 +198,15 @@ export function loadCalloutCatalog(commonRoot, deviceId) {
       index += 1;
     }
   }
+  const renderableControls = svgPath
+    ? controls.filter((control) => renderableIds.has(control.id))
+    : controls;
   const byKey = new Map();
-  for (const control of controls) {
+  for (const control of renderableControls) {
     if (!byKey.has(control.key)) byKey.set(control.key, []);
     byKey.get(control.key).push(control.id);
   }
-  return { byKey, controls };
+  return { byKey, controls: renderableControls };
 }
 
 function chordKey(reformers = []) {
