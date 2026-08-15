@@ -166,9 +166,7 @@ for (const device of manifest.devices) {
   const legacyIdMatchSkips = new Set();
   if (!legacyIdMatchSkips.has(device.id)) {
     const luaUnique = [...new Set(luaIds)].sort();
-    const expectedVisualIds = device.id === 'viper-tqs-mission-pack'
-      ? luaUnique.filter((id) => !/^viper-tqs-button-0[1-5]$/.test(id))
-      : device.id === 'tm-mfd'
+    const expectedVisualIds = device.id === 'tm-mfd'
         ? [...luaUnique, ...luaUnique.filter((id) => id.startsWith('mfd-osb-')).map((id) => `${id}-shifted`)].sort()
         : luaUnique;
     assert.deepEqual(expectedVisualIds, [...new Set(drawioIds)].sort(),
@@ -210,11 +208,11 @@ for (const device of manifest.devices) {
   }
 
   if (device.id === 'vkb-f14-gunfighter') {
-    assert.equal(controls.length, 15,
-      'VKB F-14 Gunfighter must define 14 button positions and the DLC axis');
+    assert.equal(controls.length, 16,
+      'VKB F-14 Gunfighter must define 15 button positions and the DLC axis');
     assert.deepEqual(
       keys.filter((key) => /^JOY_BTN\d+$/.test(key)).map((key) => Number(key.slice(7))).sort((a, b) => a - b),
-      [1, 3, 4, 5, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16],
+      [1, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16],
       'VKB F-14 Gunfighter must define its accepted logical button enumeration exactly once',
     );
     assert.deepEqual(keys.filter((key) => key.startsWith('JOY_') && !key.startsWith('JOY_BTN')), ['JOY_RX'],
@@ -300,13 +298,13 @@ for (const device of manifest.devices) {
     );
     assert.deepEqual(
       [...new Set(drawioIds)].sort(),
-      luaIds.filter((id) => !/^viper-tqs-button-0[1-5]$/.test(id)),
-      'Viper draw.io must omit only MIC positions 1-5 handled by AutoHotkey',
+      luaIds,
+      'Viper draw.io must cover every physical input, including MIC positions usable by DCS or AutoHotkey',
     );
     assert.deepEqual(
       [...new Set(svgIds)].sort(),
-      luaIds.filter((id) => !/^viper-tqs-button-0[1-5]$/.test(id)),
-      'Viper SVG must omit only MIC positions 1-5 handled by AutoHotkey',
+      luaIds,
+      'Viper SVG must cover every physical input, including MIC positions usable by DCS or AutoHotkey',
     );
     assert.equal(controls.filter(({ key, hardwareLabel }) =>
       /^JOY_BTN\d+$/.test(key) && /^Button \d+ — .+/.test(hardwareLabel)).length, 62,
