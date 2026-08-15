@@ -4,6 +4,7 @@ return {
   name = "VKB F-14 Gunfighter",
   controls = {
     { id = "vkb-trigger", key = "JOY_BTN1", type = "trigger", hardwareLabel = "Trigger" },
+    { id = "vkb-trigger", key = "JOY_BTN6", type = "trigger", hardwareLabel = "Trigger" },
     { id = "vkb-btn-release", key = "JOY_BTN3", type = "button", hardwareLabel = "Weapon release" },
     { id = "vkb-pinky", key = "JOY_BTN4", type = "button", hardwareLabel = "Pinky" },
     { id = "vkb-btn-dlc", key = "JOY_BTN5", type = "button", hardwareLabel = "DLC Enage / Disengage" },
