@@ -317,6 +317,7 @@ export function buildPreview({ profilesDir, modifiersPath = null, mapPath = null
   const devices = [];
   const rows = [];
   const errors = [...modifierErrors];
+  const reportedUnknownModifiers = new Set();
   const catalogCache = new Map();
 
   for (const fileName of profileFiles) {
@@ -375,12 +376,25 @@ export function buildPreview({ profilesDir, modifiersPath = null, mapPath = null
     for (const binding of bindings) {
       for (const input of binding.added) {
         const reformers = input.reformers ?? [];
+        const unknownModifiers = reformers.filter((name) => !modifierByName.has(name));
         const modifierModes = reformers.map((name) => modifierByName.get(name)?.mode ?? null);
         const catalogKey = resolveCatalogInputKey(mapping.deviceId, input.key, deviceMap);
         const calloutIds = catalog.byKey.get(catalogKey) ?? [];
         let status = 'OK';
         if (!mapping.deviceId) status = 'Unmapped device';
         else if (calloutIds.length === 0) status = 'No callout';
+        if (unknownModifiers.length > 0) {
+          status = status === 'OK' ? 'Unknown modifier' : `${status}; Unknown modifier`;
+          for (const name of unknownModifiers) {
+            const errorKey = `${fileName}\0${name}`;
+            if (reportedUnknownModifiers.has(errorKey)) continue;
+            reportedUnknownModifiers.add(errorKey);
+            const source = modifiersPath ? basename(modifiersPath) : 'modifiers.lua';
+            errors.push(
+              `${fileName}: modifier '${name}' is referenced by a profile binding but is not declared in ${source}`,
+            );
+          }
+        }
 
         const sameChordCommands = bindings.filter((candidate) =>
           candidate.added.some(
@@ -404,6 +418,7 @@ export function buildPreview({ profilesDir, modifiersPath = null, mapPath = null
           reformers,
           chord: chordKey(reformers),
           modifierModes,
+          unknownModifiers,
           calloutId: reformers.length > 0 && mapping.deviceId === 'tm-mfd' && calloutIds[0]?.startsWith('mfd-osb-')
             ? `${calloutIds[0]}-shifted`
             : calloutIds[0] ?? null,
@@ -496,7 +511,7 @@ export function buildDraftKneeboardConfig(preview, { displayName, inputModuleId 
 
     for (const row of preview.rows) {
       if (row.profileFile !== device.profileFile) continue;
-      if (!row.calloutId) continue;
+      if (!row.calloutId || row.unknownModifiers?.length) continue;
       // Include keyDiffs and axisDiffs so throttle/stick/rudder axes are scaffolded.
 
       const displayName = row.name || row.key;

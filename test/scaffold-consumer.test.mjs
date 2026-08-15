@@ -346,6 +346,42 @@ test('buildPreview emits base and modifier rows with hold mode', () => {
   assert.equal(preview.modifiers[0].mode, 'hold');
 });
 
+test('buildPreview reports profile reformers missing from modifiers.lua', () => {
+  const root = mkdtempSync(join(tmpdir(), 'scaffold-missing-modifier-'));
+  const profilesDir = join(root, 'joystick');
+  mkdirSync(profilesDir);
+  const profileName = 'F16 MFD 1 {C5BE49A0-2342-11ee-8001-444553540000}.diff.lua';
+  writeFileSync(
+    join(profilesDir, profileName),
+    `local diff = { ["keyDiffs"] = {
+      ["d1"] = { ["added"] = { [1] = { ["key"] = "JOY_BTN1" }, }, ["name"] = "Base binding", },
+      ["d2"] = { ["added"] = { [1] = { ["key"] = "JOY_BTN1", ["reformers"] = { [1] = "JOY_BTN7" } }, }, ["name"] = "Shifted binding", },
+    } } return diff`,
+  );
+  const modifiersPath = join(root, 'modifiers.lua');
+  writeFileSync(
+    modifiersPath,
+    `local modifiers = {
+      ["JOY_BTN3"] = { ["device"] = "Another device", ["key"] = "JOY_BTN3", ["switch"] = false },
+    } return modifiers`,
+  );
+
+  const preview = buildPreview({ profilesDir, modifiersPath, commonRoot });
+  const shifted = preview.rows.find((row) => row.chord === 'JOY_BTN7');
+  assert.equal(shifted.status, 'Unknown modifier');
+  assert.deepEqual(shifted.modifierModes, [null]);
+  assert.deepEqual(shifted.unknownModifiers, ['JOY_BTN7']);
+  assert.equal(preview.summary.errorCount, 1);
+  assert.match(preview.errors[0], /JOY_BTN7.*not declared in modifiers\.lua/);
+
+  const config = buildDraftKneeboardConfig(preview, {
+    displayName: 'F4U-1D',
+    inputModuleId: 'F4U-1D',
+  });
+  assert.equal(config.pages[0].layers, undefined);
+  assert.equal(config.pages[0].controls['mfd-osb-t1'].key, 'JOY_BTN1');
+});
+
 test('buildPreview preserves an AB9 grip alias and rejects an invalid override', () => {
   const root = mkdtempSync(join(tmpdir(), 'scaffold-moza-'));
   const profilesDir = join(root, 'joystick');
