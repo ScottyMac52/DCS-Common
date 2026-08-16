@@ -459,14 +459,15 @@ export function buildPreview({ profilesDir, modifiersPath = null, mapPath = null
           status,
         };
         row.semanticChord = chordKey(reformers.map((name) => modifierByName.get(name)?.semanticModifier ?? name));
-        row.defaultLabel = row.calloutId ? catalog.labelById.get(row.calloutId) ?? '' : '';
+        row.defaultLabel = binding.name ?? binding.command ?? '';
+        row.deviceLabel = calloutIds[0] ? catalog.labelById.get(calloutIds[0]) ?? '' : '';
         row.bindingId = stableBindingId(row);
         if (Object.prototype.hasOwnProperty.call(labelOverrides, row.bindingId)) {
           row.label = String(labelOverrides[row.bindingId]);
           row.labelSource = 'user';
         } else {
           row.label = row.defaultLabel;
-          row.labelSource = 'catalog';
+          row.labelSource = 'dcs';
         }
         rows.push(row);
       }
@@ -582,7 +583,7 @@ export function buildDraftKneeboardConfig(preview, { displayName, inputModuleId 
       if (!row.calloutId || row.unknownModifiers?.length) continue;
       // Include keyDiffs and axisDiffs so throttle/stick/rudder axes are scaffolded.
 
-      const effectiveLabel = row.label ?? row.defaultLabel ?? '';
+      const effectiveLabel = row.label ?? row.defaultLabel ?? row.deviceLabel ?? '';
       const reference = { profile: profileKey, key: row.key, command: row.command };
 
       if (!row.chord) {
@@ -627,7 +628,7 @@ export function buildDraftKneeboardConfig(preview, { displayName, inputModuleId 
       title,
       kicker: device.role ? `ROLE ${device.role.toUpperCase()}` : device.instanceHint ? `INSTANCE ${device.instanceHint}` : 'SCAFFOLD DRAFT',
       _comment:
-        'labels are pre-filled from canonical DCS-Common hardware labels and remain separate from DCS command names. ' +
+        'labels default to the imported DCS command name and remain editable; deviceLabel contains the canonical DCS-Common hardware label. ' +
         'keep callout IDs in sync with controls. You can also set "label" on a controls entry.',
       labels,
       modifierCallouts,
@@ -772,17 +773,17 @@ export function writeConsumer({ preview, outputDir, displayName, inputModuleId, 
     '',
     '## Bindings',
     '',
-    '| Device | Control | DCS command name | Effective label | Label source |',
-    '| --- | --- | --- | --- | --- |',
+    '| Device | Control | DCS command name | Device label | Effective label | Label source |',
+    '| --- | --- | --- | --- | --- | --- |',
     ...preview.rows.map((row) => {
       const cell = (value) => String(value ?? '').replaceAll('|', '\\|').replaceAll('\n', ' ');
-      return `| ${cell(row.stem)} | ${cell(row.key)} | ${cell(row.name)} | ${cell(row.label)} | ${cell(row.labelSource)} |`;
+      return `| ${cell(row.stem)} | ${cell(row.key)} | ${cell(row.name)} | ${cell(row.deviceLabel)} | ${cell(row.label)} | ${cell(row.labelSource)} |`;
     }),
     '',
     '## Next steps',
     '',
     '1. Review `config/kneeboard.json` (draft controls/layers).',
-    '2. Review `labels`, initialized from canonical DCS-Common hardware labels and kept separate from DCS command names.',
+    '2. Review `labels`, initialized from imported DCS command names. Use each row’s DCS-Common device label when a hardware-oriented callout is clearer.',
     '3. Review repeated-device roles. Supply `--roles` to replace GUID-backed defaults with semantic names such as left-tank-control.',
     '4. `npm ci` and set `DCS_COMMON_ROOT` to a DCS-Common checkout.',
     '5. `npm run build:kneeboard` / `npm run test:kneeboard` / `npm run test:versioning`.',

@@ -796,7 +796,7 @@ test('semantic modifier alternatives collapse to one logical layer without losin
   ]);
 });
 
-test('catalog control label defaults separately from command name and supports blank override', () => {
+test('label defaults to the DCS name, exposes the device label, and supports blank override', () => {
   const root = mkdtempSync(join(tmpdir(), 'scaffold-labels-'));
   const profilesDir = join(root, 'joystick');
   mkdirSync(profilesDir);
@@ -806,8 +806,10 @@ test('catalog control label defaults separately from command name and supports b
   } } return diff`);
   const initial = buildPreview({ profilesDir, commonRoot });
   assert.equal(initial.rows[0].name, 'recenter VR Headset');
-  assert.equal(initial.rows[0].defaultLabel, 'Paddle switch');
-  assert.equal(initial.rows[0].label, 'Paddle switch');
+  assert.equal(initial.rows[0].defaultLabel, 'recenter VR Headset');
+  assert.equal(initial.rows[0].deviceLabel, 'Paddle switch');
+  assert.equal(initial.rows[0].label, 'recenter VR Headset');
+  assert.equal(initial.rows[0].labelSource, 'dcs');
   const labelsPath = join(root, 'labels.json');
   writeFileSync(labelsPath, JSON.stringify({ [initial.rows[0].bindingId]: '' }));
   const overridden = buildPreview({ profilesDir, labelsPath, commonRoot });
