@@ -559,7 +559,7 @@ export function buildDraftKneeboardConfig(preview, { displayName, inputModuleId 
       mode: mod.mode,
       semanticModifier: mod.semanticModifier,
       deviceId: mod.deviceId,
-      label: mod.semanticModifier === mod.name ? 'SHIFT / MODIFIER' : mod.semanticModifier,
+      label: mod.name,
     };
   }
 

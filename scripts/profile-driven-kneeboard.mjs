@@ -233,7 +233,10 @@ export function loadProfileDrivenConfig(configPath, options = {}) {
         }));
         controls[controlId] = Array.isArray(reference) ? references : references[0];
         if (layer.labels?.[controlId] !== undefined) labels[controlId] = layer.labels[controlId];
-        controlModifiers[controlId] = references[0].modifiers;
+        controlModifiers[controlId] = [...new Set([
+          ...(controlModifiers[controlId] ?? []),
+          ...references.flatMap((item) => item.modifiers),
+        ])];
       }
     }
     expandedPages.push({

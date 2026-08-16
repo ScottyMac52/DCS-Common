@@ -15,6 +15,7 @@ import {
   buildDraftKneeboardConfig,
   writeConsumer,
 } from '../scripts/scaffold-consumer.mjs';
+import { loadProfileDrivenConfig } from '../scripts/profile-driven-kneeboard.mjs';
 
 const commonRoot = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 
@@ -755,6 +756,7 @@ test('semantic modifier alternatives collapse to one logical layer without losin
   writeFileSync(modifiersPath, `local modifiers = {
     ["JOY_BTN3"] = { ["device"] = "MOZA AB9 {MOZA}", ["key"] = "JOY_BTN3", ["switch"] = false },
     ["JOY_BTN7"] = { ["device"] = "VKB F-14 {VKB}", ["key"] = "JOY_BTN7", ["switch"] = false },
+    ["LShift"] = { ["device"] = "Keyboard", ["key"] = "LShift", ["switch"] = false },
   } return modifiers`);
   const semanticModifiersPath = join(root, 'semantic.json');
   writeFileSync(semanticModifiersPath, JSON.stringify({ JOY_BTN3: 'grip-shift', JOY_BTN7: 'grip-shift' }));
@@ -767,6 +769,25 @@ test('semantic modifier alternatives collapse to one logical layer without losin
   const references = config.pages[0].layers[1].controls['viper-tqs-button-05'];
   assert.equal(references.length, 2);
   assert.notDeepEqual(references[0].modifiers, references[1].modifiers);
+
+  const outputDir = join(root, 'consumer');
+  writeConsumer({
+    preview,
+    outputDir,
+    displayName: 'UiLayer',
+    inputModuleId: 'UiLayer',
+    kneeboardId: 'UiLayer',
+    commonRoot,
+  });
+  const renderedConfig = loadProfileDrivenConfig('config/kneeboard.json', {
+    consumerRoot: outputDir,
+    commonRoot,
+  });
+  assert.deepEqual(renderedConfig.pages[0].legend.map(({ label }) => label), [
+    'Base (no modifier)',
+    'JOY_BTN3 (hold)',
+    'JOY_BTN7 (hold)',
+  ]);
 });
 
 test('catalog control label defaults separately from command name and supports blank override', () => {
