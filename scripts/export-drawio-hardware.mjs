@@ -1,6 +1,7 @@
 import { readFileSync, writeFileSync, mkdirSync, existsSync } from 'node:fs';
 import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { decodeDrawioGraph } from './drawio-source.mjs';
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const hardwareRoot = join(root, 'assets/shared/hardware');
@@ -97,11 +98,11 @@ function renderLabelBox(lines, label, id) {
 }
 
 function render(device, xml) {
-  if (!/<diagram\b[^>]*>\s*<mxGraphModel\b/.test(xml)) throw new Error(`${device.id}: draw.io source must contain an uncompressed mxGraphModel`);
-  const modelTag = xml.match(/<mxGraphModel\b([^>]*)>/)?.[1];
+  const graph = decodeDrawioGraph(xml, device.id);
+  const modelTag = graph.match(/<mxGraphModel\b([^>]*)>/)?.[1];
   const width = Number(attr(modelTag, 'pageWidth'));
   const height = Number(attr(modelTag, 'pageHeight'));
-  const all = cells(xml);
+  const all = cells(graph);
   const byId = new Map(all.map((cell) => [cell.id, cell]));
   const canvas = byId.get('canvas');
   const images = all.filter((cell) => cell.id.startsWith('hardware-image-'));

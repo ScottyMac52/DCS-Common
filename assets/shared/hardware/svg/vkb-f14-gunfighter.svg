@@ -33,59 +33,59 @@
   <rect x="675" y="35" width="210" height="26" rx="4" fill="#1e293b" stroke="#00bfff" stroke-width="1.5"/>
   <text id="lbl-vkb-btn-release" x="780" y="52" text-anchor="middle" font-family="Arial,sans-serif" font-size="11" fill="#f1f5f9">Weapons release / Pickle</text>
   <!-- callout:vkb-btn-dlc -->
-  <line x1="348" y1="317" x2="120" y2="111" stroke="#00bfff" stroke-width="1.5" stroke-dasharray="5 3" opacity="0.75"/>
+  <line x1="348" y1="317" x2="125" y2="342" stroke="#00bfff" stroke-width="1.5" stroke-dasharray="5 3" opacity="0.75"/>
   <circle cx="348" cy="317" r="5" fill="#00bfff" stroke="#0f172a" stroke-width="1.5"/>
-  <rect x="15" y="85" width="210" height="26" rx="4" fill="#1e293b" stroke="#00bfff" stroke-width="1.5"/>
-  <text id="lbl-vkb-btn-dlc" x="120" y="102" text-anchor="middle" font-family="Arial,sans-serif" font-size="11" fill="#f1f5f9">DLC Enable / Countermeasures</text>
+  <rect x="20" y="342" width="210" height="26" rx="4" fill="#1e293b" stroke="#00bfff" stroke-width="1.5"/>
+  <text id="lbl-vkb-btn-dlc" x="125" y="359" text-anchor="middle" font-family="Arial,sans-serif" font-size="11" fill="#f1f5f9">DLC Enable / Countermeasures</text>
   <!-- callout:vkb-pinky -->
-  <line x1="326" y1="122" x2="780" y2="335" stroke="#00bfff" stroke-width="1.5" stroke-dasharray="5 3" opacity="0.75"/>
+  <line x1="326" y1="122" x2="125" y2="61" stroke="#00bfff" stroke-width="1.5" stroke-dasharray="5 3" opacity="0.75"/>
   <circle cx="326" cy="122" r="5" fill="#00bfff" stroke="#0f172a" stroke-width="1.5"/>
-  <rect x="675" y="335" width="210" height="26" rx="4" fill="#1e293b" stroke="#00bfff" stroke-width="1.5"/>
-  <text id="lbl-vkb-pinky" x="780" y="352" text-anchor="middle" font-family="Arial,sans-serif" font-size="11" fill="#f1f5f9">Phoenix / Sparrow toggle</text>
+  <rect x="20" y="35" width="210" height="26" rx="4" fill="#1e293b" stroke="#00bfff" stroke-width="1.5"/>
+  <text id="lbl-vkb-pinky" x="125" y="52" text-anchor="middle" font-family="Arial,sans-serif" font-size="11" fill="#f1f5f9">Phoenix / Sparrow toggle</text>
   <!-- callout:vkb-sw1 -->
-  <line x1="327" y1="99" x2="120" y2="135" stroke="#00bfff" stroke-width="1.5" stroke-dasharray="5 3" opacity="0.75"/>
+  <line x1="327" y1="99" x2="230" y2="95" stroke="#00bfff" stroke-width="1.5" stroke-dasharray="5 3" opacity="0.75"/>
   <circle cx="327" cy="99" r="5" fill="#00bfff" stroke="#0f172a" stroke-width="1.5"/>
-  <rect x="15" y="135" width="210" height="26" rx="4" fill="#1e293b" stroke="#00bfff" stroke-width="1.5"/>
-  <text id="lbl-vkb-sw1" x="120" y="152" text-anchor="middle" font-family="Arial,sans-serif" font-size="11" fill="#f1f5f9">Sparrow / Phoenix</text>
+  <rect x="20" y="82" width="210" height="26" rx="4" fill="#1e293b" stroke="#00bfff" stroke-width="1.5"/>
+  <text id="lbl-vkb-sw1" x="125" y="99" text-anchor="middle" font-family="Arial,sans-serif" font-size="11" fill="#f1f5f9">Sparrow / Phoenix</text>
   <!-- callout:vkb-sw2 -->
-  <line x1="326" y1="114" x2="120" y2="185" stroke="#00bfff" stroke-width="1.5" stroke-dasharray="5 3" opacity="0.75"/>
+  <line x1="326" y1="114" x2="125" y2="132" stroke="#00bfff" stroke-width="1.5" stroke-dasharray="5 3" opacity="0.75"/>
   <circle cx="326" cy="114" r="5" fill="#00bfff" stroke="#0f172a" stroke-width="1.5"/>
-  <rect x="15" y="185" width="210" height="26" rx="4" fill="#1e293b" stroke="#00bfff" stroke-width="1.5"/>
-  <text id="lbl-vkb-sw2" x="120" y="202" text-anchor="middle" font-family="Arial,sans-serif" font-size="11" fill="#f1f5f9">Sidewinder</text>
+  <rect x="20" y="132" width="210" height="26" rx="4" fill="#1e293b" stroke="#00bfff" stroke-width="1.5"/>
+  <text id="lbl-vkb-sw2" x="125" y="149" text-anchor="middle" font-family="Arial,sans-serif" font-size="11" fill="#f1f5f9">Sidewinder</text>
   <!-- callout:vkb-sw3 -->
-  <line x1="326" y1="130" x2="120" y2="235" stroke="#00bfff" stroke-width="1.5" stroke-dasharray="5 3" opacity="0.75"/>
+  <line x1="326" y1="130" x2="125" y2="182" stroke="#00bfff" stroke-width="1.5" stroke-dasharray="5 3" opacity="0.75"/>
   <circle cx="326" cy="130" r="5" fill="#00bfff" stroke="#0f172a" stroke-width="1.5"/>
-  <rect x="15" y="235" width="210" height="26" rx="4" fill="#1e293b" stroke="#00bfff" stroke-width="1.5"/>
-  <text id="lbl-vkb-sw3" x="120" y="252" text-anchor="middle" font-family="Arial,sans-serif" font-size="11" fill="#f1f5f9">Guns</text>
+  <rect x="20" y="182" width="210" height="26" rx="4" fill="#1e293b" stroke="#00bfff" stroke-width="1.5"/>
+  <text id="lbl-vkb-sw3" x="125" y="199" text-anchor="middle" font-family="Arial,sans-serif" font-size="11" fill="#f1f5f9">Guns</text>
   <!-- callout:vkb-sw4 -->
-  <line x1="326" y1="146" x2="120" y2="285" stroke="#00bfff" stroke-width="1.5" stroke-dasharray="5 3" opacity="0.75"/>
+  <line x1="326" y1="146" x2="125" y2="232" stroke="#00bfff" stroke-width="1.5" stroke-dasharray="5 3" opacity="0.75"/>
   <circle cx="326" cy="146" r="5" fill="#00bfff" stroke="#0f172a" stroke-width="1.5"/>
-  <rect x="15" y="285" width="210" height="26" rx="4" fill="#1e293b" stroke="#00bfff" stroke-width="1.5"/>
-  <text id="lbl-vkb-sw4" x="120" y="302" text-anchor="middle" font-family="Arial,sans-serif" font-size="11" fill="#f1f5f9">OFF</text>
+  <rect x="20" y="232" width="210" height="26" rx="4" fill="#1e293b" stroke="#00bfff" stroke-width="1.5"/>
+  <text id="lbl-vkb-sw4" x="125" y="249" text-anchor="middle" font-family="Arial,sans-serif" font-size="11" fill="#f1f5f9">OFF</text>
   <!-- callout:vkb-axis-dlc -->
-  <line x1="340" y1="300" x2="120" y2="61" stroke="#00bfff" stroke-width="1.5" stroke-dasharray="5 3" opacity="0.75"/>
+  <line x1="340" y1="300" x2="230" y2="300" stroke="#00bfff" stroke-width="1.5" stroke-dasharray="5 3" opacity="0.75"/>
   <circle cx="340" cy="300" r="5" fill="#00bfff" stroke="#0f172a" stroke-width="1.5"/>
-  <rect x="15" y="35" width="210" height="26" rx="4" fill="#1e293b" stroke="#00bfff" stroke-width="1.5"/>
-  <text id="lbl-vkb-axis-dlc" x="120" y="52" text-anchor="middle" font-family="Arial,sans-serif" font-size="11" fill="#f1f5f9">DLC axis</text>
+  <rect x="20" y="287" width="210" height="26" rx="4" fill="#1e293b" stroke="#00bfff" stroke-width="1.5"/>
+  <text id="lbl-vkb-axis-dlc" x="125" y="304" text-anchor="middle" font-family="Arial,sans-serif" font-size="11" fill="#f1f5f9">DLC axis</text>
   <!-- callout:vkb-nws -->
-  <line x1="429" y1="1039" x2="120" y2="806" stroke="#00bfff" stroke-width="1.5" stroke-dasharray="5 3" opacity="0.75"/>
+  <line x1="429" y1="1039" x2="660" y2="1039" stroke="#00bfff" stroke-width="1.5" stroke-dasharray="5 3" opacity="0.75"/>
   <circle cx="429" cy="1039" r="5" fill="#00bfff" stroke="#0f172a" stroke-width="1.5"/>
-  <rect x="15" y="780" width="210" height="26" rx="4" fill="#1e293b" stroke="#00bfff" stroke-width="1.5"/>
-  <text id="lbl-vkb-nws" x="120" y="797" text-anchor="middle" font-family="Arial,sans-serif" font-size="11" fill="#f1f5f9">NWS / Shift</text>
+  <rect x="660" y="1026" width="210" height="26" rx="4" fill="#1e293b" stroke="#00bfff" stroke-width="1.5"/>
+  <text id="lbl-vkb-nws" x="765" y="1043" text-anchor="middle" font-family="Arial,sans-serif" font-size="11" fill="#f1f5f9">NWS / Shift</text>
   <!-- callout:vkb-trigger -->
-  <line x1="548" y1="865" x2="780" y2="706" stroke="#00bfff" stroke-width="1.5" stroke-dasharray="5 3" opacity="0.75"/>
+  <line x1="548" y1="865" x2="765" y2="846" stroke="#00bfff" stroke-width="1.5" stroke-dasharray="5 3" opacity="0.75"/>
   <circle cx="548" cy="865" r="5" fill="#00bfff" stroke="#0f172a" stroke-width="1.5"/>
-  <rect x="675" y="680" width="210" height="26" rx="4" fill="#1e293b" stroke="#00bfff" stroke-width="1.5"/>
-  <text id="lbl-vkb-trigger" x="780" y="697" text-anchor="middle" font-family="Arial,sans-serif" font-size="11" fill="#f1f5f9">Trigger 1 — Gun camera</text>
+  <rect x="660" y="820" width="210" height="26" rx="4" fill="#1e293b" stroke="#00bfff" stroke-width="1.5"/>
+  <text id="lbl-vkb-trigger" x="765" y="837" text-anchor="middle" font-family="Arial,sans-serif" font-size="11" fill="#f1f5f9">Trigger 1 — Gun camera</text>
   <!-- callout:vkb-trigger-stage2 -->
-  <line x1="555" y1="877" x2="780" y2="756" stroke="#00bfff" stroke-width="1.5" stroke-dasharray="5 3" opacity="0.75"/>
-  <circle cx="555" cy="877" r="5" fill="#00bfff" stroke="#0f172a" stroke-width="1.5"/>
-  <rect x="675" y="730" width="210" height="26" rx="4" fill="#1e293b" stroke="#00bfff" stroke-width="1.5"/>
-  <text id="lbl-vkb-trigger-stage2" x="780" y="747" text-anchor="middle" font-family="Arial,sans-serif" font-size="9" fill="#f1f5f9">Trigger 2 — Fire gun / F-14 missiles and gun</text>
+  <line x1="520" y1="877" x2="660" y2="877" stroke="#00bfff" stroke-width="1.5" stroke-dasharray="5 3" opacity="0.75"/>
+  <circle cx="520" cy="877" r="5" fill="#00bfff" stroke="#0f172a" stroke-width="1.5"/>
+  <rect x="660" y="864" width="210" height="26" rx="4" fill="#1e293b" stroke="#00bfff" stroke-width="1.5"/>
+  <text id="lbl-vkb-trigger-stage2" x="765" y="881" text-anchor="middle" font-family="Arial,sans-serif" font-size="9" fill="#f1f5f9">Trigger 2 — Fire gun / F-14 missiles and gun</text>
   <!-- callout:vkb-paddle -->
-  <line x1="513" y1="1115" x2="780" y2="806" stroke="#00bfff" stroke-width="1.5" stroke-dasharray="5 3" opacity="0.75"/>
+  <line x1="513" y1="1115" x2="660" y2="1115" stroke="#00bfff" stroke-width="1.5" stroke-dasharray="5 3" opacity="0.75"/>
   <circle cx="513" cy="1115" r="5" fill="#00bfff" stroke="#0f172a" stroke-width="1.5"/>
-  <rect x="675" y="780" width="210" height="26" rx="4" fill="#1e293b" stroke="#00bfff" stroke-width="1.5"/>
-  <text id="lbl-vkb-paddle" x="780" y="797" text-anchor="middle" font-family="Arial,sans-serif" font-size="11" fill="#f1f5f9">Paddle switch</text>
+  <rect x="660" y="1102" width="210" height="26" rx="4" fill="#1e293b" stroke="#00bfff" stroke-width="1.5"/>
+  <text id="lbl-vkb-paddle" x="765" y="1119" text-anchor="middle" font-family="Arial,sans-serif" font-size="11" fill="#f1f5f9">Paddle switch</text>
   <text x="450" y="1242" text-anchor="middle" font-family="Arial,sans-serif" font-size="12" fill="#475569">VKB F-14 Gunfighter Grip - 16 buttons + 1 axes</text>
 </svg>
