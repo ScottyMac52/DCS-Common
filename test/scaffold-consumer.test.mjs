@@ -733,3 +733,52 @@ test('numbered MFD instance hints keep their established profile aliases', () =>
   const preview = buildPreview({ profilesDir, commonRoot });
   assert.deepEqual(preview.devices.map((device) => device.profileKey), ['tm-mfd-1', 'tm-mfd-2']);
 });
+
+test('semantic modifier alternatives collapse to one logical layer without losing physical references', () => {
+  const root = mkdtempSync(join(tmpdir(), 'scaffold-semantic-modifiers-'));
+  const profilesDir = join(root, 'joystick');
+  mkdirSync(profilesDir);
+  writeFileSync(join(profilesDir, 'Viper TQS.diff.lua'), `local diff = { ["keyDiffs"] = {
+    ["d1"] = { ["added"] = {
+      [1] = { ["key"] = "JOY_BTN5", ["reformers"] = { [1] = "JOY_BTN3" } },
+      [2] = { ["key"] = "JOY_BTN5", ["reformers"] = { [1] = "JOY_BTN7" } },
+    }, ["name"] = "VR Zoom" },
+  } } return diff`);
+  const modifiersPath = join(root, 'modifiers.lua');
+  writeFileSync(modifiersPath, `local modifiers = {
+    ["JOY_BTN3"] = { ["device"] = "MOZA AB9 {MOZA}", ["key"] = "JOY_BTN3", ["switch"] = false },
+    ["JOY_BTN7"] = { ["device"] = "VKB F-14 {VKB}", ["key"] = "JOY_BTN7", ["switch"] = false },
+  } return modifiers`);
+  const semanticModifiersPath = join(root, 'semantic.json');
+  writeFileSync(semanticModifiersPath, JSON.stringify({ JOY_BTN3: 'grip-shift', JOY_BTN7: 'grip-shift' }));
+
+  const preview = buildPreview({ profilesDir, modifiersPath, semanticModifiersPath, commonRoot });
+  assert.equal(preview.schemaVersion, 2);
+  assert.deepEqual(preview.rows.map(({ semanticChord }) => semanticChord), ['grip-shift', 'grip-shift']);
+  const config = buildDraftKneeboardConfig(preview, { displayName: 'UiLayer', inputModuleId: 'UiLayer' });
+  assert.deepEqual(config.pages[0].layers.map(({ id }) => id), ['base', 'grip-shift']);
+  const references = config.pages[0].layers[1].controls['viper-tqs-button-05'];
+  assert.equal(references.length, 2);
+  assert.notDeepEqual(references[0].modifiers, references[1].modifiers);
+});
+
+test('catalog control label defaults separately from command name and supports blank override', () => {
+  const root = mkdtempSync(join(tmpdir(), 'scaffold-labels-'));
+  const profilesDir = join(root, 'joystick');
+  mkdirSync(profilesDir);
+  const profile = ' VKBSim Gunfighter F14.diff.lua';
+  writeFileSync(join(profilesDir, profile), `local diff = { ["keyDiffs"] = {
+    ["d1"] = { ["added"] = { [1] = { ["key"] = "JOY_BTN6" } }, ["name"] = "recenter VR Headset" },
+  } } return diff`);
+  const initial = buildPreview({ profilesDir, commonRoot });
+  assert.equal(initial.rows[0].name, 'recenter VR Headset');
+  assert.equal(initial.rows[0].defaultLabel, 'Paddle switch');
+  assert.equal(initial.rows[0].label, 'Paddle switch');
+  const labelsPath = join(root, 'labels.json');
+  writeFileSync(labelsPath, JSON.stringify({ [initial.rows[0].bindingId]: '' }));
+  const overridden = buildPreview({ profilesDir, labelsPath, commonRoot });
+  assert.equal(overridden.rows[0].label, '');
+  assert.equal(overridden.rows[0].labelSource, 'user');
+  const config = buildDraftKneeboardConfig(overridden, { displayName: 'UiLayer', inputModuleId: 'UiLayer' });
+  assert.equal(config.pages[0].labels['vkb-paddle'], '');
+});

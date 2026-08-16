@@ -30,12 +30,14 @@ public sealed class MainViewModel : INotifyPropertyChanged
         ProceedCommand = new RelayCommand(async () => await ProceedAsync(), CanProceed);
         Devices = new ObservableCollection<PreviewDevice>();
         Rows = new ObservableCollection<PreviewRow>();
+        Modifiers = new ObservableCollection<PreviewModifier>();
     }
 
     public event PropertyChangedEventHandler? PropertyChanged;
 
     public ObservableCollection<PreviewDevice> Devices { get; }
     public ObservableCollection<PreviewRow> Rows { get; }
+    public ObservableCollection<PreviewModifier> Modifiers { get; }
 
     public string ProfilesDir
     {
@@ -181,8 +183,11 @@ public sealed class MainViewModel : INotifyPropertyChanged
 
         IsBusy = true;
         StatusText = "Running Node scaffold engine (preview)…";
+        var semanticModifiers = ModifierOverrides();
+        var labels = LabelOverrides();
         Devices.Clear();
         Rows.Clear();
+        Modifiers.Clear();
         HasPreview = false;
         try
         {
@@ -190,7 +195,9 @@ public sealed class MainViewModel : INotifyPropertyChanged
                 ProfilesDir,
                 string.IsNullOrWhiteSpace(ModifiersPath) ? null : ModifiersPath,
                 MozaGrip,
-                string.IsNullOrWhiteSpace(CommonRoot) ? null : CommonRoot);
+                string.IsNullOrWhiteSpace(CommonRoot) ? null : CommonRoot,
+                semanticModifiers,
+                labels);
 
             if (document?.Devices != null)
             {
@@ -206,6 +213,11 @@ public sealed class MainViewModel : INotifyPropertyChanged
                 {
                     Rows.Add(row);
                 }
+            }
+
+            if (document?.Modifiers != null)
+            {
+                foreach (var modifier in document.Modifiers) Modifiers.Add(modifier);
             }
 
             HasPreview = document != null;
@@ -254,6 +266,8 @@ public sealed class MainViewModel : INotifyPropertyChanged
                 string.IsNullOrWhiteSpace(ModifiersPath) ? null : ModifiersPath,
                 MozaGrip,
                 instanceRoles,
+                ModifierOverrides(),
+                LabelOverrides(),
                 string.IsNullOrWhiteSpace(CommonRoot) ? null : CommonRoot,
                 OutputDir,
                 DisplayName.Trim(),
@@ -272,6 +286,36 @@ public sealed class MainViewModel : INotifyPropertyChanged
         {
             IsBusy = false;
         }
+    }
+
+    public IReadOnlyDictionary<string, string> ModifierOverrides() => Modifiers
+        .Where(modifier => !string.IsNullOrWhiteSpace(modifier.Name) && !string.IsNullOrWhiteSpace(modifier.SemanticModifier))
+        .ToDictionary(modifier => modifier.Name!, modifier => modifier.SemanticModifier!.Trim(), StringComparer.OrdinalIgnoreCase);
+
+    public IReadOnlyDictionary<string, string> LabelOverrides() => Rows
+        .Where(row => !string.IsNullOrWhiteSpace(row.BindingId) && row.LabelSource == "user")
+        .ToDictionary(row => row.BindingId!, row => row.Label ?? string.Empty, StringComparer.Ordinal);
+
+    public async Task<IReadOnlyList<RenderedPreviewPage>> RenderDevicePreviewAsync(PreviewDevice device)
+    {
+        if (string.IsNullOrWhiteSpace(device.DeviceId) || string.IsNullOrWhiteSpace(device.ProfileKey))
+            throw new InvalidOperationException("Preview requires a resolved, supported physical device instance.");
+
+        var instanceRoles = Devices
+            .Where(item => !string.IsNullOrWhiteSpace(item.ProfileFile) && !string.IsNullOrWhiteSpace(item.Role))
+            .ToDictionary(item => item.ProfileFile!, item => item.Role!.Trim(), StringComparer.OrdinalIgnoreCase);
+        return await _engine.RenderDevicePreviewAsync(
+            ProfilesDir,
+            string.IsNullOrWhiteSpace(ModifiersPath) ? null : ModifiersPath,
+            MozaGrip,
+            instanceRoles,
+            ModifierOverrides(),
+            LabelOverrides(),
+            string.IsNullOrWhiteSpace(CommonRoot) ? null : CommonRoot,
+            string.IsNullOrWhiteSpace(DisplayName) ? "Preview" : DisplayName.Trim(),
+            string.IsNullOrWhiteSpace(InputModuleId) ? "UiLayer" : InputModuleId.Trim(),
+            string.IsNullOrWhiteSpace(KneeboardId) ? "UiLayer" : KneeboardId.Trim(),
+            device.ProfileKey);
     }
 
     private bool Set<T>(ref T field, T value, [CallerMemberName] string? name = null)
