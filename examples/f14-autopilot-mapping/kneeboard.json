@@ -1,0 +1,74 @@
+{
+  "schemaVersion": 1,
+  "aircraft": "F-14 proposed canonical autopilot mapping",
+  "modifiersFile": "modifiers.lua",
+  "modifiers": {
+    "BTN7": {
+      "nativeName": "JOY_BTN7",
+      "deviceId": "vkb-f14-gunfighter",
+      "mode": "hold",
+      "label": "VKB NWS held"
+    }
+  },
+  "profiles": {
+    "throttle": "profiles/proposed-f14-pilot.diff.lua",
+    "grip": "profiles/proposed-vkb-f14.diff.lua"
+  },
+  "pages": [
+    {
+      "file": "01-TM-WARTHOG-THROTTLE-AUTOPILOT",
+      "deviceId": "tm-warthog-throttle",
+      "title": "F-14 AUTOPILOT • TM WARTHOG THROTTLE",
+      "layers": [
+        {
+          "id": "base",
+          "controls": {
+            "warthog-thr-eac-on": { "profile": "throttle", "key": "JOY_BTN24" },
+            "warthog-thr-rdr-alt-normal": { "profile": "throttle", "key": "JOY_BTN25" },
+            "warthog-thr-ap-engage": { "profile": "throttle", "key": "JOY_BTN26" },
+            "warthog-thr-ap-select-up": {
+              "profile": "throttle",
+              "key": "JOY_BTN27",
+              "command": "d3042pnilu3042cd22vd1vpnilvu0"
+            },
+            "warthog-thr-ap-select-down": { "profile": "throttle", "key": "JOY_BTN28" }
+          }
+        },
+        {
+          "id": "btn7",
+          "modifiers": ["BTN7"],
+          "controls": {
+            "warthog-thr-ap-select-up": { "profile": "throttle", "key": "JOY_BTN27" }
+          }
+        }
+      ]
+    },
+    {
+      "file": "02-VKB-F14-AUTOPILOT",
+      "deviceId": "vkb-f14-gunfighter",
+      "title": "F-14 AUTOPILOT • VKB F-14 GUNFIGHTER",
+      "labels": {
+        "vkb-nws": "SHIFT / MODIFIER"
+      },
+      "modifierCallouts": {
+        "vkb-nws": "BTN7"
+      },
+      "layers": [
+        {
+          "id": "base",
+          "controls": {
+            "vkb-paddle": { "profile": "grip", "key": "JOY_BTN6" }
+          }
+        },
+        {
+          "id": "btn7",
+          "modifiers": ["BTN7"],
+          "controls": {
+            "vkb-btn-release": { "profile": "grip", "key": "JOY_BTN3" },
+            "vkb-paddle": { "profile": "grip", "key": "JOY_BTN6" }
+          }
+        }
+      ]
+    }
+  ]
+}
