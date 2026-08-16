@@ -49,6 +49,8 @@ public sealed class ScaffoldEngineService
         string? modifiersPath,
         string? mozaGrip,
         string? commonRoot,
+        IReadOnlyDictionary<string, string>? semanticModifiers = null,
+        IReadOnlyDictionary<string, string>? labels = null,
         CancellationToken cancellationToken = default)
     {
         var root = ResolveCommonRoot(commonRoot)
@@ -58,25 +60,30 @@ public sealed class ScaffoldEngineService
         var script = Path.Combine(root, "scripts", "scaffold-consumer.mjs");
         var previewPath = Path.Combine(Path.GetTempPath(), $"dcs-scaffold-preview-{Guid.NewGuid():N}.json");
 
-        var args = BuildPreviewArguments(script, previewPath, profilesDir, modifiersPath, mozaGrip, null, root);
-        var (exitCode, stdout, stderr) = await RunNodeAsync(root, args, cancellationToken).ConfigureAwait(false);
-
-        PreviewDocument? document = null;
-        if (File.Exists(previewPath))
+        string? semanticPath = null;
+        string? labelsPath = null;
+        try
         {
-            try
+            semanticPath = await WriteTemporaryJsonAsync("semantic-modifiers", semanticModifiers, cancellationToken);
+            labelsPath = await WriteTemporaryJsonAsync("labels", labels, cancellationToken);
+            var args = BuildPreviewArguments(script, previewPath, profilesDir, modifiersPath, mozaGrip, null, root, semanticPath, labelsPath);
+            var (exitCode, stdout, stderr) = await RunNodeAsync(root, args, cancellationToken).ConfigureAwait(false);
+
+            PreviewDocument? document = null;
+            if (File.Exists(previewPath))
             {
                 await using var stream = File.OpenRead(previewPath);
                 document = await JsonSerializer.DeserializeAsync<PreviewDocument>(stream, JsonOptions, cancellationToken)
                     .ConfigureAwait(false);
             }
-            finally
-            {
-                try { File.Delete(previewPath); } catch { /* ignore */ }
-            }
+            return (document, stdout, stderr, exitCode);
         }
-
-        return (document, stdout, stderr, exitCode);
+        finally
+        {
+            DeleteTemporary(previewPath);
+            DeleteTemporary(semanticPath);
+            DeleteTemporary(labelsPath);
+        }
     }
 
     public async Task<(string StdOut, string StdErr, int ExitCode)> RunWriteAsync(
@@ -84,6 +91,8 @@ public sealed class ScaffoldEngineService
         string? modifiersPath,
         string? mozaGrip,
         IReadOnlyDictionary<string, string>? instanceRoles,
+        IReadOnlyDictionary<string, string>? semanticModifiers,
+        IReadOnlyDictionary<string, string>? labels,
         string? commonRoot,
         string outputDir,
         string displayName,
@@ -98,6 +107,8 @@ public sealed class ScaffoldEngineService
 
         var script = Path.Combine(root, "scripts", "scaffold-consumer.mjs");
         string? rolesPath = null;
+        string? semanticPath = null;
+        string? labelsPath = null;
         try
         {
             if (instanceRoles is { Count: > 0 })
@@ -106,9 +117,11 @@ public sealed class ScaffoldEngineService
                 var json = JsonSerializer.Serialize(instanceRoles, new JsonSerializerOptions { WriteIndented = true });
                 await File.WriteAllTextAsync(rolesPath, json, cancellationToken).ConfigureAwait(false);
             }
+            semanticPath = await WriteTemporaryJsonAsync("semantic-modifiers", semanticModifiers, cancellationToken);
+            labelsPath = await WriteTemporaryJsonAsync("labels", labels, cancellationToken);
 
             var args = BuildWriteArguments(
-                script, profilesDir, modifiersPath, mozaGrip, rolesPath, root, outputDir, displayName, inputModuleId, kneeboardId, repoName);
+                script, profilesDir, modifiersPath, mozaGrip, rolesPath, root, outputDir, displayName, inputModuleId, kneeboardId, repoName, semanticPath, labelsPath);
             var (exitCode, stdout, stderr) = await RunNodeAsync(root, args, cancellationToken).ConfigureAwait(false);
             return (stdout, stderr, exitCode);
         }
@@ -118,7 +131,76 @@ public sealed class ScaffoldEngineService
             {
                 try { File.Delete(rolesPath); } catch { /* ignore */ }
             }
+            DeleteTemporary(semanticPath);
+            DeleteTemporary(labelsPath);
         }
+    }
+
+    public async Task<IReadOnlyList<RenderedPreviewPage>> RenderDevicePreviewAsync(
+        string profilesDir,
+        string? modifiersPath,
+        string? mozaGrip,
+        IReadOnlyDictionary<string, string>? instanceRoles,
+        IReadOnlyDictionary<string, string>? semanticModifiers,
+        IReadOnlyDictionary<string, string>? labels,
+        string? commonRoot,
+        string displayName,
+        string inputModuleId,
+        string kneeboardId,
+        string profileKey,
+        CancellationToken cancellationToken = default)
+    {
+        var root = ResolveCommonRoot(commonRoot)
+            ?? throw new InvalidOperationException("Could not find DCS-Common root.");
+        var temporaryRoot = Path.Combine(Path.GetTempPath(), $"dcs-scaffold-render-{Guid.NewGuid():N}");
+        var renderDir = Path.Combine(temporaryRoot, "preview");
+        try
+        {
+            Directory.CreateDirectory(temporaryRoot);
+            var (_, stderr, exitCode) = await RunWriteAsync(
+                profilesDir, modifiersPath, mozaGrip, instanceRoles, semanticModifiers, labels, root,
+                temporaryRoot, displayName, inputModuleId, kneeboardId, cancellationToken: cancellationToken);
+            if (exitCode is not (0 or 2)) throw new InvalidOperationException($"Temporary scaffold failed: {stderr}");
+
+            var script = Path.Combine(root, "scripts", "render-scaffold-preview.mjs");
+            var (renderExit, stdout, renderError) = await RunNodeAsync(
+                root, [script, temporaryRoot, renderDir, profileKey], cancellationToken).ConfigureAwait(false);
+            if (renderExit != 0) throw new InvalidOperationException($"Preview render failed: {renderError}");
+            var json = stdout.Split(Environment.NewLine, StringSplitOptions.RemoveEmptyEntries).Last();
+            var pages = JsonSerializer.Deserialize<List<RenderedFile>>(json, JsonOptions) ?? [];
+            return pages.Select(page => new RenderedPreviewPage(
+                page.File ?? Path.GetFileNameWithoutExtension(page.PngPath) ?? "preview",
+                page.Title,
+                File.ReadAllBytes(page.PngPath!))).ToList();
+        }
+        finally
+        {
+            try { Directory.Delete(temporaryRoot, recursive: true); } catch { /* ignore */ }
+        }
+    }
+
+    private sealed class RenderedFile
+    {
+        public string? File { get; set; }
+        public string? Title { get; set; }
+        public string? PngPath { get; set; }
+    }
+
+    private static async Task<string?> WriteTemporaryJsonAsync(
+        string stem,
+        IReadOnlyDictionary<string, string>? values,
+        CancellationToken cancellationToken)
+    {
+        if (values is not { Count: > 0 }) return null;
+        var path = Path.Combine(Path.GetTempPath(), $"dcs-scaffold-{stem}-{Guid.NewGuid():N}.json");
+        await File.WriteAllTextAsync(path, JsonSerializer.Serialize(values), cancellationToken).ConfigureAwait(false);
+        return path;
+    }
+
+    private static void DeleteTemporary(string? path)
+    {
+        if (path == null) return;
+        try { File.Delete(path); } catch { /* ignore */ }
     }
 
     private static async Task<(int ExitCode, string StdOut, string StdErr)> RunNodeAsync(
@@ -164,7 +246,9 @@ public sealed class ScaffoldEngineService
         string? modifiersPath,
         string? mozaGrip,
         string? rolesPath,
-        string commonRoot)
+        string commonRoot,
+        string? semanticModifiersPath = null,
+        string? labelsPath = null)
     {
         var list = new List<string>
         {
@@ -193,6 +277,8 @@ public sealed class ScaffoldEngineService
             list.Add("--roles");
             list.Add(rolesPath);
         }
+        AddOptionalFile(list, "--semantic-modifiers", semanticModifiersPath);
+        AddOptionalFile(list, "--labels", labelsPath);
 
         return list;
     }
@@ -208,7 +294,9 @@ public sealed class ScaffoldEngineService
         string displayName,
         string inputModuleId,
         string kneeboardId,
-        string? repoName = null)
+        string? repoName = null,
+        string? semanticModifiersPath = null,
+        string? labelsPath = null)
     {
         var list = new List<string>
         {
@@ -243,6 +331,8 @@ public sealed class ScaffoldEngineService
             list.Add("--roles");
             list.Add(rolesPath);
         }
+        AddOptionalFile(list, "--semantic-modifiers", semanticModifiersPath);
+        AddOptionalFile(list, "--labels", labelsPath);
 
         if (!string.IsNullOrWhiteSpace(repoName))
         {
@@ -251,5 +341,12 @@ public sealed class ScaffoldEngineService
         }
 
         return list;
+    }
+
+    private static void AddOptionalFile(List<string> arguments, string option, string? path)
+    {
+        if (string.IsNullOrWhiteSpace(path)) return;
+        arguments.Add(option);
+        arguments.Add(path);
     }
 }

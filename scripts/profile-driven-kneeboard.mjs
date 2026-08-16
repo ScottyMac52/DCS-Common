@@ -227,12 +227,13 @@ export function loadProfileDrivenConfig(configPath, options = {}) {
         if (!usedModifierIds.includes(id)) usedModifierIds.push(id);
       }
       for (const [controlId, reference] of Object.entries(layer.controls ?? {})) {
-        controls[controlId] = {
-          ...reference,
-          modifiers: reference.modifiers ?? layerMods,
-        };
+        const references = (Array.isArray(reference) ? reference : [reference]).map((item) => ({
+          ...item,
+          modifiers: item.modifiers ?? layerMods,
+        }));
+        controls[controlId] = Array.isArray(reference) ? references : references[0];
         if (layer.labels?.[controlId] !== undefined) labels[controlId] = layer.labels[controlId];
-        controlModifiers[controlId] = reference.modifiers ?? layerMods;
+        controlModifiers[controlId] = references[0].modifiers;
       }
     }
     expandedPages.push({

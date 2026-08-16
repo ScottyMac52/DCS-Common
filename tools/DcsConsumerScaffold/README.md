@@ -9,7 +9,10 @@ Publisher: **Vyper Industries** · TFM: `net10.0-windows` · Assembly: `DcsConsu
 1. **Load Preview** — `scaffold-consumer.mjs --preview-json`
 2. **Physical device roles** — review every GUID-distinct device and optionally name repeated instances (for example, `left-tank-control` and `right-tank-control`)
 3. **MOZA AB9 configuration** — select standalone, F-16C Viper Grip, or F/A-18C/E/F Grip
-4. **Proceed** — writes a consumer tree (`--output-dir` + display name / input module / kneeboard IDs)
+4. **Semantic modifiers** — assign one semantic ID to alternative device-qualified physical modifiers without globally aliasing button numbers
+5. **Editable labels** — initialize labels from DCS-Common `hardwareLabel` values, edit or intentionally blank them independently of DCS command names, and reset to catalog defaults
+6. **Per-device kneeboard preview** — render the selected physical instance through the production SVG/PNG pipeline in a modal viewer before writing the consumer repository
+7. **Proceed** — writes a consumer tree (`--output-dir` + display name / input module / kneeboard IDs)
 
 The selected grip is applied only to generic MOZA AB9 profiles and is preserved as the generated page `deviceId`. No JSON override file is required in the WPF importer; the preview grids show how each mapping and physical instance was resolved. Repeated devices automatically receive stable GUID-backed profile keys. Entering a role gives that physical instance a readable, GUID-associated alias in the generated consumer.
 

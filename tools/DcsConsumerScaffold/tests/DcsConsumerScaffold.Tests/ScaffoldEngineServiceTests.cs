@@ -118,4 +118,32 @@ public class ScaffoldEngineServiceTests
         var row = new PreviewRow { ModifierModes = ["hold", null, "toggle"] };
         Assert.Equal("hold, ?, toggle", row.ModifierModesDisplay);
     }
+
+    [Fact]
+    public void PreviewRow_LabelIsIndependentFromNameAndCanReset()
+    {
+        var row = new PreviewRow { Name = "toggle VR Zoom", DefaultLabel = "MIC depress", Label = "VR Zoom" };
+        Assert.Equal("toggle VR Zoom", row.Name);
+        Assert.Equal("VR Zoom", row.Label);
+        Assert.Equal("user", row.LabelSource);
+
+        row.ResetLabel();
+
+        Assert.Equal("MIC depress", row.Label);
+        Assert.Equal("catalog", row.LabelSource);
+        Assert.Equal("toggle VR Zoom", row.Name);
+    }
+
+    [Fact]
+    public void BuildPreviewArguments_IncludesSemanticModifierAndLabelOverrides()
+    {
+        var args = ScaffoldEngineService.BuildPreviewArguments(
+            "script.mjs", "out.json", "profiles", "modifiers.lua", null, null, "root",
+            "semantic.json", "labels.json");
+
+        Assert.Contains("--semantic-modifiers", args);
+        Assert.Contains("semantic.json", args);
+        Assert.Contains("--labels", args);
+        Assert.Contains("labels.json", args);
+    }
 }

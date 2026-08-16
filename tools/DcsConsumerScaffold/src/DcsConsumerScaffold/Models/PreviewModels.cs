@@ -1,3 +1,5 @@
+using System.ComponentModel;
+using System.Runtime.CompilerServices;
 using System.Text.Json.Serialization;
 
 namespace DcsConsumerScaffold.Models;
@@ -18,6 +20,9 @@ public sealed class PreviewDocument
 
     [JsonPropertyName("modifiers")]
     public List<PreviewModifier> Modifiers { get; set; } = [];
+
+    [JsonPropertyName("semanticModifiers")]
+    public List<string> SemanticModifiers { get; set; } = [];
 
     [JsonPropertyName("summary")]
     public PreviewSummary? Summary { get; set; }
@@ -60,10 +65,17 @@ public sealed class PreviewDevice
 
     [JsonPropertyName("bindingCount")]
     public int BindingCount { get; set; }
+
+    [JsonIgnore]
+    public bool CanPreview => !string.IsNullOrWhiteSpace(DeviceId) && !string.IsNullOrWhiteSpace(ProfileKey) && BindingCount > 0;
+
+    [JsonIgnore]
+    public string PreviewReason => CanPreview ? "Preview generated kneeboard" : "Resolve this device and at least one binding before previewing";
 }
 
-public sealed class PreviewRow
+public sealed class PreviewRow : INotifyPropertyChanged
 {
+    private string? _label;
     [JsonPropertyName("profileFile")]
     public string? ProfileFile { get; set; }
 
@@ -103,6 +115,32 @@ public sealed class PreviewRow
     [JsonPropertyName("name")]
     public string? Name { get; set; }
 
+    [JsonPropertyName("bindingId")]
+    public string? BindingId { get; set; }
+
+    [JsonPropertyName("defaultLabel")]
+    public string? DefaultLabel { get; set; }
+
+    [JsonPropertyName("label")]
+    public string? Label
+    {
+        get => _label;
+        set
+        {
+            if (_label == value) return;
+            _label = value;
+            LabelSource = value == DefaultLabel ? "catalog" : "user";
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(Label)));
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(LabelSource)));
+        }
+    }
+
+    [JsonPropertyName("labelSource")]
+    public string? LabelSource { get; set; }
+
+    [JsonPropertyName("semanticChord")]
+    public string? SemanticChord { get; set; }
+
     [JsonPropertyName("calloutId")]
     public string? CalloutId { get; set; }
 
@@ -116,10 +154,15 @@ public sealed class PreviewRow
         ModifierModes.Count == 0
             ? string.Empty
             : string.Join(", ", ModifierModes.Select(m => m ?? "?"));
+
+    public event PropertyChangedEventHandler? PropertyChanged;
+
+    public void ResetLabel() => Label = DefaultLabel;
 }
 
 public sealed class PreviewModifier
 {
+    private string? _semanticModifier;
     [JsonPropertyName("name")]
     public string? Name { get; set; }
 
@@ -131,6 +174,13 @@ public sealed class PreviewModifier
 
     [JsonPropertyName("mode")]
     public string? Mode { get; set; }
+
+    [JsonPropertyName("semanticModifier")]
+    public string? SemanticModifier
+    {
+        get => _semanticModifier;
+        set => _semanticModifier = value;
+    }
 }
 
 public sealed class PreviewSummary
@@ -150,3 +200,5 @@ public sealed class PreviewSummary
     [JsonPropertyName("errorCount")]
     public int ErrorCount { get; set; }
 }
+
+public sealed record RenderedPreviewPage(string File, string? Title, byte[] PngBytes);

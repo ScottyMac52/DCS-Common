@@ -49,6 +49,8 @@ Optional:
   --modifiers <path>
   --map <path>                consumer-owned profile filename/stem to deviceId overrides (JSON)
   --roles <path>              consumer-owned profile filename/GUID to semantic instance roles (JSON)
+  --semantic-modifiers <path> modifier name or device+key to semantic modifier ID (JSON)
+  --labels <path>             stable binding identity to editable label override (JSON)
   --moza-grip <value>          standalone, viper, or hornet; applies to generic AB9 profiles
   --common-root <path>
   --repo-name <name>          default: derived from display name
@@ -67,6 +69,8 @@ export function parseArgs(argv = process.argv.slice(2)) {
     modifiersPath: null,
     mapPath: null,
     rolesPath: null,
+    semanticModifiersPath: null,
+    labelsPath: null,
     mozaGrip: null,
     commonRoot: defaultCommonRoot,
     displayName: null,
@@ -90,6 +94,8 @@ export function parseArgs(argv = process.argv.slice(2)) {
     else if (arg === '--modifiers') options.modifiersPath = next();
     else if (arg === '--map') options.mapPath = next();
     else if (arg === '--roles') options.rolesPath = next();
+    else if (arg === '--semantic-modifiers') options.semanticModifiersPath = next();
+    else if (arg === '--labels') options.labelsPath = next();
     else if (arg === '--moza-grip') options.mozaGrip = next().toLowerCase();
     else if (arg === '--common-root') options.commonRoot = resolve(next());
     else if (arg === '--display-name') options.displayName = next();
@@ -164,12 +170,12 @@ export function resolveInstanceHint(stem, deviceId, deviceMap) {
 }
 
 export function loadCalloutCatalog(commonRoot, deviceId) {
-  if (!deviceId) return { byKey: new Map(), controls: [] };
+  if (!deviceId) return { byKey: new Map(), labelById: new Map(), controls: [] };
   const manifest = JSON.parse(readFileSync(join(commonRoot, 'assets/shared/hardware/manifest.json'), 'utf8'));
   const device = manifest.devices.find((entry) => entry.id === deviceId || entry.aliases?.includes(deviceId));
-  if (!device?.lua) return { byKey: new Map(), controls: [] };
+  if (!device?.lua) return { byKey: new Map(), labelById: new Map(), controls: [] };
   const luaPath = join(commonRoot, 'assets/shared/hardware', device.lua);
-  if (!existsSync(luaPath)) return { byKey: new Map(), controls: [] };
+  if (!existsSync(luaPath)) return { byKey: new Map(), labelById: new Map(), controls: [] };
   const source = readFileSync(luaPath, 'utf8');
   const svgPath = device.svg ? join(commonRoot, 'assets/shared/hardware', device.svg) : null;
   const renderableIds = new Set();
@@ -179,11 +185,13 @@ export function loadCalloutCatalog(commonRoot, deviceId) {
   }
   const controls = [];
   // Full schema: { id = "...", key = "..." } (either field order)
-  const withId = /\{\s*(?:id\s*=\s*"((?:\\.|[^"])*)"\s*,\s*key\s*=\s*"((?:\\.|[^"])*)"|key\s*=\s*"((?:\\.|[^"])*)"\s*,\s*id\s*=\s*"((?:\\.|[^"])*)")/g;
-  for (let match; (match = withId.exec(source));) {
-    const id = match[1] ?? match[4];
-    const key = match[2] ?? match[3];
-    if (id && key) controls.push({ id, key });
+  const controlEntry = /\{([^{}]*\bid\s*=\s*"(?:\\.|[^"])*"[^{}]*)\}/g;
+  for (let match; (match = controlEntry.exec(source));) {
+    const field = (name) => match[1].match(new RegExp(`\\b${name}\\s*=\\s*"((?:\\\\.|[^"])*)"`))?.[1];
+    const id = field('id');
+    const key = field('key');
+    const hardwareLabel = field('hardwareLabel') ?? null;
+    if (id && key) controls.push({ id, key, hardwareLabel });
   }
   // Lightweight bindings fallback when no id+key pairs found
   if (controls.length === 0) {
@@ -202,11 +210,17 @@ export function loadCalloutCatalog(commonRoot, deviceId) {
     ? controls.filter((control) => renderableIds.has(control.id))
     : controls;
   const byKey = new Map();
+  const labelById = new Map();
   for (const control of renderableControls) {
     if (!byKey.has(control.key)) byKey.set(control.key, []);
     byKey.get(control.key).push(control.id);
+    if (control.hardwareLabel) labelById.set(control.id, control.hardwareLabel);
   }
-  return { byKey, controls: renderableControls };
+  return { byKey, labelById, controls: renderableControls };
+}
+
+export function stableBindingId(row) {
+  return [row.profileFile, row.section, row.command, row.key, row.chord].join('\0');
 }
 
 function chordKey(reformers = []) {
@@ -293,7 +307,7 @@ export function assignDeviceInstances(devices, rows, roleOverrides = {}, errors 
   }
 }
 
-export function buildPreview({ profilesDir, modifiersPath = null, mapPath = null, rolesPath = null, mozaGrip = null, commonRoot = defaultCommonRoot }) {
+export function buildPreview({ profilesDir, modifiersPath = null, mapPath = null, rolesPath = null, semanticModifiersPath = null, labelsPath = null, mozaGrip = null, commonRoot = defaultCommonRoot }) {
   if (!profilesDir || !existsSync(profilesDir) || !statSync(profilesDir).isDirectory()) {
     throw new Error(`profiles directory not found: ${profilesDir}`);
   }
@@ -301,6 +315,8 @@ export function buildPreview({ profilesDir, modifiersPath = null, mapPath = null
   const knownIds = loadManifestDeviceIds(commonRoot);
   const overrides = mapPath ? JSON.parse(readFileSync(mapPath, 'utf8')) : {};
   const roleOverrides = rolesPath ? JSON.parse(readFileSync(rolesPath, 'utf8')) : {};
+  const semanticOverrides = semanticModifiersPath ? JSON.parse(readFileSync(semanticModifiersPath, 'utf8')) : {};
+  const labelOverrides = labelsPath ? JSON.parse(readFileSync(labelsPath, 'utf8')) : {};
 
   let modifiers = [];
   const modifierErrors = [];
@@ -313,6 +329,11 @@ export function buildPreview({ profilesDir, modifiersPath = null, mapPath = null
     }
   }
   const modifierByName = new Map(modifiers.map((modifier) => [modifier.name, modifier]));
+  for (const modifier of modifiers) {
+    modifier.semanticModifier = semanticOverrides[modifier.name]
+      ?? semanticOverrides[`${modifier.device}\0${modifier.key}`]
+      ?? modifier.name;
+  }
 
   const profileFiles = readdirSync(profilesDir)
     .filter((name) => name.toLowerCase().endsWith('.diff.lua'))
@@ -407,7 +428,7 @@ export function buildPreview({ profilesDir, modifiersPath = null, mapPath = null
         );
         if (sameChordCommands.length > 1) status = status === 'OK' ? 'Ambiguous' : `${status}; Ambiguous`;
 
-        rows.push({
+        const row = {
           profileFile: fileName,
           stem: mapping.stem,
           deviceId: mapping.deviceId,
@@ -428,7 +449,18 @@ export function buildPreview({ profilesDir, modifiersPath = null, mapPath = null
             : calloutIds[0] ?? null,
           calloutIds,
           status,
-        });
+        };
+        row.semanticChord = chordKey(reformers.map((name) => modifierByName.get(name)?.semanticModifier ?? name));
+        row.defaultLabel = row.calloutId ? catalog.labelById.get(row.calloutId) ?? '' : '';
+        row.bindingId = stableBindingId(row);
+        if (Object.prototype.hasOwnProperty.call(labelOverrides, row.bindingId)) {
+          row.label = String(labelOverrides[row.bindingId]);
+          row.labelSource = 'user';
+        } else {
+          row.label = row.defaultLabel;
+          row.labelSource = 'catalog';
+        }
+        rows.push(row);
       }
     }
   }
@@ -436,7 +468,7 @@ export function buildPreview({ profilesDir, modifiersPath = null, mapPath = null
   assignDeviceInstances(devices, rows, roleOverrides, errors);
 
   return {
-    schemaVersion: 1,
+    schemaVersion: 2,
     generatedBy: 'scaffold-consumer.mjs',
     mode: 'preview',
     commonRoot,
@@ -444,8 +476,11 @@ export function buildPreview({ profilesDir, modifiersPath = null, mapPath = null
     modifiersPath: modifiersPath ? resolve(modifiersPath) : null,
     mapPath: mapPath ? resolve(mapPath) : null,
     rolesPath: rolesPath ? resolve(rolesPath) : null,
+    semanticModifiersPath: semanticModifiersPath ? resolve(semanticModifiersPath) : null,
+    labelsPath: labelsPath ? resolve(labelsPath) : null,
     mozaGrip,
-    modifiers: modifiers.map(({ name, device, key, mode }) => ({ name, device, key, mode })),
+    modifiers: modifiers.map(({ name, device, key, mode, semanticModifier }) => ({ name, device, key, mode, semanticModifier })),
+    semanticModifiers: [...new Set(modifiers.map(({ semanticModifier }) => semanticModifier))].sort(),
     devices,
     rows,
     summary: {
@@ -497,6 +532,7 @@ export function buildDraftKneeboardConfig(preview, { displayName, inputModuleId 
     modifiers[alias] = {
       nativeName: mod.name,
       mode: mod.mode,
+      semanticModifier: mod.semanticModifier,
     };
   }
 
@@ -518,21 +554,34 @@ export function buildDraftKneeboardConfig(preview, { displayName, inputModuleId 
       if (!row.calloutId || row.unknownModifiers?.length) continue;
       // Include keyDiffs and axisDiffs so throttle/stick/rudder axes are scaffolded.
 
-      const displayName = row.name || row.key;
+      const effectiveLabel = row.label ?? row.defaultLabel ?? '';
+      const reference = { profile: profileKey, key: row.key, command: row.command };
 
       if (!row.chord) {
         if (!controls[row.calloutId]) {
-          controls[row.calloutId] = { profile: profileKey, key: row.key };
-          labels[row.calloutId] = displayName;
+          controls[row.calloutId] = reference;
+          labels[row.calloutId] = effectiveLabel;
         }
       } else {
-        if (!layerControls.has(row.chord)) {
-          layerControls.set(row.chord, { controls: {}, labels: {} });
+        const layerId = row.semanticChord || row.chord;
+        if (!layerControls.has(layerId)) {
+          layerControls.set(layerId, { controls: {}, labels: {}, nativeChords: new Set() });
         }
-        const layer = layerControls.get(row.chord);
+        const layer = layerControls.get(layerId);
+        layer.nativeChords.add(row.chord);
+        reference.modifiers = row.reformers.map((native) => {
+          const found = Object.entries(modifiers).find(([, value]) => value.nativeName === native);
+          return found?.[0] ?? aliasFromModifierName(native);
+        });
         if (!layer.controls[row.calloutId]) {
-          layer.controls[row.calloutId] = { profile: profileKey, key: row.key };
-          layer.labels[row.calloutId] = displayName;
+          layer.controls[row.calloutId] = reference;
+          layer.labels[row.calloutId] = effectiveLabel;
+        } else {
+          const existing = Array.isArray(layer.controls[row.calloutId])
+            ? layer.controls[row.calloutId]
+            : [layer.controls[row.calloutId]];
+          existing.push(reference);
+          layer.controls[row.calloutId] = existing;
         }
       }
     }
@@ -543,7 +592,7 @@ export function buildDraftKneeboardConfig(preview, { displayName, inputModuleId 
       title,
       kicker: device.role ? `ROLE ${device.role.toUpperCase()}` : device.instanceHint ? `INSTANCE ${device.instanceHint}` : 'SCAFFOLD DRAFT',
       _comment:
-        'labels are pre-filled from DCS binding names via controls. Edit any string to override display text; ' +
+        'labels are pre-filled from canonical DCS-Common hardware labels and remain separate from DCS command names. ' +
         'keep callout IDs in sync with controls. You can also set "label" on a controls entry.',
       labels,
     };
@@ -554,16 +603,13 @@ export function buildDraftKneeboardConfig(preview, { displayName, inputModuleId 
       const layers = [
         { id: 'base', controls, labels: { ...labels } },
       ];
-      for (const [chord, layerMap] of layerControls) {
-        const aliases = chord.split('+').map((native) => {
-          const found = Object.entries(modifiers).find(([, value]) => value.nativeName === native);
-          return found?.[0] ?? aliasFromModifierName(native);
-        });
+      for (const [semanticChord, layerMap] of layerControls) {
+        const nativeChords = [...layerMap.nativeChords].sort();
         layers.push({
-          id: aliases.join('_') || 'layer',
-          file: `${file}-${aliases.join('-') || 'LAYER'}`,
-          title: `${title} • ${chord}`,
-          modifiers: aliases,
+          id: semanticChord || 'layer',
+          file: `${file}-${slugifyId(semanticChord) || 'LAYER'}`,
+          title: `${title} • ${semanticChord}`,
+          activators: nativeChords,
           controls: layerMap.controls,
           labels: layerMap.labels,
         });
@@ -579,6 +625,11 @@ export function buildDraftKneeboardConfig(preview, { displayName, inputModuleId 
     aircraft: displayName,
     profiles,
     pages: [...pagesByDevice.values()],
+    semanticModifiers: Object.fromEntries(
+      preview.semanticModifiers.map((id) => [id, preview.modifiers
+        .filter((modifier) => modifier.semanticModifier === id)
+        .map(({ name, device, key, mode }) => ({ nativeName: name, device, key, mode }))]),
+    ),
   };
 
   if (Object.keys(modifiers).length > 0) {
@@ -630,6 +681,12 @@ export function writeConsumer({ preview, outputDir, displayName, inputModuleId, 
   if (preview.rolesPath && existsSync(preview.rolesPath)) {
     copy(preview.rolesPath, 'config/scaffold-instance-roles.json');
   }
+  if (preview.semanticModifiersPath && existsSync(preview.semanticModifiersPath)) {
+    copy(preview.semanticModifiersPath, 'config/scaffold-semantic-modifiers.json');
+  }
+  if (preview.labelsPath && existsSync(preview.labelsPath)) {
+    copy(preview.labelsPath, 'config/scaffold-label-overrides.json');
+  }
 
   const kneeboard = buildDraftKneeboardConfig(preview, { displayName, inputModuleId });
   write('config/kneeboard.json', JSON.stringify(kneeboard, null, 2));
@@ -677,10 +734,19 @@ export function writeConsumer({ preview, outputDir, displayName, inputModuleId, 
         `- \`${d.profileFile}\` → profile \`${d.profileKey ?? '**UNMAPPED**'}\` → ${d.deviceId ?? '**UNMAPPED**'} (${d.mappingSource}${d.role ? `, role ${d.role}` : ''}${d.guid ? `, GUID ${d.guid}` : ''}${d.mappingSource === 'standalone-fallback' ? '; generic AB9 profile—select the installed grip' : ''})`,
     ),
     '',
+    '## Bindings',
+    '',
+    '| Device | Control | DCS command name | Effective label | Label source |',
+    '| --- | --- | --- | --- | --- |',
+    ...preview.rows.map((row) => {
+      const cell = (value) => String(value ?? '').replaceAll('|', '\\|').replaceAll('\n', ' ');
+      return `| ${cell(row.stem)} | ${cell(row.key)} | ${cell(row.name)} | ${cell(row.label)} | ${cell(row.labelSource)} |`;
+    }),
+    '',
     '## Next steps',
     '',
     '1. Review `config/kneeboard.json` (draft controls/layers).',
-    '2. Review pre-filled `labels` (from DCS binding names). Edit strings to shorten display text; IDs must stay aligned with `controls`.',
+    '2. Review `labels`, initialized from canonical DCS-Common hardware labels and kept separate from DCS command names.',
     '3. Review repeated-device roles. Supply `--roles` to replace GUID-backed defaults with semantic names such as left-tank-control.',
     '4. `npm ci` and set `DCS_COMMON_ROOT` to a DCS-Common checkout.',
     '5. `npm run build:kneeboard` / `npm run test:kneeboard` / `npm run test:versioning`.',
@@ -720,6 +786,8 @@ export function main(argv = process.argv.slice(2)) {
     modifiersPath: options.modifiersPath,
     mapPath: options.mapPath,
     rolesPath: options.rolesPath,
+    semanticModifiersPath: options.semanticModifiersPath,
+    labelsPath: options.labelsPath,
     mozaGrip: options.mozaGrip,
     commonRoot: options.commonRoot,
   });
