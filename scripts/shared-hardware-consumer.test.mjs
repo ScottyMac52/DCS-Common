@@ -57,6 +57,18 @@ test('callout text fill follows labelColors map', () => {
   assert.match(loaded.svg, /Shifted OSB/);
 });
 
+test('one callout renders separate colored lines for base and shifted bindings', () => {
+  const loaded = loadSharedHardware('tm-mfd', {
+    commonRoot,
+    labels: { 'mfd-osb-t1': [
+      { label: 'BASE — Store Release', color: null },
+      { label: 'BTN7 — NWS Toggle', fullLabel: 'JOY_BTN7 — NWS Toggle', color: '#dc2626' },
+    ] },
+  });
+  assert.match(loaded.svg, /<tspan[^>]*>BASE — Store Release<\/tspan>/);
+  assert.match(loaded.svg, /<tspan[^>]*fill="#dc2626"[^>]*data-full-label="JOY_BTN7 — NWS Toggle"[^>]*>BTN7 — NWS Toggle<\/tspan>/);
+});
+
 test('page SVG includes shift legend when legend entries provided', () => {
   const rendered = renderSharedHardwarePage({
     deviceId: 'tm-mfd',

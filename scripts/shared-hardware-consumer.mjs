@@ -55,7 +55,10 @@ const physicalPrefix = /^(?:JOY_)?BTN\s*\d[^:]*:/i;
 
 function validateDisplayLabels(labels) {
   const values = Array.isArray(labels) ? labels : Object.values(labels);
-  const invalid = values.find((value) => physicalPrefix.test(String(value).trim()));
+  const text = (value) => Array.isArray(value)
+    ? value.map((entry) => entry?.label ?? entry)
+    : [value?.label ?? value];
+  const invalid = values.flatMap(text).find((value) => physicalPrefix.test(String(value).trim()));
   if (invalid !== undefined) {
     throw new Error(`Shared hardware callout labels must describe functions without a physical-button prefix: ${invalid}`);
   }
@@ -96,10 +99,23 @@ export function loadSharedHardware(deviceId, { commonRoot = resolveDcsCommonRoot
     ? Object.fromEntries(calloutIds.map((id, index) => [id, labels[index] ?? '']))
     : labels;
   for (const id of calloutIds) {
-    const value = escapeXml(values[id] ?? '');
+    const configuredValue = values[id] ?? '';
+    const variants = Array.isArray(configuredValue) ? configuredValue : null;
+    const value = escapeXml(configuredValue);
     const color = labelColors[id];
     svg = svg.replace(new RegExp(`(<text id="lbl-${id}"[^>]*>)[\\s\\S]*?(</text>)`), (match, open, close) => {
       let tag = open;
+      if (variants) {
+        const x = tag.match(/\bx="([^"]+)"/)?.[1] ?? '0';
+        const firstDy = -Math.max(0, variants.length - 1) * 5;
+        const lines = variants.map((entry, index) => {
+          const fill = entry?.color ? ` fill="${escapeXml(entry.color)}"` : '';
+          const dy = index === 0 ? firstDy : 10;
+          const fullLabel = entry?.fullLabel ? ` data-full-label="${escapeXml(entry.fullLabel)}"` : '';
+          return `<tspan x="${escapeXml(x)}" dy="${dy}" font-size="9"${fill}${fullLabel}>${escapeXml(entry?.label ?? entry)}</tspan>`;
+        }).join('');
+        return `${tag}${lines}${close}`;
+      }
       if (color) {
         const fill = escapeXml(color);
         if (/\bfill="[^"]*"/.test(tag)) tag = tag.replace(/\bfill="[^"]*"/, `fill="${fill}"`);

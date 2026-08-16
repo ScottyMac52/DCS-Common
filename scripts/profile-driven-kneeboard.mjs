@@ -231,7 +231,11 @@ export function loadProfileDrivenConfig(configPath, options = {}) {
           ...item,
           modifiers: item.modifiers ?? layerMods,
         }));
-        controls[controlId] = Array.isArray(reference) ? references : references[0];
+        const existing = controls[controlId]
+          ? (Array.isArray(controls[controlId]) ? controls[controlId] : [controls[controlId]])
+          : [];
+        const combined = [...existing, ...references];
+        controls[controlId] = combined.length === 1 ? combined[0] : combined;
         if (layer.labels?.[controlId] !== undefined) labels[controlId] = layer.labels[controlId];
         controlModifiers[controlId] = [...new Set([
           ...(controlModifiers[controlId] ?? []),
@@ -263,13 +267,14 @@ export function loadProfileDrivenConfig(configPath, options = {}) {
       throw new Error(`${page.file}: profile-driven controls require ID-keyed labels.`);
     }
     const layerModifiers = resolveModifierSet(page.modifierIds, modifierCatalog, page.file);
+    const labelVariants = {};
     for (const [controlId, configuredReference] of Object.entries(page.controls ?? {})) {
       if (!calloutIds.includes(controlId) && !page.allowUnrenderedControls) {
         throw new Error(`${page.file}: ${controlId} is not a ${page.deviceId} control.`);
       }
       const references = Array.isArray(configuredReference) ? configuredReference : [configuredReference];
       if (references.length === 0) throw new Error(`${page.file}:${controlId} must reference at least one profile binding.`);
-      const resolvedLabels = references.map((reference) => {
+      const resolvedVariants = references.map((reference) => {
         const expectedModifiers = resolveModifierSet(reference.modifiers ?? page.modifierIds, modifierCatalog, `${page.file}:${controlId}`);
         const matches = profile(reference.profile).bindings.flatMap((binding) => binding.added
           .filter((input) => input.key === reference.key && sameChord(input.reformers, expectedModifiers))
@@ -278,8 +283,13 @@ export function loadProfileDrivenConfig(configPath, options = {}) {
         if (matches.length !== 1) {
           throw new Error(`${page.file}: ${reference.profile}:${reference.key} resolves to ${matches.length} bindings; specify command when ambiguous.`);
         }
-        return reference.label ?? matches[0].binding.name;
+        return {
+          label: reference.label ?? matches[0].binding.name,
+          modifiers: reference.modifiers ?? page.modifierIds,
+        };
       });
+      labelVariants[controlId] = resolvedVariants;
+      const resolvedLabels = resolvedVariants.map(({ label }) => label);
       const resolvedLabel = [...new Set(resolvedLabels)].join(' / ');
       if (labels[controlId] === undefined || labels[controlId] === '') {
         labels[controlId] = resolvedLabel;
@@ -312,6 +322,20 @@ export function loadProfileDrivenConfig(configPath, options = {}) {
     for (const [controlId, modifierId] of Object.entries(page.modifierCallouts ?? {})) {
       noteUsed([modifierId]);
       labelColors[controlId] = modifierColorAt(usedOrder.indexOf(modifierId) + 1);
+    }
+    for (const [controlId, variants] of Object.entries(labelVariants)) {
+      const modifierSets = new Set(variants.map((variant) => variant.modifiers.join('\0')));
+      if (variants.length < 2 || modifierSets.size < 2) continue;
+      labels[controlId] = variants.map((variant) => {
+        const prefix = variant.modifiers.length
+          ? variant.modifiers.map((id) => id.replace(/^JOY_/u, '')).join(' + ')
+          : 'BASE';
+        const primary = variant.modifiers[0];
+        const color = primary ? modifierColorAt(usedOrder.indexOf(primary) + 1) : null;
+        const fullLabel = `${prefix} — ${variant.label}`;
+        const label = fullLabel.length > 30 ? `${fullLabel.slice(0, 29).trimEnd()}…` : fullLabel;
+        return { label, fullLabel, color };
+      });
     }
     // Only force a colour when a modifier is active; base stays device-native.
 
