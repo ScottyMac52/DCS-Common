@@ -121,6 +121,9 @@ public sealed class PreviewRow : INotifyPropertyChanged
     [JsonPropertyName("defaultLabel")]
     public string? DefaultLabel { get; set; }
 
+    [JsonPropertyName("deviceLabel")]
+    public string? DeviceLabel { get; set; }
+
     [JsonPropertyName("label")]
     public string? Label
     {
@@ -129,7 +132,7 @@ public sealed class PreviewRow : INotifyPropertyChanged
         {
             if (_label == value) return;
             _label = value;
-            LabelSource = value == DefaultLabel ? "catalog" : "user";
+            LabelSource = value == DefaultLabel ? "dcs" : value == DeviceLabel ? "device" : "user";
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(Label)));
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(LabelSource)));
         }
@@ -157,7 +160,12 @@ public sealed class PreviewRow : INotifyPropertyChanged
 
     public event PropertyChangedEventHandler? PropertyChanged;
 
-    public void ResetLabel() => Label = DefaultLabel;
+    public void ResetLabel()
+    {
+        Label = DeviceLabel;
+        LabelSource = "device";
+        PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(LabelSource)));
+    }
 }
 
 public sealed class PreviewModifier

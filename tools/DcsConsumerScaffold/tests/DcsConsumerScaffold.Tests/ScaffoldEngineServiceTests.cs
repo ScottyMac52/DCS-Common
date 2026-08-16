@@ -1,6 +1,7 @@
 using System.Text.Json;
 using DcsConsumerScaffold.Models;
 using DcsConsumerScaffold.Services;
+using DcsConsumerScaffold.ViewModels;
 using Xunit;
 
 namespace DcsConsumerScaffold.Tests;
@@ -122,7 +123,13 @@ public class ScaffoldEngineServiceTests
     [Fact]
     public void PreviewRow_LabelIsIndependentFromNameAndCanReset()
     {
-        var row = new PreviewRow { Name = "toggle VR Zoom", DefaultLabel = "MIC depress", Label = "VR Zoom" };
+        var row = new PreviewRow
+        {
+            Name = "toggle VR Zoom",
+            DefaultLabel = "toggle VR Zoom",
+            DeviceLabel = "MIC depress",
+            Label = "VR Zoom"
+        };
         Assert.Equal("toggle VR Zoom", row.Name);
         Assert.Equal("VR Zoom", row.Label);
         Assert.Equal("user", row.LabelSource);
@@ -130,8 +137,36 @@ public class ScaffoldEngineServiceTests
         row.ResetLabel();
 
         Assert.Equal("MIC depress", row.Label);
-        Assert.Equal("catalog", row.LabelSource);
+        Assert.Equal("device", row.LabelSource);
         Assert.Equal("toggle VR Zoom", row.Name);
+    }
+
+    [Fact]
+    public void LabelOverrides_PreservesDeviceLabelSelectionButOmitsDcsDefault()
+    {
+        var viewModel = new MainViewModel();
+        var dcsDefault = new PreviewRow
+        {
+            BindingId = "dcs",
+            DefaultLabel = "toggle VR Zoom",
+            DeviceLabel = "MIC depress",
+            Label = "toggle VR Zoom"
+        };
+        var deviceSelection = new PreviewRow
+        {
+            BindingId = "device",
+            DefaultLabel = "toggle VR Zoom",
+            DeviceLabel = "MIC depress",
+            Label = "toggle VR Zoom"
+        };
+        deviceSelection.ResetLabel();
+        viewModel.Rows.Add(dcsDefault);
+        viewModel.Rows.Add(deviceSelection);
+
+        var overrides = viewModel.LabelOverrides();
+
+        Assert.False(overrides.ContainsKey("dcs"));
+        Assert.Equal("MIC depress", overrides["device"]);
     }
 
     [Fact]

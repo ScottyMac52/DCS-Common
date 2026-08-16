@@ -138,12 +138,12 @@
         <DataGridTextColumn Header="Chord" Binding="{Binding Chord}" Width="100" IsReadOnly="True" />
         <DataGridTextColumn Header="Modes" Binding="{Binding ModifierModesDisplay}" Width="80" IsReadOnly="True" />
         <DataGridTextColumn Header="Command" Binding="{Binding Command}" Width="*" IsReadOnly="True" />
-        <DataGridTextColumn Header="Name" Binding="{Binding Name}" Width="1.2*" IsReadOnly="True" />
+        <DataGridTextColumn Header="DCS label (default)" Binding="{Binding DefaultLabel}" Width="1.2*" IsReadOnly="True" />
         <DataGridTextColumn Header="Label" Binding="{Binding Label, UpdateSourceTrigger=PropertyChanged}" Width="1.2*" />
-        <DataGridTextColumn Header="Default label" Binding="{Binding DefaultLabel}" Width="1.2*" IsReadOnly="True" />
-        <DataGridTemplateColumn Header="" Width="60">
+        <DataGridTextColumn Header="Device label" Binding="{Binding DeviceLabel}" Width="1.2*" IsReadOnly="True" />
+        <DataGridTemplateColumn Header="" Width="90">
           <DataGridTemplateColumn.CellTemplate>
-            <DataTemplate><Button Content="Reset" Tag="{Binding}" Click="ResetLabel_Click" /></DataTemplate>
+            <DataTemplate><Button Content="Use device" ToolTip="Replace Label with Device Label" Tag="{Binding}" Click="ResetLabel_Click" /></DataTemplate>
           </DataGridTemplateColumn.CellTemplate>
         </DataGridTemplateColumn>
         <DataGridTextColumn Header="Callout" Binding="{Binding CalloutId}" Width="110" IsReadOnly="True" />

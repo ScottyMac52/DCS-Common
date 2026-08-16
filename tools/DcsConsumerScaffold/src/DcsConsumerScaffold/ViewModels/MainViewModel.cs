@@ -293,7 +293,7 @@ public sealed class MainViewModel : INotifyPropertyChanged
         .ToDictionary(modifier => modifier.Name!, modifier => modifier.SemanticModifier!.Trim(), StringComparer.OrdinalIgnoreCase);
 
     public IReadOnlyDictionary<string, string> LabelOverrides() => Rows
-        .Where(row => !string.IsNullOrWhiteSpace(row.BindingId) && row.LabelSource == "user")
+        .Where(row => !string.IsNullOrWhiteSpace(row.BindingId) && row.LabelSource != "dcs")
         .ToDictionary(row => row.BindingId!, row => row.Label ?? string.Empty, StringComparer.Ordinal);
 
     public async Task<IReadOnlyList<RenderedPreviewPage>> RenderDevicePreviewAsync(PreviewDevice device)
