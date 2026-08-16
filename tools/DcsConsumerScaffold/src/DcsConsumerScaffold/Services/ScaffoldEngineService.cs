@@ -169,7 +169,7 @@ public sealed class ScaffoldEngineService
             var json = stdout.Split(Environment.NewLine, StringSplitOptions.RemoveEmptyEntries).Last();
             var pages = JsonSerializer.Deserialize<List<RenderedFile>>(json, JsonOptions) ?? [];
             return pages.Select(page => new RenderedPreviewPage(
-                page.File ?? Path.GetFileNameWithoutExtension(page.PngPath),
+                page.File ?? Path.GetFileNameWithoutExtension(page.PngPath) ?? "preview",
                 page.Title,
                 File.ReadAllBytes(page.PngPath!))).ToList();
         }
