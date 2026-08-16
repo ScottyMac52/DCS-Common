@@ -145,5 +145,5 @@
   <!-- box:mfd-rocker-con-down -->
   <rect x="742" y="608" width="49" height="49" rx="4" fill="#292929" stroke="none" stroke-width="1.5"/>
   <text id="lbl-mfd-rocker-con-down" x="766.5" y="637" text-anchor="middle" font-family="Arial,sans-serif" font-size="8" fill="#ffffff">CON down</text>
-  <text x="480" y="712" text-anchor="middle" font-family="Arial,sans-serif" font-size="12" fill="#475569">Thrustmaster Cougar MFD</text>
+  <text x="480" y="712" text-anchor="middle" font-family="Arial,sans-serif" font-size="12" fill="#475569">TM MFD - 28 buttons + 0 axes</text>
 </svg>

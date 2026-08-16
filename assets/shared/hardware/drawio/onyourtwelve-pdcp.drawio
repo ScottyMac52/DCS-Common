@@ -93,7 +93,7 @@
         <mxCell id="label-pdcp-steer-man" value="STEER MAN" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#1e293b;strokeColor=#00bfff;fontColor=#f1f5f9;fontSize=11;" vertex="1" parent="1"><mxGeometry x="15" y="644" width="170" height="24" as="geometry"/></mxCell>
         <mxCell id="anchor-pdcp-steer-man" value="" style="ellipse;whiteSpace=wrap;html=1;fillColor=#00bfff;strokeColor=#0f172a;opacity=0;" vertex="1" parent="1"><mxGeometry x="601" y="602" width="10" height="10" as="geometry"/></mxCell>
         <mxCell id="connector-pdcp-steer-man" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;strokeColor=#00bfff;dashed=1;" edge="1" parent="1" source="label-pdcp-steer-man" target="anchor-pdcp-steer-man"><mxGeometry relative="1" as="geometry"/></mxCell>
-        <mxCell id="footer" value="DCS-Common shared hardware template" style="text;html=1;strokeColor=none;fillColor=none;fontColor=#64748b;fontSize=12;align=center;" vertex="1" parent="1"><mxGeometry x="250" y="730" width="400" height="20" as="geometry"/></mxCell>
+        <mxCell id="footer" value="OnYourTwelve PDCP - 29 buttons + 0 axes" style="text;html=1;strokeColor=none;fillColor=none;fontColor=#64748b;fontSize=12;align=center;" vertex="1" parent="1"><mxGeometry x="250" y="730" width="400" height="20" as="geometry"/></mxCell>
       </root>
     </mxGraphModel>
   </diagram>

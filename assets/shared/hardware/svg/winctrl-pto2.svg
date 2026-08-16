@@ -206,5 +206,5 @@
   <circle cx="851" cy="587" r="5" fill="#00bfff" stroke="#0f172a" stroke-width="1.5"/>
   <rect x="1222" y="544" width="268" height="22" rx="4" fill="#1e293b" stroke="#00bfff" stroke-width="1.5"/>
   <text id="lbl-pto2-button-41" x="1356" y="559" text-anchor="middle" font-family="Arial,sans-serif" font-size="10" fill="#f1f5f9">Emergency brake / parking brake position 4</text>
-  <text x="750" y="972" text-anchor="middle" font-family="Arial,sans-serif" font-size="12" fill="#475569">DCS-Common shared hardware · WINCTRL PTO2</text>
+  <text x="750" y="972" text-anchor="middle" font-family="Arial,sans-serif" font-size="12" fill="#475569">WINCTRL PTO2 - 41 buttons + 0 axes</text>
 </svg>

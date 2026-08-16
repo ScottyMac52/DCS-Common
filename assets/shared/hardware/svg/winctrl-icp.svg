@@ -191,5 +191,5 @@
   <circle cx="859.9" cy="483.8" r="5" fill="#00bfff" stroke="#0f172a" stroke-width="1.5"/>
   <rect x="960" y="8" width="220" height="28" rx="4" fill="#1e293b" stroke="#00bfff" stroke-width="1.5"/>
   <text id="lbl-winctrl-icp-axis-rx" x="1070" y="26" text-anchor="middle" font-family="Arial,sans-serif" font-size="10" fill="#f1f5f9">Axis Rx — right lower wheel</text>
-  <text x="700" y="812" text-anchor="middle" font-family="Arial,sans-serif" font-size="12" fill="#475569">WINCTRL ViperAce ICP — 34 buttons + 4 axes</text>
+  <text x="700" y="812" text-anchor="middle" font-family="Arial,sans-serif" font-size="12" fill="#475569">WINCTRL ViperAce ICP - 34 buttons + 4 axes</text>
 </svg>

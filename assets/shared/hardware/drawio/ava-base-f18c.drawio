@@ -94,7 +94,7 @@
         <mxCell id="label-ava-hornet-pitch-axis" parent="1" style="text;html=1;whiteSpace=wrap;overflow=hidden;fillColor=#ffffff;strokeColor=none;fontColor=#000000;fontFamily=Arial;fontSize=12;align=center;verticalAlign=middle;spacing=2;" value="Pitch axis" vertex="1">
           <mxGeometry height="44" width="145" x="276" y="1102" as="geometry" />
         </mxCell>
-        <mxCell id="footer" parent="1" style="text;html=1;align=center;verticalAlign=middle;fontFamily=Arial;fontSize=12;fontColor=#475569;strokeColor=none;fillColor=none;" value="AVA Base + F/A-18C Hornet Grip" vertex="1"><mxGeometry height="18" width="360" x="465" y="1608" as="geometry" /></mxCell>
+        <mxCell id="footer" parent="1" style="text;html=1;align=center;verticalAlign=middle;fontFamily=Arial;fontSize=12;fontColor=#475569;strokeColor=none;fillColor=none;" value="AVA Base + F/A-18C Hornet Grip - 19 buttons + 2 axes" vertex="1"><mxGeometry height="18" width="360" x="465" y="1608" as="geometry" /></mxCell>
       </root>
     </mxGraphModel>
   </diagram>

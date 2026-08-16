@@ -342,5 +342,5 @@
   <circle cx="443" cy="89" r="5" fill="#00bfff" stroke="#0f172a" stroke-width="1.5"/>
   <rect x="20" y="156" width="160" height="28" rx="4" fill="#1e293b" stroke="#00bfff" stroke-width="1.5"/>
   <text id="lbl-viper-tqs-button-05" x="100" y="174" text-anchor="middle" font-family="Arial,sans-serif" font-size="9" fill="#f1f5f9">Button 5 — MIC PRESS (AutoHotkey)</text>
-  <text x="500" y="1392" text-anchor="middle" font-family="Arial,sans-serif" font-size="12" fill="#475569">Viper TQS + Mission Pack • canonical shared template</text>
+  <text x="500" y="1392" text-anchor="middle" font-family="Arial,sans-serif" font-size="12" fill="#475569">Viper TQS + Mission Pack - 62 buttons + 6 axes</text>
 </svg>

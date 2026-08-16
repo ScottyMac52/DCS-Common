@@ -87,5 +87,5 @@
   <circle cx="513" cy="1115" r="5" fill="#00bfff" stroke="#0f172a" stroke-width="1.5"/>
   <rect x="675" y="780" width="210" height="26" rx="4" fill="#1e293b" stroke="#00bfff" stroke-width="1.5"/>
   <text id="lbl-vkb-paddle" x="780" y="797" text-anchor="middle" font-family="Arial,sans-serif" font-size="11" fill="#f1f5f9">Paddle switch</text>
-  <text x="450" y="1242" text-anchor="middle" font-family="Arial,sans-serif" font-size="12" fill="#475569">VKB F-14 Gunfighter Grip</text>
+  <text x="450" y="1242" text-anchor="middle" font-family="Arial,sans-serif" font-size="12" fill="#475569">VKB F-14 Gunfighter Grip - 16 buttons + 1 axes</text>
 </svg>

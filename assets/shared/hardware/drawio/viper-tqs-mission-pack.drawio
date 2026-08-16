@@ -595,7 +595,7 @@
         <mxCell id="anchor-viper-tqs-button-05" value="" style="ellipse;whiteSpace=wrap;html=1;fillColor=#00bfff;strokeColor=#0f172a;opacity=0;" vertex="1" parent="1"><mxGeometry x="438" y="84" width="10" height="10" as="geometry"/></mxCell>
         <mxCell id="label-viper-tqs-button-05" value="Button 5 — MIC PRESS (AutoHotkey)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#1e293b;strokeColor=#00bfff;fontColor=#f1f5f9;fontSize=9;" vertex="1" parent="1"><mxGeometry x="20" y="156" width="160" height="28" as="geometry"/></mxCell>
         <mxCell id="connector-viper-tqs-button-05" value="" style="endArrow=none;html=1;strokeColor=#00bfff;strokeWidth=1.5;dashed=1;dashPattern=5 3;opacity=75;" edge="1" source="label-viper-tqs-button-05" target="anchor-viper-tqs-button-05" parent="1"><mxGeometry relative="1" as="geometry"/></mxCell>
-        <mxCell id="footer" value="Viper TQS + Mission Pack • canonical shared template" style="text;html=1;align=center;verticalAlign=middle;fontFamily=Arial;fontSize=12;fontColor=#475569;strokeColor=none;fillColor=none;" vertex="1" parent="1">
+        <mxCell id="footer" value="Viper TQS + Mission Pack - 62 buttons + 6 axes" style="text;html=1;align=center;verticalAlign=middle;fontFamily=Arial;fontSize=12;fontColor=#475569;strokeColor=none;fillColor=none;" vertex="1" parent="1">
           <mxGeometry x="0" y="1370" width="1000" height="20" as="geometry"/>
         </mxCell>
       </root>

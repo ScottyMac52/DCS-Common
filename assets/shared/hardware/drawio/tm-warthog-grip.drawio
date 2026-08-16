@@ -84,7 +84,7 @@
         <mxCell id="label-warthog-grip-paddle" parent="1" style="text;html=1;whiteSpace=wrap;overflow=hidden;fillColor=none;strokeColor=none;fontColor=#000000;fontFamily=Arial;fontSize=8;align=center;verticalAlign=middle;spacing=1;" value="Nosewheel steering" vertex="1">
           <mxGeometry height="17" width="86" x="582" y="542" as="geometry" />
         </mxCell>
-        <mxCell id="footer" parent="1" style="text;html=1;align=center;verticalAlign=middle;fontFamily=Arial;fontSize=12;fontColor=#475569;strokeColor=none;fillColor=none;" value="TM Warthog Joystick" vertex="1"><mxGeometry height="18" width="250" x="6" y="556" as="geometry" /></mxCell>
+        <mxCell id="footer" parent="1" style="text;html=1;align=center;verticalAlign=middle;fontFamily=Arial;fontSize=12;fontColor=#475569;strokeColor=none;fillColor=none;" value="TM Warthog Joystick - 19 buttons + 2 axes" vertex="1"><mxGeometry height="18" width="250" x="6" y="556" as="geometry" /></mxCell>
       </root>
     </mxGraphModel>
   </diagram>

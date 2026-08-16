@@ -83,5 +83,5 @@
   <text id="lbl-warthog-thr-axis-left-throttle" x="410.5" y="560" text-anchor="middle" font-family="Arial,sans-serif" font-size="8" fill="#111827">AXIS_LEFT_THROTTLE</text>
   <!-- box:warthog-thr-axis-friction -->
   <text id="lbl-warthog-thr-axis-friction" x="732.5" y="647" text-anchor="middle" font-family="Arial,sans-serif" font-size="8" fill="#111827">AXIS_FRICTION</text>
-  <text x="504" y="836" text-anchor="middle" font-family="Arial,sans-serif" font-size="12" fill="#475569">TM Warthog Throttle</text>
+  <text x="504" y="836" text-anchor="middle" font-family="Arial,sans-serif" font-size="12" fill="#475569">TM Warthog Throttle - 32 buttons + 5 axes</text>
 </svg>
