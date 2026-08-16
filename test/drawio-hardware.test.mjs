@@ -4,30 +4,32 @@ import { readFileSync } from 'node:fs';
 import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { spawnSync } from 'node:child_process';
+import { decodeDrawioGraph } from '../scripts/drawio-source.mjs';
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const hardwareRoot = join(root, 'assets/shared/hardware');
 const manifest = JSON.parse(readFileSync(join(hardwareRoot, 'manifest.json'), 'utf8'));
 const phaseOne = manifest.devices.filter((device) => device.drawio);
 
-test('all defined hardware devices have native draw.io sources', () => {
+test('all defined hardware devices have readable native draw.io sources', () => {
   assert.ok(phaseOne.length > 0);
   for (const device of phaseOne) {
     const xml = readFileSync(join(hardwareRoot, device.drawio), 'utf8');
+    const graph = decodeDrawioGraph(xml, device.id);
     assert.match(xml, /<mxfile\b/);
-    assert.match(xml, /<diagram\\b[^>]*>\\s*<mxGraphModel\\b/);
-    assert.match(xml, /id="hardware-image-1"/);
-    assert.match(xml, /id="label-/);
-    assert.match(xml, /image=data:image\/(?:png|jpeg|jpg),[A-Za-z0-9+/=]+/);
-    assert.doesNotMatch(xml, /data:image\/svg\+xml/, `${device.id} must not embed the old SVG as a background`);
+    assert.match(graph, /<mxGraphModel\b/);
+    assert.match(graph, /id="hardware-image-1"/);
+    assert.match(graph, /id="label-/);
+    assert.match(graph, /image=data:image\/(?:png|jpeg|jpg),[A-Za-z0-9+/=]+/);
+    assert.doesNotMatch(graph, /data:image\/svg\+xml/, `${device.id} must not embed the old SVG as a background`);
     assert.doesNotMatch(readFileSync(join(hardwareRoot, device.svg), 'utf8'), /No source image available/);
 
     // Callout style requires anchors + connectors; box-only style is labels over artwork.
-    const hasConnectors = (xml.match(/id="connector-/g) ?? []).length > 0;
+    const hasConnectors = (graph.match(/id="connector-/g) ?? []).length > 0;
     if (hasConnectors) {
-      assert.match(xml, /id="anchor-/);
-      assert.match(xml, /image=data:image\/(?:png|jpeg),[A-Za-z0-9+/=]+(?:;|")/);
-      assert.doesNotMatch(xml, /image=data:image\/(?:png|jpeg);base64,/);
+      assert.match(graph, /id="anchor-/);
+      assert.match(graph, /image=data:image\/(?:png|jpeg),[A-Za-z0-9+/=]+(?:;|")/);
+      assert.doesNotMatch(graph, /image=data:image\/(?:png|jpeg);base64,/);
     }
   }
 });
@@ -51,18 +53,19 @@ test('Viper TQS source has independently editable handle and Mission Pack image 
 test('native sources and exported SVGs preserve callout identities', () => {
   for (const device of phaseOne) {
     const xml = readFileSync(join(hardwareRoot, device.drawio), 'utf8');
+    const graph = decodeDrawioGraph(xml, device.id);
     const svg = readFileSync(join(hardwareRoot, device.svg), 'utf8');
-    const hasConnectors = (xml.match(/id="connector-/g) ?? []).length > 0;
+    const hasConnectors = (graph.match(/id="connector-/g) ?? []).length > 0;
     const idPattern = hasConnectors
       ? /id="connector-([^"]+)"/g
       : /id="label-([^"]+)"/g;
-    const sourceIds = [...xml.matchAll(idPattern)].map((match) => match[1]).sort();
+    const sourceIds = [...graph.matchAll(idPattern)].map((match) => match[1]).sort();
     const commentPattern = hasConnectors
       ? /<!-- callout:([^\s]+) -->/g
       : /<!-- box:([^\s]+) -->/g;
     const svgIds = [...svg.matchAll(commentPattern)].map((match) => match[1]).sort();
     assert.deepEqual(svgIds, sourceIds, `${device.id} control IDs changed during export`);
-    assert.equal((svg.match(/<image\b/g) ?? []).length, (xml.match(/id="hardware-image-/g) ?? []).length);
+    assert.equal((svg.match(/<image\b/g) ?? []).length, (graph.match(/id="hardware-image-/g) ?? []).length);
   }
 });
 
