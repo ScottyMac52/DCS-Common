@@ -107,6 +107,7 @@ function render(device, xml) {
   const images = all.filter((cell) => cell.id.startsWith('hardware-image-'));
   const connectors = all.filter((cell) => cell.id.startsWith('connector-'));
   const labels = all.filter((cell) => cell.id.startsWith('label-'));
+  const masks = all.filter((cell) => cell.id.startsWith('mask-'));
   const footer = byId.get('footer');
   // Callout style: connectors + anchors. Box-only style: label-* without connectors
   // (embedded artwork already shows controls; overlay boxes are the binding names).
@@ -123,6 +124,9 @@ function render(device, xml) {
   ];
   for (const image of images) {
     lines.push(`  <image href=\"${esc(styleValue(image.style, 'image'))}\" x=\"${image.x}\" y=\"${image.y}\" width=\"${image.width}\" height=\"${image.height}\" preserveAspectRatio=\"xMidYMid meet\"/>`);
+  }
+  for (const mask of masks) {
+    lines.push(`  <rect id=\"${esc(mask.id)}\" x=\"${mask.x}\" y=\"${mask.y}\" width=\"${mask.width}\" height=\"${mask.height}\" fill=\"${esc(styleValue(mask.style, 'fillColor') || '#ffffff')}\"/>`);
   }
 
   const labelsViaConnector = new Set();

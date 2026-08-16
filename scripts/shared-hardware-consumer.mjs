@@ -26,7 +26,7 @@ export function modifierColorAt(index = 0) {
 }
 
 /**
- * Build a lower-right legend block for the outer kneeboard page SVG.
+ * Build a legend block for the outer kneeboard page SVG.
  * @param {Array<{ label: string, fill: string }>} entries
  * @param {{ x?: number, y?: number }} [opts]
  */
@@ -116,7 +116,9 @@ export function renderSharedHardwarePage({ deviceId, labels = {}, labelColors = 
   const encoded = Buffer.from(svg).toString('base64');
   const pageTitle = escapeXml(title ?? device.label);
   const pageFooter = provenance ? formatProvenanceFooter({ commonRoot, ...provenance }) : footer;
-  const legendSvg = renderModifierLegendSvg(legend);
+  const hasLegend = Array.isArray(legend) && legend.length > 0;
+  const hardwareHeight = hasLegend ? 1170 : 1350;
+  const legendSvg = renderModifierLegendSvg(legend, { x: 54, y: 1350 });
   return {
     calloutIds,
     svg: `<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="1600" viewBox="0 0 1200 1600">
@@ -125,7 +127,7 @@ export function renderSharedHardwarePage({ deviceId, labels = {}, labelColors = 
   <rect width="1200" height="16" fill="#46d8ff"/>
   <text x="54" y="80" font-family="Arial,sans-serif" font-size="44" font-weight="700" fill="#f5f9ff">${pageTitle}</text>
   <text x="56" y="126" font-family="Arial,sans-serif" font-size="20" font-weight="700" fill="#ffc95c">${escapeXml(kicker)}</text>
-  <image href="data:image/svg+xml;base64,${encoded}" x="35" y="155" width="1130" height="1350" preserveAspectRatio="xMidYMid meet"/>
+  <image href="data:image/svg+xml;base64,${encoded}" x="35" y="155" width="1130" height="${hardwareHeight}" preserveAspectRatio="xMidYMid meet"/>
 ${legendSvg}
   <text x="54" y="1570" font-family="Arial,sans-serif" font-size="18" fill="#8ea5bd">${escapeXml(pageFooter)}</text>
 </svg>`,
