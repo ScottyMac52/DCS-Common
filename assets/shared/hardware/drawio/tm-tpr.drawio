@@ -37,7 +37,7 @@
         <mxCell id="connector-tpr-axis-right-brake" edge="1" parent="1" source="label-tpr-axis-right-brake" style="endArrow=none;html=1;strokeColor=#00bfff;strokeWidth=1.5;dashed=1;dashPattern=5 3;opacity=75;" target="anchor-tpr-axis-right-brake" value="">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
-        <mxCell id="footer" parent="1" style="text;html=1;align=center;verticalAlign=middle;fontFamily=Arial;fontSize=12;fontColor=#475569;strokeColor=none;fillColor=none;" value="Thrustmaster TPR Pendular Rudder" vertex="1">
+        <mxCell id="footer" parent="1" style="text;html=1;align=center;verticalAlign=middle;fontFamily=Arial;fontSize=12;fontColor=#475569;strokeColor=none;fillColor=none;" value="TM T-Pendular Rudder - 0 buttons + 3 axes" vertex="1">
           <mxGeometry height="20" width="960" y="626" as="geometry" />
         </mxCell>
       </root>

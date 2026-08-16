@@ -88,5 +88,5 @@
   <!-- box:ava-hornet-pitch-axis -->
   <rect x="276" y="1102" width="145" height="44" rx="4" fill="#ffffff" stroke="none" stroke-width="1.5"/>
   <text id="lbl-ava-hornet-pitch-axis" x="348.5" y="1128" text-anchor="middle" font-family="Arial,sans-serif" font-size="12" fill="#000000">Pitch axis</text>
-  <text x="645" y="1623" text-anchor="middle" font-family="Arial,sans-serif" font-size="12" fill="#475569">AVA Base + F/A-18C Hornet Grip</text>
+  <text x="645" y="1623" text-anchor="middle" font-family="Arial,sans-serif" font-size="12" fill="#475569">AVA Base + F/A-18C Hornet Grip - 19 buttons + 2 axes</text>
 </svg>

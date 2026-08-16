@@ -53,5 +53,5 @@
   <text id="lbl-warthog-grip-pinky" x="624.5" y="519" text-anchor="middle" font-family="Arial,sans-serif" font-size="8" fill="#000000">Pinky lever</text>
   <!-- box:warthog-grip-paddle -->
   <text id="lbl-warthog-grip-paddle" x="625" y="555" text-anchor="middle" font-family="Arial,sans-serif" font-size="8" fill="#000000">Nosewheel steering</text>
-  <text x="480" y="572" text-anchor="middle" font-family="Arial,sans-serif" font-size="12" fill="#475569">TM Warthog Joystick</text>
+  <text x="480" y="572" text-anchor="middle" font-family="Arial,sans-serif" font-size="12" fill="#475569">TM Warthog Joystick - 19 buttons + 2 axes</text>
 </svg>

@@ -61,5 +61,5 @@
   <circle cx="640" cy="480" r="5" fill="#00bfff" stroke="#0f172a" stroke-width="1.5"/>
   <rect x="695" y="435" width="160" height="30" rx="4" fill="#1e293b" stroke="#00bfff" stroke-width="1.5"/>
   <text id="lbl-t6" x="775" y="454" text-anchor="middle" font-family="Arial,sans-serif" font-size="11" fill="#f1f5f9">Right Rocker (Down)</text>
-  <text x="480" y="632" text-anchor="middle" font-family="Arial,sans-serif" font-size="12" fill="#475569">Logitech Throttle Quadrant • canonical shared template</text>
+  <text x="480" y="632" text-anchor="middle" font-family="Arial,sans-serif" font-size="12" fill="#475569">Logitech Throttle Quadrant - 9 buttons + 3 axes</text>
 </svg>

@@ -28,7 +28,7 @@
         <mxCell id="connector-moza-ab9-roll-axis" value="" style="endArrow=none;html=1;strokeColor=#00bfff;strokeWidth=1.5;dashed=1;dashPattern=5 3;opacity=75;" edge="1" source="label-moza-ab9-roll-axis" target="anchor-moza-ab9-roll-axis" parent="1">
           <mxGeometry relative="1" as="geometry"/>
         </mxCell>
-        <mxCell id="footer" value="MOZA AB9 FFB Base" style="text;html=1;align=center;verticalAlign=middle;fontFamily=Arial;fontSize=12;fontColor=#475569;strokeColor=none;fillColor=none;" vertex="1" parent="1">
+        <mxCell id="footer" value="MOZA AB9 FFB Base - 0 buttons + 2 axes" style="text;html=1;align=center;verticalAlign=middle;fontFamily=Arial;fontSize=12;fontColor=#475569;strokeColor=none;fillColor=none;" vertex="1" parent="1">
           <mxGeometry x="0" y="576" width="760" height="20" as="geometry"/>
         </mxCell>
       </root>

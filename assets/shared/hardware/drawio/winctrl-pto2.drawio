@@ -379,7 +379,7 @@
         <mxCell id="connector-pto2-button-41" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;strokeColor=#00bfff;dashed=1;endArrow=none;exitX=0;exitY=0.5;entryX=1;entryY=0.5;" edge="1" parent="1" source="label-pto2-button-41" target="anchor-pto2-button-41">
           <mxGeometry relative="1" as="geometry"/>
         </mxCell>
-        <mxCell id="footer" value="DCS-Common shared hardware · WINCTRL PTO2" style="text;html=1;strokeColor=none;fillColor=none;fontColor=#64748b;fontSize=12;align=center;" vertex="1" parent="1">
+        <mxCell id="footer" value="WINCTRL PTO2 - 41 buttons + 0 axes" style="text;html=1;strokeColor=none;fillColor=none;fontColor=#64748b;fontSize=12;align=center;" vertex="1" parent="1">
           <mxGeometry x="450" y="952" width="600" height="20" as="geometry"/>
         </mxCell>
       </root>
