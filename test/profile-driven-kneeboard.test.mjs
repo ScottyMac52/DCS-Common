@@ -66,7 +66,11 @@ test('expands base and S3 layers and resolves the same OSB by exact modifier cho
   }));
   const config = loadProfileDrivenConfig('kneeboard.json', { consumerRoot, commonRoot });
   assert.equal(config.pages.length, 1, 'layers merge into a single page');
-  assert.equal(config.pages[0].labels['mfd-osb-t1'], 'Markpoint shortcut');
+  assert.equal(config.pages[0].controls['mfd-osb-t1'].length, 2);
+  assert.deepEqual(config.pages[0].labels['mfd-osb-t1'], [
+    { label: 'BASE — Left MFD OSB 1', fullLabel: 'BASE — Left MFD OSB 1', color: null },
+    { label: 'S3 — Markpoint shortcut', fullLabel: 'S3 — Markpoint shortcut', color: '#dc2626' },
+  ]);
   assert.equal(config.pages[0].modifiers[0].mode, 'hold');
 });
 
