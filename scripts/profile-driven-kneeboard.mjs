@@ -306,6 +306,10 @@ export function loadProfileDrivenConfig(configPath, options = {}) {
       const colorIndex = usedOrder.indexOf(primary) + 1; // 1..N
       labelColors[controlId] = modifierColorAt(colorIndex);
     }
+    for (const [controlId, modifierId] of Object.entries(page.modifierCallouts ?? {})) {
+      noteUsed([modifierId]);
+      labelColors[controlId] = modifierColorAt(usedOrder.indexOf(modifierId) + 1);
+    }
     // Only force a colour when a modifier is active; base stays device-native.
 
     const legendOut = [];

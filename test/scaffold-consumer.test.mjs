@@ -233,6 +233,11 @@ test('MOZA POV bindings resolve base and modified callouts for both grips', () =
     });
     assert.equal(config.pages[0].deviceId, expected.deviceId);
     assert.ok(config.pages[0].layers);
+    const modifierCallout = expected.grip === 'hornet'
+      ? 'hornet-grip-nws-undesignate'
+      : 'warthog-grip-pinky';
+    assert.equal(config.pages[0].labels[modifierCallout], 'SHIFT / MODIFIER');
+    assert.equal(config.pages[0].modifierCallouts[modifierCallout], 'LOOK_MODE');
     assert.equal(
       config.pages[0].layers[0].controls[expected.callouts.JOY_BTN_POV1_U].key,
       'JOY_BTN_POV1_U',
@@ -391,6 +396,8 @@ test('UiLayer shared hardware bindings resolve every reported callout and modifi
   assert.deepEqual(vkbPage.layers.map((layer) => layer.id), ['base', 'JOY_BTN7']);
   assert.deepEqual(viperPage.layers.map((layer) => layer.id), ['base', 'JOY_BTN3', 'JOY_BTN7']);
   assert.equal(vkbPage.layers[1].controls['vkb-paddle'].key, 'JOY_BTN6');
+  assert.equal(vkbPage.labels['vkb-nws'], 'SHIFT / MODIFIER');
+  assert.equal(vkbPage.modifierCallouts['vkb-nws'], 'JOY_BTN7');
   assert.equal(viperPage.layers[1].controls['viper-tqs-button-05'].key, 'JOY_BTN5');
   assert.equal(viperPage.layers[2].controls['viper-tqs-button-04'].key, 'JOY_BTN4');
 });
