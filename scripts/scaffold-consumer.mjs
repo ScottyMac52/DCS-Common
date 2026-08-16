@@ -122,6 +122,14 @@ function stripGuidSuffix(filename) {
     .trimEnd();
 }
 
+function normalizedPhysicalDevice(value) {
+  return String(value ?? '')
+    .replace(/\s*\{[0-9A-Fa-f-]{36}\}\s*$/u, '')
+    .trim()
+    .replace(/\s+/gu, ' ')
+    .toLocaleLowerCase();
+}
+
 export function loadDeviceMap(commonRoot) {
   const path = join(commonRoot, 'assets/shared/hardware/scaffold-device-map.json');
   if (!existsSync(path)) throw new Error(`Missing device map: ${path}`);
@@ -467,6 +475,22 @@ export function buildPreview({ profilesDir, modifiersPath = null, mapPath = null
 
   assignDeviceInstances(devices, rows, roleOverrides, errors);
 
+  for (const modifier of modifiers) {
+    const modifierGuid = modifier.device.match(/\{([0-9A-Fa-f-]{36})\}\s*$/u)?.[1]?.toLowerCase() ?? null;
+    const modifierStem = normalizedPhysicalDevice(modifier.device);
+    const device = devices.find((candidate) =>
+      (modifierGuid && candidate.guid === modifierGuid) || normalizedPhysicalDevice(candidate.stem) === modifierStem);
+    if (!device?.deviceId) continue;
+    const catalog = catalogCache.get(device.deviceId) ?? loadCalloutCatalog(commonRoot, device.deviceId);
+    const catalogKey = resolveCatalogInputKey(device.deviceId, modifier.key, deviceMap);
+    Object.assign(modifier, {
+      profileFile: device.profileFile,
+      profileKey: device.profileKey,
+      deviceId: device.deviceId,
+      calloutId: catalog.byKey.get(catalogKey)?.[0] ?? null,
+    });
+  }
+
   return {
     schemaVersion: 2,
     generatedBy: 'scaffold-consumer.mjs',
@@ -479,7 +503,8 @@ export function buildPreview({ profilesDir, modifiersPath = null, mapPath = null
     semanticModifiersPath: semanticModifiersPath ? resolve(semanticModifiersPath) : null,
     labelsPath: labelsPath ? resolve(labelsPath) : null,
     mozaGrip,
-    modifiers: modifiers.map(({ name, device, key, mode, semanticModifier }) => ({ name, device, key, mode, semanticModifier })),
+    modifiers: modifiers.map(({ name, device, key, mode, semanticModifier, profileFile, profileKey, deviceId, calloutId }) =>
+      ({ name, device, key, mode, semanticModifier, profileFile, profileKey, deviceId, calloutId })),
     semanticModifiers: [...new Set(modifiers.map(({ semanticModifier }) => semanticModifier))].sort(),
     devices,
     rows,
@@ -533,6 +558,8 @@ export function buildDraftKneeboardConfig(preview, { displayName, inputModuleId 
       nativeName: mod.name,
       mode: mod.mode,
       semanticModifier: mod.semanticModifier,
+      deviceId: mod.deviceId,
+      label: mod.name,
     };
   }
 
@@ -547,6 +574,7 @@ export function buildDraftKneeboardConfig(preview, { displayName, inputModuleId 
 
     const controls = {};
     const labels = {};
+    const modifierCallouts = {};
     const layerControls = new Map();
 
     for (const row of preview.rows) {
@@ -586,6 +614,13 @@ export function buildDraftKneeboardConfig(preview, { displayName, inputModuleId 
       }
     }
 
+    for (const modifier of preview.modifiers) {
+      if (modifier.profileFile !== device.profileFile || !modifier.calloutId) continue;
+      const alias = aliasFromModifierName(modifier.name);
+      labels[modifier.calloutId] = 'SHIFT / MODIFIER';
+      modifierCallouts[modifier.calloutId] = alias;
+    }
+
     const page = {
       file,
       deviceId: device.deviceId,
@@ -595,6 +630,7 @@ export function buildDraftKneeboardConfig(preview, { displayName, inputModuleId 
         'labels are pre-filled from canonical DCS-Common hardware labels and remain separate from DCS command names. ' +
         'keep callout IDs in sync with controls. You can also set "label" on a controls entry.',
       labels,
+      modifierCallouts,
     };
 
     if (layerControls.size === 0) {
