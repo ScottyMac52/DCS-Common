@@ -87,6 +87,8 @@ test('TM Warthog joystick uses the supplied artwork label fields without callout
   const xml = readFileSync(join(hardwareRoot, 'drawio/tm-warthog-grip.drawio'), 'utf8');
   assert.equal((xml.match(/id="label-warthog-grip-/g) ?? []).length, 25);
   assert.equal((xml.match(/id="(?:anchor|connector)-warthog-grip-/g) ?? []).length, 0);
+  assert.match(xml, /id="mask-warthog-grip-pinky"/);
+  assert.match(xml, /id="mask-warthog-grip-paddle"/);
 });
 
 test('Hornet grip definitions use all supplied artwork fields without callouts', () => {

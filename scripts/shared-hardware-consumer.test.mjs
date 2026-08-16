@@ -73,4 +73,6 @@ test('page SVG includes shift legend when legend entries provided', () => {
   assert.match(rendered.svg, /SHIFT \/ MODIFIER/);
   assert.match(rendered.svg, /S3 \(hold\)/);
   assert.match(rendered.svg, /#dc2626/);
+  assert.match(rendered.svg, /<image[^>]*height="1170"/);
+  assert.match(rendered.svg, /<g data-modifier-legend="true">[\s\S]*?<rect x="54" y="1350"/);
 });

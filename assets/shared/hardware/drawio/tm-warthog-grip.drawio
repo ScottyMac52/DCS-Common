@@ -76,9 +76,11 @@
         <mxCell id="label-warthog-grip-stage2" parent="1" style="text;html=1;whiteSpace=wrap;overflow=hidden;fillColor=none;strokeColor=none;fontColor=#000000;fontFamily=Arial;fontSize=8;align=center;verticalAlign=middle;spacing=1;" value="Trigger second stage" vertex="1">
           <mxGeometry height="17" width="87" x="398" y="506" as="geometry" />
         </mxCell>
+        <mxCell id="mask-warthog-grip-pinky" parent="1" style="shape=rectangle;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=none;" value="" vertex="1"><mxGeometry height="15" width="85" x="582" y="507" as="geometry" /></mxCell>
         <mxCell id="label-warthog-grip-pinky" parent="1" style="text;html=1;whiteSpace=wrap;overflow=hidden;fillColor=none;strokeColor=none;fontColor=#000000;fontFamily=Arial;fontSize=8;align=center;verticalAlign=middle;spacing=1;" value="Pinky lever" vertex="1">
           <mxGeometry height="17" width="87" x="581" y="506" as="geometry" />
         </mxCell>
+        <mxCell id="mask-warthog-grip-paddle" parent="1" style="shape=rectangle;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=none;" value="" vertex="1"><mxGeometry height="15" width="84" x="583" y="543" as="geometry" /></mxCell>
         <mxCell id="label-warthog-grip-paddle" parent="1" style="text;html=1;whiteSpace=wrap;overflow=hidden;fillColor=none;strokeColor=none;fontColor=#000000;fontFamily=Arial;fontSize=8;align=center;verticalAlign=middle;spacing=1;" value="Nosewheel steering" vertex="1">
           <mxGeometry height="17" width="86" x="582" y="542" as="geometry" />
         </mxCell>

@@ -147,6 +147,12 @@ test('MOZA grip aliases translate only their verified POV keys', () => {
   );
 });
 
+test('Warthog grip button 3 is NWS and button 4 is the pinkie lever', () => {
+  const catalog = loadCalloutCatalog(commonRoot, 'moza-ab9-warthog-grip');
+  assert.deepEqual(catalog.byKey.get('JOY_BTN3'), ['warthog-grip-paddle']);
+  assert.deepEqual(catalog.byKey.get('JOY_BTN4'), ['warthog-grip-pinky']);
+});
+
 test('MOZA POV bindings resolve base and modified callouts for both grips', () => {
   const root = mkdtempSync(join(tmpdir(), 'scaffold-moza-pov-'));
   const profilesDir = join(root, 'joystick');
@@ -236,7 +242,7 @@ test('MOZA POV bindings resolve base and modified callouts for both grips', () =
     assert.ok(config.pages[0].layers);
     const modifierCallout = expected.grip === 'hornet'
       ? 'hornet-grip-nws-undesignate'
-      : 'warthog-grip-pinky';
+      : 'warthog-grip-paddle';
     assert.equal(config.pages[0].labels[modifierCallout], 'SHIFT / MODIFIER');
     assert.equal(config.pages[0].modifierCallouts[modifierCallout], 'LOOK_MODE');
     assert.equal(

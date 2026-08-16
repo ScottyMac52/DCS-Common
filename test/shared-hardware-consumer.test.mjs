@@ -16,6 +16,8 @@ test('consumer API resolves AVA Base + F-16C to the TM Warthog Joystick', () => 
   const loaded = loadSharedHardware('ava-base-f16c', { commonRoot });
   assert.equal(loaded.device.id, 'tm-warthog-grip');
   assert.equal(loaded.calloutIds.length, 25);
+  assert.match(loaded.svg, /id="mask-warthog-grip-pinky"/);
+  assert.match(loaded.svg, /id="mask-warthog-grip-paddle"/);
 });
 
 test('consumer API resolves AVA Base + F/A-18C to the Hornet Grip', () => {

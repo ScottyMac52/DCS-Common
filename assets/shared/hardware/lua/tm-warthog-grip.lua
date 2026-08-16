@@ -5,8 +5,8 @@ return {
   controls = {
     { id = "warthog-grip-stage1", key = "JOY_BTN1", type = "button", hardwareLabel = "Trigger first stage" },
     { id = "warthog-grip-btn-red", key = "JOY_BTN2", type = "button", hardwareLabel = "Weapon release" },
-    { id = "warthog-grip-pinky", key = "JOY_BTN3", type = "button", hardwareLabel = "Pinky lever" },
-    { id = "warthog-grip-paddle", key = "JOY_BTN4", type = "button", hardwareLabel = "Nosewheel steering" },
+    { id = "warthog-grip-pinky", key = "JOY_BTN4", type = "button", hardwareLabel = "Pinky lever" },
+    { id = "warthog-grip-paddle", key = "JOY_BTN3", type = "button", hardwareLabel = "Nosewheel steering" },
     { id = "warthog-grip-rear-btn", key = "JOY_BTN5", type = "button", hardwareLabel = "Master mode control" },
     { id = "warthog-grip-stage2", key = "JOY_BTN6", type = "button", hardwareLabel = "Trigger second stage" },
     { id = "warthog-grip-tms-up", key = "JOY_BTN7", type = "hat-direction", hardwareLabel = "TMS up" },
