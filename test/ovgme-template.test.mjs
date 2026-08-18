@@ -19,3 +19,13 @@ test('OvGME validation inspects archive roots and required payloads', () => {
   assert.match(validate, /Config\/Input\/\{\{INPUT_MODULE_ID\}\}\/joystick\//);
   assert.match(validate, /KNEEBOARD\/\{\{KNEEBOARD_ID\}\}\//);
 });
+
+test('complete release restores the structured consumer bundle', () => {
+  const release = readFileSync(join(root, 'templates/consumer/Build-Release.ps1.tmpl'), 'utf8');
+  assert.match(release, /\$bundleName = "\$pkgName-\$Version-Complete"/);
+  assert.match(release, /Join-Path \$bundleRoot 'OVGME'/);
+  assert.match(release, /Join-Path \$bundleRoot 'Documentation'/);
+  assert.match(release, /Join-Path \$bundleRoot 'AutoHotKey'/);
+  assert.match(release, /Copy-Item \$ovgme \(Join-Path \$bundleRoot 'OVGME'\)/);
+  assert.match(release, /Compress-Archive -Path \$bundleRoot/);
+});
