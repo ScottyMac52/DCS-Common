@@ -6,18 +6,46 @@ $root = Split-Path -Parent $PSScriptRoot
 $dist = Join-Path $root 'dist'
 $pkgName = '{{REPO_NAME}}'
 $ovgme = Join-Path $dist "$pkgName-$Version-OVGME.zip"
-if (-not (Test-Path $ovgme)) { throw "Missing OVGME zip $ovgme" }
-$stage = Join-Path $dist "release-stage-$Version"
-if (Test-Path $stage) { Remove-Item $stage -Recurse -Force }
-New-Item -ItemType Directory -Force -Path $stage | Out-Null
-Copy-Item $ovgme $stage
-Copy-Item (Join-Path $root 'README.md') $stage -ErrorAction SilentlyContinue
-Copy-Item (Join-Path $root 'packaging/release/RELEASE-NOTES.md') $stage -ErrorAction SilentlyContinue
-Set-Content -Path (Join-Path $stage 'VERSION.TXT') -Value $Version -NoNewline
-$zip = Join-Path $dist "$pkgName-$Version-Complete.zip"
+if (-not (Test-Path $ovgme -PathType Leaf)) { throw "Missing OVGME zip $ovgme" }
+
+$bundleName = "$pkgName-$Version-Complete"
+$buildRoot = Join-Path $dist "release-stage-$Version"
+$bundleRoot = Join-Path $buildRoot $bundleName
+$zip = Join-Path $dist "$bundleName.zip"
+
+if (Test-Path $buildRoot) { Remove-Item $buildRoot -Recurse -Force }
+New-Item -ItemType Directory -Force -Path (Join-Path $bundleRoot 'OVGME') | Out-Null
+New-Item -ItemType Directory -Force -Path (Join-Path $bundleRoot 'Documentation') | Out-Null
+
+Copy-Item $ovgme (Join-Path $bundleRoot 'OVGME')
+Copy-Item (Join-Path $root 'README.md') (Join-Path $bundleRoot 'Documentation/README.md') -ErrorAction SilentlyContinue
+Copy-Item (Join-Path $root 'packaging/release/RELEASE-NOTES.md') (Join-Path $bundleRoot 'Documentation/RELEASE-NOTES.md') -ErrorAction SilentlyContinue
+
+$docs = Join-Path $root 'docs'
+if (Test-Path $docs -PathType Container) {
+  Copy-Item (Join-Path $docs '*') (Join-Path $bundleRoot 'Documentation') -Recurse -Force
+}
+
+$autoHotKey = Join-Path $root 'autohotkey'
+if (Test-Path $autoHotKey -PathType Container) {
+  New-Item -ItemType Directory -Force -Path (Join-Path $bundleRoot 'AutoHotKey') | Out-Null
+  Copy-Item (Join-Path $autoHotKey '*') (Join-Path $bundleRoot 'AutoHotKey') -Recurse -Force
+}
+
+Set-Content -Path (Join-Path $bundleRoot 'VERSION.TXT') -Value $Version -NoNewline
+$bundleChecksums = Get-ChildItem $bundleRoot -Recurse -File | Sort-Object FullName | ForEach-Object {
+  $hash = Get-FileHash $_.FullName -Algorithm SHA256
+  $relativePath = [IO.Path]::GetRelativePath($bundleRoot, $_.FullName).Replace('\', '/')
+  "$($hash.Hash.ToLowerInvariant())  $relativePath"
+}
+$bundleChecksums | Set-Content (Join-Path $bundleRoot 'SHA256SUMS.txt') -Encoding utf8
+
 if (Test-Path $zip) { Remove-Item $zip -Force }
-Compress-Archive -Path (Join-Path $stage '*') -DestinationPath $zip
-$hash = (Get-FileHash $zip -Algorithm SHA256).Hash.ToLowerInvariant()
-$sumsPath = Join-Path $dist 'SHA256SUMS.txt'
-Add-Content -Path $sumsPath -Value "$hash  $(Split-Path $zip -Leaf)"
+Compress-Archive -Path $bundleRoot -DestinationPath $zip -CompressionLevel Optimal
+
+$releaseChecksums = Get-ChildItem (Join-Path $dist '*.zip') | Sort-Object Name | ForEach-Object {
+  $hash = Get-FileHash $_.FullName -Algorithm SHA256
+  "$($hash.Hash.ToLowerInvariant())  $($_.Name)"
+}
+$releaseChecksums | Set-Content (Join-Path $dist 'SHA256SUMS.txt') -Encoding utf8
 Write-Host "Wrote $zip"
