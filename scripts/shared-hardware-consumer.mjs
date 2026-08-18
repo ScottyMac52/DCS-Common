@@ -94,6 +94,14 @@ export function loadSharedHardware(deviceId, { commonRoot = resolveDcsCommonRoot
   const device = manifest.devices.find((entry) => entry.id === deviceId || entry.aliases?.includes(deviceId));
   if (!device) throw new Error(`Unknown shared hardware device: ${deviceId}`);
   let svg = readFileSync(join(hardwareRoot, device.svg), 'utf8');
+  if (Array.isArray(device.imageMasks) && device.imageMasks.length > 0) {
+    const masks = device.imageMasks.map((mask) =>
+      `<rect id="${escapeXml(mask.id)}" x="${Number(mask.x)}" y="${Number(mask.y)}" width="${Number(mask.width)}" height="${Number(mask.height)}" fill="${escapeXml(mask.fill)}"/>`
+    ).join('\n');
+    const insertionPoint = svg.indexOf('<!-- box:');
+    if (insertionPoint < 0) throw new Error(`Shared hardware device ${device.id} cannot place its image masks.`);
+    svg = `${svg.slice(0, insertionPoint)}${masks}\n${svg.slice(insertionPoint)}`;
+  }
   const calloutIds = [...svg.matchAll(/<text id="lbl-([^"]+)"/g)].map((match) => match[1]);
   const values = Array.isArray(labels)
     ? Object.fromEntries(calloutIds.map((id, index) => [id, labels[index] ?? '']))

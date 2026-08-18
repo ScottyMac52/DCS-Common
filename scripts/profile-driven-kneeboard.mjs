@@ -327,14 +327,9 @@ export function loadProfileDrivenConfig(configPath, options = {}) {
       const modifierSets = new Set(variants.map((variant) => variant.modifiers.join('\0')));
       if (variants.length < 2 || modifierSets.size < 2) continue;
       labels[controlId] = variants.map((variant) => {
-        const prefix = variant.modifiers.length
-          ? variant.modifiers.map((id) => id.replace(/^JOY_/u, '')).join(' + ')
-          : 'BASE';
         const primary = variant.modifiers[0];
         const color = primary ? modifierColorAt(usedOrder.indexOf(primary) + 1) : null;
-        const fullLabel = `${prefix} — ${variant.label}`;
-        const label = fullLabel.length > 30 ? `${fullLabel.slice(0, 29).trimEnd()}…` : fullLabel;
-        return { label, fullLabel, color };
+        return { label: variant.label, fullLabel: variant.label, color };
       });
     }
     // Only force a colour when a modifier is active; base stays device-native.
