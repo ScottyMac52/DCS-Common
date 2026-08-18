@@ -14,4 +14,32 @@ if (-not $hashLine) { throw 'SHA256SUMS.txt does not list the package archive.' 
 $expected = ($hashLine -split '\s+')[0].ToLowerInvariant()
 $actual = (Get-FileHash $zip -Algorithm SHA256).Hash.ToLowerInvariant()
 if ($expected -ne $actual) { throw 'SHA256SUMS.txt does not match the package archive.' }
-Write-Host "Package checksum OK for $leaf"
+
+Add-Type -AssemblyName System.IO.Compression.FileSystem
+$archiveBase = [System.IO.Path]::GetFileNameWithoutExtension($leaf)
+$archive = [System.IO.Compression.ZipFile]::OpenRead($zip)
+try {
+  $entries = @($archive.Entries | ForEach-Object { $_.FullName.Replace('\', '/') })
+  $payloadPrefix = "$archiveBase/"
+  $unexpected = @($entries | Where-Object {
+    $_ -ne 'README.TXT' -and
+    $_ -ne 'VERSION.TXT' -and
+    -not $_.StartsWith($payloadPrefix, [System.StringComparison]::Ordinal)
+  })
+  if ($unexpected.Count -gt 0) {
+    throw "Invalid OVGME archive root. Expected '$archiveBase/' but found '$($unexpected[0])'."
+  }
+  if (-not ($entries | Where-Object { $_.StartsWith("${payloadPrefix}Config/Input/{{INPUT_MODULE_ID}}/joystick/", [System.StringComparison]::Ordinal) })) {
+    throw 'OVGME archive is missing the joystick profile payload.'
+  }
+  if (-not ($entries | Where-Object { $_.StartsWith("${payloadPrefix}KNEEBOARD/{{KNEEBOARD_ID}}/", [System.StringComparison]::Ordinal) })) {
+    throw 'OVGME archive is missing the kneeboard payload.'
+  }
+  if ($entries -notcontains 'README.TXT') { throw 'OVGME archive is missing README.TXT.' }
+  if ($entries -notcontains 'VERSION.TXT') { throw 'OVGME archive is missing VERSION.TXT.' }
+}
+finally {
+  $archive.Dispose()
+}
+
+Write-Host "Package checksum and OVGME structure OK for $leaf"
