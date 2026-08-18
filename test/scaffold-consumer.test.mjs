@@ -770,11 +770,13 @@ test('semantic modifier alternatives collapse to one logical layer without losin
   const preview = buildPreview({ profilesDir, modifiersPath, semanticModifiersPath, commonRoot });
   assert.equal(preview.schemaVersion, 2);
   assert.deepEqual(preview.rows.map(({ semanticChord }) => semanticChord), ['grip-shift', 'grip-shift']);
+  for (const row of preview.rows) row.label = 'VR left';
   const config = buildDraftKneeboardConfig(preview, { displayName: 'UiLayer', inputModuleId: 'UiLayer' });
   assert.deepEqual(config.pages[0].layers.map(({ id }) => id), ['base', 'grip-shift']);
   const references = config.pages[0].layers[1].controls['viper-tqs-button-05'];
   assert.equal(references.length, 2);
   assert.notDeepEqual(references[0].modifiers, references[1].modifiers);
+  assert.deepEqual(references.map(({ label }) => label), ['VR left', 'VR left']);
 
   const outputDir = join(root, 'consumer');
   writeConsumer({
@@ -793,6 +795,10 @@ test('semantic modifier alternatives collapse to one logical layer without losin
     'Base (no modifier)',
     'JOY_BTN3 (hold)',
     'JOY_BTN7 (hold)',
+  ]);
+  assert.deepEqual(renderedConfig.pages[0].labels['viper-tqs-button-05'], [
+    { label: 'VR left', fullLabel: 'VR left', color: '#dc2626' },
+    { label: 'VR left', fullLabel: 'VR left', color: '#ea580c' },
   ]);
 });
 
