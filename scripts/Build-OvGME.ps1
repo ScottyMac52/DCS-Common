@@ -17,12 +17,12 @@ $Archive = Join-Path $Dist "$PackageName.zip"
 
 Remove-Item $BuildRoot -Recurse -Force -ErrorAction SilentlyContinue
 New-Item (Join-Path $Container "Config/Input/$ModuleName") -ItemType Directory -Force | Out-Null
-New-Item (Join-Path $Container "KNEEBOARD/$KneeboardId") -ItemType Directory -Force | Out-Null
+New-Item (Join-Path $Container "Kneeboard/$KneeboardId") -ItemType Directory -Force | Out-Null
 New-Item (Join-Path $StageRoot 'LICENSES') -ItemType Directory -Force | Out-Null
 New-Item $Dist -ItemType Directory -Force | Out-Null
 
 Copy-Item (Join-Path $ConsumerRoot "src/Config/Input/$ModuleName/joystick") (Join-Path $Container "Config/Input/$ModuleName/joystick") -Recurse
-Copy-Item (Join-Path $ConsumerRoot "kneeboard/$KneeboardId/*") (Join-Path $Container "KNEEBOARD/$KneeboardId")
+Copy-Item (Join-Path $ConsumerRoot "kneeboard/$KneeboardId/*") (Join-Path $Container "Kneeboard/$KneeboardId")
 Copy-Item (Join-Path $ConsumerRoot 'docs/THIRD-PARTY-ASSETS.md') (Join-Path $StageRoot 'THIRD-PARTY-ASSETS.md') -ErrorAction SilentlyContinue
 Copy-Item (Join-Path $ConsumerRoot 'kneeboard/assets/source/licenses/*') (Join-Path $StageRoot 'LICENSES') -ErrorAction SilentlyContinue
 

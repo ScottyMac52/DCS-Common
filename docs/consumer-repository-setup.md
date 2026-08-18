@@ -72,10 +72,10 @@ Record these values before creating files. They are independent and must not be 
 | Repository name | `DCS-F-14B-U-Components` | GitHub and artifact naming |
 | Display name | `F-14B(U)` | Documentation and kneeboard titles |
 | DCS input module ID | `F-14BU` | `Config/Input/<module>` |
-| DCS kneeboard ID | `F-14BU` | `KNEEBOARD/<module>` |
+| DCS kneeboard ID | `F-14BU` | `Kneeboard/<module>` |
 | Saved Games root | `%USERPROFILE%\\Saved Games\\DCS.openbeta` | OVGME configuration root |
 
-Use the module IDs that DCS actually reads. A repository named for an aircraft can still require a different module directory. If the input and kneeboard IDs differ, declare both and test both install paths. The OVGME archive must be relative to the documented Saved Games root: its package container starts with `Config/` and `KNEEBOARD/`; it must not contain an extra `Saved Games/DCS` directory.
+Use the module IDs that DCS actually reads. A repository named for an aircraft can still require a different module directory. If the input and kneeboard IDs differ, declare both and test both install paths. The OVGME archive must be relative to the documented Saved Games root: its package container starts with `Config/` and `Kneeboard/`; it must not contain an extra `Saved Games/DCS` directory.
 
 Users of `DCS.openbeta`, a named DCS instance, or a relocated Saved Games directory must point OVGME at that exact active root. The consumer README and package README must say which root was tested.
 
@@ -322,7 +322,7 @@ Commit every generated SVG under `kneeboard/source` and every 1200 × 1600 PNG u
 
 ```text
 Config/Input/<input-module-id>/joystick/*.diff.lua
-KNEEBOARD/<kneeboard-id>/*.png
+Kneeboard/<kneeboard-id>/*.png
 ```
 
 Include `Config/Input/<input-module-id>/modifiers.lua` when the consumer versions native modifiers for packaging.

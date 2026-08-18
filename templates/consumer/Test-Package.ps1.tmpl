@@ -32,7 +32,7 @@ try {
   if (-not ($entries | Where-Object { $_.StartsWith("${payloadPrefix}Config/Input/{{INPUT_MODULE_ID}}/joystick/", [System.StringComparison]::Ordinal) })) {
     throw 'OVGME archive is missing the joystick profile payload.'
   }
-  if (-not ($entries | Where-Object { $_.StartsWith("${payloadPrefix}KNEEBOARD/{{KNEEBOARD_ID}}/", [System.StringComparison]::Ordinal) })) {
+  if (-not ($entries | Where-Object { $_.StartsWith("${payloadPrefix}Kneeboard/{{KNEEBOARD_ID}}/", [System.StringComparison]::Ordinal) })) {
     throw 'OVGME archive is missing the kneeboard payload.'
   }
   if ($entries -notcontains 'README.TXT') { throw 'OVGME archive is missing README.TXT.' }
