@@ -584,7 +584,7 @@ export function buildDraftKneeboardConfig(preview, { displayName, inputModuleId 
       // Include keyDiffs and axisDiffs so throttle/stick/rudder axes are scaffolded.
 
       const effectiveLabel = row.label ?? row.defaultLabel ?? row.deviceLabel ?? '';
-      const reference = { profile: profileKey, key: row.key, command: row.command };
+      const reference = { profile: profileKey, key: row.key, command: row.command, label: effectiveLabel };
 
       if (!row.chord) {
         if (!controls[row.calloutId]) {
