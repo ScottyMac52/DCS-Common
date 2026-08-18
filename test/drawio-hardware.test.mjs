@@ -86,6 +86,14 @@ test('MFD has separate primary and shifted OSB fields plus eight rocker position
   assert.equal((xml.match(/id="(?:anchor|connector)-mfd-/g) ?? []).length, 0);
 });
 
+test('MFD definition masks the legacy artwork captions', () => {
+  const device = manifest.devices.find((entry) => entry.id === 'tm-mfd');
+  assert.deepEqual(device.imageMasks, [
+    { id: 'mfd-caption-left', x: 18, y: 28, width: 110, height: 54, fill: '#d6f7ff' },
+    { id: 'mfd-caption-right', x: 850, y: 28, width: 95, height: 54, fill: '#d6f7ff' },
+  ]);
+});
+
 test('TM Warthog joystick uses the supplied artwork label fields without callouts', () => {
   const xml = readFileSync(join(hardwareRoot, 'drawio/tm-warthog-grip.drawio'), 'utf8');
   assert.equal((xml.match(/id="label-warthog-grip-/g) ?? []).length, 25);
