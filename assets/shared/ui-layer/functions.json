@@ -1,0 +1,15 @@
+{
+  "schemaVersion": 1,
+  "functions": [
+    { "id": "vr-zoom", "command": "d2604pnilu2604cdnilvd1vpnilvu0", "label": "Toggle VR Zoom", "category": "VR" },
+    { "id": "vr-spyglass", "command": "d2605pnilu2605cdnilvd1vpnilvu0", "label": "Toggle VR Spyglass Zoom", "category": "VR" },
+    { "id": "active-pause", "command": "d816pnilunilcdnilvdnilvpnilvunil", "label": "Active Pause", "category": "General" },
+    { "id": "time-normal", "command": "d246pnilunilcdnilvdnilvpnilvunil", "label": "Time Normal", "category": "General" },
+    { "id": "pause", "command": "d52pnilunilcdnilvdnilvpnilvunil", "label": "Pause", "category": "General" },
+    { "id": "vr-right-hand", "command": "d2628pnilu2628cdnilvd1vpnilvu0", "label": "VR Right Hand Enable/Disable", "category": "VR" },
+    { "id": "recenter-vr", "command": "d216pnilunilcdnilvdnilvpnilvunil", "label": "Recenter VR Headset", "category": "VR" },
+    { "id": "time-accelerate", "command": "d53pnilunilcdnilvdnilvpnilvunil", "label": "Time Accelerate", "category": "General" },
+    { "id": "time-decelerate", "command": "d191pnilunilcdnilvdnilvpnilvunil", "label": "Time Decelerate", "category": "General" },
+    { "id": "vr-left-hand", "command": "d2627pnilu2627cdnilvd1vpnilvu0", "label": "VR Left Hand Enable/Disable", "category": "VR" }
+  ]
+}
