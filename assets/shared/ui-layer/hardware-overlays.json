@@ -1,0 +1,64 @@
+{
+  "schemaVersion": 1,
+  "defaultColor": "#0891b2",
+  "exemptions": {
+    "moza-ab9": "Standalone force-feedback base; no UI Layer overlay planned.",
+    "tm-tpr": "Rudder-only device; no UI Layer overlay planned."
+  },
+  "devices": {
+    "vkb-f14-gunfighter": {
+      "status": "template",
+      "modifier": "VKB_F14_BTN7",
+      "bindings": {
+        "time-decelerate": "vkb-trim-right",
+        "recenter-vr": "vkb-paddle",
+        "time-normal": "vkb-trim-down",
+        "vr-zoom": "vkb-trigger",
+        "vr-spyglass": "vkb-trigger-stage2",
+        "time-accelerate": "vkb-trim-left",
+        "active-pause": "vkb-hat"
+      }
+    },
+    "tm-warthog-grip": {
+      "status": "template",
+      "modifier": "TM_AVA_BASE_F16_MODIFIER",
+      "bindings": {
+        "recenter-vr": "warthog-grip-pinky",
+        "vr-zoom": "warthog-grip-cms-push",
+        "vr-spyglass": "warthog-grip-cms-forward"
+      }
+    },
+    "grip-f18c": {
+      "status": "template",
+      "modifier": "MOZA_F16_F18_BTN3",
+      "bindings": {
+        "recenter-vr": "hornet-grip-paddle",
+        "vr-zoom": "hornet-grip-weapon-select-push",
+        "vr-spyglass": "hornet-grip-weapon-select-forward"
+      }
+    },
+    "tm-mfd": {
+      "status": "complete",
+      "modifier": "grip-shift",
+      "bindings": {
+        "vr-zoom": "mfd-osb-t1-shifted",
+        "vr-spyglass": "mfd-osb-t2-shifted",
+        "active-pause": "mfd-osb-t3-shifted",
+        "time-normal": "mfd-osb-b3-shifted",
+        "pause": "mfd-osb-l3-shifted",
+        "vr-right-hand": "mfd-rocker-gain",
+        "recenter-vr": "mfd-rocker-con-down",
+        "time-accelerate": "mfd-rocker-brt-up",
+        "time-decelerate": "mfd-rocker-brt-down",
+        "vr-left-hand": "mfd-rocker-sym"
+      }
+    },
+    "viper-tqs-mission-pack": {
+      "status": "template",
+      "modifier": "grip-shift",
+      "bindings": {
+        "vr-spyglass": "viper-tqs-button-16"
+      }
+    }
+  }
+}
