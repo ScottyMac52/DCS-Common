@@ -39,6 +39,10 @@ jobs:
       - name: Install DCS-Common Dependencies
         run: npm ci --prefix "$env:DCS_COMMON_ROOT"
 
+      - name: Export Draw.io Hardware
+        shell: pwsh
+        run: npm --prefix "$env:DCS_COMMON_ROOT" run build:drawio-hardware
+
       - name: Generate Mock Configuration and Test Artifacts
         shell: pwsh
         run: |
