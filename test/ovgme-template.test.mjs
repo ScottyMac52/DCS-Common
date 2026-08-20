@@ -18,7 +18,7 @@ test('OvGME validation inspects archive roots and required payloads', () => {
   assert.match(validate, /GetFileNameWithoutExtension\(\$leaf\)/);
   assert.match(validate, /Config\/Input\/\{\{INPUT_MODULE_ID\}\}\/joystick\//);
   assert.match(validate, /Config\/Input\/UiLayer\/joystick\//);
-  assert.match(validate, /Config\/Input\/UiLayer\/modifiers\\.lua/);
+  assert.match(validate, /Config\/Input\/UiLayer\/modifiers\.lua/);
   assert.match(validate, /KNEEBOARD\/\{\{KNEEBOARD_ID\}\}\//);
 });
 
