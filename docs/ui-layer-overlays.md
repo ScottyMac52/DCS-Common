@@ -10,7 +10,7 @@ DCS-Common owns the authoritative UI Layer function catalog and the per-device o
 
 The Draw.io source is never copied. Every overlay targets stable control IDs on the one canonical device definition under `assets/shared/hardware/drawio`.
 
-While fill-in templates remain incomplete, consumers opt into composition per page with `"includeUiLayer": true`. Existing consumers and validation fixtures remain unchanged until deliberately migrated. Once the required templates and packaging lifecycle are complete, issue #143 can switch the consumer scaffold to enable the overlay automatically.
+Scaffolded consumers enable composition by default with top-level `"includeUiLayer": true`; individual pages may use `"includeUiLayer": false` only for an intentional exception. Re-scaffolding a module adopts the overlay contract and packages DCS-Common's canonical `Config/Input/UiLayer` payload alongside the module input payload.
 
 ## Overlay states
 
