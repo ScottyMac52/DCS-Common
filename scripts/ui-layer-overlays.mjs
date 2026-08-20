@@ -21,13 +21,28 @@ function canonicalDevice(deviceId, devices) {
   return devices.find((device) => device.id === deviceId || device.aliases?.includes(deviceId));
 }
 
-export function buildUiLayerHardwareTemplate(deviceId, catalog) {
+export function buildUiLayerHardwareTemplate(deviceId, catalog, { deviceInstance = null } = {}) {
   const device = canonicalDevice(deviceId, catalog.hardware);
   if (!device) throw new Error(`Unknown shared hardware device: ${deviceId}`);
   const reason = catalog.overlays.exemptions?.[device.id];
   if (reason) return { deviceId: device.id, status: 'exempt', reason, functions: [] };
 
   const configured = catalog.overlays.devices?.[device.id] ?? { status: 'template', bindings: {} };
+  const applicableInstances = configured.appliesToInstances ?? [];
+  const normalizedInstance = deviceInstance ? String(deviceInstance).toLocaleUpperCase() : null;
+  if (applicableInstances.length > 0 && !applicableInstances.some(
+    (instance) => String(instance).toLocaleUpperCase() === normalizedInstance,
+  )) {
+    return {
+      deviceId: device.id,
+      deviceInstance,
+      status: 'not-applicable',
+      reason: `UI Layer overlay applies only to: ${applicableInstances.join(', ')}`,
+      modifier: null,
+      functions: [],
+      missing: [],
+    };
+  }
   const knownIds = new Set(catalog.functions.map((entry) => entry.id));
   for (const id of Object.keys(configured.bindings ?? {})) {
     if (!knownIds.has(id)) throw new Error(`${device.id}: unknown UI Layer function ${id}`);
@@ -43,6 +58,7 @@ export function buildUiLayerHardwareTemplate(deviceId, catalog) {
   }
   return {
     deviceId: device.id,
+    deviceInstance,
     status: missing.length ? 'template' : 'complete',
     modifier: configured.modifier ?? null,
     functions,
@@ -56,10 +72,10 @@ function labelVariants(value) {
   return [{ label: value, fullLabel: value }];
 }
 
-export function composeUiLayerLabels(deviceId, labels = {}, { catalog = loadUiLayerCatalog() } = {}) {
-  const template = buildUiLayerHardwareTemplate(deviceId, catalog);
+export function composeUiLayerLabels(deviceId, labels = {}, { catalog = loadUiLayerCatalog(), deviceInstance = null } = {}) {
+  const template = buildUiLayerHardwareTemplate(deviceId, catalog, { deviceInstance });
   const merged = Array.isArray(labels) ? [...labels] : { ...labels };
-  if (template.status === 'exempt' || Array.isArray(merged)) {
+  if (['exempt', 'not-applicable'].includes(template.status) || Array.isArray(merged)) {
     return { labels: merged, template, legend: null };
   }
 
@@ -88,7 +104,11 @@ export function composeUiLayerLabels(deviceId, labels = {}, { catalog = loadUiLa
 }
 
 export function validateUiLayerCatalog(catalog = loadUiLayerCatalog()) {
-  const results = catalog.hardware.map((device) => buildUiLayerHardwareTemplate(device.id, catalog));
+  const results = catalog.hardware.map((device) => {
+    const configured = catalog.overlays.devices?.[device.id];
+    const deviceInstance = configured?.appliesToInstances?.[0] ?? null;
+    return buildUiLayerHardwareTemplate(device.id, catalog, { deviceInstance });
+  });
   for (const result of results) {
     if (result.status === 'exempt' || !result.functions.some((entry) => entry.controlId)) continue;
     const device = catalog.hardware.find((entry) => entry.id === result.deviceId);
