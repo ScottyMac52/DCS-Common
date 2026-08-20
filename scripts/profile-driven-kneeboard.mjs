@@ -353,7 +353,17 @@ export function loadProfileDrivenConfig(configPath, options = {}) {
         legendOut.push({
           label: `${entry?.label ?? id}${mode}`,
           fill: modifierColorAt(i + 1),
+          modifierId: id,
         });
+      }
+    }
+
+    if (uiLayer?.legend) {
+      if (legendOut.length === 0) {
+        legendOut.push({ label: 'Base (no modifier)', fill: modifierColorAt(0) });
+      }
+      if (!legendOut.some((entry) => entry.modifierId === uiLayer.legend.modifierId)) {
+        legendOut.push(uiLayer.legend);
       }
     }
 
