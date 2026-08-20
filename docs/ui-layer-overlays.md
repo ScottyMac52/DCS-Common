@@ -17,6 +17,9 @@ Scaffolded consumers enable composition by default with top-level `"includeUiLay
 - `complete`: every current authoritative UI Layer function has a control assignment.
 - `template`: assignments may be incomplete. Every missing function is derived automatically from `functions.json` and exposed with a null `controlId` by `buildUiLayerHardwareTemplate`.
 - `exempt`: the device intentionally has no UI Layer overlay. The standalone MOZA AB9 base and TPR rudder are the initial exemptions.
+- `not-applicable`: an overlay is defined for the shared hardware family but not for the current physical instance.
+
+`appliesToInstances` limits an overlay to named physical instances. Scaffolded pages preserve the detected instance as `deviceInstance`; for example, the TM MFD overlay applies only when `deviceInstance` is `MFD3`.
 
 Adding a function to `functions.json` automatically adds it to every incomplete template. Tests do not duplicate a fixed function list or compare full output snapshots. A completed overlay must map the new function before it may remain `complete`.
 

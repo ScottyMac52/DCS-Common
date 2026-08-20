@@ -58,6 +58,7 @@ export function buildCompleteMock(commonRoot) {
     return {
       file: pageFile(index, device.id),
       deviceId: device.id,
+      deviceInstance: device.id === 'tm-mfd' ? 'MFD3' : null,
       title: device.id === 'tm-mfd' ? `${device.label.toUpperCase()} — MFD3` : device.label.toUpperCase(),
       kicker: 'TEST DEVICE',
       labels,

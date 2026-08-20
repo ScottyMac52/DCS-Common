@@ -338,7 +338,7 @@ export function loadProfileDrivenConfig(configPath, options = {}) {
     const includeUiLayer = page.includeUiLayer !== false
       && (page.includeUiLayer === true || config.includeUiLayer === true);
     const uiLayer = includeUiLayer
-      ? composeUiLayerLabels(page.deviceId, labels, { catalog: undefined })
+      ? composeUiLayerLabels(page.deviceId, labels, { catalog: undefined, deviceInstance: page.deviceInstance ?? null })
       : null;
     if (uiLayer) labels = uiLayer.labels;
 

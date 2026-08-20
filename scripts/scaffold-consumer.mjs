@@ -626,6 +626,9 @@ export function buildDraftKneeboardConfig(preview, { displayName, inputModuleId 
       file,
       includeUiLayer: true,
       deviceId: device.deviceId,
+      deviceInstance: device.instanceHint
+        ? (device.deviceId === 'tm-mfd' ? `MFD${device.instanceHint}` : String(device.instanceHint))
+        : null,
       title,
       kicker: device.role ? `ROLE ${device.role.toUpperCase()}` : device.instanceHint ? `INSTANCE ${device.instanceHint}` : 'SCAFFOLD DRAFT',
       _comment:

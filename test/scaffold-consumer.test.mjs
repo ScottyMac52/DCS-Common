@@ -298,6 +298,30 @@ test('device map resolves the Warthog throttle and MFD instance hints', () => {
   assert.equal(resolveInstanceHint(mfd.stem, mfd.deviceId, map), '1');
 });
 
+test('scaffolded MFD pages preserve their canonical instance IDs', () => {
+  const root = mkdtempSync(join(tmpdir(), 'scaffold-mfd-instances-'));
+  const profilesDir = join(root, 'joystick');
+  mkdirSync(profilesDir);
+  for (const instance of [1, 2, 3]) {
+    const guid = `00000000-0000-0000-0000-00000000000${instance}`;
+    writeFileSync(
+      join(profilesDir, `F16 MFD ${instance} {${guid}}.diff.lua`),
+      `local diff = { ["keyDiffs"] = {
+        ["d${instance}"] = { ["added"] = { [1] = { ["key"] = "JOY_BTN1" }, }, ["name"] = "MFD ${instance}", },
+      } } return diff`,
+    );
+  }
+
+  const preview = buildPreview({ profilesDir, commonRoot });
+  const config = buildDraftKneeboardConfig(preview, {
+    displayName: 'F-14B',
+    inputModuleId: 'F-14B',
+  });
+  const instances = Object.fromEntries(config.pages.map((page) => [page.deviceInstance, page.deviceId]));
+
+  assert.deepEqual(instances, { MFD1: 'tm-mfd', MFD2: 'tm-mfd', MFD3: 'tm-mfd' });
+});
+
 test('overrides beat pattern matching and unknown devices stay null', () => {
   const map = loadDeviceMap(commonRoot);
   const forced = resolveDeviceMapping('Mystery Stick.diff.lua', map, {
