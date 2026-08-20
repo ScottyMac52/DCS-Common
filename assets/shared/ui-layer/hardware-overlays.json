@@ -39,6 +39,7 @@
     },
     "tm-mfd": {
       "status": "complete",
+      "appliesToInstances": ["MFD3"],
       "modifier": "grip-shift",
       "bindings": {
         "vr-zoom": "mfd-osb-t1-shifted",
