@@ -5,6 +5,7 @@ on:
   push:
     branches: [main]
     paths:
+      - '.github/workflows/export.yml'
       - 'assets/shared/hardware/drawio/**'
       - 'assets/shared/hardware/manifest.json'
       - 'scripts/drawio-source.mjs'
