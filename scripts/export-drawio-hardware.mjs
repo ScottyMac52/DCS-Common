@@ -40,7 +40,7 @@ function cells(xml) {
   // the cell ID and label there. Normalize those attributes onto the nested
   // mxCell for export without rewriting the authoritative Draw.io source.
   const normalized = xml.replace(
-    /<UserObject\\b([^>]*)>\\s*<mxCell\\b([^>]*)>/g,
+    /<UserObject\b([^>]*)>\s*<mxCell\b([^>]*)>/g,
     (match, userTag, cellTag) => {
       const inherited = [];
       const userId = attr(userTag, 'id');
