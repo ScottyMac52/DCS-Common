@@ -36,7 +36,23 @@ const styleValue = (style, name) => {
 };
 
 function cells(xml) {
-  return [...xml.matchAll(/<mxCell\b([^>]*?)(?:\/>|>([\s\S]*?)<\/mxCell>)/g)].map((match) => {
+  // Draw.io stores metadata such as tooltips on a UserObject wrapper and may move
+  // the cell ID and label there. Normalize those attributes onto the nested
+  // mxCell for export without rewriting the authoritative Draw.io source.
+  const normalized = xml.replace(
+    /<UserObject\\b([^>]*)>\\s*<mxCell\\b([^>]*)>/g,
+    (match, userTag, cellTag) => {
+      const inherited = [];
+      const userId = attr(userTag, 'id');
+      const userLabel = attr(userTag, 'label');
+      if (userId && !attr(cellTag, 'id')) inherited.push(`id="\${esc(userId)}"`);
+      if (userLabel && !attr(cellTag, 'value')) inherited.push(`value="\${esc(userLabel)}"`);
+      return inherited.length
+        ? match.replace('<mxCell', `<mxCell \${inherited.join(' ')}`)
+        : match;
+    },
+  );
+  return [...normalized.matchAll(/<mxCell\b([^>]*?)(?:\/>|>([\s\S]*?)<\/mxCell>)/g)].map((match) => {
     const tag = match[1];
     const body = match[2] ?? '';
     const geometry = body.match(/<mxGeometry\b([^>]*?)(?:\/>|>([\s\S]*?)<\/mxGeometry>)/);
