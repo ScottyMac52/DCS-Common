@@ -1,6 +1,7 @@
 import { readFileSync } from 'node:fs';
 import { dirname, isAbsolute, join, resolve } from 'node:path';
 import { loadSharedHardware, resolveDcsCommonRoot, modifierColorAt, MODIFIER_COLOR_CONTRACT } from './shared-hardware-consumer.mjs';
+import { composeUiLayerLabels } from './ui-layer-overlays.mjs';
 
 function unescapeLuaString(value) {
   return value.replace(/\\([\\"nrt])/g, (_, code) => ({ '\\': '\\', '"': '"', n: '\n', r: '\r', t: '\t' })[code]);
@@ -262,7 +263,7 @@ export function loadProfileDrivenConfig(configPath, options = {}) {
     if (outputFiles.has(page.file)) throw new Error(`Duplicate configured page file: ${page.file}`);
     outputFiles.add(page.file);
     const { calloutIds } = loadSharedHardware(page.deviceId, { commonRoot });
-    const labels = Array.isArray(page.labels) ? [...page.labels] : { ...(page.labels ?? {}) };
+    let labels = Array.isArray(page.labels) ? [...page.labels] : { ...(page.labels ?? {}) };
     if (Array.isArray(labels) && Object.keys(page.controls ?? {}).length) {
       throw new Error(`${page.file}: profile-driven controls require ID-keyed labels.`);
     }
@@ -332,6 +333,13 @@ export function loadProfileDrivenConfig(configPath, options = {}) {
         return { label: variant.label, fullLabel: variant.label, color };
       });
     }
+    // UI Layer functions are composed after aircraft/profile variants so neither source
+    // silently replaces the other. A page can opt out explicitly for exceptional output.
+    const uiLayer = page.includeUiLayer === false
+      ? null
+      : composeUiLayerLabels(page.deviceId, labels, { catalog: undefined });
+    if (uiLayer) labels = uiLayer.labels;
+
     // Only force a colour when a modifier is active; base stays device-native.
 
     const legendOut = [];
@@ -354,6 +362,7 @@ export function loadProfileDrivenConfig(configPath, options = {}) {
       legend: legendOut,
       modifierIds: [...page.modifierIds],
       modifiers: layerModifiers.map((nativeName) => [...modifierCatalog.values()].find((entry) => entry.nativeName === nativeName)),
+      uiLayerTemplate: uiLayer?.template ?? null,
     };
   });
   return { ...config, commonRoot, consumerRoot, modifierCatalog: Object.fromEntries(modifierCatalog), pages };
