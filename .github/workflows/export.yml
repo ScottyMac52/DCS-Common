@@ -6,6 +6,9 @@ on:
     branches: [main]
     paths:
       - 'assets/shared/hardware/drawio/**'
+      - 'assets/shared/hardware/manifest.json'
+      - 'scripts/drawio-source.mjs'
+      - 'scripts/export-drawio-hardware.mjs'
 
 permissions:
   contents: write
