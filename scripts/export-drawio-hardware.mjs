@@ -45,10 +45,10 @@ function cells(xml) {
       const inherited = [];
       const userId = attr(userTag, 'id');
       const userLabel = attr(userTag, 'label');
-      if (userId && !attr(cellTag, 'id')) inherited.push(`id="\${esc(userId)}"`);
-      if (userLabel && !attr(cellTag, 'value')) inherited.push(`value="\${esc(userLabel)}"`);
+      if (userId && !attr(cellTag, 'id')) inherited.push(`id="${esc(userId)}"`);
+      if (userLabel && !attr(cellTag, 'value')) inherited.push(`value="${esc(userLabel)}"`);
       return inherited.length
-        ? match.replace('<mxCell', `<mxCell \${inherited.join(' ')}`)
+        ? match.replace('<mxCell', `<mxCell ${inherited.join(' ')}`)
         : match;
     },
   );
