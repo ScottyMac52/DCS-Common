@@ -335,7 +335,9 @@ export function loadProfileDrivenConfig(configPath, options = {}) {
     }
     // UI Layer functions are composed after aircraft/profile variants so neither source
     // silently replaces the other. A page can opt out explicitly for exceptional output.
-    const uiLayer = page.includeUiLayer === true
+    const includeUiLayer = page.includeUiLayer !== false
+      && (page.includeUiLayer === true || config.includeUiLayer === true);
+    const uiLayer = includeUiLayer
       ? composeUiLayerLabels(page.deviceId, labels, { catalog: undefined })
       : null;
     if (uiLayer) labels = uiLayer.labels;
