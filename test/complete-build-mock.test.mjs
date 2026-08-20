@@ -50,6 +50,7 @@ test('complete-build MFD page identifies the represented hardware instance', () 
   const page = config.pages.find(({ deviceId }) => deviceId === 'tm-mfd');
 
   assert.equal(page.title, 'TM MFD — MFD3');
+  assert.equal(page.deviceInstance, 'MFD3');
 });
 
 test('complete-build summary uses the renderer text field for every TX row', () => {
@@ -63,7 +64,7 @@ test('generated profiles resolve identical labels and leave non-Lua callouts bla
   const config = loadProfileDrivenConfig('config/kneeboard.json', { commonRoot: root, consumerRoot });
   const uiCatalog = loadUiLayerCatalog({ commonRoot: root });
   for (const page of config.pages) {
-    const overlay = buildUiLayerHardwareTemplate(page.deviceId, uiCatalog);
+    const overlay = buildUiLayerHardwareTemplate(page.deviceId, uiCatalog, { deviceInstance: page.deviceInstance });
     const overlayControls = new Set(overlay.functions.map(({ controlId }) => controlId).filter(Boolean));
     const uiModifierInUse = overlay.modifier && overlayControls.size > 0;
     if (uiModifierInUse) {
