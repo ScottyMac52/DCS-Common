@@ -10,6 +10,7 @@ namespace DcsConsumerScaffold.ViewModels;
 public sealed class MainViewModel : INotifyPropertyChanged
 {
     private readonly ScaffoldEngineService _engine;
+    private readonly CurrentLabelService _currentLabels;
     private string _profilesDir = string.Empty;
     private string _modifiersPath = string.Empty;
     private string _mozaGrip = "standalone";
@@ -23,9 +24,10 @@ public sealed class MainViewModel : INotifyPropertyChanged
     private bool _isBusy;
     private bool _hasPreview;
 
-    public MainViewModel(ScaffoldEngineService? engine = null)
+    public MainViewModel(ScaffoldEngineService? engine = null, CurrentLabelService? currentLabels = null)
     {
         _engine = engine ?? new ScaffoldEngineService();
+        _currentLabels = currentLabels ?? new CurrentLabelService();
         LoadPreviewCommand = new RelayCommand(async () => await LoadPreviewAsync(), CanLoadPreview);
         ProceedCommand = new RelayCommand(async () => await ProceedAsync(), CanProceed);
         Devices = new ObservableCollection<PreviewDevice>();
@@ -295,6 +297,14 @@ public sealed class MainViewModel : INotifyPropertyChanged
     public IReadOnlyDictionary<string, string> LabelOverrides() => Rows
         .Where(row => !string.IsNullOrWhiteSpace(row.BindingId) && row.LabelSource != "dcs")
         .ToDictionary(row => row.BindingId!, row => row.Label ?? string.Empty, StringComparer.Ordinal);
+
+    public CurrentLabelImportResult ImportCurrentLabels(PreviewDevice device)
+    {
+        var result = _currentLabels.Apply(OutputDir, device, Rows);
+        StatusText = $"Current labels loaded for {device.Stem}: {result.CurrentCount} from destination, " +
+            $"{result.SharedHardwareCount} from DCS-Common shared hardware.";
+        return result;
+    }
 
     public async Task<IReadOnlyList<RenderedPreviewPage>> RenderDevicePreviewAsync(PreviewDevice device)
     {
