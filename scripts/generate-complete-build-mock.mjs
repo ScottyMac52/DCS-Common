@@ -59,7 +59,7 @@ export function buildCompleteMock(commonRoot) {
       file: pageFile(index, device.id),
       deviceId: device.id,
       title: device.id === 'tm-mfd' ? `${device.label.toUpperCase()} — MFD3` : device.label.toUpperCase(),
-      kicker: device.id === 'tm-mfd' ? 'TEST DEVICE • MFD3' : 'TEST DEVICE',
+      kicker: 'TEST DEVICE',
       labels,
       controls: references,
       allowUnrenderedControls: true,
