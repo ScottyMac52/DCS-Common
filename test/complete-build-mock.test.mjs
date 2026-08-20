@@ -45,6 +45,13 @@ test('complete-build mock mirrors every schema-versioned Lua catalog', () => {
   }
 });
 
+test('complete-build MFD page identifies the represented hardware instance', () => {
+  const { config } = buildCompleteMock(root);
+  const page = config.pages.find(({ deviceId }) => deviceId === 'tm-mfd');
+
+  assert.equal(page.title, 'TM MFD — MFD3');
+});
+
 test('complete-build summary uses the renderer text field for every TX row', () => {
   const { config } = buildCompleteMock(root);
   assert.ok(config.summaryPages[0].items.every(({ text }) => text));
