@@ -53,13 +53,13 @@
   <rect x="20" y="268" width="160" height="28" rx="4" fill="#1e293b" stroke="#00bfff" stroke-width="1.5"/>
   <text id="lbl-viper-tqs-button-15" x="100" y="286" text-anchor="middle" font-family="Arial,sans-serif" font-size="8" fill="#f1f5f9">Button 15 — DCS DOWN</text>
   <!-- callout:viper-tqs-button-16 -->
-  <polyline points="456,426 200,426 200,314 100,328" fill="none" stroke="#00bfff" stroke-width="1.5" stroke-dasharray="5 3" opacity="0.75"/>
-  <circle cx="456" cy="426" r="5" fill="#00bfff" stroke="#0f172a" stroke-width="1.5"/>
+  <polyline points="469,365 200,426 200,314 180,314" fill="none" stroke="#00bfff" stroke-width="1.5" stroke-dasharray="5 3" opacity="0.75"/>
+  <circle cx="469" cy="365" r="5" fill="#00bfff" stroke="#0f172a" stroke-width="1.5"/>
   <rect x="20" y="300" width="160" height="28" rx="4" fill="#1e293b" stroke="#00bfff" stroke-width="1.5"/>
   <text id="lbl-viper-tqs-button-16" x="100" y="318" text-anchor="middle" font-family="Arial,sans-serif" font-size="8" fill="#f1f5f9">Button 16 — DCS RET</text>
   <!-- callout:viper-tqs-button-17 -->
-  <polyline points="390,484 200,484 200,444 180,444" fill="none" stroke="#00bfff" stroke-width="1.5" stroke-dasharray="5 3" opacity="0.75"/>
-  <circle cx="390" cy="484" r="5" fill="#00bfff" stroke="#0f172a" stroke-width="1.5"/>
+  <polyline points="395,525 200,484 200,444 100,458" fill="none" stroke="#00bfff" stroke-width="1.5" stroke-dasharray="5 3" opacity="0.75"/>
+  <circle cx="395" cy="525" r="5" fill="#00bfff" stroke="#0f172a" stroke-width="1.5"/>
   <rect x="20" y="430" width="160" height="28" rx="4" fill="#1e293b" stroke="#00bfff" stroke-width="1.5"/>
   <text id="lbl-viper-tqs-button-17" x="100" y="448" text-anchor="middle" font-family="Arial,sans-serif" font-size="8" fill="#f1f5f9">Button 17 — CHAFF/FLARE</text>
   <!-- callout:viper-tqs-button-18 -->
