@@ -1,11 +1,16 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
+import { existsSync, readdirSync, readFileSync } from 'node:fs';
+import { dirname, join } from 'node:path';
+import { fileURLToPath } from 'node:url';
 import {
   buildUiLayerHardwareTemplate,
   composeUiLayerLabels,
   loadUiLayerCatalog,
   validateUiLayerCatalog,
 } from '../scripts/ui-layer-overlays.mjs';
+
+const root = dirname(dirname(fileURLToPath(import.meta.url)));
 
 test('every shared device has a completed overlay, fill-in template, or explicit exemption', () => {
   const catalog = loadUiLayerCatalog();
@@ -58,4 +63,21 @@ test('aliases resolve to their one canonical shared Draw.io hardware definition'
   const catalog = loadUiLayerCatalog();
   const template = buildUiLayerHardwareTemplate('ava-base-f16c', catalog);
   assert.equal(template.deviceId, 'tm-warthog-grip');
+});
+
+
+test('canonical UI Layer input payload is complete and agrees with the function catalog', () => {
+  const catalog = loadUiLayerCatalog({ commonRoot: root });
+  const inputRoot = join(root, 'assets', 'shared', 'ui-layer', 'input', 'UiLayer');
+  const joystickRoot = join(inputRoot, 'joystick');
+  assert.ok(existsSync(join(inputRoot, 'modifiers.lua')));
+  const profiles = readdirSync(joystickRoot).filter((file) => file.endsWith('.diff.lua'));
+  assert.ok(profiles.length > 0, 'expected migrated UI Layer joystick profiles');
+  const commands = new Set(catalog.functions.map((entry) => entry.command));
+  for (const profile of profiles) {
+    const source = readFileSync(join(joystickRoot, profile), 'utf8');
+    for (const match of source.matchAll(/\["(d[^"]+)"\]\s*=\s*\{/g)) {
+      assert.ok(commands.has(match[1]), `${profile}: unknown UI Layer command ${match[1]}`);
+    }
+  }
 });
