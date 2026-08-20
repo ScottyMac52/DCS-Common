@@ -14,7 +14,7 @@ export function loadUiLayerCatalog({ commonRoot = root } = {}) {
   if (functions.schemaVersion !== 1 || overlays.schemaVersion !== 1) {
     throw new Error('Unsupported shared UI Layer schema version.');
   }
-  return { functions: functions.functions, overlays, hardware: hardware.devices };
+  return { functions: functions.functions, overlays, hardware: hardware.devices, commonRoot };
 }
 
 function canonicalDevice(deviceId, devices) {
@@ -82,6 +82,17 @@ export function composeUiLayerLabels(deviceId, labels = {}, { catalog = loadUiLa
 
 export function validateUiLayerCatalog(catalog = loadUiLayerCatalog()) {
   const results = catalog.hardware.map((device) => buildUiLayerHardwareTemplate(device.id, catalog));
+  for (const result of results) {
+    if (result.status === 'exempt') continue;
+    const device = catalog.hardware.find((entry) => entry.id === result.deviceId);
+    const svg = readFileSync(join(catalog.commonRoot, 'assets', 'shared', 'hardware', device.svg), 'utf8');
+    const calloutIds = new Set([...svg.matchAll(/<text id="lbl-([^"]+)"/g)].map((match) => match[1]));
+    for (const fn of result.functions.filter((entry) => entry.controlId)) {
+      if (!calloutIds.has(fn.controlId)) {
+        throw new Error(`${result.deviceId}: UI Layer function ${fn.id} references unknown control ${fn.controlId}`);
+      }
+    }
+  }
   const configuredIds = new Set([
     ...Object.keys(catalog.overlays.devices ?? {}),
     ...Object.keys(catalog.overlays.exemptions ?? {}),
