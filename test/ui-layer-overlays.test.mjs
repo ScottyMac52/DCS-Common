@@ -40,13 +40,29 @@ test('templates derive their unassigned entries from the authoritative function 
 
 test('completed overlays must cover the authoritative catalog without a hard-coded test inventory', () => {
   const catalog = loadUiLayerCatalog();
-  const template = buildUiLayerHardwareTemplate('tm-mfd', catalog);
+  const template = buildUiLayerHardwareTemplate('tm-mfd', catalog, { deviceInstance: 'MFD3' });
   assert.equal(template.status, 'complete');
   assert.deepEqual(
     new Set(template.functions.map((entry) => entry.id)),
     new Set(catalog.functions.map((entry) => entry.id)),
   );
   assert.ok(template.functions.every((entry) => entry.controlId));
+});
+
+test('instance-scoped overlays apply only to their configured hardware instance', () => {
+  const catalog = loadUiLayerCatalog();
+
+  for (const deviceInstance of ['MFD1', 'MFD2']) {
+    const result = composeUiLayerLabels('tm-mfd', {}, { catalog, deviceInstance });
+    assert.equal(result.template.status, 'not-applicable', deviceInstance);
+    assert.deepEqual(result.labels, {}, deviceInstance);
+    assert.equal(result.legend, null, deviceInstance);
+  }
+
+  const mfd3 = composeUiLayerLabels('tm-mfd', {}, { catalog, deviceInstance: 'MFD3' });
+  assert.equal(mfd3.template.status, 'complete');
+  assert.ok(Object.values(mfd3.labels).flat().some((entry) => entry.source === 'ui-layer'));
+  assert.equal(mfd3.legend?.source, 'ui-layer');
 });
 
 test('UI Layer and aircraft labels coexist on the same hardware control', () => {
