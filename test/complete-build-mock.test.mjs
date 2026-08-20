@@ -9,6 +9,7 @@ import { buildCompleteMock, parseHardwareControls, writeCompleteMock } from '../
 import { loadProfileDrivenConfig } from '../scripts/profile-driven-kneeboard.mjs';
 import { loadSharedHardware } from '../scripts/shared-hardware-consumer.mjs';
 import { generateTestArticles } from '../scripts/generate-test-articles.mjs';
+import { buildUiLayerHardwareTemplate, loadUiLayerCatalog } from '../scripts/ui-layer-overlays.mjs';
 
 const root = dirname(dirname(fileURLToPath(import.meta.url)));
 const hardwareRoot = join(root, 'assets', 'shared', 'hardware');
@@ -53,14 +54,23 @@ test('generated profiles resolve identical labels and leave non-Lua callouts bla
   const consumerRoot = mkdtempSync(join(tmpdir(), 'dcs-complete-mock-'));
   writeCompleteMock({ commonRoot: root, consumerRoot });
   const config = loadProfileDrivenConfig('config/kneeboard.json', { commonRoot: root, consumerRoot });
+  const uiCatalog = loadUiLayerCatalog({ commonRoot: root });
   for (const page of config.pages) {
+    const overlay = buildUiLayerHardwareTemplate(page.deviceId, uiCatalog);
+    const overlayControls = new Set(overlay.functions.map(({ controlId }) => controlId).filter(Boolean));
     for (const [id, configured] of Object.entries(page.controls)) {
       const references = Array.isArray(configured) ? configured : [configured];
-      assert.ok(references.every(({ label }) => label === page.labels[id]), `${page.deviceId}:${id} resolved parity`);
+      const rendered = Array.isArray(page.labels[id]) ? page.labels[id] : [{ label: page.labels[id] }];
+      assert.ok(
+        references.every((reference) => rendered.some((entry) => (entry?.label ?? entry) === reference.label)),
+        `${page.deviceId}:${id} retains every aircraft/profile label`,
+      );
     }
     const { calloutIds } = loadSharedHardware(page.deviceId, { commonRoot: root });
     for (const id of calloutIds) {
-      if (!Object.hasOwn(page.controls, id)) assert.equal(page.labels[id], undefined, `${page.deviceId}:${id} stays blank`);
+      if (!Object.hasOwn(page.controls, id) && !overlayControls.has(id)) {
+        assert.equal(page.labels[id], undefined, `${page.deviceId}:${id} stays blank`);
+      }
     }
   }
 });
