@@ -11,7 +11,8 @@
     "test:kneeboard": "node --test test/kneeboard-renderer.test.mjs",
     "render:example": "node scripts/render-kneeboard-example.mjs",
     "build:shared-hardware": "node scripts/build-shared-hardware.mjs",
-    "test:shared-hardware": "node test/shared-hardware.test.mjs"
+    "test:shared-hardware": "node test/shared-hardware.test.mjs",
+    "test:ui-layer": "node --test test/ui-layer-overlays.test.mjs"
   },
   "dependencies": {
     "sharp": "^0.34.0"
