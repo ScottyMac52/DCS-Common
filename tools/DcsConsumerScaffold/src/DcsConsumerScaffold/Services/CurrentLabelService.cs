@@ -106,9 +106,9 @@ public sealed class CurrentLabelService
         if (!scope.TryGetProperty("controls", out var controls) || controls.ValueKind != JsonValueKind.Object) return;
         foreach (var control in controls.EnumerateObject())
         {
-            var references = control.Value.ValueKind == JsonValueKind.Array
-                ? control.Value.EnumerateArray()
-                : new[] { control.Value }.AsEnumerable();
+            IEnumerable<JsonElement> references = control.Value.ValueKind == JsonValueKind.Array
+                ? control.Value.EnumerateArray().ToArray()
+                : [control.Value];
             foreach (var reference in references)
             {
                 if (reference.ValueKind != JsonValueKind.Object) continue;
