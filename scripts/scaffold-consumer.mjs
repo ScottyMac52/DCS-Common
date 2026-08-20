@@ -624,6 +624,7 @@ export function buildDraftKneeboardConfig(preview, { displayName, inputModuleId 
 
     const page = {
       file,
+      includeUiLayer: true,
       deviceId: device.deviceId,
       title,
       kicker: device.role ? `ROLE ${device.role.toUpperCase()}` : device.instanceHint ? `INSTANCE ${device.instanceHint}` : 'SCAFFOLD DRAFT',
@@ -660,6 +661,7 @@ export function buildDraftKneeboardConfig(preview, { displayName, inputModuleId 
   const config = {
     schemaVersion: 1,
     aircraft: displayName,
+    includeUiLayer: true,
     profiles,
     pages: [...pagesByDevice.values()],
     semanticModifiers: Object.fromEntries(

@@ -17,6 +17,8 @@ test('OvGME validation inspects archive roots and required payloads', () => {
   const validate = readFileSync(join(root, 'templates/consumer/Test-Package.ps1.tmpl'), 'utf8');
   assert.match(validate, /GetFileNameWithoutExtension\(\$leaf\)/);
   assert.match(validate, /Config\/Input\/\{\{INPUT_MODULE_ID\}\}\/joystick\//);
+  assert.match(validate, /Config\/Input\/UiLayer\/joystick\//);
+  assert.match(validate, /Config\/Input\/UiLayer\/modifiers\.lua/);
   assert.match(validate, /KNEEBOARD\/\{\{KNEEBOARD_ID\}\}\//);
 });
 

@@ -69,6 +69,7 @@ export function buildCompleteMock(commonRoot) {
     config: {
       schemaVersion: 1,
       aircraft: 'Test',
+      includeUiLayer: true,
       profiles,
       summaryPages: [{
         type: 'summary',
