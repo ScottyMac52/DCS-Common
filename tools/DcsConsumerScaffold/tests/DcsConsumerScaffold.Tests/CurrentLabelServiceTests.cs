@@ -1,3 +1,4 @@
+using System.IO;
 using DcsConsumerScaffold.Models;
 using DcsConsumerScaffold.Services;
 using Xunit;
