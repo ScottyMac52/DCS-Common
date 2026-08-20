@@ -8,6 +8,9 @@ param(
 
 $ErrorActionPreference = 'Stop'
 $ConsumerRoot = (Get-Location).Path
+$CommonRoot = if ($env:DCS_COMMON_ROOT) { $env:DCS_COMMON_ROOT } else { Join-Path $ConsumerRoot '.dcs-common' }
+$UiLayerSource = Join-Path $CommonRoot 'assets/shared/ui-layer/input/UiLayer'
+if (-not (Test-Path $UiLayerSource)) { throw "Missing shared UI Layer input payload: $UiLayerSource" }
 $PackageName = "$PackagePrefix-$Version"
 $BuildRoot = Join-Path $ConsumerRoot '.build/ovgme'
 $StageRoot = Join-Path $BuildRoot 'stage'
@@ -22,6 +25,7 @@ New-Item (Join-Path $StageRoot 'LICENSES') -ItemType Directory -Force | Out-Null
 New-Item $Dist -ItemType Directory -Force | Out-Null
 
 Copy-Item (Join-Path $ConsumerRoot "src/Config/Input/$ModuleName/joystick") (Join-Path $Container "Config/Input/$ModuleName/joystick") -Recurse
+Copy-Item $UiLayerSource (Join-Path $Container 'Config/Input/UiLayer') -Recurse -Force
 Copy-Item (Join-Path $ConsumerRoot "kneeboard/$KneeboardId/*") (Join-Path $Container "KNEEBOARD/$KneeboardId")
 Copy-Item (Join-Path $ConsumerRoot 'docs/THIRD-PARTY-ASSETS.md') (Join-Path $StageRoot 'THIRD-PARTY-ASSETS.md') -ErrorAction SilentlyContinue
 Copy-Item (Join-Path $ConsumerRoot 'kneeboard/assets/source/licenses/*') (Join-Path $StageRoot 'LICENSES') -ErrorAction SilentlyContinue
