@@ -10,6 +10,8 @@ DCS-Common owns the authoritative UI Layer function catalog and the per-device o
 
 The Draw.io source is never copied. Every overlay targets stable control IDs on the one canonical device definition under `assets/shared/hardware/drawio`.
 
+While fill-in templates remain incomplete, consumers opt into composition per page with `"includeUiLayer": true`. Existing consumers and validation fixtures remain unchanged until deliberately migrated. Once the required templates and packaging lifecycle are complete, issue #143 can switch the consumer scaffold to enable the overlay automatically.
+
 ## Overlay states
 
 - `complete`: every current authoritative UI Layer function has a control assignment.
