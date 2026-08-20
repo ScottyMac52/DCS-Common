@@ -60,7 +60,7 @@ export function composeUiLayerLabels(deviceId, labels = {}, { catalog = loadUiLa
   const template = buildUiLayerHardwareTemplate(deviceId, catalog);
   const merged = Array.isArray(labels) ? [...labels] : { ...labels };
   if (template.status === 'exempt' || Array.isArray(merged)) {
-    return { labels: merged, template };
+    return { labels: merged, template, legend: null };
   }
 
   for (const fn of template.functions.filter((entry) => entry.controlId)) {
@@ -77,7 +77,14 @@ export function composeUiLayerLabels(deviceId, labels = {}, { catalog = loadUiLa
     }
     merged[fn.controlId] = existing;
   }
-  return { labels: merged, template };
+  const modifierInUse = template.modifier && template.functions.some((entry) => entry.controlId);
+  const legend = modifierInUse ? {
+    label: `UI Layer — ${template.modifier}`,
+    fill: catalog.overlays.defaultColor,
+    modifierId: template.modifier,
+    source: 'ui-layer',
+  } : null;
+  return { labels: merged, template, legend };
 }
 
 export function validateUiLayerCatalog(catalog = loadUiLayerCatalog()) {

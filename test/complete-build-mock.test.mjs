@@ -58,6 +58,12 @@ test('generated profiles resolve identical labels and leave non-Lua callouts bla
   for (const page of config.pages) {
     const overlay = buildUiLayerHardwareTemplate(page.deviceId, uiCatalog);
     const overlayControls = new Set(overlay.functions.map(({ controlId }) => controlId).filter(Boolean));
+    const uiModifierInUse = overlay.modifier && overlayControls.size > 0;
+    if (uiModifierInUse) {
+      assert.ok(page.legend.some((entry) => entry.modifierId === overlay.modifier), `${page.deviceId} UI modifier legend`);
+    } else {
+      assert.ok(!page.legend.some((entry) => entry.source === 'ui-layer'), `${page.deviceId} has no unused UI legend`);
+    }
     for (const [id, configured] of Object.entries(page.controls)) {
       const references = Array.isArray(configured) ? configured : [configured];
       const rendered = Array.isArray(page.labels[id]) ? page.labels[id] : [{ label: page.labels[id] }];
