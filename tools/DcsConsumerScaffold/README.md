@@ -13,11 +13,25 @@ Publisher: **Vyper Industries** · TFM: `net10.0-windows` · Assembly: `DcsConsu
 5. **Editable labels** — initialize each label from the imported DCS Lua command name, show the DCS-Common `hardwareLabel` separately as **Device Label**, and edit, intentionally blank, or replace the label with the device label
 6. **Current device labels** — import the selected device's labels from an existing destination repository, filling undefined labels from DCS-Common shared hardware
 7. **Per-device kneeboard preview** — render the selected physical instance through the production SVG/PNG pipeline in a modal viewer before writing the consumer repository
-8. **Proceed** — writes a consumer tree (`--output-dir` + display name / input module / kneeboard IDs)
+8. **Import target** — choose a normal consumer module or the authoritative DCS-Common UI Layer
+9. **Proceed** — writes a consumer tree in consumer mode, or safely synchronizes only `assets/shared/ui-layer` in UI Layer mode
 
 The selected grip is applied only to generic MOZA AB9 profiles and is preserved as the generated page `deviceId`. No JSON override file is required in the WPF importer; the preview grids show how each mapping and physical instance was resolved. Repeated devices automatically receive stable GUID-backed profile keys. Entering a role gives that physical instance a readable, GUID-associated alias in the generated consumer.
 
 Installer (tag `vX.X.X.X`): Inno Setup via shared-github-workflows. The installed EXE still expects **Node on PATH** and a DCS-Common checkout (`DCS_COMMON_ROOT` or browse).
+
+## Import the authoritative UI Layer
+
+Use this mode after changing the simulator-wide bindings under DCS Saved Games.
+
+1. Set **Import target** to **DCS-Common authoritative UI Layer**.
+2. Select `Saved Games/DCS/Config/Input/UiLayer/joystick` as **Profiles directory**.
+3. Select the matching `Saved Games/DCS/Config/Input/UiLayer/modifiers.lua`.
+4. Select the DCS-Common checkout as **DCS-Common root**.
+5. Click **Load Preview**, resolve any unmapped devices or modifier errors, and review device previews.
+6. Click **Proceed** to synchronize the profiles and modifier file, preserve known function IDs and curated labels, add newly discovered functions, and update applicable hardware-overlay callouts.
+
+UI Layer mode does not use **Output directory**, **Display name**, **Input module ID**, or **Kneeboard ID**, and it never scaffolds consumer files into the DCS-Common root. Existing overlay instance restrictions and exemptions are retained.
 
 ## Dev run
 

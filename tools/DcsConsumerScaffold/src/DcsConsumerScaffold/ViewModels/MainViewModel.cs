@@ -11,6 +11,7 @@ public sealed class MainViewModel : INotifyPropertyChanged
 {
     private readonly ScaffoldEngineService _engine;
     private readonly CurrentLabelService _currentLabels;
+    private readonly UiLayerImportService _uiLayerImport;
     private string _profilesDir = string.Empty;
     private string _modifiersPath = string.Empty;
     private string _mozaGrip = "standalone";
@@ -19,15 +20,20 @@ public sealed class MainViewModel : INotifyPropertyChanged
     private string _displayName = string.Empty;
     private string _inputModuleId = string.Empty;
     private string _kneeboardId = string.Empty;
+    private string _importTarget = "consumer";
     private string _statusText = "Select a profiles directory, then Load Preview. After review, set output + identities and Proceed.";
     private string _summaryText = string.Empty;
     private bool _isBusy;
     private bool _hasPreview;
 
-    public MainViewModel(ScaffoldEngineService? engine = null, CurrentLabelService? currentLabels = null)
+    public MainViewModel(
+        ScaffoldEngineService? engine = null,
+        CurrentLabelService? currentLabels = null,
+        UiLayerImportService? uiLayerImport = null)
     {
         _engine = engine ?? new ScaffoldEngineService();
         _currentLabels = currentLabels ?? new CurrentLabelService();
+        _uiLayerImport = uiLayerImport ?? new UiLayerImportService();
         LoadPreviewCommand = new RelayCommand(async () => await LoadPreviewAsync(), CanLoadPreview);
         ProceedCommand = new RelayCommand(async () => await ProceedAsync(), CanProceed);
         Devices = new ObservableCollection<PreviewDevice>();
@@ -40,6 +46,24 @@ public sealed class MainViewModel : INotifyPropertyChanged
     public ObservableCollection<PreviewDevice> Devices { get; }
     public ObservableCollection<PreviewRow> Rows { get; }
     public ObservableCollection<PreviewModifier> Modifiers { get; }
+
+    public string ImportTarget
+    {
+        get => _importTarget;
+        set
+        {
+            if (Set(ref _importTarget, value))
+            {
+                RaiseCommands();
+                StatusText = IsUiLayerImport
+                    ? "UI Layer mode: select Saved Games UiLayer joystick profiles, modifiers.lua, and the DCS-Common root."
+                    : "Consumer mode: Load Preview, review labels, then Proceed to write the module repository.";
+                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(IsUiLayerImport)));
+            }
+        }
+    }
+
+    public bool IsUiLayerImport => string.Equals(ImportTarget, "ui-layer", StringComparison.Ordinal);
 
     public string ProfilesDir
     {
@@ -164,10 +188,12 @@ public sealed class MainViewModel : INotifyPropertyChanged
         !IsBusy &&
         HasPreview &&
         !string.IsNullOrWhiteSpace(ProfilesDir) &&
-        !string.IsNullOrWhiteSpace(OutputDir) &&
-        !string.IsNullOrWhiteSpace(DisplayName) &&
-        !string.IsNullOrWhiteSpace(InputModuleId) &&
-        !string.IsNullOrWhiteSpace(KneeboardId);
+        (IsUiLayerImport
+            ? !string.IsNullOrWhiteSpace(CommonRoot) && !string.IsNullOrWhiteSpace(ModifiersPath)
+            : !string.IsNullOrWhiteSpace(OutputDir) &&
+              !string.IsNullOrWhiteSpace(DisplayName) &&
+              !string.IsNullOrWhiteSpace(InputModuleId) &&
+              !string.IsNullOrWhiteSpace(KneeboardId));
 
     private void RaiseCommands()
     {
@@ -256,9 +282,19 @@ public sealed class MainViewModel : INotifyPropertyChanged
         }
 
         IsBusy = true;
-        StatusText = "Writing consumer repository…";
+        StatusText = IsUiLayerImport ? "Importing authoritative UI Layer into DCS-Common…" : "Writing consumer repository…";
         try
         {
+            if (IsUiLayerImport)
+            {
+                var result = _uiLayerImport.Import(CommonRoot, ProfilesDir, ModifiersPath, Devices, Rows);
+                StatusText = $"UI Layer imported into DCS-Common: {result.ProfileCount} profiles, " +
+                    $"{result.FunctionCount} functions ({result.NewFunctionCount} new), " +
+                    $"{result.OverlayBindingCount} hardware overlay bindings updated, " +
+                    $"{result.ExemptBindingCount} exempt bindings ignored.";
+                return;
+            }
+
             var instanceRoles = Devices
                 .Where(device => !string.IsNullOrWhiteSpace(device.ProfileFile) && !string.IsNullOrWhiteSpace(device.Role))
                 .ToDictionary(device => device.ProfileFile!, device => device.Role!.Trim(), StringComparer.OrdinalIgnoreCase);
