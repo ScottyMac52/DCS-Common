@@ -13,6 +13,17 @@ public sealed class UiLayerImportServiceTests
     {
         using var common = new TempDirectory("dcs-common-ui-");
         using var source = new TempDirectory("dcs-ui-source-");
+        var hardwareRoot = Path.Combine(common.Path, "assets", "shared", "hardware");
+        Directory.CreateDirectory(hardwareRoot);
+        File.WriteAllText(Path.Combine(hardwareRoot, "manifest.json"), """
+            {
+              "devices": [
+                { "id": "tm-mfd" },
+                { "id": "moza-ab9" },
+                { "id": "tm-warthog-grip", "aliases": [ "ava-base-f16c" ] }
+              ]
+            }
+            """);
         var uiRoot = Path.Combine(common.Path, "assets", "shared", "ui-layer");
         Directory.CreateDirectory(Path.Combine(uiRoot, "input", "UiLayer", "joystick"));
         File.WriteAllText(Path.Combine(uiRoot, "functions.json"), """
@@ -49,19 +60,21 @@ public sealed class UiLayerImportServiceTests
         var mfd3 = Device("MFD 3.diff.lua", "tm-mfd", "3");
         var mfd1 = Device("MFD 1.diff.lua", "tm-mfd", "1");
         var moza = Device("MOZA AB9.diff.lua", "moza-ab9", null);
+        var ava = Device("AVA Viper.diff.lua", "ava-base-f16c", null);
         var rows = new[]
         {
             Row(mfd3, "zoom-command", "Imported text must not replace curated text", "mfd-osb-t1-shifted"),
             Row(mfd1, "new-command", "New Function", "mfd-osb-t2-shifted"),
             Row(mfd3, "new-command", "New Function", "mfd-osb-t3-shifted"),
             Row(moza, "new-command", "New Function", "moza-button-1"),
+            Row(ava, "zoom-command", "Imported text", "warthog-grip-cms-push"),
         };
 
         var result = new UiLayerImportService().Import(
             common.Path,
             profiles,
             modifiers,
-            new[] { mfd1, mfd3, moza },
+            new[] { mfd1, mfd3, moza, ava },
             rows);
 
         var functions = JsonNode.Parse(File.ReadAllText(Path.Combine(uiRoot, "functions.json")))!["functions"]!.AsArray();
@@ -77,6 +90,10 @@ public sealed class UiLayerImportServiceTests
         Assert.Equal("mfd-osb-t1-shifted", bindings["vr-zoom"]!.GetValue<string>());
         Assert.Equal("mfd-osb-t3-shifted", bindings["new-function"]!.GetValue<string>());
         Assert.Null(overlays["devices"]!["moza-ab9"]);
+        Assert.Null(overlays["devices"]!["ava-base-f16c"]);
+        Assert.Equal(
+            "warthog-grip-cms-push",
+            overlays["devices"]!["tm-warthog-grip"]!["bindings"]!["vr-zoom"]!.GetValue<string>());
         Assert.Equal(1, result.ExemptBindingCount);
 
         Assert.True(File.Exists(Path.Combine(uiRoot, "input", "UiLayer", "joystick", "MFD 3.diff.lua")));
