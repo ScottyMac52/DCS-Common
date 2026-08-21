@@ -152,7 +152,7 @@ public sealed class UiLayerImportService
     private static bool IsImportableRow(PreviewRow row) =>
         !string.IsNullOrWhiteSpace(row.Command) &&
         !string.IsNullOrWhiteSpace(row.ProfileFile) &&
-        !row.Status?.Contains("Unknown modifier", StringComparison.OrdinalIgnoreCase) == true;
+        row.Status?.Contains("Unknown modifier", StringComparison.OrdinalIgnoreCase) != true;
 
     private static bool AppliesToInstance(
         JsonObject overlay,
