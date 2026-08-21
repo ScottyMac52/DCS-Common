@@ -69,6 +69,109 @@ public sealed class CurrentLabelService
         return new CurrentLabelImportResult(currentCount, sharedCount);
     }
 
+    public CurrentLabelImportResult ApplyUiLayer(
+        string commonRoot,
+        PreviewDevice device,
+        IEnumerable<PreviewRow> rows)
+    {
+        if (string.IsNullOrWhiteSpace(commonRoot))
+            throw new InvalidOperationException("Select the DCS-Common repository root first.");
+        if (string.IsNullOrWhiteSpace(device.DeviceId) || string.IsNullOrWhiteSpace(device.ProfileKey))
+            throw new InvalidOperationException("Current labels require a resolved physical device instance.");
+
+        var uiLayerRoot = Path.Combine(commonRoot, "assets", "shared", "ui-layer");
+        var functionsPath = Path.Combine(uiLayerRoot, "functions.json");
+        var overlaysPath = Path.Combine(uiLayerRoot, "hardware-overlays.json");
+        var manifestPath = Path.Combine(commonRoot, "assets", "shared", "hardware", "manifest.json");
+        if (!File.Exists(functionsPath) || !File.Exists(overlaysPath) || !File.Exists(manifestPath))
+            throw new InvalidOperationException("The selected root does not contain the authoritative DCS-Common UI Layer.");
+
+        using var functionsDocument = JsonDocument.Parse(File.ReadAllText(functionsPath));
+        using var overlaysDocument = JsonDocument.Parse(File.ReadAllText(overlaysPath));
+        var canonicalDeviceId = CanonicalDeviceId(manifestPath, device.DeviceId);
+        var overlayDevices = overlaysDocument.RootElement.GetProperty("devices");
+        JsonElement overlay = default;
+        var hasOverlay = overlayDevices.TryGetProperty(canonicalDeviceId, out overlay) &&
+            OverlayAppliesToInstance(overlay, device);
+
+        var current = new Dictionary<UiLayerBindingKey, string?>();
+        if (hasOverlay &&
+            overlay.TryGetProperty("bindings", out var bindings) &&
+            bindings.ValueKind == JsonValueKind.Object)
+        {
+            var functions = functionsDocument.RootElement.GetProperty("functions")
+                .EnumerateArray()
+                .Where(item => item.ValueKind == JsonValueKind.Object)
+                .ToDictionary(item => Property(item, "id") ?? string.Empty, StringComparer.Ordinal);
+            foreach (var binding in bindings.EnumerateObject())
+            {
+                if (binding.Value.ValueKind != JsonValueKind.String ||
+                    !functions.TryGetValue(binding.Name, out var function)) continue;
+                var command = Property(function, "command");
+                if (string.IsNullOrWhiteSpace(command)) continue;
+                string? label = null;
+                var defined = function.TryGetProperty("label", out var labelElement) &&
+                    labelElement.ValueKind == JsonValueKind.String;
+                if (defined) label = labelElement.GetString();
+                if (defined)
+                    current[new UiLayerBindingKey(binding.Value.GetString() ?? string.Empty, command)] = label;
+            }
+        }
+
+        var selectedRows = rows.Where(row =>
+            StringEquals(row.ProfileKey, device.ProfileKey) ||
+            (!string.IsNullOrWhiteSpace(device.ProfileFile) && StringEquals(row.ProfileFile, device.ProfileFile)))
+            .ToList();
+        if (selectedRows.Count == 0)
+            throw new InvalidOperationException($"No preview rows belong to {device.ProfileKey}.");
+
+        var currentCount = 0;
+        var sharedCount = 0;
+        foreach (var row in selectedRows)
+        {
+            var key = new UiLayerBindingKey(row.CalloutId ?? string.Empty, row.Command ?? string.Empty);
+            if (current.TryGetValue(key, out var label))
+            {
+                row.ApplyLabel(label, "current");
+                currentCount++;
+            }
+            else
+            {
+                row.ResetLabel();
+                sharedCount++;
+            }
+        }
+        return new CurrentLabelImportResult(currentCount, sharedCount);
+    }
+
+    private static string CanonicalDeviceId(string manifestPath, string deviceId)
+    {
+        using var document = JsonDocument.Parse(File.ReadAllText(manifestPath));
+        foreach (var item in document.RootElement.GetProperty("devices").EnumerateArray())
+        {
+            var id = Property(item, "id");
+            if (StringEquals(id, deviceId)) return id!;
+            if (item.TryGetProperty("aliases", out var aliases) &&
+                aliases.ValueKind == JsonValueKind.Array &&
+                aliases.EnumerateArray().Any(alias =>
+                    alias.ValueKind == JsonValueKind.String && StringEquals(alias.GetString(), deviceId)))
+            {
+                return id ?? deviceId;
+            }
+        }
+        return deviceId;
+    }
+
+    private static bool OverlayAppliesToInstance(JsonElement overlay, PreviewDevice device)
+    {
+        if (!overlay.TryGetProperty("appliesToInstances", out var instances) ||
+            instances.ValueKind != JsonValueKind.Array ||
+            instances.GetArrayLength() == 0) return true;
+        var instance = CanonicalInstance(device);
+        return instance != null && instances.EnumerateArray().Any(item =>
+            item.ValueKind == JsonValueKind.String && StringEquals(item.GetString(), instance));
+    }
+
     private static JsonElement SelectPage(IReadOnlyList<JsonElement> pages, PreviewDevice device)
     {
         if (pages.Count == 0)
@@ -159,4 +262,5 @@ public sealed class CurrentLabelService
         string.Equals(left, right, StringComparison.OrdinalIgnoreCase);
 
     private readonly record struct BindingKey(string CalloutId, string Key, string Command);
+    private readonly record struct UiLayerBindingKey(string CalloutId, string Command);
 }

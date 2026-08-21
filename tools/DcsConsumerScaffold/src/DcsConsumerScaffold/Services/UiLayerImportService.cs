@@ -30,6 +30,7 @@ public sealed class UiLayerImportService
         var destinationModifiers = Path.Combine(uiLayerRoot, "input", "UiLayer", "modifiers.lua");
         var functionsPath = Path.Combine(uiLayerRoot, "functions.json");
         var overlaysPath = Path.Combine(uiLayerRoot, "hardware-overlays.json");
+        var canonicalDeviceIds = LoadCanonicalDeviceIds(commonRoot);
 
         var functionsRoot = ReadObject(functionsPath);
         var functions = functionsRoot["functions"]?.AsArray()
@@ -79,14 +80,15 @@ public sealed class UiLayerImportService
             if (string.IsNullOrWhiteSpace(row.DeviceId) || string.IsNullOrWhiteSpace(row.CalloutId)) continue;
             if (!functionByCommand.TryGetValue(row.Command!, out var function)) continue;
             var functionId = function["id"]!.GetValue<string>();
+            var overlayDeviceId = canonicalDeviceIds.GetValueOrDefault(row.DeviceId, row.DeviceId);
 
-            if (exemptions.ContainsKey(row.DeviceId))
+            if (exemptions.ContainsKey(overlayDeviceId))
             {
                 exemptBindingCount++;
                 continue;
             }
 
-            var overlay = overlayDevices[row.DeviceId] as JsonObject;
+            var overlay = overlayDevices[overlayDeviceId] as JsonObject;
             if (overlay == null)
             {
                 overlay = new JsonObject
@@ -94,7 +96,7 @@ public sealed class UiLayerImportService
                     ["status"] = "template",
                     ["bindings"] = new JsonObject(),
                 };
-                overlayDevices[row.DeviceId] = overlay;
+                overlayDevices[overlayDeviceId] = overlay;
             }
 
             if (!AppliesToInstance(overlay, row, deviceByProfile)) continue;
@@ -131,6 +133,25 @@ public sealed class UiLayerImportService
             newFunctionCount,
             overlayBindingCount,
             exemptBindingCount);
+    }
+
+    private static IReadOnlyDictionary<string, string> LoadCanonicalDeviceIds(string commonRoot)
+    {
+        var manifestPath = Path.Combine(commonRoot, "assets", "shared", "hardware", "manifest.json");
+        var manifest = ReadObject(manifestPath);
+        var result = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+        foreach (var device in manifest["devices"]?.AsArray().OfType<JsonObject>() ?? [])
+        {
+            var id = device["id"]?.GetValue<string>();
+            if (string.IsNullOrWhiteSpace(id)) continue;
+            result[id] = id;
+            foreach (var alias in device["aliases"]?.AsArray() ?? [])
+            {
+                var value = alias?.GetValue<string>();
+                if (!string.IsNullOrWhiteSpace(value)) result[value] = id;
+            }
+        }
+        return result;
     }
 
     private static void Validate(string commonRoot, string profilesDir, string modifiersPath)

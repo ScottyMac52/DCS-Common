@@ -138,6 +138,124 @@ public sealed class CurrentLabelServiceTests
         }
     }
 
+    [Fact]
+    public void ApplyUiLayer_UsesCanonicalOverlayForAliasAndFallsBackToSharedHardware()
+    {
+        var common = Directory.CreateTempSubdirectory("dcs-current-ui-layer-");
+        try
+        {
+            var hardwareRoot = Directory.CreateDirectory(
+                Path.Combine(common.FullName, "assets", "shared", "hardware"));
+            var uiRoot = Directory.CreateDirectory(
+                Path.Combine(common.FullName, "assets", "shared", "ui-layer"));
+            File.WriteAllText(Path.Combine(hardwareRoot.FullName, "manifest.json"), """
+                {
+                  "devices": [
+                    {
+                      "id": "tm-warthog-grip",
+                      "aliases": [ "ava-base-f16c" ]
+                    }
+                  ]
+                }
+                """);
+            File.WriteAllText(Path.Combine(uiRoot.FullName, "functions.json"), """
+                {
+                  "functions": [
+                    { "id": "vr-zoom", "command": "zoom-command", "label": "Curated VR Zoom" },
+                    { "id": "blank-function", "command": "blank-command", "label": "" }
+                  ]
+                }
+                """);
+            File.WriteAllText(Path.Combine(uiRoot.FullName, "hardware-overlays.json"), """
+                {
+                  "devices": {
+                    "tm-warthog-grip": {
+                      "status": "template",
+                      "bindings": {
+                        "vr-zoom": "warthog-grip-cms-push",
+                        "blank-function": "warthog-grip-cms-forward"
+                      }
+                    }
+                  }
+                }
+                """);
+
+            var device = new PreviewDevice
+            {
+                DeviceId = "ava-base-f16c",
+                ProfileFile = "Ava Viper.diff.lua",
+                ProfileKey = "ava-base-f16c",
+            };
+            var current = Row(device, "warthog-grip-cms-push", "JOY_BTN19", "zoom-command", "CMS push");
+            var blank = Row(device, "warthog-grip-cms-forward", "JOY_BTN15", "blank-command", "CMS forward");
+            var fallback = Row(device, "warthog-grip-trim-left", "JOY_BTN_POV1_L", "other-command", "Trim left");
+
+            var result = new CurrentLabelService().ApplyUiLayer(
+                common.FullName,
+                device,
+                [current, blank, fallback]);
+
+            Assert.Equal(2, result.CurrentCount);
+            Assert.Equal(1, result.SharedHardwareCount);
+            Assert.Equal("Curated VR Zoom", current.Label);
+            Assert.Equal("current", current.LabelSource);
+            Assert.Equal(string.Empty, blank.Label);
+            Assert.Equal("current", blank.LabelSource);
+            Assert.Equal("Trim left", fallback.Label);
+            Assert.Equal("device", fallback.LabelSource);
+        }
+        finally
+        {
+            common.Delete(recursive: true);
+        }
+    }
+
+    [Fact]
+    public void ApplyUiLayer_HonorsPhysicalInstanceScope()
+    {
+        var common = Directory.CreateTempSubdirectory("dcs-current-ui-instance-");
+        try
+        {
+            var hardwareRoot = Directory.CreateDirectory(
+                Path.Combine(common.FullName, "assets", "shared", "hardware"));
+            var uiRoot = Directory.CreateDirectory(
+                Path.Combine(common.FullName, "assets", "shared", "ui-layer"));
+            File.WriteAllText(Path.Combine(hardwareRoot.FullName, "manifest.json"),
+                """{ "devices": [ { "id": "tm-mfd" } ] }""");
+            File.WriteAllText(Path.Combine(uiRoot.FullName, "functions.json"),
+                """{ "functions": [ { "id": "vr-zoom", "command": "zoom-command", "label": "VR Zoom" } ] }""");
+            File.WriteAllText(Path.Combine(uiRoot.FullName, "hardware-overlays.json"), """
+                {
+                  "devices": {
+                    "tm-mfd": {
+                      "appliesToInstances": [ "MFD3" ],
+                      "bindings": { "vr-zoom": "mfd-osb-t1-shifted" }
+                    }
+                  }
+                }
+                """);
+
+            var mfd1 = new PreviewDevice
+            {
+                DeviceId = "tm-mfd",
+                InstanceHint = "1",
+                ProfileFile = "MFD 1.diff.lua",
+                ProfileKey = "tm-mfd-1",
+            };
+            var row = Row(mfd1, "mfd-osb-t1-shifted", "JOY_BTN1", "zoom-command", "OSB01");
+
+            var result = new CurrentLabelService().ApplyUiLayer(common.FullName, mfd1, [row]);
+
+            Assert.Equal(0, result.CurrentCount);
+            Assert.Equal(1, result.SharedHardwareCount);
+            Assert.Equal("OSB01", row.Label);
+        }
+        finally
+        {
+            common.Delete(recursive: true);
+        }
+    }
+
     private static PreviewRow Row(
         PreviewDevice device,
         string calloutId,

@@ -336,8 +336,11 @@ public sealed class MainViewModel : INotifyPropertyChanged
 
     public CurrentLabelImportResult ImportCurrentLabels(PreviewDevice device)
     {
-        var result = _currentLabels.Apply(OutputDir, device, Rows);
-        StatusText = $"Current labels loaded for {device.Stem}: {result.CurrentCount} from destination, " +
+        var result = IsUiLayerImport
+            ? _currentLabels.ApplyUiLayer(CommonRoot, device, Rows)
+            : _currentLabels.Apply(OutputDir, device, Rows);
+        var source = IsUiLayerImport ? "authoritative UI Layer" : "destination";
+        StatusText = $"Current labels loaded for {device.Stem}: {result.CurrentCount} from {source}, " +
             $"{result.SharedHardwareCount} from DCS-Common shared hardware.";
         return result;
     }
