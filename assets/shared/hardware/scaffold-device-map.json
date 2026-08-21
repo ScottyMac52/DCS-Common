@@ -89,6 +89,18 @@
       "JOY_BTN_POV1_R": "JOY_POV1_R",
       "JOY_BTN_POV1_D": "JOY_POV1_D",
       "JOY_BTN_POV1_L": "JOY_POV1_L"
+    },
+    "ava-base-f16c": {
+      "JOY_BTN_POV1_U": "JOY_POV1_U",
+      "JOY_BTN_POV1_R": "JOY_POV1_R",
+      "JOY_BTN_POV1_D": "JOY_POV1_D",
+      "JOY_BTN_POV1_L": "JOY_POV1_L"
+    },
+    "ava-base-f18c": {
+      "JOY_BTN_POV1_U": "JOY_POV1_U",
+      "JOY_BTN_POV1_R": "JOY_POV1_R",
+      "JOY_BTN_POV1_D": "JOY_POV1_D",
+      "JOY_BTN_POV1_L": "JOY_POV1_L"
     }
   },
   "instancePatterns": [
