@@ -65,6 +65,20 @@ public partial class MainWindow : Window
         if ((sender as FrameworkElement)?.Tag is PreviewRow row) row.ResetLabel();
     }
 
+    private void CurrentLabels_Click(object sender, RoutedEventArgs e)
+    {
+        if ((sender as FrameworkElement)?.Tag is not PreviewDevice device) return;
+        try
+        {
+            _viewModel.ImportCurrentLabels(device);
+        }
+        catch (Exception ex)
+        {
+            _viewModel.StatusText = ex.Message;
+            MessageBox.Show(this, ex.Message, "Current labels unavailable", MessageBoxButton.OK, MessageBoxImage.Warning);
+        }
+    }
+
     private async void PreviewDevice_Click(object sender, RoutedEventArgs e)
     {
         if ((sender as FrameworkElement)?.Tag is not PreviewDevice device) return;
