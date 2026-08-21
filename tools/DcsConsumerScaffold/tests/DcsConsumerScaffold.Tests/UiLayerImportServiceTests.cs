@@ -11,9 +11,9 @@ public sealed class UiLayerImportServiceTests
     [Fact]
     public void Import_PreservesKnownFunctionsAddsNewFunctionsAndScopesOverlays()
     {
-        using var common = Directory.CreateTempSubdirectory("dcs-common-ui-");
-        using var source = Directory.CreateTempSubdirectory("dcs-ui-source-");
-        var uiRoot = Path.Combine(common.FullName, "assets", "shared", "ui-layer");
+        using var common = new TempDirectory("dcs-common-ui-");
+        using var source = new TempDirectory("dcs-ui-source-");
+        var uiRoot = Path.Combine(common.Path, "assets", "shared", "ui-layer");
         Directory.CreateDirectory(Path.Combine(uiRoot, "input", "UiLayer", "joystick"));
         File.WriteAllText(Path.Combine(uiRoot, "functions.json"), """
             {
@@ -39,11 +39,11 @@ public sealed class UiLayerImportServiceTests
             }
             """);
 
-        var profiles = Path.Combine(source.FullName, "joystick");
+        var profiles = Path.Combine(source.Path, "joystick");
         Directory.CreateDirectory(profiles);
         File.WriteAllText(Path.Combine(profiles, "MFD 3.diff.lua"), "return {}");
         File.WriteAllText(Path.Combine(profiles, "MOZA AB9.diff.lua"), "return {}");
-        var modifiers = Path.Combine(source.FullName, "modifiers.lua");
+        var modifiers = Path.Combine(source.Path, "modifiers.lua");
         File.WriteAllText(modifiers, "return {}");
 
         var mfd3 = Device("MFD 3.diff.lua", "tm-mfd", "3");
@@ -58,7 +58,7 @@ public sealed class UiLayerImportServiceTests
         };
 
         var result = new UiLayerImportService().Import(
-            common.FullName,
+            common.Path,
             profiles,
             modifiers,
             new[] { mfd1, mfd3, moza },
@@ -86,17 +86,17 @@ public sealed class UiLayerImportServiceTests
     [Fact]
     public void Import_RejectsAConsumerRepositoryAsTheTarget()
     {
-        using var target = Directory.CreateTempSubdirectory("not-dcs-common-");
-        using var source = Directory.CreateTempSubdirectory("dcs-ui-source-");
-        File.WriteAllText(Path.Combine(source.FullName, "device.diff.lua"), "return {}");
-        var modifiers = Path.Combine(source.FullName, "modifiers.lua");
+        using var target = new TempDirectory("not-dcs-common-");
+        using var source = new TempDirectory("dcs-ui-source-");
+        File.WriteAllText(Path.Combine(source.Path, "device.diff.lua"), "return {}");
+        var modifiers = Path.Combine(source.Path, "modifiers.lua");
         File.WriteAllText(modifiers, "return {}");
 
         var error = Assert.Throws<InvalidOperationException>(() =>
-            new UiLayerImportService().Import(target.FullName, source.FullName, modifiers, [], []));
+            new UiLayerImportService().Import(target.Path, source.Path, modifiers, [], []));
 
         Assert.Contains("not DCS-Common", error.Message);
-        Assert.False(File.Exists(Path.Combine(target.FullName, "config", "kneeboard.json")));
+        Assert.False(File.Exists(Path.Combine(target.Path, "config", "kneeboard.json")));
     }
 
     private static PreviewDevice Device(string profile, string deviceId, string? instance) => new()
@@ -119,4 +119,20 @@ public sealed class UiLayerImportServiceTests
         CalloutId = callout,
         Status = "OK",
     };
+    private sealed class TempDirectory : IDisposable
+    {
+        private readonly DirectoryInfo _directory;
+
+        public TempDirectory(string prefix)
+        {
+            _directory = Directory.CreateTempSubdirectory(prefix);
+        }
+
+        public string Path => _directory.FullName;
+
+        public void Dispose()
+        {
+            if (_directory.Exists) _directory.Delete(recursive: true);
+        }
+    }
 }
