@@ -60,6 +60,12 @@ public partial class MainWindow : Window
         }
     }
 
+    private void ApplyCommandLabel_Click(object sender, RoutedEventArgs e)
+    {
+        if ((sender as FrameworkElement)?.Tag is CommandLabelGroup group)
+            _viewModel.ApplyCommandLabel(group);
+    }
+
     private void ResetLabel_Click(object sender, RoutedEventArgs e)
     {
         if ((sender as FrameworkElement)?.Tag is PreviewRow row) row.ResetLabel();
