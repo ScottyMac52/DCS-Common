@@ -240,14 +240,7 @@ public sealed class MainViewModel : INotifyPropertyChanged
             }
 
             if (document?.Rows != null)
-            {
-                foreach (var row in document.Rows)
-                {
-                    Rows.Add(row);
-                    row.PropertyChanged += PreviewRow_PropertyChanged;
-                }
-                RebuildCommandLabels();
-            }
+                ReplacePreviewRows(document.Rows);
 
             if (document?.Modifiers != null)
             {
@@ -330,6 +323,18 @@ public sealed class MainViewModel : INotifyPropertyChanged
         {
             IsBusy = false;
         }
+    }
+
+    public void ReplacePreviewRows(IEnumerable<PreviewRow> rows)
+    {
+        UntrackRows();
+        Rows.Clear();
+        foreach (var row in rows)
+        {
+            Rows.Add(row);
+            row.PropertyChanged += PreviewRow_PropertyChanged;
+        }
+        RebuildCommandLabels();
     }
 
     public void RebuildCommandLabels()
