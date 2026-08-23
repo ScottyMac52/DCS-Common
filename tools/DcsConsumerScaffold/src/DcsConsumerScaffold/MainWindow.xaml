@@ -138,6 +138,29 @@
       </DataGrid>
     </GroupBox>
 
+    <GroupBox DockPanel.Dock="Top" Header="Command labels" Margin="0,0,0,8" Padding="4"
+              ToolTip="One row per exact DCS command. Apply synchronizes every matching binding; individual labels remain editable below.">
+      <DataGrid ItemsSource="{Binding CommandLabels}" Height="145" AutoGenerateColumns="False"
+                CanUserAddRows="False" HeadersVisibility="Column" AlternatingRowBackground="#F5F7FA">
+        <DataGrid.Columns>
+          <DataGridTextColumn Header="Command" Binding="{Binding Command}" Width="2.4*" IsReadOnly="True" />
+          <DataGridTextColumn Header="DCS label (default)" Binding="{Binding DefaultLabel}" Width="1.4*" IsReadOnly="True" />
+          <DataGridTextColumn Header="Synchronized label"
+                              Binding="{Binding Label, UpdateSourceTrigger=PropertyChanged}" Width="1.4*" />
+          <DataGridTextColumn Header="Bindings" Binding="{Binding BindingCount}" Width="75" IsReadOnly="True" />
+          <DataGridTextColumn Header="State" Binding="{Binding State}" Width="95" IsReadOnly="True" />
+          <DataGridTemplateColumn Header="" Width="90">
+            <DataGridTemplateColumn.CellTemplate>
+              <DataTemplate>
+                <Button Content="Apply" Tag="{Binding}" Click="ApplyCommandLabel_Click"
+                        ToolTip="Apply this label, including an intentional blank, to every binding with this exact command" />
+              </DataTemplate>
+            </DataGridTemplateColumn.CellTemplate>
+          </DataGridTemplateColumn>
+        </DataGrid.Columns>
+      </DataGrid>
+    </GroupBox>
+
     <TextBox DockPanel.Dock="Bottom" Height="90" Margin="0,8,0,0"
              IsReadOnly="True" TextWrapping="Wrap" VerticalScrollBarVisibility="Auto"
              Text="{Binding StatusText}" />
