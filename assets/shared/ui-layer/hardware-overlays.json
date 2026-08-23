@@ -25,7 +25,10 @@
       "bindings": {
         "recenter-vr": "warthog-grip-pinky",
         "vr-zoom": "warthog-grip-cms-push",
-        "vr-spyglass": "warthog-grip-cms-forward"
+        "vr-spyglass": "warthog-grip-cms-forward",
+        "time-decelerate": "warthog-grip-trim-left",
+        "time-normal": "warthog-grip-trim-up",
+        "time-accelerate": "warthog-grip-trim-right"
       }
     },
     "grip-f18c": {
@@ -39,7 +42,9 @@
     },
     "tm-mfd": {
       "status": "complete",
-      "appliesToInstances": ["MFD3"],
+      "appliesToInstances": [
+        "MFD3"
+      ],
       "modifier": "grip-shift",
       "bindings": {
         "vr-zoom": "mfd-osb-t1-shifted",
