@@ -366,8 +366,9 @@ public sealed class MainViewModel : INotifyPropertyChanged
         var matchingRows = Rows
             .Where(row => string.Equals(row.Command, group.Command, StringComparison.Ordinal))
             .ToList();
+        var appliedLabel = group.Label;
         foreach (var row in matchingRows)
-            row.ApplyLabel(group.Label, "command");
+            row.ApplyLabel(appliedLabel, "command");
 
         group.Refresh(Rows);
         StatusText = $"Applied command label to {matchingRows.Count} bindings for {group.Command}.";
