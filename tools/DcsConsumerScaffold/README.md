@@ -11,14 +11,29 @@ Publisher: **Vyper Industries** · TFM: `net10.0-windows` · Assembly: `DcsConsu
 3. **MOZA AB9 configuration** — select standalone, F-16C Viper Grip, or F/A-18C/E/F Grip
 4. **Semantic modifiers** — assign one semantic ID to alternative device-qualified physical modifiers without globally aliasing button numbers
 5. **Editable labels** — initialize each label from the imported DCS Lua command name, show the DCS-Common `hardwareLabel` separately as **Device Label**, and edit, intentionally blank, or replace the label with the device label
-6. **Current device labels** — import the selected device's labels from an existing destination repository, filling undefined labels from DCS-Common shared hardware
-7. **Per-device kneeboard preview** — render the selected physical instance through the production SVG/PNG pipeline in a modal viewer before writing the consumer repository
-8. **Import target** — choose a normal consumer module or the authoritative DCS-Common UI Layer
-9. **Proceed** — writes a consumer tree in consumer mode, or safely synchronizes only `assets/shared/ui-layer` in UI Layer mode
+6. **Command labels** — edit one label per exact DCS command and explicitly apply it to every matching device binding while retaining per-binding overrides
+7. **Current device labels** — import the selected device's labels from an existing destination repository, filling undefined labels from DCS-Common shared hardware
+8. **Per-device kneeboard preview** — render the selected physical instance through the production SVG/PNG pipeline in a modal viewer before writing the consumer repository
+9. **Import target** — choose a normal consumer module or the authoritative DCS-Common UI Layer
+10. **Proceed** — writes a consumer tree in consumer mode, or safely synchronizes only `assets/shared/ui-layer` in UI Layer mode
 
 The selected grip is applied only to generic MOZA AB9 profiles and is preserved as the generated page `deviceId`. No JSON override file is required in the WPF importer; the preview grids show how each mapping and physical instance was resolved. Repeated devices automatically receive stable GUID-backed profile keys. Entering a role gives that physical instance a readable, GUID-associated alias in the generated consumer.
 
 Installer (tag `vX.X.X.X`): Inno Setup via shared-github-workflows. The installed EXE still expects **Node on PATH** and a DCS-Common checkout (`DCS_COMMON_ROOT` or browse).
+
+## Synchronize labels by command
+
+After **Load Preview**, the **Command labels** grid contains one row per distinct, non-empty exact DCS command string.
+
+- **Bindings** shows how many physical rows use the command.
+- **Synchronized** means every matching row currently has the same label.
+- **Mixed** means one or more individual rows have a different label.
+- Edit **Synchronized label** and press **Apply** to replace the label on every matching row across devices, instances, keys, and modifier chords.
+- An empty value is applied as an intentional blank.
+- The detailed binding grid remains editable. Changing one row affects only that row and changes its command group to **Mixed**.
+- **Current** and **Use device** changes are reflected in the command group automatically.
+
+Grouping is a preview/editor feature only. Proceed still persists the existing row-level label overrides, so consumer and UI Layer JSON schemas are unchanged.
 
 ## Import the authoritative UI Layer
 

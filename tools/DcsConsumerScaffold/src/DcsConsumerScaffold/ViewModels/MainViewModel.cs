@@ -39,6 +39,7 @@ public sealed class MainViewModel : INotifyPropertyChanged
         Devices = new ObservableCollection<PreviewDevice>();
         Rows = new ObservableCollection<PreviewRow>();
         Modifiers = new ObservableCollection<PreviewModifier>();
+        CommandLabels = new ObservableCollection<CommandLabelGroup>();
     }
 
     public event PropertyChangedEventHandler? PropertyChanged;
@@ -46,6 +47,7 @@ public sealed class MainViewModel : INotifyPropertyChanged
     public ObservableCollection<PreviewDevice> Devices { get; }
     public ObservableCollection<PreviewRow> Rows { get; }
     public ObservableCollection<PreviewModifier> Modifiers { get; }
+    public ObservableCollection<CommandLabelGroup> CommandLabels { get; }
 
     public string ImportTarget
     {
@@ -214,7 +216,9 @@ public sealed class MainViewModel : INotifyPropertyChanged
         var semanticModifiers = ModifierOverrides();
         var labels = LabelOverrides();
         Devices.Clear();
+        UntrackRows();
         Rows.Clear();
+        CommandLabels.Clear();
         Modifiers.Clear();
         HasPreview = false;
         try
@@ -236,12 +240,7 @@ public sealed class MainViewModel : INotifyPropertyChanged
             }
 
             if (document?.Rows != null)
-            {
-                foreach (var row in document.Rows)
-                {
-                    Rows.Add(row);
-                }
-            }
+                ReplacePreviewRows(document.Rows);
 
             if (document?.Modifiers != null)
             {
@@ -324,6 +323,71 @@ public sealed class MainViewModel : INotifyPropertyChanged
         {
             IsBusy = false;
         }
+    }
+
+    public void ReplacePreviewRows(IEnumerable<PreviewRow> rows)
+    {
+        UntrackRows();
+        Rows.Clear();
+        foreach (var row in rows)
+        {
+            Rows.Add(row);
+            row.PropertyChanged += PreviewRow_PropertyChanged;
+        }
+        RebuildCommandLabels();
+    }
+
+    public void RebuildCommandLabels()
+    {
+        var existing = CommandLabels.ToDictionary(group => group.Command, StringComparer.Ordinal);
+        var commands = Rows
+            .Select(row => row.Command)
+            .Where(command => !string.IsNullOrWhiteSpace(command))
+            .Distinct(StringComparer.Ordinal)
+            .OrderBy(command => command, StringComparer.Ordinal)
+            .ToList();
+
+        foreach (var removed in CommandLabels.Where(group => !commands.Contains(group.Command, StringComparer.Ordinal)).ToList())
+            CommandLabels.Remove(removed);
+
+        foreach (var command in commands)
+        {
+            if (!existing.TryGetValue(command!, out var group))
+            {
+                group = new CommandLabelGroup { Command = command! };
+                CommandLabels.Add(group);
+            }
+            group.Refresh(Rows);
+        }
+    }
+
+    public void ApplyCommandLabel(CommandLabelGroup group)
+    {
+        var matchingRows = Rows
+            .Where(row => string.Equals(row.Command, group.Command, StringComparison.Ordinal))
+            .ToList();
+        var appliedLabel = group.Label;
+        foreach (var row in matchingRows)
+            row.ApplyLabel(appliedLabel, "command");
+
+        group.Refresh(Rows);
+        StatusText = $"Applied command label to {matchingRows.Count} bindings for {group.Command}.";
+    }
+
+    private void PreviewRow_PropertyChanged(object? sender, PropertyChangedEventArgs e)
+    {
+        if (sender is not PreviewRow row ||
+            (e.PropertyName != nameof(PreviewRow.Label) && e.PropertyName != nameof(PreviewRow.LabelSource)) ||
+            string.IsNullOrWhiteSpace(row.Command)) return;
+
+        var group = CommandLabels.FirstOrDefault(item =>
+            string.Equals(item.Command, row.Command, StringComparison.Ordinal));
+        group?.Refresh(Rows);
+    }
+
+    private void UntrackRows()
+    {
+        foreach (var row in Rows) row.PropertyChanged -= PreviewRow_PropertyChanged;
     }
 
     public IReadOnlyDictionary<string, string> ModifierOverrides() => Modifiers
