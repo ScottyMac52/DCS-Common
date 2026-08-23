@@ -208,4 +208,67 @@ public sealed class PreviewSummary
     public int ErrorCount { get; set; }
 }
 
+public sealed class CommandLabelGroup : INotifyPropertyChanged
+{
+    private string? _label;
+    private string? _defaultLabel;
+    private int _bindingCount;
+    private bool _isMixed;
+
+    public required string Command { get; init; }
+
+    public string? DefaultLabel
+    {
+        get => _defaultLabel;
+        private set => Set(ref _defaultLabel, value);
+    }
+
+    public string? Label
+    {
+        get => _label;
+        set => Set(ref _label, value);
+    }
+
+    public int BindingCount
+    {
+        get => _bindingCount;
+        private set => Set(ref _bindingCount, value);
+    }
+
+    public bool IsMixed
+    {
+        get => _isMixed;
+        private set
+        {
+            if (Set(ref _isMixed, value))
+                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(State)));
+        }
+    }
+
+    public string State => IsMixed ? "Mixed" : "Synchronized";
+
+    public event PropertyChangedEventHandler? PropertyChanged;
+
+    public void Refresh(IEnumerable<PreviewRow> source)
+    {
+        var rows = source.Where(row => string.Equals(row.Command, Command, StringComparison.Ordinal)).ToList();
+        BindingCount = rows.Count;
+
+        var defaults = rows.Select(row => row.DefaultLabel ?? string.Empty).Distinct(StringComparer.Ordinal).ToList();
+        DefaultLabel = defaults.Count == 1 ? defaults[0] : defaults.Count == 0 ? string.Empty : "Mixed DCS labels";
+
+        var labels = rows.Select(row => row.Label).Distinct(StringComparer.Ordinal).ToList();
+        IsMixed = labels.Count > 1;
+        Label = IsMixed || labels.Count == 0 ? null : labels[0];
+    }
+
+    private bool Set<T>(ref T field, T value, [CallerMemberName] string? name = null)
+    {
+        if (EqualityComparer<T>.Default.Equals(field, value)) return false;
+        field = value;
+        PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(name));
+        return true;
+    }
+}
+
 public sealed record RenderedPreviewPage(string File, string? Title, byte[] PngBytes);
