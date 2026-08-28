@@ -97,7 +97,8 @@ export function composeUiLayerLabels(deviceId, labels = {}, { catalog = loadUiLa
   const legend = modifierInUse ? {
     label: `UI Layer — ${template.modifier}`,
     fill: catalog.overlays.defaultColor,
-    modifierId: template.modifier,
+    modifierId: `ui-layer:${template.modifier}`,
+    physicalModifierId: template.modifier,
     source: 'ui-layer',
   } : null;
   return { labels: merged, template, legend };
