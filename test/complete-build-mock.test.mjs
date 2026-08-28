@@ -68,7 +68,10 @@ test('generated profiles resolve identical labels and leave non-Lua callouts bla
     const overlayControls = new Set(overlay.functions.map(({ controlId }) => controlId).filter(Boolean));
     const uiModifierInUse = overlay.modifier && overlayControls.size > 0;
     if (uiModifierInUse) {
-      assert.ok(page.legend.some((entry) => entry.modifierId === overlay.modifier), `${page.deviceId} UI modifier legend`);
+      assert.ok(
+        page.legend.some((entry) => entry.modifierId === overlay.modifier || entry.physicalModifierId === overlay.modifier),
+        `${page.deviceId} UI modifier legend`,
+      );
     } else {
       assert.ok(!page.legend.some((entry) => entry.source === 'ui-layer'), `${page.deviceId} has no unused UI legend`);
     }
