@@ -102,7 +102,8 @@ test('canonical UI Layer input payload is complete and agrees with the function 
 test('UI Layer legend exists only when a modifier is in use', () => {
   const catalog = loadUiLayerCatalog({ commonRoot: root });
   const active = composeUiLayerLabels('vkb-f14-gunfighter', {}, { catalog });
-  assert.equal(active.legend?.modifierId, 'VKB_F14_BTN7');
+  assert.equal(active.legend?.physicalModifierId, 'VKB_F14_BTN7');
+  assert.equal(active.legend?.modifierId, 'ui-layer:VKB_F14_BTN7');
   assert.match(active.legend?.label ?? '', /UI Layer/);
 
   assert.equal(composeUiLayerLabels('winctrl-icp', {}, { catalog }).legend, null);
