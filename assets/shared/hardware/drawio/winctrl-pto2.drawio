@@ -385,7 +385,7 @@
         <mxCell id="footer" parent="1" style="text;html=1;strokeColor=none;fillColor=none;fontColor=#64748b;fontSize=12;align=center;" value="WINCTRL PTO2 - 41 buttons + 0 axes" vertex="1">
           <mxGeometry height="20" width="600" x="450" y="952" as="geometry" />
         </mxCell>
-        <mxCell id="yqwI-hF5AyJaaDs2ZdS7-1" edge="1" parent="1" source="label-pto2-button-40" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;strokeColor=#00bfff;dashed=1;endArrow=none;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" target="anchor-pto2-button-40" value="">
+        <mxCell id="connector-pto2-button-40" edge="1" parent="1" source="label-pto2-button-40" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;strokeColor=#00bfff;dashed=1;endArrow=none;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" target="anchor-pto2-button-40" value="">
           <mxGeometry relative="1" as="geometry">
             <Array as="points">
               <mxPoint x="740" y="733" />
