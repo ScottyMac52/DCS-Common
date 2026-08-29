@@ -417,6 +417,18 @@ public sealed class MainViewModel : INotifyPropertyChanged
         return result;
     }
 
+    public int ResetDeviceLabelsToDefault(PreviewDevice device)
+    {
+        var selectedRows = Rows.Where(row =>
+            string.Equals(row.ProfileKey, device.ProfileKey, StringComparison.OrdinalIgnoreCase) ||
+            (!string.IsNullOrWhiteSpace(device.ProfileFile) &&
+             string.Equals(row.ProfileFile, device.ProfileFile, StringComparison.OrdinalIgnoreCase)))
+            .ToList();
+        foreach (var row in selectedRows) row.ResetToDefaultLabel();
+        StatusText = $"Restored {selectedRows.Count} imported DCS labels for {device.Stem}.";
+        return selectedRows.Count;
+    }
+
     public async Task<IReadOnlyList<RenderedPreviewPage>> RenderDevicePreviewAsync(PreviewDevice device)
     {
         if (string.IsNullOrWhiteSpace(device.DeviceId) || string.IsNullOrWhiteSpace(device.ProfileKey))
