@@ -42,24 +42,24 @@
   <rect x="695" y="230" width="160" height="30" rx="4" fill="#1e293b" stroke="#00bfff" stroke-width="1.5"/>
   <text id="lbl-detent3" x="775" y="249" text-anchor="middle" font-family="Arial,sans-serif" font-size="11" fill="#f1f5f9">Mixture Detent</text>
   <!-- callout:t3 -->
-  <line x1="595" y1="455" x2="690" y2="533" stroke="#00bfff" stroke-width="1.5" stroke-dasharray="5 3" opacity="0.75"/>
+  <polyline points="595,455 541.572943793245,458.4977239239138 633,533" fill="none" stroke="#00bfff" stroke-width="1.5" stroke-dasharray="5 3" opacity="0.75"/>
   <circle cx="595" cy="455" r="5" fill="#00bfff" stroke="#0f172a" stroke-width="1.5"/>
-  <rect x="610" y="533" width="160" height="30" rx="4" fill="#1e293b" stroke="#00bfff" stroke-width="1.5"/>
-  <text id="lbl-t3" x="690" y="552" text-anchor="middle" font-family="Arial,sans-serif" font-size="11" fill="#f1f5f9">Center Rocker (Up)</text>
+  <rect x="553" y="533" width="160" height="30" rx="4" fill="#1e293b" stroke="#00bfff" stroke-width="1.5"/>
+  <text id="lbl-t3" x="633" y="552" text-anchor="middle" font-family="Arial,sans-serif" font-size="11" fill="#f1f5f9">Center Rocker (Up)</text>
   <!-- callout:t4 -->
-  <line x1="595" y1="500" x2="690" y2="570" stroke="#00bfff" stroke-width="1.5" stroke-dasharray="5 3" opacity="0.75"/>
-  <circle cx="595" cy="500" r="5" fill="#00bfff" stroke="#0f172a" stroke-width="1.5"/>
-  <rect x="610" y="570" width="160" height="30" rx="4" fill="#1e293b" stroke="#00bfff" stroke-width="1.5"/>
-  <text id="lbl-t4" x="690" y="589" text-anchor="middle" font-family="Arial,sans-serif" font-size="11" fill="#f1f5f9">Center Rocker (Down)</text>
+  <line x1="595" y1="495" x2="633" y2="570" stroke="#00bfff" stroke-width="1.5" stroke-dasharray="5 3" opacity="0.75"/>
+  <circle cx="595" cy="495" r="5" fill="#00bfff" stroke="#0f172a" stroke-width="1.5"/>
+  <rect x="553" y="570" width="160" height="30" rx="4" fill="#1e293b" stroke="#00bfff" stroke-width="1.5"/>
+  <text id="lbl-t4" x="633" y="589" text-anchor="middle" font-family="Arial,sans-serif" font-size="11" fill="#f1f5f9">Center Rocker (Down)</text>
   <!-- callout:t5 -->
-  <line x1="641" y1="435" x2="910" y2="530" stroke="#00bfff" stroke-width="1.5" stroke-dasharray="5 3" opacity="0.75"/>
+  <line x1="641" y1="435" x2="800" y2="532" stroke="#00bfff" stroke-width="1.5" stroke-dasharray="5 3" opacity="0.75"/>
   <circle cx="641" cy="435" r="5" fill="#00bfff" stroke="#0f172a" stroke-width="1.5"/>
-  <rect x="830" y="530" width="160" height="30" rx="4" fill="#1e293b" stroke="#00bfff" stroke-width="1.5"/>
-  <text id="lbl-t5" x="910" y="549" text-anchor="middle" font-family="Arial,sans-serif" font-size="11" fill="#f1f5f9">Right Rocker (Up)</text>
+  <rect x="720" y="532" width="160" height="30" rx="4" fill="#1e293b" stroke="#00bfff" stroke-width="1.5"/>
+  <text id="lbl-t5" x="800" y="551" text-anchor="middle" font-family="Arial,sans-serif" font-size="11" fill="#f1f5f9">Right Rocker (Up)</text>
   <!-- callout:t6 -->
-  <line x1="640" y1="480" x2="910" y2="570" stroke="#00bfff" stroke-width="1.5" stroke-dasharray="5 3" opacity="0.75"/>
-  <circle cx="640" cy="480" r="5" fill="#00bfff" stroke="#0f172a" stroke-width="1.5"/>
-  <rect x="830" y="570" width="160" height="30" rx="4" fill="#1e293b" stroke="#00bfff" stroke-width="1.5"/>
-  <text id="lbl-t6" x="910" y="589" text-anchor="middle" font-family="Arial,sans-serif" font-size="11" fill="#f1f5f9">Right Rocker (Down)</text>
+  <line x1="645" y1="475" x2="800" y2="570" stroke="#00bfff" stroke-width="1.5" stroke-dasharray="5 3" opacity="0.75"/>
+  <circle cx="645" cy="475" r="5" fill="#00bfff" stroke="#0f172a" stroke-width="1.5"/>
+  <rect x="720" y="570" width="160" height="30" rx="4" fill="#1e293b" stroke="#00bfff" stroke-width="1.5"/>
+  <text id="lbl-t6" x="800" y="589" text-anchor="middle" font-family="Arial,sans-serif" font-size="11" fill="#f1f5f9">Right Rocker (Down)</text>
   <text x="480" y="632" text-anchor="middle" font-family="Arial,sans-serif" font-size="12" fill="#475569">Logitech Throttle Quadrant - 9 buttons + 3 axes</text>
 </svg>
