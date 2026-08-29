@@ -62,16 +62,16 @@
           <mxGeometry height="26" width="210" x="675" y="35" as="geometry" />
         </mxCell>
         <mxCell id="anchor-vkb-btn-release" parent="1" style="ellipse;whiteSpace=wrap;html=1;fillColor=#00bfff;strokeColor=#0f172a;strokeWidth=1.5;" value="" vertex="1">
-          <mxGeometry height="10" width="10" x="518" y="72" as="geometry" />
+          <mxGeometry height="10" width="10" x="508" y="82" as="geometry" />
         </mxCell>
         <mxCell id="connector-vkb-btn-release" edge="1" parent="1" source="label-vkb-btn-release" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;strokeColor=#00bfff;dashed=1;" target="anchor-vkb-btn-release" value="">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
         <mxCell id="label-vkb-btn-dlc" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#1e293b;strokeColor=#00bfff;fontColor=#f1f5f9;fontSize=11;" value="DLC Enable / Countermeasures" vertex="1">
-          <mxGeometry height="26" width="210" x="20" y="342" as="geometry" />
+          <mxGeometry height="26" width="210" x="20" y="334" as="geometry" />
         </mxCell>
         <mxCell id="anchor-vkb-btn-dlc" parent="1" style="ellipse;whiteSpace=wrap;html=1;fillColor=#00bfff;strokeColor=#0f172a;strokeWidth=1.5;" value="" vertex="1">
-          <mxGeometry height="10" width="10" x="345" y="350" as="geometry" />
+          <mxGeometry height="10" width="10" x="335" y="342" as="geometry" />
         </mxCell>
         <mxCell id="connector-vkb-btn-dlc" edge="1" parent="1" source="label-vkb-btn-dlc" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;strokeColor=#00bfff;dashed=1;" target="anchor-vkb-btn-dlc" value="">
           <mxGeometry relative="1" as="geometry" />
@@ -122,13 +122,13 @@
           <mxGeometry height="26" width="210" x="20" y="287" as="geometry" />
         </mxCell>
         <mxCell id="anchor-vkb-axis-dlc" parent="1" style="ellipse;whiteSpace=wrap;html=1;fillColor=#00bfff;strokeColor=#0f172a;strokeWidth=1.5;" value="" vertex="1">
-          <mxGeometry height="10" width="10" x="335" y="295" as="geometry" />
+          <mxGeometry height="10" width="10" x="345" y="258" as="geometry" />
         </mxCell>
         <mxCell id="connector-vkb-axis-dlc" edge="1" parent="1" source="label-vkb-axis-dlc" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;strokeColor=#00bfff;dashed=1;" target="anchor-vkb-axis-dlc" value="">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
         <mxCell id="label-vkb-nws" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#1e293b;strokeColor=#00bfff;fontColor=#f1f5f9;fontSize=11;" value="NWS / Shift" vertex="1">
-          <mxGeometry height="26" width="210" x="660" y="1026" as="geometry" />
+          <mxGeometry height="26" width="210" x="540" y="1026" as="geometry" />
         </mxCell>
         <mxCell id="anchor-vkb-nws" parent="1" style="ellipse;whiteSpace=wrap;html=1;fillColor=#00bfff;strokeColor=#0f172a;strokeWidth=1.5;" value="" vertex="1">
           <mxGeometry height="10" width="10" x="424" y="1034" as="geometry" />
@@ -137,7 +137,7 @@
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
         <mxCell id="label-vkb-trigger" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#1e293b;strokeColor=#00bfff;fontColor=#f1f5f9;fontSize=11;" value="Trigger 1 — Gun camera" vertex="1">
-          <mxGeometry height="26" width="210" x="660" y="820" as="geometry" />
+          <mxGeometry height="26" width="210" x="580" y="820" as="geometry" />
         </mxCell>
         <mxCell id="anchor-vkb-trigger" parent="1" style="ellipse;whiteSpace=wrap;html=1;fillColor=#00bfff;strokeColor=#0f172a;strokeWidth=1.5;" value="" vertex="1">
           <mxGeometry height="10" width="10" x="543" y="828" as="geometry" />
@@ -146,7 +146,7 @@
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
         <mxCell id="label-vkb-trigger-stage2" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#1e293b;strokeColor=#00bfff;fontColor=#f1f5f9;fontSize=9;" value="Trigger 2 — Fire gun / F-14 missiles and gun" vertex="1">
-          <mxGeometry height="26" width="210" x="660" y="864" as="geometry" />
+          <mxGeometry height="26" width="210" x="580" y="864" as="geometry" />
         </mxCell>
         <mxCell id="anchor-vkb-trigger-stage2" parent="1" style="ellipse;whiteSpace=wrap;html=1;fillColor=#00bfff;strokeColor=#0f172a;strokeWidth=1.5;" value="" vertex="1">
           <mxGeometry height="10" width="10" x="490" y="872" as="geometry" />
@@ -155,7 +155,7 @@
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
         <mxCell id="label-vkb-paddle" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#1e293b;strokeColor=#00bfff;fontColor=#f1f5f9;fontSize=11;" value="Paddle switch" vertex="1">
-          <mxGeometry height="26" width="210" x="660" y="1102" as="geometry" />
+          <mxGeometry height="26" width="210" x="540" y="1102" as="geometry" />
         </mxCell>
         <mxCell id="anchor-vkb-paddle" parent="1" style="ellipse;whiteSpace=wrap;html=1;fillColor=#00bfff;strokeColor=#0f172a;strokeWidth=1.5;" value="" vertex="1">
           <mxGeometry height="10" width="10" x="508" y="1110" as="geometry" />
