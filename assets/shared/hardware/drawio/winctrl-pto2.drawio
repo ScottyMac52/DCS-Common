@@ -281,7 +281,7 @@
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
         <mxCell id="label-pto2-button-32" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#1e293b;strokeColor=#00bfff;fontColor=#f1f5f9;fontSize=10;buttonNumber=32;" value="Hook handle upper position" vertex="1">
-          <mxGeometry height="22" width="268" x="1222" y="362" as="geometry" />
+          <mxGeometry height="22" width="268" x="1222" y="357" as="geometry" />
         </mxCell>
         <mxCell id="anchor-pto2-button-32" parent="1" style="ellipse;whiteSpace=wrap;html=1;fillColor=#00bfff;strokeColor=#0f172a;strokeWidth=1.5;" value="" vertex="1">
           <mxGeometry height="10" width="10" x="1093" y="279" as="geometry" />
@@ -290,7 +290,7 @@
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
         <mxCell id="label-pto2-button-33" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#1e293b;strokeColor=#00bfff;fontColor=#f1f5f9;fontSize=10;buttonNumber=33;" value="Hook handle center position" vertex="1">
-          <mxGeometry height="22" width="268" x="1222" y="388" as="geometry" />
+          <mxGeometry height="22" width="268" x="1222" y="383" as="geometry" />
         </mxCell>
         <mxCell id="anchor-pto2-button-33" parent="1" style="ellipse;whiteSpace=wrap;html=1;fillColor=#00bfff;strokeColor=#0f172a;strokeWidth=1.5;" value="" vertex="1">
           <mxGeometry height="10" width="10" x="1095" y="319" as="geometry" />
@@ -299,7 +299,7 @@
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
         <mxCell id="label-pto2-button-34" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#1e293b;strokeColor=#00bfff;fontColor=#f1f5f9;fontSize=10;buttonNumber=34;" value="Hook handle lower position" vertex="1">
-          <mxGeometry height="22" width="268" x="1222" y="414" as="geometry" />
+          <mxGeometry height="22" width="268" x="1222" y="409" as="geometry" />
         </mxCell>
         <mxCell id="anchor-pto2-button-34" parent="1" style="ellipse;whiteSpace=wrap;html=1;fillColor=#00bfff;strokeColor=#0f172a;strokeWidth=1.5;" value="" vertex="1">
           <mxGeometry height="10" width="10" x="1093" y="372" as="geometry" />
@@ -350,7 +350,7 @@
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
         <mxCell id="label-pto2-button-38" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#1e293b;strokeColor=#00bfff;fontColor=#f1f5f9;fontSize=10;buttonNumber=38;" value="Emergency brake / parking brake position 1" vertex="1">
-          <mxGeometry height="22" width="268" x="1222" y="440" as="geometry" />
+          <mxGeometry height="22" width="268" x="773" y="693" as="geometry" />
         </mxCell>
         <mxCell id="anchor-pto2-button-38" parent="1" style="ellipse;whiteSpace=wrap;html=1;fillColor=#00bfff;strokeColor=#0f172a;strokeWidth=1.5;" value="" vertex="1">
           <mxGeometry height="10" width="10" x="811" y="557" as="geometry" />
@@ -359,7 +359,7 @@
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
         <mxCell id="label-pto2-button-39" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#1e293b;strokeColor=#00bfff;fontColor=#f1f5f9;fontSize=10;buttonNumber=39;" value="Emergency brake / parking brake position 2" vertex="1">
-          <mxGeometry height="22" width="268" x="1222" y="466" as="geometry" />
+          <mxGeometry height="22" width="268" x="773" y="750" as="geometry" />
         </mxCell>
         <mxCell id="anchor-pto2-button-39" parent="1" style="ellipse;whiteSpace=wrap;html=1;fillColor=#00bfff;strokeColor=#0f172a;strokeWidth=1.5;" value="" vertex="1">
           <mxGeometry height="10" width="10" x="806" y="612" as="geometry" />
@@ -368,16 +368,13 @@
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
         <mxCell id="label-pto2-button-40" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#1e293b;strokeColor=#00bfff;fontColor=#f1f5f9;fontSize=10;buttonNumber=40;" value="Emergency brake / parking brake position 3" vertex="1">
-          <mxGeometry height="22" width="268" x="1222" y="492" as="geometry" />
+          <mxGeometry height="22" width="268" x="607" y="722" as="geometry" />
         </mxCell>
         <mxCell id="anchor-pto2-button-40" parent="1" style="ellipse;whiteSpace=wrap;html=1;fillColor=#00bfff;strokeColor=#0f172a;strokeWidth=1.5;" value="" vertex="1">
-          <mxGeometry height="10" width="10" x="776" y="582" as="geometry" />
-        </mxCell>
-        <mxCell id="connector-pto2-button-40" edge="1" parent="1" source="label-pto2-button-40" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;strokeColor=#00bfff;dashed=1;endArrow=none;exitX=0;exitY=0.5;entryX=1;entryY=0.5;" target="anchor-pto2-button-40" value="">
-          <mxGeometry relative="1" as="geometry" />
+          <mxGeometry height="10" width="10" x="776" y="578" as="geometry" />
         </mxCell>
         <mxCell id="label-pto2-button-41" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#1e293b;strokeColor=#00bfff;fontColor=#f1f5f9;fontSize=10;buttonNumber=41;" value="Emergency brake / parking brake position 4" vertex="1">
-          <mxGeometry height="22" width="268" x="1222" y="518" as="geometry" />
+          <mxGeometry height="22" width="268" x="912" y="722" as="geometry" />
         </mxCell>
         <mxCell id="anchor-pto2-button-41" parent="1" style="ellipse;whiteSpace=wrap;html=1;fillColor=#00bfff;strokeColor=#0f172a;strokeWidth=1.5;" value="" vertex="1">
           <mxGeometry height="10" width="10" x="846" y="582" as="geometry" />
@@ -387,6 +384,17 @@
         </mxCell>
         <mxCell id="footer" parent="1" style="text;html=1;strokeColor=none;fillColor=none;fontColor=#64748b;fontSize=12;align=center;" value="WINCTRL PTO2 - 41 buttons + 0 axes" vertex="1">
           <mxGeometry height="20" width="600" x="450" y="952" as="geometry" />
+        </mxCell>
+        <mxCell id="yqwI-hF5AyJaaDs2ZdS7-1" edge="1" parent="1" source="label-pto2-button-40" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;strokeColor=#00bfff;dashed=1;endArrow=none;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" target="anchor-pto2-button-40" value="">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="740" y="733" />
+              <mxPoint x="740" y="568" />
+              <mxPoint x="781" y="568" />
+            </Array>
+            <mxPoint x="500" y="913" as="sourcePoint" />
+            <mxPoint x="653" y="820" as="targetPoint" />
+          </mxGeometry>
         </mxCell>
       </root>
     </mxGraphModel>

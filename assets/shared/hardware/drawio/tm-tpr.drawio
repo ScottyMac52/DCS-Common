@@ -13,7 +13,7 @@
         <mxCell id="anchor-tpr-axis-left-brake" parent="1" style="ellipse;whiteSpace=wrap;html=1;fillColor=#00bfff;strokeColor=#0f172a;strokeWidth=1.5;" value="" vertex="1">
           <mxGeometry height="10" width="10" x="360" y="172" as="geometry" />
         </mxCell>
-        <UserObject label="" tooltip="Left Wheel Brake" id="label-tpr-axis-left-brake">
+        <UserObject label="Left wheel brake" tooltip="Left Wheel Brake" id="label-tpr-axis-left-brake">
           <mxCell parent="1" style="rounded=1;arcSize=18;whiteSpace=wrap;html=1;fillColor=#1e293b;strokeColor=#00bfff;strokeWidth=1.5;fontColor=#f1f5f9;fontFamily=Arial;fontSize=11;align=center;verticalAlign=middle;" vertex="1">
             <mxGeometry height="22" width="160" x="170" y="320" as="geometry" />
           </mxCell>
@@ -24,7 +24,7 @@
         <mxCell id="anchor-tpr-axis-rudder" parent="1" style="ellipse;whiteSpace=wrap;html=1;fillColor=#00bfff;strokeColor=#0f172a;strokeWidth=1.5;" value="" vertex="1">
           <mxGeometry height="10" width="10" x="440" y="210" as="geometry" />
         </mxCell>
-        <UserObject label="" tooltip="Rudder" id="label-tpr-axis-rudder">
+        <UserObject label="Rudder" tooltip="Rudder" id="label-tpr-axis-rudder">
           <mxCell parent="1" style="rounded=1;arcSize=18;whiteSpace=wrap;html=1;fillColor=#1e293b;strokeColor=#00bfff;strokeWidth=1.5;fontColor=#f1f5f9;fontFamily=Arial;fontSize=11;align=center;verticalAlign=middle;" vertex="1">
             <mxGeometry height="22" width="160" x="600" y="70" as="geometry" />
           </mxCell>
@@ -35,7 +35,7 @@
         <mxCell id="anchor-tpr-axis-right-brake" parent="1" style="ellipse;whiteSpace=wrap;html=1;fillColor=#00bfff;strokeColor=#0f172a;strokeWidth=1.5;" value="" vertex="1">
           <mxGeometry height="10" width="10" x="630" y="270" as="geometry" />
         </mxCell>
-        <UserObject label="" tooltip="Right Wheel Brake" id="label-tpr-axis-right-brake">
+        <UserObject label="Right sheel brake" tooltip="Right Wheel Brake" id="label-tpr-axis-right-brake">
           <mxCell parent="1" style="rounded=1;arcSize=18;whiteSpace=wrap;html=1;fillColor=#1e293b;strokeColor=#00bfff;strokeWidth=1.5;fontColor=#f1f5f9;fontFamily=Arial;fontSize=11;align=center;verticalAlign=middle;" vertex="1">
             <mxGeometry height="22" width="160" x="730" y="160" as="geometry" />
           </mxCell>
