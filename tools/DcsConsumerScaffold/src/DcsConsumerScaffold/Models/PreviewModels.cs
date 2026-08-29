@@ -4,6 +4,16 @@ using System.Text.Json.Serialization;
 
 namespace DcsConsumerScaffold.Models;
 
+public enum PreviewChangeState
+{
+    NotCompared,
+    Unchanged,
+    New,
+    Changed,
+    OutOfSync,
+    Unused,
+}
+
 public sealed class PreviewDocument
 {
     [JsonPropertyName("schemaVersion")]
@@ -31,8 +41,11 @@ public sealed class PreviewDocument
     public List<string> Errors { get; set; } = [];
 }
 
-public sealed class PreviewDevice
+public sealed class PreviewDevice : INotifyPropertyChanged
 {
+    private string? _role;
+    private PreviewChangeState _changeState = PreviewChangeState.NotCompared;
+    private string _changeReason = "Select an output repository to compare.";
     [JsonPropertyName("profileFile")]
     public string? ProfileFile { get; set; }
 
@@ -52,7 +65,11 @@ public sealed class PreviewDevice
     public string? PhysicalInstance { get; set; }
 
     [JsonPropertyName("role")]
-    public string? Role { get; set; }
+    public string? Role
+    {
+        get => _role;
+        set => Set(ref _role, value);
+    }
 
     [JsonPropertyName("profileKey")]
     public string? ProfileKey { get; set; }
@@ -67,15 +84,47 @@ public sealed class PreviewDevice
     public int BindingCount { get; set; }
 
     [JsonIgnore]
-    public bool CanPreview => !string.IsNullOrWhiteSpace(DeviceId) && !string.IsNullOrWhiteSpace(ProfileKey) && BindingCount > 0;
+    public PreviewChangeState ChangeState
+    {
+        get => _changeState;
+        set => Set(ref _changeState, value);
+    }
+
+    [JsonIgnore]
+    public string ChangeReason
+    {
+        get => _changeReason;
+        set => Set(ref _changeReason, value);
+    }
+
+    [JsonIgnore]
+    public bool IsRepositoryOnly { get; set; }
+
+    [JsonIgnore]
+    public bool CanPreview => !IsRepositoryOnly && !string.IsNullOrWhiteSpace(DeviceId) && !string.IsNullOrWhiteSpace(ProfileKey) && BindingCount > 0;
+
+    [JsonIgnore]
+    public bool CanEdit => !IsRepositoryOnly;
 
     [JsonIgnore]
     public string PreviewReason => CanPreview ? "Preview generated kneeboard" : "Resolve this device and at least one binding before previewing";
+
+    public event PropertyChangedEventHandler? PropertyChanged;
+
+    private bool Set<T>(ref T field, T value, [CallerMemberName] string? name = null)
+    {
+        if (EqualityComparer<T>.Default.Equals(field, value)) return false;
+        field = value;
+        PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(name));
+        return true;
+    }
 }
 
 public sealed class PreviewRow : INotifyPropertyChanged
 {
     private string? _label;
+    private PreviewChangeState _changeState = PreviewChangeState.NotCompared;
+    private string _changeReason = "Select an output repository to compare.";
     [JsonPropertyName("profileFile")]
     public string? ProfileFile { get; set; }
 
@@ -148,6 +197,20 @@ public sealed class PreviewRow : INotifyPropertyChanged
     [JsonPropertyName("modifierModes")]
     public List<string?> ModifierModes { get; set; } = [];
 
+    [JsonIgnore]
+    public PreviewChangeState ChangeState
+    {
+        get => _changeState;
+        set { if (_changeState != value) { _changeState = value; PropertyChanged?.Invoke(this, new(nameof(ChangeState))); } }
+    }
+
+    [JsonIgnore]
+    public string ChangeReason
+    {
+        get => _changeReason;
+        set { if (_changeReason != value) { _changeReason = value; PropertyChanged?.Invoke(this, new(nameof(ChangeReason))); } }
+    }
+
     public string ModifierModesDisplay =>
         ModifierModes.Count == 0
             ? string.Empty
@@ -169,9 +232,11 @@ public sealed class PreviewRow : INotifyPropertyChanged
     public void ResetToDefaultLabel() => ApplyLabel(DefaultLabel, "dcs");
 }
 
-public sealed class PreviewModifier
+public sealed class PreviewModifier : INotifyPropertyChanged
 {
     private string? _semanticModifier;
+    private PreviewChangeState _changeState = PreviewChangeState.NotCompared;
+    private string _changeReason = "Select an output repository to compare.";
     [JsonPropertyName("name")]
     public string? Name { get; set; }
 
@@ -188,7 +253,37 @@ public sealed class PreviewModifier
     public string? SemanticModifier
     {
         get => _semanticModifier;
-        set => _semanticModifier = value;
+        set => Set(ref _semanticModifier, value);
+    }
+
+    [JsonIgnore]
+    public PreviewChangeState ChangeState
+    {
+        get => _changeState;
+        set => Set(ref _changeState, value);
+    }
+
+    [JsonIgnore]
+    public string ChangeReason
+    {
+        get => _changeReason;
+        set => Set(ref _changeReason, value);
+    }
+
+    [JsonIgnore]
+    public bool IsRepositoryOnly { get; set; }
+
+    [JsonIgnore]
+    public bool CanEdit => !IsRepositoryOnly;
+
+    public event PropertyChangedEventHandler? PropertyChanged;
+
+    private bool Set<T>(ref T field, T value, [CallerMemberName] string? name = null)
+    {
+        if (EqualityComparer<T>.Default.Equals(field, value)) return false;
+        field = value;
+        PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(name));
+        return true;
     }
 }
 
@@ -216,6 +311,22 @@ public sealed class CommandLabelGroup : INotifyPropertyChanged
     private string? _defaultLabel;
     private int _bindingCount;
     private bool _isMixed;
+
+    private PreviewChangeState _changeState = PreviewChangeState.NotCompared;
+    private string _changeReason = "Select an output repository to compare.";
+
+    public PreviewChangeState ChangeState
+    {
+        get => _changeState;
+        set => Set(ref _changeState, value);
+    }
+    public string ChangeReason
+    {
+        get => _changeReason;
+        set => Set(ref _changeReason, value);
+    }
+    public bool IsRepositoryOnly { get; set; }
+    public bool CanEdit => !IsRepositoryOnly;
 
     public required string Command { get; init; }
 

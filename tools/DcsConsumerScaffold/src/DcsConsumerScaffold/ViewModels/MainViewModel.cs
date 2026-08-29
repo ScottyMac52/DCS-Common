@@ -12,6 +12,8 @@ public sealed class MainViewModel : INotifyPropertyChanged
     private readonly ScaffoldEngineService _engine;
     private readonly CurrentLabelService _currentLabels;
     private readonly UiLayerImportService _uiLayerImport;
+    private readonly PreviewComparisonService _comparison;
+    private RepositoryPreviewSnapshot? _comparisonSnapshot;
     private string _profilesDir = string.Empty;
     private string _modifiersPath = string.Empty;
     private string _mozaGrip = "standalone";
@@ -29,11 +31,13 @@ public sealed class MainViewModel : INotifyPropertyChanged
     public MainViewModel(
         ScaffoldEngineService? engine = null,
         CurrentLabelService? currentLabels = null,
-        UiLayerImportService? uiLayerImport = null)
+        UiLayerImportService? uiLayerImport = null,
+        PreviewComparisonService? comparison = null)
     {
         _engine = engine ?? new ScaffoldEngineService();
         _currentLabels = currentLabels ?? new CurrentLabelService();
         _uiLayerImport = uiLayerImport ?? new UiLayerImportService();
+        _comparison = comparison ?? new PreviewComparisonService();
         LoadPreviewCommand = new RelayCommand(async () => await LoadPreviewAsync(), CanLoadPreview);
         ProceedCommand = new RelayCommand(async () => await ProceedAsync(), CanProceed);
         Devices = new ObservableCollection<PreviewDevice>();
@@ -236,6 +240,7 @@ public sealed class MainViewModel : INotifyPropertyChanged
                 foreach (var device in document.Devices)
                 {
                     Devices.Add(device);
+                    device.PropertyChanged += Device_PropertyChanged;
                 }
             }
 
@@ -248,8 +253,15 @@ public sealed class MainViewModel : INotifyPropertyChanged
 
             if (document?.Modifiers != null)
             {
-                foreach (var modifier in document.Modifiers) Modifiers.Add(modifier);
+                foreach (var modifier in document.Modifiers)
+                {
+                    Modifiers.Add(modifier);
+                    modifier.PropertyChanged += Modifier_PropertyChanged;
+                }
             }
+
+            _comparisonSnapshot = IsUiLayerImport ? null : _comparison.Load(OutputDir);
+            RecomparePreview();
 
             HasPreview = document != null;
             var summary = document?.Summary;
@@ -303,7 +315,7 @@ public sealed class MainViewModel : INotifyPropertyChanged
             }
 
             var instanceRoles = Devices
-                .Where(device => !string.IsNullOrWhiteSpace(device.ProfileFile) && !string.IsNullOrWhiteSpace(device.Role))
+                .Where(device => !device.IsRepositoryOnly && !string.IsNullOrWhiteSpace(device.ProfileFile) && !string.IsNullOrWhiteSpace(device.Role))
                 .ToDictionary(device => device.ProfileFile!, device => device.Role!.Trim(), StringComparer.OrdinalIgnoreCase);
 
             var (stdout, stderr, exitCode) = await _engine.RunWriteAsync(
@@ -345,6 +357,12 @@ public sealed class MainViewModel : INotifyPropertyChanged
         RebuildCommandLabels();
     }
 
+    private void RecomparePreview()
+    {
+        if (IsUiLayerImport || _comparisonSnapshot is null) return;
+        _comparison.Apply(_comparisonSnapshot, Devices, Modifiers, Rows, CommandLabels);
+    }
+
     public void RebuildCommandLabels()
     {
         var existing = CommandLabels.ToDictionary(group => group.Command, StringComparer.Ordinal);
@@ -379,6 +397,7 @@ public sealed class MainViewModel : INotifyPropertyChanged
             row.ApplyLabel(appliedLabel, "command");
 
         group.Refresh(Rows);
+        RecomparePreview();
         StatusText = $"Applied command label to {matchingRows.Count} bindings for {group.Command}.";
     }
 
@@ -391,15 +410,28 @@ public sealed class MainViewModel : INotifyPropertyChanged
         var group = CommandLabels.FirstOrDefault(item =>
             string.Equals(item.Command, row.Command, StringComparison.Ordinal));
         group?.Refresh(Rows);
+        RecomparePreview();
+    }
+
+    private void Modifier_PropertyChanged(object? sender, PropertyChangedEventArgs e)
+    {
+        if (e.PropertyName == nameof(PreviewModifier.SemanticModifier)) RecomparePreview();
+    }
+
+    private void Device_PropertyChanged(object? sender, PropertyChangedEventArgs e)
+    {
+        if (e.PropertyName == nameof(PreviewDevice.Role)) RecomparePreview();
     }
 
     private void UntrackRows()
     {
         foreach (var row in Rows) row.PropertyChanged -= PreviewRow_PropertyChanged;
+        foreach (var device in Devices) device.PropertyChanged -= Device_PropertyChanged;
+        foreach (var modifier in Modifiers) modifier.PropertyChanged -= Modifier_PropertyChanged;
     }
 
     public IReadOnlyDictionary<string, string> ModifierOverrides() => Modifiers
-        .Where(modifier => !string.IsNullOrWhiteSpace(modifier.Name) && !string.IsNullOrWhiteSpace(modifier.SemanticModifier))
+        .Where(modifier => !modifier.IsRepositoryOnly && !string.IsNullOrWhiteSpace(modifier.Name) && !string.IsNullOrWhiteSpace(modifier.SemanticModifier))
         .ToDictionary(modifier => modifier.Name!, modifier => modifier.SemanticModifier!.Trim(), StringComparer.OrdinalIgnoreCase);
 
     public IReadOnlyDictionary<string, string> LabelOverrides() => Rows
@@ -435,7 +467,7 @@ public sealed class MainViewModel : INotifyPropertyChanged
             throw new InvalidOperationException("Preview requires a resolved, supported physical device instance.");
 
         var instanceRoles = Devices
-            .Where(item => !string.IsNullOrWhiteSpace(item.ProfileFile) && !string.IsNullOrWhiteSpace(item.Role))
+            .Where(item => !item.IsRepositoryOnly && !string.IsNullOrWhiteSpace(item.ProfileFile) && !string.IsNullOrWhiteSpace(item.Role))
             .ToDictionary(item => item.ProfileFile!, item => item.Role!.Trim(), StringComparer.OrdinalIgnoreCase);
         return await _engine.RenderDevicePreviewAsync(
             ProfilesDir,

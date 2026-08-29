@@ -66,6 +66,14 @@ public partial class MainWindow : Window
             _viewModel.ApplyCommandLabel(group);
     }
 
+    private void PreviewGrid_BeginningEdit(object sender, DataGridBeginningEditEventArgs e)
+    {
+        if (e.Row.Item is PreviewDevice { IsRepositoryOnly: true } or
+            PreviewModifier { IsRepositoryOnly: true } or
+            CommandLabelGroup { IsRepositoryOnly: true })
+            e.Cancel = true;
+    }
+
     private void ResetLabel_Click(object sender, RoutedEventArgs e)
     {
         if ((sender as FrameworkElement)?.Tag is PreviewRow row) row.ResetLabel();
