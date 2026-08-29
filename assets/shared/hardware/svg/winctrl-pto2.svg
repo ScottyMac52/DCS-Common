@@ -201,7 +201,9 @@
   <circle cx="851" cy="587" r="5" fill="#00bfff" stroke="#0f172a" stroke-width="1.5"/>
   <rect x="912" y="722" width="268" height="22" rx="4" fill="#1e293b" stroke="#00bfff" stroke-width="1.5"/>
   <text id="lbl-pto2-button-41" x="1046" y="737" text-anchor="middle" font-family="Arial,sans-serif" font-size="10" fill="#f1f5f9">Emergency brake / parking brake position 4</text>
-  <!-- box:pto2-button-40 -->
+  <!-- callout:pto2-button-40 -->
+  <polyline points="781,583 740,733 740,568 781,568 500,913 653,820 741,722" fill="none" stroke="#00bfff" stroke-width="1.5" stroke-dasharray="5 3" opacity="0.75"/>
+  <circle cx="781" cy="583" r="5" fill="#00bfff" stroke="#0f172a" stroke-width="1.5"/>
   <rect x="607" y="722" width="268" height="22" rx="4" fill="#1e293b" stroke="#00bfff" stroke-width="1.5"/>
   <text id="lbl-pto2-button-40" x="741" y="737" text-anchor="middle" font-family="Arial,sans-serif" font-size="10" fill="#f1f5f9">Emergency brake / parking brake position 3</text>
   <text x="750" y="972" text-anchor="middle" font-family="Arial,sans-serif" font-size="12" fill="#475569">WINCTRL PTO2 - 41 buttons + 0 axes</text>

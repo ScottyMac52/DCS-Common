@@ -115,6 +115,18 @@ function renderLabelBox(lines, label, id) {
 
 function render(device, xml) {
   const graph = decodeDrawioGraph(xml, device.id);
+  for (const match of graph.matchAll(/<mxCell\b([^>]*\bedge="1"[^>]*)>/g)) {
+    const tag = match[1];
+    const edgeAttr = (name) => decode(tag.match(new RegExp(`(?:^|\\s)${name}="([^"]*)"`))?.[1]);
+    const connectorId = edgeAttr('id');
+    if (!connectorId?.startsWith('connector-')) {
+      throw new Error(`${device.id}: callout edge must use a stable connector-* ID: ${connectorId || '(missing)'}`);
+    }
+    const controlId = connectorId.slice('connector-'.length);
+    if (edgeAttr('source') !== `label-${controlId}` || edgeAttr('target') !== `anchor-${controlId}`) {
+      throw new Error(`${device.id}: ${connectorId} must connect label-${controlId} to anchor-${controlId}`);
+    }
+  }
   const modelTag = graph.match(/<mxGraphModel\b([^>]*)>/)?.[1];
   const width = Number(attr(modelTag, 'pageWidth'));
   const height = Number(attr(modelTag, 'pageHeight'));
@@ -179,7 +191,13 @@ function render(device, xml) {
 
   lines.push(`  <text x=\"${width / 2}\" y=\"${height - 8}\" text-anchor=\"middle\" font-family=\"Arial,sans-serif\" font-size=\"12\" fill=\"#475569\">${esc(footer.value)}</text>`);
   lines.push('</svg>');
-  return lines.join('\n');
+  const output = lines.join('\n');
+  const exportedLabelIds = [...output.matchAll(/<text id="lbl-([^"]+)"/g)].map((match) => match[1]);
+  if (new Set(exportedLabelIds).size !== exportedLabelIds.length) {
+    const duplicates = [...new Set(exportedLabelIds.filter((id, index) => exportedLabelIds.indexOf(id) !== index))];
+    throw new Error(`${device.id}: duplicate exported SVG label IDs: ${duplicates.join(', ')}`);
+  }
+  return output;
 }
 
 let processed = 0;
