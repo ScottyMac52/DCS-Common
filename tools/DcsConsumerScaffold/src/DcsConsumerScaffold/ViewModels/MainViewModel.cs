@@ -22,6 +22,9 @@ public sealed class MainViewModel : INotifyPropertyChanged
     private string _displayName = string.Empty;
     private string _inputModuleId = string.Empty;
     private string _kneeboardId = string.Empty;
+    private bool _displayNameIsInferred;
+    private bool _inputModuleIdIsInferred;
+    private bool _kneeboardIdIsInferred;
     private string _importTarget = "consumer";
     private string _statusText = "Select a profiles directory, then Load Preview. After review, set output + identities and Proceed.";
     private string _summaryText = string.Empty;
@@ -65,6 +68,7 @@ public sealed class MainViewModel : INotifyPropertyChanged
                     ? "UI Layer mode: select Saved Games UiLayer joystick profiles, modifiers.lua, and the DCS-Common root."
                     : "Consumer mode: Load Preview, review labels, then Proceed to write the module repository.";
                 PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(IsUiLayerImport)));
+                if (!IsUiLayerImport) ApplyProfileIdentityDefaults();
             }
         }
     }
@@ -78,6 +82,7 @@ public sealed class MainViewModel : INotifyPropertyChanged
         {
             if (Set(ref _profilesDir, value))
             {
+                ApplyProfileIdentityDefaults();
                 RaiseCommands();
             }
         }
@@ -120,6 +125,7 @@ public sealed class MainViewModel : INotifyPropertyChanged
         {
             if (Set(ref _displayName, value))
             {
+                _displayNameIsInferred = false;
                 RaiseCommands();
             }
         }
@@ -132,6 +138,7 @@ public sealed class MainViewModel : INotifyPropertyChanged
         {
             if (Set(ref _inputModuleId, value))
             {
+                _inputModuleIdIsInferred = false;
                 RaiseCommands();
             }
         }
@@ -144,6 +151,7 @@ public sealed class MainViewModel : INotifyPropertyChanged
         {
             if (Set(ref _kneeboardId, value))
             {
+                _kneeboardIdIsInferred = false;
                 RaiseCommands();
             }
         }
@@ -205,6 +213,31 @@ public sealed class MainViewModel : INotifyPropertyChanged
     {
         LoadPreviewCommand.RaiseCanExecuteChanged();
         ProceedCommand.RaiseCanExecuteChanged();
+    }
+
+    private void ApplyProfileIdentityDefaults()
+    {
+        if (IsUiLayerImport) return;
+
+        var moduleId = ProfilePathIdentityService.InferModuleId(ProfilesDir);
+        if (moduleId is null)
+        {
+            if (!string.IsNullOrWhiteSpace(ProfilesDir))
+                StatusText = "Could not infer repository identities: select a profile directory below Config\\Input\\<module>. The identity fields remain editable.";
+            return;
+        }
+
+        ApplyInferredValue(ref _displayName, ref _displayNameIsInferred, moduleId, nameof(DisplayName));
+        ApplyInferredValue(ref _inputModuleId, ref _inputModuleIdIsInferred, moduleId, nameof(InputModuleId));
+        ApplyInferredValue(ref _kneeboardId, ref _kneeboardIdIsInferred, moduleId, nameof(KneeboardId));
+        RaiseCommands();
+    }
+
+    private void ApplyInferredValue(ref string field, ref bool isInferred, string inferredValue, string propertyName)
+    {
+        if (!string.IsNullOrWhiteSpace(field) && !isInferred) return;
+        Set(ref field, inferredValue, propertyName);
+        isInferred = true;
     }
 
     public async Task LoadPreviewAsync()
