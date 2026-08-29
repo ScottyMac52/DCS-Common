@@ -2,6 +2,13 @@ name: Reusable build workflow
 
 on:
   workflow_call:
+    outputs:
+      generated-commit-sha:
+        description: Commit containing the kneeboard pages packaged by this run.
+        value: ${{ jobs.build.outputs['generated-commit-sha'] }}
+      generated-commit-url:
+        description: URL of the commit containing the kneeboard pages packaged by this run.
+        value: ${{ jobs.build.outputs['generated-commit-url'] }}
     inputs:
       package-version:
         required: false
@@ -95,6 +102,9 @@ on:
 
 jobs:
   build:
+    outputs:
+      generated-commit-sha: ${{ steps.commit_kneeboard.outputs['generated-commit-sha'] }}
+      generated-commit-url: ${{ steps.commit_kneeboard.outputs['generated-commit-url'] }}
     runs-on: ${{ inputs.runs-on }}
     permissions:
       contents: write
@@ -142,11 +152,15 @@ jobs:
       - name: Validate OpenKneeboard pages
         run: ${{ inputs.test-kneeboard-command }}
       - name: Commit regenerated kneeboard pages
+        id: commit_kneeboard
         if: >-
           ${{ inputs.commit-kneeboard
               && github.event_name != 'pull_request'
               && (github.ref == 'refs/heads/main' || github.event_name == 'workflow_dispatch') }}
         shell: pwsh
+        env:
+          TRIGGER_SHA: ${{ github.sha }}
+          REPOSITORY: ${{ github.repository }}
         run: |
           Set-Location '${{ inputs.package-root }}'
           git config user.name  "github-actions[bot]"
@@ -156,6 +170,20 @@ jobs:
 
           $status = git status --porcelain ${{ inputs.kneeboard-paths }}
           if ([string]::IsNullOrWhiteSpace($status)) {
+            $CurrentSha = git rev-parse HEAD
+            $CurrentUrl = "https://github.com/$env:REPOSITORY/commit/$CurrentSha"
+            "generated-commit-sha=$CurrentSha" >> $env:GITHUB_OUTPUT
+            "generated-commit-url=$CurrentUrl" >> $env:GITHUB_OUTPUT
+            @"
+          ## Kneeboard generation provenance
+
+          | Revision | Commit |
+          | --- | --- |
+          | Workflow trigger | [$($env:TRIGGER_SHA.Substring(0, 7))](https://github.com/$env:REPOSITORY/commit/$env:TRIGGER_SHA) |
+          | Packaged kneeboards | [$($CurrentSha.Substring(0, 7))]($CurrentUrl) |
+
+          The generated kneeboards were already current, so no follow-up commit was required.
+          "@ >> $env:GITHUB_STEP_SUMMARY
             Write-Host 'Kneeboard pages are already up to date; nothing to commit.'
             return
           }
@@ -164,6 +192,19 @@ jobs:
           git push origin HEAD:main
 
           $NewSha = git rev-parse HEAD
+          $NewUrl = "https://github.com/$env:REPOSITORY/commit/$NewSha"
+          "generated-commit-sha=$NewSha" >> $env:GITHUB_OUTPUT
+          "generated-commit-url=$NewUrl" >> $env:GITHUB_OUTPUT
+          @"
+          ## Kneeboard generation provenance
+
+          | Revision | Commit |
+          | --- | --- |
+          | Workflow trigger | [$($env:TRIGGER_SHA.Substring(0, 7))](https://github.com/$env:REPOSITORY/commit/$env:TRIGGER_SHA) |
+          | Packaged kneeboards | [$($NewSha.Substring(0, 7))]($NewUrl) |
+
+          > GitHub permanently associates this run with the trigger commit. The **Packaged kneeboards** commit above contains the generated SVG/PNG files used by this run and is the revision to inspect.
+          "@ >> $env:GITHUB_STEP_SUMMARY
           Write-Host "Pushed regenerated kneeboard pages as $NewSha"
       - name: Build package
         shell: pwsh
