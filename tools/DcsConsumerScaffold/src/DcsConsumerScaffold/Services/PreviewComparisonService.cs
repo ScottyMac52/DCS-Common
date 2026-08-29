@@ -103,20 +103,20 @@ public sealed class PreviewComparisonService
         var matched = new HashSet<RepositoryDevice>();
         foreach (var device in devices)
         {
+            var current = MatchDevice(device, snapshot.Devices);
+            if (current is not null) matched.Add(current);
             var deviceRows = RowsForDevice(device, rows);
             if (deviceRows.Count == 0 || device.BindingCount == 0)
             {
                 Set(device, PreviewChangeState.Unused, "Physical device has no effective loaded bindings.");
                 continue;
             }
-            var current = MatchDevice(device, snapshot.Devices);
             if (current is null)
             {
                 Set(device, PreviewChangeState.New, "New physical device instance.");
                 SetRows(deviceRows, PreviewChangeState.New, "Binding belongs to a new physical device instance.");
                 continue;
             }
-            matched.Add(current);
             var loadedBindings = deviceRows.Select(BindingSignature).ToHashSet(StringComparer.Ordinal);
             var reasons = new List<string>();
             if (!Same(device.DeviceId, current.DeviceId)) reasons.Add($"deviceId changed: {current.DeviceId} → {device.DeviceId}");

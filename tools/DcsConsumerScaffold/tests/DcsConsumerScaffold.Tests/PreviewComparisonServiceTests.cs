@@ -72,6 +72,37 @@ public sealed class PreviewComparisonServiceTests
         Assert.Equal(PreviewChangeState.NotCompared, notCompared.ChangeState);
     }
 
+    [Fact]
+    public void Apply_DoesNotDuplicateExistingRepositoryDeviceWhenLoadedProfileHasNoBindings()
+    {
+        var repository = CreateRepository();
+        try
+        {
+            var service = new PreviewComparisonService();
+            var snapshot = service.Load(repository.FullName);
+            var loadedDevice = new PreviewDevice
+            {
+                ProfileKey = "mfd3",
+                ProfileFile = "F16 MFD 3 {AAAAAAAA-AAAA-AAAA-AAAA-AAAAAAAAAAAA}.diff.lua",
+                DeviceId = "tm-mfd",
+                InstanceHint = "3",
+                BindingCount = 0,
+            };
+            var devices = new List<PreviewDevice> { loadedDevice };
+
+            service.Apply(snapshot, devices, new List<PreviewModifier>(), [], new List<CommandLabelGroup>());
+
+            Assert.Equal(PreviewChangeState.Unused, loadedDevice.ChangeState);
+            Assert.Equal("Physical device has no effective loaded bindings.", loadedDevice.ChangeReason);
+            Assert.Single(devices, device => device.ProfileKey == "mfd3");
+            Assert.DoesNotContain(devices, device => device.ProfileKey == "mfd3" && device.IsRepositoryOnly);
+        }
+        finally
+        {
+            repository.Delete(recursive: true);
+        }
+    }
+
     private static DirectoryInfo CreateRepository()
     {
         var root = Directory.CreateTempSubdirectory("dcs-preview-comparison-");
