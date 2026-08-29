@@ -30,6 +30,7 @@ public sealed class MainViewModel : INotifyPropertyChanged
     private string _summaryText = string.Empty;
     private bool _isBusy;
     private bool _hasPreview;
+    private bool _isLoadingPreview;
 
     public MainViewModel(
         ScaffoldEngineService? engine = null,
@@ -249,6 +250,8 @@ public sealed class MainViewModel : INotifyPropertyChanged
         }
 
         IsBusy = true;
+        _isLoadingPreview = true;
+        _comparisonSnapshot = null;
         StatusText = "Running Node scaffold engine (preview)…";
         var semanticModifiers = ModifierOverrides();
         var labels = LabelOverrides();
@@ -294,6 +297,7 @@ public sealed class MainViewModel : INotifyPropertyChanged
             }
 
             _comparisonSnapshot = IsUiLayerImport ? null : _comparison.Load(OutputDir);
+            _isLoadingPreview = false;
             RecomparePreview();
 
             HasPreview = document != null;
@@ -321,6 +325,7 @@ public sealed class MainViewModel : INotifyPropertyChanged
         }
         finally
         {
+            _isLoadingPreview = false;
             IsBusy = false;
         }
     }
@@ -392,7 +397,7 @@ public sealed class MainViewModel : INotifyPropertyChanged
 
     private void RecomparePreview()
     {
-        if (IsUiLayerImport || _comparisonSnapshot is null) return;
+        if (_isLoadingPreview || IsUiLayerImport || _comparisonSnapshot is null) return;
         _comparison.Apply(_comparisonSnapshot, Devices, Modifiers, Rows, CommandLabels);
     }
 
