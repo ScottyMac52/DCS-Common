@@ -1,9 +1,30 @@
 <Window x:Class="DcsConsumerScaffold.MainWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:models="clr-namespace:DcsConsumerScaffold.Models"
         Title="DCS Input Profile Importer"
         Height="900" Width="1200"
         MinHeight="520" MinWidth="800">
+  <Window.Resources>
+    <Style x:Key="PreviewChangeRowStyle" TargetType="DataGridRow">
+      <Setter Property="ToolTip" Value="{Binding ChangeReason}" />
+      <Style.Triggers>
+        <DataTrigger Binding="{Binding ChangeState}" Value="{x:Static models:PreviewChangeState.New}">
+          <Setter Property="Background" Value="#C6EFCE" />
+        </DataTrigger>
+        <DataTrigger Binding="{Binding ChangeState}" Value="{x:Static models:PreviewChangeState.Changed}">
+          <Setter Property="Background" Value="#FFEB9C" />
+        </DataTrigger>
+        <DataTrigger Binding="{Binding ChangeState}" Value="{x:Static models:PreviewChangeState.OutOfSync}">
+          <Setter Property="Background" Value="#FFEB9C" />
+          <Setter Property="Foreground" Value="#9C0006" />
+        </DataTrigger>
+        <DataTrigger Binding="{Binding ChangeState}" Value="{x:Static models:PreviewChangeState.Unused}">
+          <Setter Property="Background" Value="#FFC7CE" />
+        </DataTrigger>
+      </Style.Triggers>
+    </Style>
+  </Window.Resources>
   <DockPanel Margin="12">
     <StackPanel DockPanel.Dock="Top" Margin="0,0,0,8">
       <TextBlock FontSize="18" FontWeight="SemiBold" Text="DCS Input Profile Importer" />
@@ -93,19 +114,33 @@
       </StackPanel>
     </Grid>
 
+    <Border DockPanel.Dock="Top" BorderBrush="#CBD5E1" BorderThickness="1" CornerRadius="3" Padding="6" Margin="0,0,0,8">
+      <StackPanel Orientation="Horizontal">
+        <TextBlock FontWeight="SemiBold" Margin="0,0,10,0" Text="Preview changes:" />
+        <TextBlock Background="#C6EFCE" Padding="6,2" Margin="0,0,6,0" Text="New" />
+        <TextBlock Background="#FFEB9C" Padding="6,2" Margin="0,0,6,0" Text="Changed" />
+        <TextBlock Background="#FFEB9C" Foreground="#9C0006" Padding="6,2" Margin="0,0,6,0" Text="Out of sync" />
+        <TextBlock Background="#FFC7CE" Padding="6,2" Margin="0,0,6,0" Text="Unused" />
+        <TextBlock Padding="6,2" Text="White = unchanged / not compared" />
+      </StackPanel>
+    </Border>
+
     <GroupBox DockPanel.Dock="Top" Header="Physical device instances" Margin="0,0,0,8" Padding="4">
       <DataGrid ItemsSource="{Binding Devices}"
                 Height="135"
                 AutoGenerateColumns="False"
                 CanUserAddRows="False"
                 HeadersVisibility="Column"
-                AlternatingRowBackground="#F5F7FA">
+                AlternatingRowBackground="#F5F7FA"
+                RowStyle="{StaticResource PreviewChangeRowStyle}"
+                BeginningEdit="PreviewGrid_BeginningEdit">
         <DataGrid.Columns>
           <DataGridTextColumn Header="Profile" Binding="{Binding ProfileFile}" Width="2*" IsReadOnly="True" />
           <DataGridTextColumn Header="deviceId" Binding="{Binding DeviceId}" Width="*" IsReadOnly="True" />
           <DataGridTextColumn Header="GUID / physical instance" Binding="{Binding PhysicalInstance}" Width="1.5*" IsReadOnly="True" />
           <DataGridTextColumn Header="Role (optional)" Binding="{Binding Role, UpdateSourceTrigger=PropertyChanged}" Width="1.2*" />
           <DataGridTextColumn Header="Profile key" Binding="{Binding ProfileKey}" Width="1.5*" IsReadOnly="True" />
+          <DataGridTextColumn Header="State" Binding="{Binding ChangeState}" Width="95" IsReadOnly="True" />
           <DataGridTemplateColumn Header="Labels" Width="150">
             <DataGridTemplateColumn.CellTemplate>
               <DataTemplate>
@@ -133,12 +168,14 @@
     </GroupBox>
 
     <GroupBox DockPanel.Dock="Top" Header="Modifier equivalence" Margin="0,0,0,8" Padding="4">
-      <DataGrid ItemsSource="{Binding Modifiers}" Height="105" AutoGenerateColumns="False" CanUserAddRows="False">
+      <DataGrid ItemsSource="{Binding Modifiers}" Height="105" AutoGenerateColumns="False" CanUserAddRows="False"
+                RowStyle="{StaticResource PreviewChangeRowStyle}" BeginningEdit="PreviewGrid_BeginningEdit">
         <DataGrid.Columns>
           <DataGridTextColumn Header="Native modifier" Binding="{Binding Name}" Width="*" IsReadOnly="True" />
           <DataGridTextColumn Header="Device" Binding="{Binding Device}" Width="2*" IsReadOnly="True" />
           <DataGridTextColumn Header="Key" Binding="{Binding Key}" Width="90" IsReadOnly="True" />
           <DataGridTextColumn Header="Semantic modifier" Binding="{Binding SemanticModifier, UpdateSourceTrigger=PropertyChanged}" Width="*" />
+          <DataGridTextColumn Header="State" Binding="{Binding ChangeState}" Width="95" IsReadOnly="True" />
         </DataGrid.Columns>
       </DataGrid>
     </GroupBox>
@@ -146,7 +183,8 @@
     <GroupBox DockPanel.Dock="Top" Header="Command labels" Margin="0,0,0,8" Padding="4"
               ToolTip="One row per exact DCS command. Apply synchronizes every matching binding; individual labels remain editable below.">
       <DataGrid ItemsSource="{Binding CommandLabels}" Height="145" AutoGenerateColumns="False"
-                CanUserAddRows="False" HeadersVisibility="Column" AlternatingRowBackground="#F5F7FA">
+                CanUserAddRows="False" HeadersVisibility="Column" AlternatingRowBackground="#F5F7FA"
+                RowStyle="{StaticResource PreviewChangeRowStyle}" BeginningEdit="PreviewGrid_BeginningEdit">
         <DataGrid.Columns>
           <DataGridTextColumn Header="Command" Binding="{Binding Command}" Width="2.4*" IsReadOnly="True" />
           <DataGridTextColumn Header="DCS label (default)" Binding="{Binding DefaultLabel}" Width="1.4*" IsReadOnly="True" />
@@ -154,10 +192,11 @@
                               Binding="{Binding Label, UpdateSourceTrigger=PropertyChanged}" Width="1.4*" />
           <DataGridTextColumn Header="Bindings" Binding="{Binding BindingCount}" Width="75" IsReadOnly="True" />
           <DataGridTextColumn Header="State" Binding="{Binding State}" Width="95" IsReadOnly="True" />
+          <DataGridTextColumn Header="Change" Binding="{Binding ChangeState}" Width="95" IsReadOnly="True" />
           <DataGridTemplateColumn Header="" Width="90">
             <DataGridTemplateColumn.CellTemplate>
               <DataTemplate>
-                <Button Content="Apply" Tag="{Binding}" Click="ApplyCommandLabel_Click"
+                <Button Content="Apply" Tag="{Binding}" Click="ApplyCommandLabel_Click" IsEnabled="{Binding CanEdit}"
                         ToolTip="Apply this label, including an intentional blank, to every binding with this exact command" />
               </DataTemplate>
             </DataGridTemplateColumn.CellTemplate>
@@ -174,7 +213,8 @@
               AutoGenerateColumns="False"
               CanUserAddRows="False"
               HeadersVisibility="Column"
-              AlternatingRowBackground="#F5F7FA">
+              AlternatingRowBackground="#F5F7FA"
+              RowStyle="{StaticResource PreviewChangeRowStyle}">
       <DataGrid.Columns>
         <DataGridTextColumn Header="Device / stem" Binding="{Binding Stem}" Width="1.2*" IsReadOnly="True" />
         <DataGridTextColumn Header="Physical profile" Binding="{Binding ProfileKey}" Width="1.8*" IsReadOnly="True" />
@@ -196,6 +236,7 @@
         </DataGridTemplateColumn>
         <DataGridTextColumn Header="Callout" Binding="{Binding CalloutId}" Width="110" IsReadOnly="True" />
         <DataGridTextColumn Header="Status" Binding="{Binding Status}" Width="110" IsReadOnly="True" />
+        <DataGridTextColumn Header="Change" Binding="{Binding ChangeState}" Width="95" IsReadOnly="True" />
       </DataGrid.Columns>
     </DataGrid>
   </DockPanel>
