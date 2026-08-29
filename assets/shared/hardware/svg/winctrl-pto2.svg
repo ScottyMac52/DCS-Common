@@ -152,20 +152,20 @@
   <rect x="1222" y="314" width="268" height="22" rx="4" fill="#1e293b" stroke="#00bfff" stroke-width="1.5"/>
   <text id="lbl-pto2-button-27" x="1356" y="329" text-anchor="middle" font-family="Arial,sans-serif" font-size="10" fill="#f1f5f9">Jet station select RO</text>
   <!-- callout:pto2-button-32 -->
-  <line x1="1098" y1="284" x2="1356" y2="362" stroke="#00bfff" stroke-width="1.5" stroke-dasharray="5 3" opacity="0.75"/>
+  <line x1="1098" y1="284" x2="1356" y2="357" stroke="#00bfff" stroke-width="1.5" stroke-dasharray="5 3" opacity="0.75"/>
   <circle cx="1098" cy="284" r="5" fill="#00bfff" stroke="#0f172a" stroke-width="1.5"/>
-  <rect x="1222" y="362" width="268" height="22" rx="4" fill="#1e293b" stroke="#00bfff" stroke-width="1.5"/>
-  <text id="lbl-pto2-button-32" x="1356" y="377" text-anchor="middle" font-family="Arial,sans-serif" font-size="10" fill="#f1f5f9">Hook handle upper position</text>
+  <rect x="1222" y="357" width="268" height="22" rx="4" fill="#1e293b" stroke="#00bfff" stroke-width="1.5"/>
+  <text id="lbl-pto2-button-32" x="1356" y="372" text-anchor="middle" font-family="Arial,sans-serif" font-size="10" fill="#f1f5f9">Hook handle upper position</text>
   <!-- callout:pto2-button-33 -->
-  <line x1="1100" y1="324" x2="1356" y2="388" stroke="#00bfff" stroke-width="1.5" stroke-dasharray="5 3" opacity="0.75"/>
+  <line x1="1100" y1="324" x2="1356" y2="383" stroke="#00bfff" stroke-width="1.5" stroke-dasharray="5 3" opacity="0.75"/>
   <circle cx="1100" cy="324" r="5" fill="#00bfff" stroke="#0f172a" stroke-width="1.5"/>
-  <rect x="1222" y="388" width="268" height="22" rx="4" fill="#1e293b" stroke="#00bfff" stroke-width="1.5"/>
-  <text id="lbl-pto2-button-33" x="1356" y="403" text-anchor="middle" font-family="Arial,sans-serif" font-size="10" fill="#f1f5f9">Hook handle center position</text>
+  <rect x="1222" y="383" width="268" height="22" rx="4" fill="#1e293b" stroke="#00bfff" stroke-width="1.5"/>
+  <text id="lbl-pto2-button-33" x="1356" y="398" text-anchor="middle" font-family="Arial,sans-serif" font-size="10" fill="#f1f5f9">Hook handle center position</text>
   <!-- callout:pto2-button-34 -->
-  <line x1="1098" y1="377" x2="1356" y2="414" stroke="#00bfff" stroke-width="1.5" stroke-dasharray="5 3" opacity="0.75"/>
+  <line x1="1098" y1="377" x2="1356" y2="409" stroke="#00bfff" stroke-width="1.5" stroke-dasharray="5 3" opacity="0.75"/>
   <circle cx="1098" cy="377" r="5" fill="#00bfff" stroke="#0f172a" stroke-width="1.5"/>
-  <rect x="1222" y="414" width="268" height="22" rx="4" fill="#1e293b" stroke="#00bfff" stroke-width="1.5"/>
-  <text id="lbl-pto2-button-34" x="1356" y="429" text-anchor="middle" font-family="Arial,sans-serif" font-size="10" fill="#f1f5f9">Hook handle lower position</text>
+  <rect x="1222" y="409" width="268" height="22" rx="4" fill="#1e293b" stroke="#00bfff" stroke-width="1.5"/>
+  <text id="lbl-pto2-button-34" x="1356" y="424" text-anchor="middle" font-family="Arial,sans-serif" font-size="10" fill="#f1f5f9">Hook handle lower position</text>
   <!-- callout:pto2-button-28 -->
   <line x1="986" y1="557" x2="1222" y2="557" stroke="#00bfff" stroke-width="1.5" stroke-dasharray="5 3" opacity="0.75"/>
   <circle cx="986" cy="557" r="5" fill="#00bfff" stroke="#0f172a" stroke-width="1.5"/>
@@ -187,24 +187,22 @@
   <rect x="1222" y="624" width="268" height="22" rx="4" fill="#1e293b" stroke="#00bfff" stroke-width="1.5"/>
   <text id="lbl-pto2-button-31" x="1356" y="639" text-anchor="middle" font-family="Arial,sans-serif" font-size="10" fill="#f1f5f9">Wings lock/unlock</text>
   <!-- callout:pto2-button-38 -->
-  <line x1="816" y1="562" x2="1356" y2="462" stroke="#00bfff" stroke-width="1.5" stroke-dasharray="5 3" opacity="0.75"/>
+  <line x1="816" y1="562" x2="907" y2="693" stroke="#00bfff" stroke-width="1.5" stroke-dasharray="5 3" opacity="0.75"/>
   <circle cx="816" cy="562" r="5" fill="#00bfff" stroke="#0f172a" stroke-width="1.5"/>
-  <rect x="1222" y="440" width="268" height="22" rx="4" fill="#1e293b" stroke="#00bfff" stroke-width="1.5"/>
-  <text id="lbl-pto2-button-38" x="1356" y="455" text-anchor="middle" font-family="Arial,sans-serif" font-size="10" fill="#f1f5f9">Emergency brake / parking brake position 1</text>
+  <rect x="773" y="693" width="268" height="22" rx="4" fill="#1e293b" stroke="#00bfff" stroke-width="1.5"/>
+  <text id="lbl-pto2-button-38" x="907" y="708" text-anchor="middle" font-family="Arial,sans-serif" font-size="10" fill="#f1f5f9">Emergency brake / parking brake position 1</text>
   <!-- callout:pto2-button-39 -->
-  <line x1="811" y1="617" x2="1356" y2="488" stroke="#00bfff" stroke-width="1.5" stroke-dasharray="5 3" opacity="0.75"/>
+  <line x1="811" y1="617" x2="907" y2="750" stroke="#00bfff" stroke-width="1.5" stroke-dasharray="5 3" opacity="0.75"/>
   <circle cx="811" cy="617" r="5" fill="#00bfff" stroke="#0f172a" stroke-width="1.5"/>
-  <rect x="1222" y="466" width="268" height="22" rx="4" fill="#1e293b" stroke="#00bfff" stroke-width="1.5"/>
-  <text id="lbl-pto2-button-39" x="1356" y="481" text-anchor="middle" font-family="Arial,sans-serif" font-size="10" fill="#f1f5f9">Emergency brake / parking brake position 2</text>
-  <!-- callout:pto2-button-40 -->
-  <line x1="781" y1="587" x2="1356" y2="514" stroke="#00bfff" stroke-width="1.5" stroke-dasharray="5 3" opacity="0.75"/>
-  <circle cx="781" cy="587" r="5" fill="#00bfff" stroke="#0f172a" stroke-width="1.5"/>
-  <rect x="1222" y="492" width="268" height="22" rx="4" fill="#1e293b" stroke="#00bfff" stroke-width="1.5"/>
-  <text id="lbl-pto2-button-40" x="1356" y="507" text-anchor="middle" font-family="Arial,sans-serif" font-size="10" fill="#f1f5f9">Emergency brake / parking brake position 3</text>
+  <rect x="773" y="750" width="268" height="22" rx="4" fill="#1e293b" stroke="#00bfff" stroke-width="1.5"/>
+  <text id="lbl-pto2-button-39" x="907" y="765" text-anchor="middle" font-family="Arial,sans-serif" font-size="10" fill="#f1f5f9">Emergency brake / parking brake position 2</text>
   <!-- callout:pto2-button-41 -->
-  <line x1="851" y1="587" x2="1356" y2="540" stroke="#00bfff" stroke-width="1.5" stroke-dasharray="5 3" opacity="0.75"/>
+  <line x1="851" y1="587" x2="1046" y2="722" stroke="#00bfff" stroke-width="1.5" stroke-dasharray="5 3" opacity="0.75"/>
   <circle cx="851" cy="587" r="5" fill="#00bfff" stroke="#0f172a" stroke-width="1.5"/>
-  <rect x="1222" y="518" width="268" height="22" rx="4" fill="#1e293b" stroke="#00bfff" stroke-width="1.5"/>
-  <text id="lbl-pto2-button-41" x="1356" y="533" text-anchor="middle" font-family="Arial,sans-serif" font-size="10" fill="#f1f5f9">Emergency brake / parking brake position 4</text>
+  <rect x="912" y="722" width="268" height="22" rx="4" fill="#1e293b" stroke="#00bfff" stroke-width="1.5"/>
+  <text id="lbl-pto2-button-41" x="1046" y="737" text-anchor="middle" font-family="Arial,sans-serif" font-size="10" fill="#f1f5f9">Emergency brake / parking brake position 4</text>
+  <!-- box:pto2-button-40 -->
+  <rect x="607" y="722" width="268" height="22" rx="4" fill="#1e293b" stroke="#00bfff" stroke-width="1.5"/>
+  <text id="lbl-pto2-button-40" x="741" y="737" text-anchor="middle" font-family="Arial,sans-serif" font-size="10" fill="#f1f5f9">Emergency brake / parking brake position 3</text>
   <text x="750" y="972" text-anchor="middle" font-family="Arial,sans-serif" font-size="12" fill="#475569">WINCTRL PTO2 - 41 buttons + 0 axes</text>
 </svg>
