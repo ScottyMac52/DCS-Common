@@ -34,6 +34,8 @@ During packaging it:
 - excludes shared profiles left with no effective additions; and
 - verifies that every remaining modifier reference is declared by the tailored `UiLayer/modifiers.lua`.
 
+Modifier selection belongs to the shared hardware definition in `assets/shared/hardware/manifest.json`. A canonical device may declare `uiLayerModifier`; a composite alias declares its selection under `uiLayerModifiers`. The scaffolded page `deviceId` therefore selects the matching modifier without a separate packaging lookup table. Adding or renaming a scaffolded stick/base combination and its modifier is a single hardware-catalog change.
+
 An intentionally empty selected profile may be retained only through the explicit escape hatch below. Retention also makes that physical device eligible for its configured UI Layer overlay:
 
 ```json

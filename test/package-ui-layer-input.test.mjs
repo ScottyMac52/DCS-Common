@@ -9,6 +9,7 @@ import {
   hasEffectiveAdditions,
   packageUiLayerInput,
   physicalDeviceName,
+  selectedUiLayerModifiers,
   tailorDiffLua,
   tailorModifiers,
 } from '../scripts/package-ui-layer-input.mjs';
@@ -136,4 +137,28 @@ test('stick configuration matrix exposes exactly one device modifier family', ()
       .filter(({ device }) => device !== 'Keyboard').map(({ name }) => name);
     assert.deepEqual(deviceModifiers, [item.expected], item.deviceId);
   }
+});
+
+test('modifier selection is owned by the shared hardware definition', () => {
+  const manifest = JSON.parse(readFileSync(join(root, 'assets/shared/hardware/manifest.json'), 'utf8'));
+  const overlays = JSON.parse(readFileSync(join(root, 'assets/shared/ui-layer/hardware-overlays.json'), 'utf8'));
+  assert.equal(overlays.modifierSelections, undefined);
+  assert.equal(manifest.devices.find(({ id }) => id === 'vkb-f14-gunfighter').uiLayerModifier, 'VKB_F14_BTN7');
+  assert.equal(
+    manifest.devices.find(({ id }) => id === 'tm-warthog-grip').uiLayerModifiers['moza-ab9-warthog-grip'],
+    'MOZA_F16_F18_BTN3',
+  );
+});
+
+test('packaging discovers a newly scaffolded modifier from the hardware catalog', () => {
+  const commonRoot = mkdtempSync(join(tmpdir(), 'dcs-ui-layer-catalog-'));
+  const hardwareRoot = join(commonRoot, 'assets/shared/hardware');
+  mkdirSync(hardwareRoot, { recursive: true });
+  writeFileSync(join(hardwareRoot, 'manifest.json'), JSON.stringify({
+    devices: [{ id: 'future-stick', aliases: ['future-base-stick'], uiLayerModifiers: { 'future-base-stick': 'FUTURE_SHIFT' } }],
+  }));
+  assert.deepEqual(
+    [...selectedUiLayerModifiers(commonRoot, { pages: [{ deviceId: 'future-base-stick' }] })],
+    ['FUTURE_SHIFT'],
+  );
 });

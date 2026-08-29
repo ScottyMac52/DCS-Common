@@ -9,6 +9,7 @@
     },
     {
       "id": "vkb-f14-gunfighter",
+      "uiLayerModifier": "VKB_F14_BTN7",
       "label": "VKB F-14 Gunfighter Grip",
       "drawio": "drawio/vkb-f14-gunfighter.drawio",
       "svg": "svg/vkb-f14-gunfighter.svg",
@@ -22,6 +23,11 @@
         "warthog-base-warthog-grip",
         "moza-ab9-warthog-grip"
       ],
+      "uiLayerModifiers": {
+        "ava-base-f16c": "TM_AVA_BASE_F16_MODIFIER",
+        "ava-base-warthog-grip": "TM_AVA_BASE_F16_MODIFIER",
+        "moza-ab9-warthog-grip": "MOZA_F16_F18_BTN3"
+      },
       "label": "TM Warthog Joystick",
       "drawio": "drawio/tm-warthog-grip.drawio",
       "svg": "svg/tm-warthog-grip.svg",
@@ -32,6 +38,9 @@
       "aliases": [
         "moza-ab9-hornet-grip"
       ],
+      "uiLayerModifiers": {
+        "moza-ab9-hornet-grip": "MOZA_F16_F18_BTN3"
+      },
       "label": "Thrustmaster F/A-18C Hornet Grip",
       "drawio": "drawio/grip-f18c.drawio",
       "svg": "svg/grip-f18c.svg",

@@ -168,11 +168,14 @@ function configuredDeviceIds(config) {
   return new Set((config.pages ?? []).map((page) => page?.deviceId).filter((value) => typeof value === 'string'));
 }
 
-function selectedUiLayerModifiers(commonRoot, config) {
-  const overlayPath = join(commonRoot, 'assets', 'shared', 'ui-layer', 'hardware-overlays.json');
-  const overlays = JSON.parse(readFileSync(overlayPath, 'utf8'));
-  const selections = overlays.modifierSelections ?? {};
-  return new Set([...configuredDeviceIds(config)].map((deviceId) => selections[deviceId]).filter(Boolean));
+export function selectedUiLayerModifiers(commonRoot, config) {
+  const manifestPath = join(commonRoot, 'assets', 'shared', 'hardware', 'manifest.json');
+  const devices = JSON.parse(readFileSync(manifestPath, 'utf8')).devices ?? [];
+  return new Set([...configuredDeviceIds(config)].map((deviceId) => {
+    const device = devices.find((candidate) => candidate.id === deviceId || candidate.aliases?.includes(deviceId));
+    if (!device) return null;
+    return device.uiLayerModifiers?.[deviceId] ?? (device.id === deviceId ? device.uiLayerModifier : null);
+  }).filter(Boolean));
 }
 
 function retainedNoOpProfiles(config) {

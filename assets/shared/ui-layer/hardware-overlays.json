@@ -1,13 +1,6 @@
 {
   "schemaVersion": 1,
   "defaultColor": "#0891b2",
-  "modifierSelections": {
-    "vkb-f14-gunfighter": "VKB_F14_BTN7",
-    "moza-ab9-hornet-grip": "MOZA_F16_F18_BTN3",
-    "moza-ab9-warthog-grip": "MOZA_F16_F18_BTN3",
-    "ava-base-f16c": "TM_AVA_BASE_F16_MODIFIER",
-    "ava-base-warthog-grip": "TM_AVA_BASE_F16_MODIFIER"
-  },
   "exemptions": {
     "moza-ab9": "Standalone force-feedback base; no UI Layer overlay planned.",
     "tm-tpr": "Rudder-only device; no UI Layer overlay planned."
