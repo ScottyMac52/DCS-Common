@@ -1,5 +1,6 @@
 using DcsConsumerScaffold.Services;
 using DcsConsumerScaffold.ViewModels;
+using Xunit;
 
 namespace DcsConsumerScaffold.Tests;
 
