@@ -165,6 +165,8 @@ public sealed class PreviewRow : INotifyPropertyChanged
     }
 
     public void ResetLabel() => ApplyLabel(DeviceLabel, "device");
+
+    public void ResetToDefaultLabel() => ApplyLabel(DefaultLabel, "dcs");
 }
 
 public sealed class PreviewModifier

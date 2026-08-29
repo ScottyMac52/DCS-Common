@@ -85,6 +85,12 @@ public partial class MainWindow : Window
         }
     }
 
+    private void DefaultLabels_Click(object sender, RoutedEventArgs e)
+    {
+        if ((sender as FrameworkElement)?.Tag is PreviewDevice device)
+            _viewModel.ResetDeviceLabelsToDefault(device);
+    }
+
     private async void PreviewDevice_Click(object sender, RoutedEventArgs e)
     {
         if ((sender as FrameworkElement)?.Tag is not PreviewDevice device) return;

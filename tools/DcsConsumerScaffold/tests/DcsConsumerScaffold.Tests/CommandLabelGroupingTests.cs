@@ -78,6 +78,34 @@ public sealed class CommandLabelGroupingTests
         Assert.Equal("Device A", group.Label);
     }
 
+    [Fact]
+    public void DeviceDefaultRestoresOnlyThatPhysicalInstancesImportedDcsLabels()
+    {
+        var selected = Row("binding-1", "command-a", "DCS default A", "Repository A");
+        selected.ProfileKey = "selected-profile";
+        selected.ProfileFile = "Selected.diff.lua";
+        selected.ApplyLabel("Repository A", "current");
+        var sibling = Row("binding-2", "command-b", "DCS default B", "Repository B");
+        sibling.ProfileKey = "sibling-profile";
+        sibling.ProfileFile = "Sibling.diff.lua";
+        sibling.ApplyLabel("Repository B", "current");
+        var device = new PreviewDevice
+        {
+            ProfileKey = "selected-profile",
+            ProfileFile = "Selected.diff.lua",
+        };
+        var viewModel = new MainViewModel();
+        viewModel.ReplacePreviewRows([selected, sibling]);
+
+        var count = viewModel.ResetDeviceLabelsToDefault(device);
+
+        Assert.Equal(1, count);
+        Assert.Equal("DCS default A", selected.Label);
+        Assert.Equal("dcs", selected.LabelSource);
+        Assert.Equal("Repository B", sibling.Label);
+        Assert.Equal("current", sibling.LabelSource);
+    }
+
     private static PreviewRow Row(
         string bindingId,
         string command,

@@ -106,12 +106,17 @@
           <DataGridTextColumn Header="GUID / physical instance" Binding="{Binding PhysicalInstance}" Width="1.5*" IsReadOnly="True" />
           <DataGridTextColumn Header="Role (optional)" Binding="{Binding Role, UpdateSourceTrigger=PropertyChanged}" Width="1.2*" />
           <DataGridTextColumn Header="Profile key" Binding="{Binding ProfileKey}" Width="1.5*" IsReadOnly="True" />
-          <DataGridTemplateColumn Header="Labels" Width="80">
+          <DataGridTemplateColumn Header="Labels" Width="150">
             <DataGridTemplateColumn.CellTemplate>
               <DataTemplate>
-                <Button Content="Current" Tag="{Binding}" Click="CurrentLabels_Click"
-                        IsEnabled="{Binding CanPreview}"
-                        ToolTip="Load this device's existing destination-repository labels; use shared hardware labels when undefined" />
+                <StackPanel Orientation="Horizontal">
+                  <Button Content="Current" Tag="{Binding}" Click="CurrentLabels_Click"
+                          IsEnabled="{Binding CanPreview}" Margin="0,0,4,0"
+                          ToolTip="Load this device's existing destination-repository labels; use shared hardware labels when undefined" />
+                  <Button Content="Default" Tag="{Binding}" Click="DefaultLabels_Click"
+                          IsEnabled="{Binding CanPreview}"
+                          ToolTip="Restore this device's imported DCS label (default) values" />
+                </StackPanel>
               </DataTemplate>
             </DataGridTemplateColumn.CellTemplate>
           </DataGridTemplateColumn>
