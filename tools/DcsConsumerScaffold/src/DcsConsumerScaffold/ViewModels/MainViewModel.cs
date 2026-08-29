@@ -242,6 +242,10 @@ public sealed class MainViewModel : INotifyPropertyChanged
             if (document?.Rows != null)
                 ReplacePreviewRows(document.Rows);
 
+            CurrentLabelImportResult? existingLabels = null;
+            if (!IsUiLayerImport)
+                existingLabels = _currentLabels.ApplyExistingRepository(OutputDir, Devices, Rows);
+
             if (document?.Modifiers != null)
             {
                 foreach (var modifier in document.Modifiers) Modifiers.Add(modifier);
@@ -259,6 +263,10 @@ public sealed class MainViewModel : INotifyPropertyChanged
             StatusText = exitCode is 0 or 2
                 ? $"Preview loaded (exit {exitCode}).{Environment.NewLine}{stdout}{Environment.NewLine}{errorBlock}".Trim()
                 : $"Engine exit {exitCode}.{Environment.NewLine}{stderr}{Environment.NewLine}{stdout}{Environment.NewLine}{errorBlock}".Trim();
+            if (existingLabels is not null &&
+                existingLabels.CurrentCount + existingLabels.SharedHardwareCount > 0)
+                StatusText = $"{StatusText}{Environment.NewLine}Loaded {existingLabels.CurrentCount} current repository labels; " +
+                    $"used {existingLabels.SharedHardwareCount} shared-hardware fallbacks.";
         }
         catch (Exception ex)
         {

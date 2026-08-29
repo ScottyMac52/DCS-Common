@@ -8,6 +8,48 @@ public sealed record CurrentLabelImportResult(int CurrentCount, int SharedHardwa
 
 public sealed class CurrentLabelService
 {
+    public CurrentLabelImportResult ApplyExistingRepository(
+        string outputDir,
+        IEnumerable<PreviewDevice> devices,
+        IEnumerable<PreviewRow> rows)
+    {
+        if (string.IsNullOrWhiteSpace(outputDir)) return new(0, 0);
+        var configPath = Path.Combine(outputDir, "config", "kneeboard.json");
+        if (!File.Exists(configPath)) return new(0, 0);
+
+        using var document = JsonDocument.Parse(File.ReadAllText(configPath));
+        if (!document.RootElement.TryGetProperty("pages", out var pagesElement) ||
+            pagesElement.ValueKind != JsonValueKind.Array)
+        {
+            throw new InvalidOperationException("The destination config/kneeboard.json has no pages array.");
+        }
+
+        var allRows = rows.ToList();
+        var currentCount = 0;
+        var sharedCount = 0;
+        foreach (var device in devices.Where(device =>
+                     !string.IsNullOrWhiteSpace(device.DeviceId) &&
+                     !string.IsNullOrWhiteSpace(device.ProfileKey)))
+        {
+            var selectedRows = RowsForDevice(device, allRows);
+            if (selectedRows.Count == 0) continue;
+            var pages = pagesElement.EnumerateArray()
+                .Where(page => StringEquals(Property(page, "deviceId"), device.DeviceId))
+                .ToList();
+            if (pages.Count == 0)
+            {
+                foreach (var row in selectedRows) row.ResetLabel();
+                sharedCount += selectedRows.Count;
+                continue;
+            }
+
+            var result = ApplyPage(SelectPage(pages, device), selectedRows);
+            currentCount += result.CurrentCount;
+            sharedCount += result.SharedHardwareCount;
+        }
+        return new(currentCount, sharedCount);
+    }
+
     public CurrentLabelImportResult Apply(
         string outputDir,
         PreviewDevice device,
@@ -35,38 +77,10 @@ public sealed class CurrentLabelService
             .Where(page => StringEquals(Property(page, "deviceId"), device.DeviceId))
             .ToList();
         var page = SelectPage(pages, device);
-        var current = new Dictionary<BindingKey, string?>();
-        ReadScope(page, current);
-        if (page.TryGetProperty("layers", out var layers) && layers.ValueKind == JsonValueKind.Array)
-        {
-            foreach (var layer in layers.EnumerateArray()) ReadScope(layer, current);
-        }
-
-        var selectedRows = rows.Where(row =>
-            StringEquals(row.ProfileKey, device.ProfileKey) ||
-            (!string.IsNullOrWhiteSpace(device.ProfileFile) && StringEquals(row.ProfileFile, device.ProfileFile)))
-            .ToList();
+        var selectedRows = RowsForDevice(device, rows);
         if (selectedRows.Count == 0)
             throw new InvalidOperationException($"No preview rows belong to {device.ProfileKey}.");
-
-        var currentCount = 0;
-        var sharedCount = 0;
-        foreach (var row in selectedRows)
-        {
-            var key = new BindingKey(row.CalloutId ?? string.Empty, row.Key ?? string.Empty, row.Command ?? string.Empty);
-            if (current.TryGetValue(key, out var label))
-            {
-                row.ApplyLabel(label, "current");
-                currentCount++;
-            }
-            else
-            {
-                row.ResetLabel();
-                sharedCount++;
-            }
-        }
-
-        return new CurrentLabelImportResult(currentCount, sharedCount);
+        return ApplyPage(page, selectedRows);
     }
 
     public CurrentLabelImportResult ApplyUiLayer(
@@ -228,6 +242,40 @@ public sealed class CurrentLabelService
             }
         }
     }
+
+    private static CurrentLabelImportResult ApplyPage(JsonElement page, IReadOnlyList<PreviewRow> selectedRows)
+    {
+        var current = new Dictionary<BindingKey, string?>();
+        ReadScope(page, current);
+        if (page.TryGetProperty("layers", out var layers) && layers.ValueKind == JsonValueKind.Array)
+        {
+            foreach (var layer in layers.EnumerateArray()) ReadScope(layer, current);
+        }
+
+        var currentCount = 0;
+        var sharedCount = 0;
+        foreach (var row in selectedRows)
+        {
+            var key = new BindingKey(row.CalloutId ?? string.Empty, row.Key ?? string.Empty, row.Command ?? string.Empty);
+            if (current.TryGetValue(key, out var label))
+            {
+                row.ApplyLabel(label, "current");
+                currentCount++;
+            }
+            else
+            {
+                row.ResetLabel();
+                sharedCount++;
+            }
+        }
+        return new(currentCount, sharedCount);
+    }
+
+    private static List<PreviewRow> RowsForDevice(PreviewDevice device, IEnumerable<PreviewRow> rows) => rows
+        .Where(row =>
+            StringEquals(row.ProfileKey, device.ProfileKey) ||
+            (!string.IsNullOrWhiteSpace(device.ProfileFile) && StringEquals(row.ProfileFile, device.ProfileFile)))
+        .ToList();
 
     private static bool ContainsProfile(JsonElement element, string profileKey)
     {
