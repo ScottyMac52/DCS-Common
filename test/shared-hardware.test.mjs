@@ -18,7 +18,25 @@ const synchronizedWatermarkDevices = new Set([
 ]);
 
 assert.ok(Array.isArray(manifest.devices), 'manifest should contain a devices array');
-assert.equal(manifest.devices.length, 12, 'expected 12 canonical shared hardware catalogs');
+assert.equal(manifest.devices.length, 11, 'expected 11 canonical shared hardware catalogs');
+
+const manifestIds = new Set(manifest.devices.map(({ id }) => id));
+const aliases = new Set(manifest.devices.flatMap(({ aliases = [] }) => aliases));
+assert.ok(!manifestIds.has('ava-base-f18c'), 'obsolete AVA Hornet composite must not be canonical');
+for (const alias of ['ava-base-f18c', 'ava-base-hornet-grip', 'warthog-base-hornet-grip']) {
+  assert.ok(!aliases.has(alias), `unsupported Hornet grip alias must remain absent: ${alias}`);
+}
+for (const alias of ['moza-ab9-hornet-grip']) {
+  assert.ok(aliases.has(alias), `supported Hornet grip alias must remain available: ${alias}`);
+}
+for (const alias of [
+  'ava-base-f16c',
+  'ava-base-warthog-grip',
+  'warthog-base-warthog-grip',
+  'moza-ab9-warthog-grip',
+]) {
+  assert.ok(aliases.has(alias), `supported F-16C/Warthog grip alias must remain available: ${alias}`);
+}
 
 for (const device of manifest.devices) {
   const svgPath = join(root, 'assets', 'shared', 'hardware', device.svg);
@@ -35,7 +53,6 @@ const requiredTemplateAssets = [
   'svg/tm-warthog-throttle.svg',
   'svg/tm-warthog-grip.svg',
   'svg/grip-f18c.svg',
-  'svg/ava-base-f18c.svg',
   'svg/winctrl-icp.svg',
   'svg/logitech-throttle-quadrant.svg',
   'svg/viper-tqs-mission-pack.svg',
@@ -157,7 +174,7 @@ for (const device of manifest.devices) {
   const svg = readFileSync(join(root, 'assets', 'shared', 'hardware', device.svg), 'utf8');
   const luaIds = [...ids].sort();
   const labelBasedDrawio = new Set([
-    'tm-warthog-throttle', 'tm-mfd', 'tm-warthog-grip', 'grip-f18c', 'ava-base-f18c',
+    'tm-warthog-throttle', 'tm-mfd', 'tm-warthog-grip', 'grip-f18c',
   ]);
   const drawioIdPattern = labelBasedDrawio.has(device.id)
     ? /id="label-([^"]+)"/g
