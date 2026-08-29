@@ -5,10 +5,10 @@ on:
     outputs:
       generated-commit-sha:
         description: Commit containing the kneeboard pages packaged by this run.
-        value: ${{ jobs.build.outputs.generated-commit-sha }}
+        value: ${{ jobs.build.outputs['generated-commit-sha'] }}
       generated-commit-url:
         description: URL of the commit containing the kneeboard pages packaged by this run.
-        value: ${{ jobs.build.outputs.generated-commit-url }}
+        value: ${{ jobs.build.outputs['generated-commit-url'] }}
     inputs:
       package-version:
         required: false
@@ -103,8 +103,8 @@ on:
 jobs:
   build:
     outputs:
-      generated-commit-sha: ${{ steps.commit_kneeboard.outputs.generated-commit-sha }}
-      generated-commit-url: ${{ steps.commit_kneeboard.outputs.generated-commit-url }}
+      generated-commit-sha: ${{ steps.commit_kneeboard.outputs['generated-commit-sha'] }}
+      generated-commit-url: ${{ steps.commit_kneeboard.outputs['generated-commit-url'] }}
     runs-on: ${{ inputs.runs-on }}
     permissions:
       contents: write
