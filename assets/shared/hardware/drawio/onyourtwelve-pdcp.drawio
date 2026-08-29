@@ -101,7 +101,7 @@
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
         <mxCell id="label-pdcp-vdi-awl" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#1e293b;strokeColor=#00bfff;fontColor=#f1f5f9;fontSize=11;" value="STEER TACAN" vertex="1">
-          <mxGeometry height="24" width="170" x="1" y="670" as="geometry" />
+          <mxGeometry height="24" width="170" x="10" y="670" as="geometry" />
         </mxCell>
         <mxCell id="anchor-pdcp-vdi-awl" parent="1" style="ellipse;whiteSpace=wrap;html=1;fillColor=#00bfff;strokeColor=#0f172a;strokeWidth=1.5;" value="" vertex="1">
           <mxGeometry height="10" width="10" x="313" y="602" as="geometry" />
@@ -236,7 +236,7 @@
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
         <mxCell id="label-pdcp-steer-dest" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#1e293b;strokeColor=#00bfff;fontColor=#f1f5f9;fontSize=11;" value="STEER DEST" vertex="1">
-          <mxGeometry height="24" width="170" x="183" y="670" as="geometry" />
+          <mxGeometry height="24" width="170" x="190" y="670" as="geometry" />
         </mxCell>
         <mxCell id="anchor-pdcp-steer-dest" parent="1" style="ellipse;whiteSpace=wrap;html=1;fillColor=#00bfff;strokeColor=#0f172a;strokeWidth=1.5;" value="" vertex="1">
           <mxGeometry height="10" width="10" x="381" y="602" as="geometry" />
@@ -245,7 +245,7 @@
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
         <mxCell id="label-pdcp-steer-awl-pcd" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#1e293b;strokeColor=#00bfff;fontColor=#f1f5f9;fontSize=11;" value="STEER AWL/PCD" vertex="1">
-          <mxGeometry height="24" width="170" x="365" y="670" as="geometry" />
+          <mxGeometry height="24" width="170" x="370" y="670" as="geometry" />
         </mxCell>
         <mxCell id="anchor-pdcp-steer-awl-pcd" parent="1" style="ellipse;whiteSpace=wrap;html=1;fillColor=#00bfff;strokeColor=#0f172a;strokeWidth=1.5;" value="" vertex="1">
           <mxGeometry height="10" width="10" x="450" y="602" as="geometry" />
@@ -254,7 +254,7 @@
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
         <mxCell id="label-pdcp-steer-vec" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#1e293b;strokeColor=#00bfff;fontColor=#f1f5f9;fontSize=11;" value="STEER VEC" vertex="1">
-          <mxGeometry height="24" width="170" x="547" y="670" as="geometry" />
+          <mxGeometry height="24" width="170" x="551" y="670" as="geometry" />
         </mxCell>
         <mxCell id="anchor-pdcp-steer-vec" parent="1" style="ellipse;whiteSpace=wrap;html=1;fillColor=#00bfff;strokeColor=#0f172a;strokeWidth=1.5;" value="" vertex="1">
           <mxGeometry height="10" width="10" x="525" y="602" as="geometry" />
@@ -263,18 +263,17 @@
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
         <mxCell id="label-pdcp-steer-man" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#1e293b;strokeColor=#00bfff;fontColor=#f1f5f9;fontSize=11;" value="STEER MAN" vertex="1">
-          <mxGeometry height="24" width="170" x="729" y="670" as="geometry" />
+          <mxGeometry height="24" width="170" x="728" y="670" as="geometry" />
         </mxCell>
         <mxCell id="anchor-pdcp-steer-man" parent="1" style="ellipse;whiteSpace=wrap;html=1;fillColor=#00bfff;strokeColor=#0f172a;strokeWidth=1.5;" value="" vertex="1">
           <mxGeometry height="10" width="10" x="601" y="602" as="geometry" />
         </mxCell>
-        <mxCell id="connector-pdcp-steer-man" edge="1" parent="1" source="label-pdcp-steer-man" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;strokeColor=#00bfff;dashed=1;exitX=0.25;exitY=0;exitDx=0;exitDy=0;" value="">
+        <mxCell id="connector-pdcp-steer-man" edge="1" parent="1" source="label-pdcp-steer-man" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;strokeColor=#00bfff;dashed=1;exitX=0.25;exitY=0;exitDx=0;exitDy=0;" target="anchor-pdcp-steer-man" value="">
           <mxGeometry relative="1" as="geometry">
             <Array as="points">
               <mxPoint x="771.5" y="650" />
               <mxPoint x="606" y="650" />
             </Array>
-            <mxPoint x="606" y="590" as="targetPoint" />
           </mxGeometry>
         </mxCell>
         <mxCell id="footer" parent="1" style="text;html=1;strokeColor=none;fillColor=none;fontColor=#64748b;fontSize=12;align=center;" value="OnYourTwelve PDCP - 29 buttons + 0 axes" vertex="1">
