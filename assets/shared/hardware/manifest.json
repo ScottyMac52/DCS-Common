@@ -3,6 +3,7 @@
     {
       "id": "ava-base-f18c",
       "label": "AVA Base with F/A-18C Hornet Grip",
+	  "drawio": "drawio/ava-base-f18c.drawio",
       "svg": "svg/ava-base-f18c.svg",
       "lua": "lua/ava-base-f18c.lua"
     },
