@@ -8,6 +8,78 @@ namespace DcsConsumerScaffold.Tests;
 public sealed class CurrentLabelServiceTests
 {
     [Fact]
+    public void ApplyExistingRepository_PrefersCurrentLabelsAndFallsBackOnlyWhenMissing()
+    {
+        var destination = Directory.CreateTempSubdirectory("dcs-load-preview-labels-");
+        try
+        {
+            var configDirectory = Directory.CreateDirectory(Path.Combine(destination.FullName, "config"));
+            File.WriteAllText(Path.Combine(configDirectory.FullName, "kneeboard.json"), """
+                {
+                  "pages": [
+                    {
+                      "deviceId": "tm-mfd",
+                      "deviceInstance": "MFD3",
+                      "controls": {
+                        "mfd-osb-t1": {
+                          "profile": "tm-mfd-3",
+                          "key": "JOY_BTN1",
+                          "command": "mfd-three",
+                          "label": "Repository label"
+                        },
+                        "mfd-osb-t2": {
+                          "profile": "tm-mfd-3",
+                          "key": "JOY_BTN2",
+                          "command": "blank-label",
+                          "label": ""
+                        }
+                      }
+                    }
+                  ]
+                }
+                """);
+
+            var mfd = new PreviewDevice
+            {
+                DeviceId = "tm-mfd",
+                InstanceHint = "3",
+                ProfileFile = "F16 MFD 3.diff.lua",
+                ProfileKey = "tm-mfd-3",
+            };
+            var newDevice = new PreviewDevice
+            {
+                DeviceId = "future-device",
+                ProfileFile = "Future Device.diff.lua",
+                ProfileKey = "future-device",
+            };
+            var current = Row(mfd, "mfd-osb-t1", "JOY_BTN1", "mfd-three", "Shared OSB01");
+            var intentionallyBlank = Row(mfd, "mfd-osb-t2", "JOY_BTN2", "blank-label", "Shared OSB02");
+            var missing = Row(mfd, "mfd-osb-t3", "JOY_BTN3", "new-binding", "Shared OSB03");
+            var newDeviceRow = Row(newDevice, "future-button", "JOY_BTN1", "future-command", "Shared future label");
+
+            var result = new CurrentLabelService().ApplyExistingRepository(
+                destination.FullName,
+                [mfd, newDevice],
+                [current, intentionallyBlank, missing, newDeviceRow]);
+
+            Assert.Equal(2, result.CurrentCount);
+            Assert.Equal(2, result.SharedHardwareCount);
+            Assert.Equal("Repository label", current.Label);
+            Assert.Equal("current", current.LabelSource);
+            Assert.Equal(string.Empty, intentionallyBlank.Label);
+            Assert.Equal("current", intentionallyBlank.LabelSource);
+            Assert.Equal("Shared OSB03", missing.Label);
+            Assert.Equal("device", missing.LabelSource);
+            Assert.Equal("Shared future label", newDeviceRow.Label);
+            Assert.Equal("device", newDeviceRow.LabelSource);
+        }
+        finally
+        {
+            destination.Delete(recursive: true);
+        }
+    }
+
+    [Fact]
     public void Apply_UsesTheSelectedInstanceCurrentLabelsAndSharedHardwareFallbacks()
     {
         var destination = Directory.CreateTempSubdirectory("dcs-current-labels-");

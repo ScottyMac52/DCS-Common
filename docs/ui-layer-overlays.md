@@ -21,6 +21,33 @@ Scaffolded consumers enable composition by default with top-level `"includeUiLay
 
 `appliesToInstances` limits an overlay to named physical instances. Scaffolded pages preserve the detected instance as `deviceInstance`; for example, the TM MFD overlay applies only when `deviceInstance` is `MFD3`.
 
+## Package tailoring
+
+The consumer's `config/kneeboard.json` is authoritative for packaged hardware. The UI Layer packager follows profile references used by configured pages instead of treating every file in the module joystick directory as active.
+
+During packaging it:
+
+- excludes unreferenced module profiles;
+- excludes selected profiles with no effective `keyDiffs` or `axisDiffs` additions;
+- selects the one modifier family associated with the configured stick/base combination;
+- removes binding alternatives in shared peripheral profiles that reference unavailable modifiers;
+- excludes shared profiles left with no effective additions; and
+- verifies that every remaining modifier reference is declared by the tailored `UiLayer/modifiers.lua`.
+
+Modifier selection belongs to the shared hardware definition in `assets/shared/hardware/manifest.json`. A canonical device may declare `uiLayerModifier`; a composite alias declares its selection under `uiLayerModifiers`. The scaffolded page `deviceId` therefore selects the matching modifier without a separate packaging lookup table. Adding or renaming a scaffolded stick/base combination and its modifier is a single hardware-catalog change.
+
+An intentionally empty selected profile may be retained only through the explicit escape hatch below. Retention also makes that physical device eligible for its configured UI Layer overlay:
+
+```json
+{
+  "packaging": {
+    "retainNoOpProfiles": ["profile-id-or-exact-filename"]
+  }
+}
+```
+
+Deletion-only profiles are no-op profiles for this policy because they add no module or UI Layer function. The build log records every excluded module and UI Layer profile with its reason.
+
 Adding a function to `functions.json` automatically adds it to every incomplete template. Tests do not duplicate a fixed function list or compare full output snapshots. A completed overlay must map the new function before it may remain `complete`.
 
 ## Fill in a template

@@ -12,7 +12,7 @@ Publisher: **Vyper Industries** · TFM: `net10.0-windows` · Assembly: `DcsConsu
 4. **Semantic modifiers** — assign one semantic ID to alternative device-qualified physical modifiers without globally aliasing button numbers
 5. **Editable labels** — initialize each label from the imported DCS Lua command name, show the DCS-Common `hardwareLabel` separately as **Device Label**, and edit, intentionally blank, or replace the label with the device label
 6. **Command labels** — edit one label per exact DCS command and explicitly apply it to every matching device binding while retaining per-binding overrides
-7. **Current device labels** — import the selected device's labels from an existing destination repository, filling undefined labels from DCS-Common shared hardware
+7. **Current repository labels** — Load Preview automatically imports labels for every device from an existing destination repository; undefined labels fall back to DCS-Common shared hardware, and the per-device **Current** button remains available for an explicit refresh
 8. **Per-device kneeboard preview** — render the selected physical instance through the production SVG/PNG pipeline in a modal viewer before writing the consumer repository
 9. **Import target** — choose a normal consumer module or the authoritative DCS-Common UI Layer
 10. **Proceed** — writes a consumer tree in consumer mode, or safely synchronizes only `assets/shared/ui-layer` in UI Layer mode
@@ -43,7 +43,7 @@ Use this mode after changing the simulator-wide bindings under DCS Saved Games.
 2. Select `Saved Games/DCS/Config/Input/UiLayer/joystick` as **Profiles directory**.
 3. Select the matching `Saved Games/DCS/Config/Input/UiLayer/modifiers.lua`.
 4. Select the DCS-Common checkout as **DCS-Common root**.
-5. Click **Load Preview**, resolve any unmapped devices or modifier errors, and review device previews.
+5. Click **Load Preview**, resolve any unmapped devices or modifier errors, and review device previews. When the output directory is an existing consumer repository, its current labels are loaded automatically; only bindings without a current repository label fall back to the DCS-Common device label.
 6. Click **Proceed** to synchronize the profiles and modifier file, preserve known function IDs and curated labels, add newly discovered functions, and update applicable hardware-overlay callouts.
 
 UI Layer mode does not use **Output directory**, **Display name**, **Input module ID**, or **Kneeboard ID**, and it never scaffolds consumer files into the DCS-Common root. Existing overlay instance restrictions and exemptions are retained.
