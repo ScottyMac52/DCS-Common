@@ -42,30 +42,30 @@
   <rect x="140" y="218" width="120" height="27" rx="4" fill="#1e293b" stroke="#00bfff" stroke-width="1.5"/>
   <text id="lbl-winctrl-icp-btn-08" x="200" y="236" text-anchor="middle" font-family="Arial,sans-serif" font-size="10" fill="#f1f5f9">Button 8 — ICP key 2</text>
   <!-- callout:winctrl-icp-btn-09 -->
-  <line x1="693" y1="350.2" x2="460" y2="287" stroke="#00bfff" stroke-width="1.5" stroke-dasharray="5 3" opacity="0.75"/>
+  <line x1="693" y1="350.2" x2="330" y2="246" stroke="#00bfff" stroke-width="1.5" stroke-dasharray="5 3" opacity="0.75"/>
   <circle cx="693" cy="350.2" r="5" fill="#00bfff" stroke="#0f172a" stroke-width="1.5"/>
-  <rect x="400" y="260" width="120" height="27" rx="4" fill="#1e293b" stroke="#00bfff" stroke-width="1.5"/>
-  <text id="lbl-winctrl-icp-btn-09" x="460" y="278" text-anchor="middle" font-family="Arial,sans-serif" font-size="10" fill="#f1f5f9">Button 18 — ENTR</text>
+  <rect x="270" y="219" width="120" height="27" rx="4" fill="#1e293b" stroke="#00bfff" stroke-width="1.5"/>
+  <text id="lbl-winctrl-icp-btn-09" x="330" y="237" text-anchor="middle" font-family="Arial,sans-serif" font-size="10" fill="#f1f5f9">Button 9 — ICP key 3</text>
   <!-- callout:winctrl-icp-btn-10 -->
   <line x1="747" y1="350.2" x2="130" y2="273.5" stroke="#00bfff" stroke-width="1.5" stroke-dasharray="5 3" opacity="0.75"/>
   <circle cx="747" cy="350.2" r="5" fill="#00bfff" stroke="#0f172a" stroke-width="1.5"/>
   <rect x="10" y="260" width="120" height="27" rx="4" fill="#1e293b" stroke="#00bfff" stroke-width="1.5"/>
   <text id="lbl-winctrl-icp-btn-10" x="70" y="278" text-anchor="middle" font-family="Arial,sans-serif" font-size="10" fill="#f1f5f9">Button 10 — ICP key 4</text>
   <!-- callout:winctrl-icp-btn-11 -->
-  <line x1="612" y1="394" x2="330" y2="327" stroke="#00bfff" stroke-width="1.5" stroke-dasharray="5 3" opacity="0.75"/>
+  <line x1="612" y1="394" x2="200" y2="287" stroke="#00bfff" stroke-width="1.5" stroke-dasharray="5 3" opacity="0.75"/>
   <circle cx="612" cy="394" r="5" fill="#00bfff" stroke="#0f172a" stroke-width="1.5"/>
-  <rect x="270" y="300" width="120" height="27" rx="4" fill="#1e293b" stroke="#00bfff" stroke-width="1.5"/>
-  <text id="lbl-winctrl-icp-btn-11" x="330" y="318" text-anchor="middle" font-family="Arial,sans-serif" font-size="10" fill="#f1f5f9">Button 15 — ICP key 9</text>
+  <rect x="140" y="260" width="120" height="27" rx="4" fill="#1e293b" stroke="#00bfff" stroke-width="1.5"/>
+  <text id="lbl-winctrl-icp-btn-11" x="200" y="278" text-anchor="middle" font-family="Arial,sans-serif" font-size="10" fill="#f1f5f9">Button 11 — ICP key 5</text>
   <!-- callout:winctrl-icp-btn-12 -->
-  <line x1="649" y1="393.5" x2="460" y2="328.2" stroke="#00bfff" stroke-width="1.5" stroke-dasharray="5 3" opacity="0.75"/>
+  <line x1="649" y1="393.5" x2="330" y2="287" stroke="#00bfff" stroke-width="1.5" stroke-dasharray="5 3" opacity="0.75"/>
   <circle cx="649" cy="393.5" r="5" fill="#00bfff" stroke="#0f172a" stroke-width="1.5"/>
-  <rect x="400" y="301.2" width="120" height="27" rx="4" fill="#1e293b" stroke="#00bfff" stroke-width="1.5"/>
-  <text id="lbl-winctrl-icp-btn-12" x="460" y="319.2" text-anchor="middle" font-family="Arial,sans-serif" font-size="10" fill="#f1f5f9">Button 16 — ICP key 0</text>
+  <rect x="270" y="260" width="120" height="27" rx="4" fill="#1e293b" stroke="#00bfff" stroke-width="1.5"/>
+  <text id="lbl-winctrl-icp-btn-12" x="330" y="278" text-anchor="middle" font-family="Arial,sans-serif" font-size="10" fill="#f1f5f9">Button 12 — ICP key 6</text>
   <!-- callout:winctrl-icp-btn-13 -->
-  <line x1="693" y1="394" x2="570" y2="347.7" stroke="#00bfff" stroke-width="1.5" stroke-dasharray="5 3" opacity="0.75"/>
+  <line x1="693" y1="394" x2="130" y2="314.7" stroke="#00bfff" stroke-width="1.5" stroke-dasharray="5 3" opacity="0.75"/>
   <circle cx="693" cy="394" r="5" fill="#00bfff" stroke="#0f172a" stroke-width="1.5"/>
-  <rect x="560" y="342.7" width="10" height="10" rx="4" fill="#00bfff" stroke="#0f172a" stroke-width="1.5"/>
-  <text id="lbl-winctrl-icp-btn-13" x="565" y="351.7" text-anchor="middle" font-family="Arial,sans-serif" font-size="11" fill="#f1f5f9"></text>
+  <rect x="10" y="301.2" width="120" height="27" rx="4" fill="#1e293b" stroke="#00bfff" stroke-width="1.5"/>
+  <text id="lbl-winctrl-icp-btn-13" x="70" y="319.2" text-anchor="middle" font-family="Arial,sans-serif" font-size="10" fill="#f1f5f9">Button 13 — ICP key 7</text>
   <!-- callout:winctrl-icp-btn-14 -->
   <line x1="748" y1="393.9" x2="260" y2="314.7" stroke="#00bfff" stroke-width="1.5" stroke-dasharray="5 3" opacity="0.75"/>
   <circle cx="748" cy="393.9" r="5" fill="#00bfff" stroke="#0f172a" stroke-width="1.5"/>
@@ -132,10 +132,10 @@
   <rect x="789" y="681" width="180" height="27" rx="4" fill="#1e293b" stroke="#00bfff" stroke-width="1.5"/>
   <text id="lbl-winctrl-icp-btn-26" x="879" y="699" text-anchor="middle" font-family="Arial,sans-serif" font-size="10" fill="#f1f5f9">Button 26 — DRIFT C/O</text>
   <!-- callout:winctrl-icp-btn-27 -->
-  <line x1="738" y1="597" x2="802" y2="635" stroke="#00bfff" stroke-width="1.5" stroke-dasharray="5 3" opacity="0.75"/>
+  <line x1="738" y1="597" x2="879" y2="719" stroke="#00bfff" stroke-width="1.5" stroke-dasharray="5 3" opacity="0.75"/>
   <circle cx="738" cy="597" r="5" fill="#00bfff" stroke="#0f172a" stroke-width="1.5"/>
-  <rect x="802" y="630" width="10" height="10" rx="4" fill="#00bfff" stroke="#0f172a" stroke-width="1.5"/>
-  <text id="lbl-winctrl-icp-btn-27" x="807" y="639" text-anchor="middle" font-family="Arial,sans-serif" font-size="11" fill="#f1f5f9"></text>
+  <rect x="789" y="719" width="180" height="27" rx="4" fill="#1e293b" stroke="#00bfff" stroke-width="1.5"/>
+  <text id="lbl-winctrl-icp-btn-27" x="879" y="737" text-anchor="middle" font-family="Arial,sans-serif" font-size="10" fill="#f1f5f9">Button 27 — NORM</text>
   <!-- callout:winctrl-icp-btn-28 -->
   <line x1="738" y1="635" x2="879" y2="757" stroke="#00bfff" stroke-width="1.5" stroke-dasharray="5 3" opacity="0.75"/>
   <circle cx="738" cy="635" r="5" fill="#00bfff" stroke="#0f172a" stroke-width="1.5"/>
@@ -172,10 +172,10 @@
   <rect x="1000" y="630" width="180" height="27" rx="4" fill="#1e293b" stroke="#00bfff" stroke-width="1.5"/>
   <text id="lbl-winctrl-icp-btn-34" x="1090" y="648" text-anchor="middle" font-family="Arial,sans-serif" font-size="10" fill="#f1f5f9">Button 34 — GAIN rocker down</text>
   <!-- callout:winctrl-icp-axis-y -->
-  <line x1="565" y1="347.7" x2="460" y2="245" stroke="#00bfff" stroke-width="1.5" stroke-dasharray="5 3" opacity="0.75"/>
+  <line x1="565" y1="347.7" x2="404" y2="348.2" stroke="#00bfff" stroke-width="1.5" stroke-dasharray="5 3" opacity="0.75"/>
   <circle cx="565" cy="347.7" r="5" fill="#00bfff" stroke="#0f172a" stroke-width="1.5"/>
-  <rect x="400" y="218" width="120" height="27" rx="4" fill="#1e293b" stroke="#00bfff" stroke-width="1.5"/>
-  <text id="lbl-winctrl-icp-axis-y" x="460" y="236" text-anchor="middle" font-family="Arial,sans-serif" font-size="10" fill="#f1f5f9">Button 17 — RCL</text>
+  <rect x="184" y="334.2" width="220" height="28" rx="4" fill="#1e293b" stroke="#00bfff" stroke-width="1.5"/>
+  <text id="lbl-winctrl-icp-axis-y" x="294" y="352.2" text-anchor="middle" font-family="Arial,sans-serif" font-size="10" fill="#f1f5f9">Axis Y — left upper wheel</text>
   <!-- callout:winctrl-icp-axis-x -->
   <line x1="856" y1="340.2" x2="1110" y2="287" stroke="#00bfff" stroke-width="1.5" stroke-dasharray="5 3" opacity="0.75"/>
   <circle cx="856" cy="340.2" r="5" fill="#00bfff" stroke="#0f172a" stroke-width="1.5"/>
@@ -191,23 +191,5 @@
   <circle cx="856" cy="463.5" r="5" fill="#00bfff" stroke="#0f172a" stroke-width="1.5"/>
   <rect x="1000" y="449.5" width="220" height="28" rx="4" fill="#1e293b" stroke="#00bfff" stroke-width="1.5"/>
   <text id="lbl-winctrl-icp-axis-rx" x="1110" y="467.5" text-anchor="middle" font-family="Arial,sans-serif" font-size="10" fill="#f1f5f9">Axis Rx — right lower wheel</text>
-  <!-- box:winctrl-icp-btn-09 -->
-  <rect x="270" y="219" width="120" height="27" rx="4" fill="#1e293b" stroke="#00bfff" stroke-width="1.5"/>
-  <text id="lbl-winctrl-icp-btn-09" x="330" y="237" text-anchor="middle" font-family="Arial,sans-serif" font-size="10" fill="#f1f5f9">Button 9 — ICP key 3</text>
-  <!-- box:winctrl-icp-btn-11 -->
-  <rect x="140" y="260" width="120" height="27" rx="4" fill="#1e293b" stroke="#00bfff" stroke-width="1.5"/>
-  <text id="lbl-winctrl-icp-btn-11" x="200" y="278" text-anchor="middle" font-family="Arial,sans-serif" font-size="10" fill="#f1f5f9">Button 11 — ICP key 5</text>
-  <!-- box:winctrl-icp-btn-12 -->
-  <rect x="270" y="260" width="120" height="27" rx="4" fill="#1e293b" stroke="#00bfff" stroke-width="1.5"/>
-  <text id="lbl-winctrl-icp-btn-12" x="330" y="278" text-anchor="middle" font-family="Arial,sans-serif" font-size="10" fill="#f1f5f9">Button 12 — ICP key 6</text>
-  <!-- box:winctrl-icp-btn-13 -->
-  <rect x="10" y="301.2" width="120" height="27" rx="4" fill="#1e293b" stroke="#00bfff" stroke-width="1.5"/>
-  <text id="lbl-winctrl-icp-btn-13" x="70" y="319.2" text-anchor="middle" font-family="Arial,sans-serif" font-size="10" fill="#f1f5f9">Button 13 — ICP key 7</text>
-  <!-- box:winctrl-icp-btn-27 -->
-  <rect x="789" y="719" width="180" height="27" rx="4" fill="#1e293b" stroke="#00bfff" stroke-width="1.5"/>
-  <text id="lbl-winctrl-icp-btn-27" x="879" y="737" text-anchor="middle" font-family="Arial,sans-serif" font-size="10" fill="#f1f5f9">Button 27 — NORM</text>
-  <!-- box:winctrl-icp-axis-y -->
-  <rect x="184" y="334.2" width="220" height="28" rx="4" fill="#1e293b" stroke="#00bfff" stroke-width="1.5"/>
-  <text id="lbl-winctrl-icp-axis-y" x="294" y="352.2" text-anchor="middle" font-family="Arial,sans-serif" font-size="10" fill="#f1f5f9">Axis Y — left upper wheel</text>
   <text x="700" y="812" text-anchor="middle" font-family="Arial,sans-serif" font-size="12" fill="#475569">WINCTRL ViperAce ICP - 34 buttons + 4 axes</text>
 </svg>
