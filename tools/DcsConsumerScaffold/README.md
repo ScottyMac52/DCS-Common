@@ -19,6 +19,8 @@ Publisher: **Vyper Industries** · TFM: `net10.0-windows` · Assembly: `DcsConsu
 
 The selected grip is applied only to generic MOZA AB9 profiles and is preserved as the generated page `deviceId`. No JSON override file is required in the WPF importer; the preview grids show how each mapping and physical instance was resolved. Repeated devices automatically receive stable GUID-backed profile keys. Entering a role gives that physical instance a readable, GUID-associated alias in the generated consumer.
 
+In consumer mode, selecting or pasting a profiles directory below `Config/Input/<module>` defaults **Display name**, **Input module ID**, and **Kneeboard ID** to the exact module-folder name. Each default remains independently editable; changing profiles later updates only blank or still-inferred values and preserves manual edits.
+
 Installer (tag `vX.X.X.X`): Inno Setup via shared-github-workflows. The installed EXE still expects **Node on PATH** and a DCS-Common checkout (`DCS_COMMON_ROOT` or browse).
 
 ## Synchronize labels by command
