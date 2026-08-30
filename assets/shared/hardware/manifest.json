@@ -24,9 +24,9 @@
         "moza-ab9-warthog-grip"
       ],
       "uiLayerModifiers": {
-        "ava-base-f16c": "TM_AVA_BASE_F16_MODIFIER",
-        "ava-base-warthog-grip": "TM_AVA_BASE_F16_MODIFIER",
-        "moza-ab9-warthog-grip": "MOZA_F16_F18_BTN3"
+        "ava-base-f16c": "AVA_BASE_MODIFIER_BTN3",
+        "ava-base-warthog-grip": "AVA_BASE_MODIFIER_BTN3",
+        "moza-ab9-warthog-grip": "MOZA_MODIFIER_BTN3"
       },
       "label": "TM Warthog Joystick",
       "drawio": "drawio/tm-warthog-grip.drawio",
@@ -39,7 +39,7 @@
         "moza-ab9-hornet-grip"
       ],
       "uiLayerModifiers": {
-        "moza-ab9-hornet-grip": "MOZA_F16_F18_BTN3"
+        "moza-ab9-hornet-grip": "MOZA_MODIFIER_BTN3"
       },
       "label": "Thrustmaster F/A-18C Hornet Grip",
       "drawio": "drawio/grip-f18c.drawio",

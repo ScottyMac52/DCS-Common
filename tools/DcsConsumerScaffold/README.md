@@ -16,12 +16,13 @@ Publisher: **Vyper Industries** · TFM: `net10.0-windows` · Assembly: `DcsConsu
 8. **Per-device kneeboard preview** — render the selected physical instance through the production SVG/PNG pipeline in a modal viewer before writing the consumer repository
 9. **Import target** — choose a normal consumer module or the authoritative DCS-Common UI Layer
 10. **Proceed** — writes a consumer tree in consumer mode, or safely synchronizes only `assets/shared/ui-layer` in UI Layer mode
+11. **Definitive UI Layer Editor** — load the complete canonical catalog without connected devices, inspect profiles/bindings/modifiers, reconcile an imported UiLayer folder with explicit per-file actions, validate, and save atomically
 
 The selected grip is applied only to generic MOZA AB9 profiles and is preserved as the generated page `deviceId`. No JSON override file is required in the WPF importer; the preview grids show how each mapping and physical instance was resolved. Repeated devices automatically receive stable GUID-backed profile keys. Entering a role gives that physical instance a readable, GUID-associated alias in the generated consumer.
 
 In consumer mode, selecting or pasting a profiles directory below `Config/Input/<module>` defaults **Display name**, **Input module ID**, and **Kneeboard ID** to the exact module-folder name. Each default remains independently editable; changing profiles later updates only blank or still-inferred values and preserves manual edits.
 
-When the output directory is an existing consumer, repository-only devices are preserved by default. Their red **Unused** state means “not observed in this scaffold session,” not “delete.” Check **Remove** on a repository-only device to request explicit deletion. This protects disconnected and axis-only controllers such as the TPR rudder. UI Layer import likewise merges observed profiles and modifiers into DCS-Common's cumulative global catalog rather than replacing it with a partial snapshot; module packaging still emits only the subset selected by the consumer configuration.
+When the output directory is an existing consumer, repository-only devices are preserved by default. Their red **Unused** state means “not observed in this scaffold session,” not “delete.” Check **Remove** on a repository-only device to request explicit deletion. This protects disconnected and axis-only controllers such as the TPR rudder. The definitive UI Layer is maintained separately; module packaging emits only devices whose referenced module profiles contain effective added keys/buttons/POVs or axes.
 
 Authoritative UI Layer previews render the selected Saved Games profiles directly and do not compose the shared UI Layer overlay back onto itself. Consumer previews continue to add the applicable shared overlay. In UI Layer mode, consumer-only identity/output fields are disabled, the source `modifiers.lua` and DCS-Common root are required, and **Proceed** remains disabled until all blocking preview errors (including unknown modifiers) are corrected.
 
@@ -42,6 +43,8 @@ After **Load Preview**, the **Command labels** grid contains one row per distinc
 Grouping is a preview/editor feature only. Proceed still persists the existing row-level label overrides, so consumer and UI Layer JSON schemas are unchanged.
 
 ## Import the authoritative UI Layer
+
+For definitive maintenance, prefer **Open Definitive UI Layer Editor…**. It loads the complete DCS-Common catalog independently of connected hardware and reconciles a Saved Games UiLayer folder through explicit Keep/Add/Replace/Remove decisions. Save validates a staged catalog and swaps it into place atomically.
 
 Use this mode after changing the simulator-wide bindings under DCS Saved Games.
 

@@ -60,6 +60,11 @@ public partial class MainWindow : Window
         }
     }
 
+    private void OpenUiLayerEditor_Click(object sender, RoutedEventArgs e)
+    {
+        new UiLayerEditorWindow(_viewModel.CommonRoot) { Owner = this }.ShowDialog();
+    }
+
     private void ApplyCommandLabel_Click(object sender, RoutedEventArgs e)
     {
         if ((sender as FrameworkElement)?.Tag is CommandLabelGroup group)

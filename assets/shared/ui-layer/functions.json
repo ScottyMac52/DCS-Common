@@ -60,6 +60,24 @@
       "command": "d2627pnilu2627cdnilvd1vpnilvu0",
       "label": "VR Left",
       "category": "VR"
+    },
+    {
+      "id": "restart-mission",
+      "command": "d1641pnilunilcdnilvdnilvpnilvunil",
+      "label": "Restart Mission",
+      "category": "General"
+    },
+    {
+      "id": "f10-map-coordinates",
+      "command": "d1879pnilunilcdnilvdnilvpnilvunil",
+      "label": "F10 Map Coordinates Picker",
+      "category": "General"
+    },
+    {
+      "id": "make-screenshot",
+      "command": "d257pnilunilcdnilvdnilvpnilvunil",
+      "label": "Make Screenshot",
+      "category": "General"
     }
   ]
 }

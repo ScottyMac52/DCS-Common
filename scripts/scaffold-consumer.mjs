@@ -631,6 +631,7 @@ export function buildDraftKneeboardConfig(preview, { displayName, inputModuleId,
 
     const page = {
       file,
+      profile: profileKey,
       includeUiLayer,
       deviceId: device.deviceId,
       deviceInstance: device.instanceHint
