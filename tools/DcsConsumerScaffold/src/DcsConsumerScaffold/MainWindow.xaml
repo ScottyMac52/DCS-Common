@@ -141,6 +141,16 @@
           <DataGridTextColumn Header="Role (optional)" Binding="{Binding Role, UpdateSourceTrigger=PropertyChanged}" Width="1.2*" />
           <DataGridTextColumn Header="Profile key" Binding="{Binding ProfileKey}" Width="1.5*" IsReadOnly="True" />
           <DataGridTextColumn Header="State" Binding="{Binding ChangeState}" Width="95" IsReadOnly="True" />
+          <DataGridTemplateColumn Header="Remove" Width="70">
+            <DataGridTemplateColumn.CellTemplate>
+              <DataTemplate>
+                <CheckBox HorizontalAlignment="Center" VerticalAlignment="Center"
+                          IsChecked="{Binding RemoveRequested, UpdateSourceTrigger=PropertyChanged}"
+                          IsEnabled="{Binding IsRepositoryOnly}"
+                          ToolTip="Explicitly remove this repository-only device; unchecked unused devices are preserved" />
+              </DataTemplate>
+            </DataGridTemplateColumn.CellTemplate>
+          </DataGridTemplateColumn>
           <DataGridTemplateColumn Header="Labels" Width="150">
             <DataGridTemplateColumn.CellTemplate>
               <DataTemplate>

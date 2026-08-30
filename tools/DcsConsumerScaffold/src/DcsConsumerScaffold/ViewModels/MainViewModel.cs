@@ -345,7 +345,9 @@ public sealed class MainViewModel : INotifyPropertyChanged
             if (IsUiLayerImport)
             {
                 var result = _uiLayerImport.Import(CommonRoot, ProfilesDir, ModifiersPath, Devices, Rows);
-                StatusText = $"UI Layer imported into DCS-Common: {result.ProfileCount} profiles, " +
+                StatusText = $"UI Layer synchronized into DCS-Common: {result.ProfileCount} total profiles " +
+                    $"({result.ObservedProfileCount} observed, {result.PreservedProfileCount} preserved while absent), " +
+                    $"{result.PreservedModifierCount} modifiers preserved while absent, " +
                     $"{result.FunctionCount} functions ({result.NewFunctionCount} new), " +
                     $"{result.OverlayBindingCount} hardware overlay bindings updated, " +
                     $"{result.ExemptBindingCount} exempt bindings ignored.";
@@ -367,7 +369,11 @@ public sealed class MainViewModel : INotifyPropertyChanged
                 OutputDir,
                 DisplayName.Trim(),
                 InputModuleId.Trim(),
-                KneeboardId.Trim());
+                KneeboardId.Trim(),
+                removedProfiles: Devices
+                    .Where(device => device.IsRepositoryOnly && device.RemoveRequested && !string.IsNullOrWhiteSpace(device.ProfileKey))
+                    .Select(device => device.ProfileKey!)
+                    .ToArray());
 
             StatusText = exitCode is 0 or 2
                 ? $"Proceed finished (exit {exitCode}). See SCAFFOLD-REPORT.md under the output folder.{Environment.NewLine}{stdout}{Environment.NewLine}{stderr}".Trim()

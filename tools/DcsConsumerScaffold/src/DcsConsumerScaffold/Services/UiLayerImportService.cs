@@ -1,12 +1,16 @@
 using System.IO;
 using System.Text.Json;
 using System.Text.Json.Nodes;
+using System.Text.RegularExpressions;
 using DcsConsumerScaffold.Models;
 
 namespace DcsConsumerScaffold.Services;
 
 public sealed record UiLayerImportResult(
     int ProfileCount,
+    int ObservedProfileCount,
+    int PreservedProfileCount,
+    int PreservedModifierCount,
     int FunctionCount,
     int NewFunctionCount,
     int OverlayBindingCount,
@@ -113,27 +117,70 @@ public sealed class UiLayerImportService
         Directory.CreateDirectory(destinationProfiles);
         var sourceFiles = Directory.GetFiles(profilesDir, "*.diff.lua", SearchOption.TopDirectoryOnly);
         var sourceNames = sourceFiles.Select(Path.GetFileName).ToHashSet(StringComparer.OrdinalIgnoreCase);
-        foreach (var destinationFile in Directory.GetFiles(destinationProfiles, "*.diff.lua", SearchOption.TopDirectoryOnly))
-        {
-            if (!sourceNames.Contains(Path.GetFileName(destinationFile))) File.Delete(destinationFile);
-        }
+        var sourceIdentities = sourceFiles.Select(ProfileIdentity).ToHashSet(StringComparer.OrdinalIgnoreCase);
+        var destinationFiles = Directory.GetFiles(destinationProfiles, "*.diff.lua", SearchOption.TopDirectoryOnly);
+        var preservedProfileCount = destinationFiles.Count(destinationFile => !sourceIdentities.Contains(ProfileIdentity(destinationFile)));
+        foreach (var destinationFile in destinationFiles.Where(destinationFile =>
+                     sourceIdentities.Contains(ProfileIdentity(destinationFile)) &&
+                     !sourceNames.Contains(Path.GetFileName(destinationFile))))
+            File.Delete(destinationFile);
         foreach (var sourceFile in sourceFiles)
         {
             File.Copy(sourceFile, Path.Combine(destinationProfiles, Path.GetFileName(sourceFile)), overwrite: true);
         }
 
         Directory.CreateDirectory(Path.GetDirectoryName(destinationModifiers)!);
-        File.Copy(modifiersPath, destinationModifiers, overwrite: true);
+        var existingModifiers = File.Exists(destinationModifiers) ? File.ReadAllText(destinationModifiers) : string.Empty;
+        var mergedModifiers = MergeModifiers(existingModifiers, File.ReadAllText(modifiersPath), out var preservedModifierCount);
+        File.WriteAllText(destinationModifiers, mergedModifiers);
         WriteJson(functionsPath, functionsRoot);
         WriteJson(overlaysPath, overlaysRoot);
 
         return new UiLayerImportResult(
+            Directory.GetFiles(destinationProfiles, "*.diff.lua", SearchOption.TopDirectoryOnly).Length,
             sourceFiles.Length,
+            preservedProfileCount,
+            preservedModifierCount,
             functions.Count,
             newFunctionCount,
             overlayBindingCount,
             exemptBindingCount);
     }
+
+    public static string MergeModifiers(string existingSource, string observedSource, out int preservedCount)
+    {
+        var existing = ModifierEntries(existingSource);
+        var observed = ModifierEntries(observedSource);
+        preservedCount = existing.Keys.Count(name => !observed.ContainsKey(name));
+        if (existing.Count == 0 && observed.Count == 0) return observedSource;
+        foreach (var pair in observed) existing[pair.Key] = pair.Value;
+
+        var lines = new List<string> { "local modifiers = {" };
+        foreach (var pair in existing.OrderBy(pair => pair.Key, StringComparer.OrdinalIgnoreCase))
+        {
+            lines.Add($"  [\"{pair.Key}\"] = {{");
+            lines.AddRange(pair.Value.Trim().Split('\n').Select(line => $"    {line.Trim()}"));
+            lines.Add("  },");
+        }
+        lines.Add("}");
+        lines.Add("return modifiers");
+        return string.Join(Environment.NewLine, lines) + Environment.NewLine;
+    }
+
+    private static Dictionary<string, string> ModifierEntries(string source)
+    {
+        var result = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+        foreach (Match match in Regex.Matches(source,
+                     "\\[\\\"(?<name>[^\\\"]+)\\\"\\]\\s*=\\s*\\{(?<body>.*?)\\n\\s*\\},?",
+                     RegexOptions.Singleline))
+            result[match.Groups["name"].Value] = match.Groups["body"].Value;
+        return result;
+    }
+
+    private static string ProfileIdentity(string path) => Regex.Replace(
+        Path.GetFileName(path).Replace(".diff.lua", string.Empty, StringComparison.OrdinalIgnoreCase),
+        "\\s*\\{[0-9A-Fa-f-]{36}\\}\\s*$",
+        string.Empty).Trim();
 
     private static IReadOnlyDictionary<string, string> LoadCanonicalDeviceIds(string commonRoot)
     {

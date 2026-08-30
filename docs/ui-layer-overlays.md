@@ -2,6 +2,8 @@
 
 DCS-Common owns the authoritative UI Layer function catalog and the per-device overlay definitions used to combine simulator-wide functions with aircraft bindings on the same canonical hardware page.
 
+The authoritative catalog is a cumulative global inventory, not a snapshot of whichever controllers happened to be connected during the latest import. UI Layer synchronization upserts observed profiles, modifiers, functions, and overlay bindings while preserving unobserved definitions. Absence is never an implicit deletion.
+
 ## Files
 
 - `functions.json` is the authoritative, device-independent UI Layer function list.
@@ -24,6 +26,8 @@ Scaffolded consumers enable composition by default with top-level `"includeUiLay
 ## Package tailoring
 
 The consumer's `config/kneeboard.json` is authoritative for packaged hardware. The UI Layer packager follows profile references used by configured pages instead of treating every file in the module joystick directory as active.
+
+Scaffolding an existing consumer merges the observed profiles into that configuration. Repository-only devices are preserved by default—including axis-only devices and temporarily disconnected hardware—and are removed only when explicitly selected in the importer. Thus the global authoring inventory, the consumer's configured inventory, and the package's tailored payload remain separate scopes.
 
 During packaging it:
 

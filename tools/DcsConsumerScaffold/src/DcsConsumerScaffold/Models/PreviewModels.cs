@@ -46,6 +46,7 @@ public sealed class PreviewDevice : INotifyPropertyChanged
     private string? _role;
     private PreviewChangeState _changeState = PreviewChangeState.NotCompared;
     private string _changeReason = "Select an output repository to compare.";
+    private bool _removeRequested;
     [JsonPropertyName("profileFile")]
     public string? ProfileFile { get; set; }
 
@@ -99,6 +100,13 @@ public sealed class PreviewDevice : INotifyPropertyChanged
 
     [JsonIgnore]
     public bool IsRepositoryOnly { get; set; }
+
+    [JsonIgnore]
+    public bool RemoveRequested
+    {
+        get => _removeRequested;
+        set => Set(ref _removeRequested, value);
+    }
 
     [JsonIgnore]
     public bool CanPreview => !IsRepositoryOnly && !string.IsNullOrWhiteSpace(DeviceId) && !string.IsNullOrWhiteSpace(ProfileKey) && BindingCount > 0;

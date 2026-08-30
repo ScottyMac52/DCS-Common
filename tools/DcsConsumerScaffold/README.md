@@ -21,6 +21,8 @@ The selected grip is applied only to generic MOZA AB9 profiles and is preserved 
 
 In consumer mode, selecting or pasting a profiles directory below `Config/Input/<module>` defaults **Display name**, **Input module ID**, and **Kneeboard ID** to the exact module-folder name. Each default remains independently editable; changing profiles later updates only blank or still-inferred values and preserves manual edits.
 
+When the output directory is an existing consumer, repository-only devices are preserved by default. Their red **Unused** state means “not observed in this scaffold session,” not “delete.” Check **Remove** on a repository-only device to request explicit deletion. This protects disconnected and axis-only controllers such as the TPR rudder. UI Layer import likewise merges observed profiles and modifiers into DCS-Common's cumulative global catalog rather than replacing it with a partial snapshot; module packaging still emits only the subset selected by the consumer configuration.
+
 Installer (tag `vX.X.X.X`): Inno Setup via shared-github-workflows. The installed EXE still expects **Node on PATH** and a DCS-Common checkout (`DCS_COMMON_ROOT` or browse).
 
 ## Synchronize labels by command
