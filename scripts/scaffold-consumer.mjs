@@ -53,6 +53,7 @@ Optional:
   --semantic-modifiers <path> modifier name or device+key to semantic modifier ID (JSON)
   --labels <path>             stable binding identity to editable label override (JSON)
   --remove-profiles <path>    explicit repository profile keys to remove (JSON array)
+  --exclude-ui-layer          do not compose shared UI Layer overlays into generated preview pages
   --moza-grip <value>          standalone, viper, or hornet; applies to generic AB9 profiles
   --common-root <path>
   --repo-name <name>          default: derived from display name
@@ -74,6 +75,7 @@ export function parseArgs(argv = process.argv.slice(2)) {
     semanticModifiersPath: null,
     labelsPath: null,
     removeProfilesPath: null,
+    includeUiLayer: true,
     mozaGrip: null,
     commonRoot: defaultCommonRoot,
     displayName: null,
@@ -100,6 +102,7 @@ export function parseArgs(argv = process.argv.slice(2)) {
     else if (arg === '--semantic-modifiers') options.semanticModifiersPath = next();
     else if (arg === '--labels') options.labelsPath = next();
     else if (arg === '--remove-profiles') options.removeProfilesPath = next();
+    else if (arg === '--exclude-ui-layer') options.includeUiLayer = false;
     else if (arg === '--moza-grip') options.mozaGrip = next().toLowerCase();
     else if (arg === '--common-root') options.commonRoot = resolve(next());
     else if (arg === '--display-name') options.displayName = next();
@@ -548,7 +551,7 @@ function aliasFromModifierName(name) {
 }
 
 /** Draft kneeboard.json from preview rows (base chord only for controls; layers stubbed when modifiers exist). */
-export function buildDraftKneeboardConfig(preview, { displayName, inputModuleId }) {
+export function buildDraftKneeboardConfig(preview, { displayName, inputModuleId, includeUiLayer = true }) {
   const profiles = {};
   for (const device of preview.devices) {
     if (!device.deviceId) continue;
@@ -628,7 +631,7 @@ export function buildDraftKneeboardConfig(preview, { displayName, inputModuleId 
 
     const page = {
       file,
-      includeUiLayer: true,
+      includeUiLayer,
       deviceId: device.deviceId,
       deviceInstance: device.instanceHint
         ? (device.deviceId === 'tm-mfd' ? `MFD${device.instanceHint}` : String(device.instanceHint))
@@ -750,7 +753,7 @@ export function mergeConsumerConfig(draft, existing, removedProfiles = []) {
   return { config, preservedProfiles, removedProfiles: [...removed].filter((profile) => existing.profiles?.[profile]) };
 }
 
-export function writeConsumer({ preview, outputDir, displayName, inputModuleId, kneeboardId, repoName, removedProfiles = [], dryRun = false, commonRoot = defaultCommonRoot }) {
+export function writeConsumer({ preview, outputDir, displayName, inputModuleId, kneeboardId, repoName, removedProfiles = [], includeUiLayer = true, dryRun = false, commonRoot = defaultCommonRoot }) {
   const out = resolve(outputDir);
   const name = repoName ?? `DCS-${slugifyId(displayName)}-Components`;
   const tokens = {
@@ -804,7 +807,7 @@ export function writeConsumer({ preview, outputDir, displayName, inputModuleId, 
     copy(preview.labelsPath, 'config/scaffold-label-overrides.json');
   }
 
-  const draftKneeboard = buildDraftKneeboardConfig(preview, { displayName, inputModuleId });
+  const draftKneeboard = buildDraftKneeboardConfig(preview, { displayName, inputModuleId, includeUiLayer });
   const existingConfigPath = join(out, 'config/kneeboard.json');
   const existingKneeboard = existsSync(existingConfigPath) ? JSON.parse(readFileSync(existingConfigPath, 'utf8')) : null;
   const merge = mergeConsumerConfig(draftKneeboard, existingKneeboard, removedProfiles);
@@ -948,6 +951,7 @@ export function main(argv = process.argv.slice(2)) {
       kneeboardId: options.kneeboardId,
       repoName: options.repoName,
       removedProfiles: options.removeProfilesPath ? JSON.parse(readFileSync(options.removeProfilesPath, 'utf8')) : [],
+      includeUiLayer: options.includeUiLayer,
       dryRun: options.dryRun,
       commonRoot: options.commonRoot,
     });

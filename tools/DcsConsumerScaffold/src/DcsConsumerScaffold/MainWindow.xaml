@@ -12,6 +12,9 @@
         <DataTrigger Binding="{Binding ChangeState}" Value="{x:Static models:PreviewChangeState.New}">
           <Setter Property="Background" Value="#C6EFCE" />
         </DataTrigger>
+        <DataTrigger Binding="{Binding ChangeState}" Value="{x:Static models:PreviewChangeState.Observed}">
+          <Setter Property="Background" Value="#DDEBF7" />
+        </DataTrigger>
         <DataTrigger Binding="{Binding ChangeState}" Value="{x:Static models:PreviewChangeState.Changed}">
           <Setter Property="Background" Value="#FFEB9C" />
         </DataTrigger>
@@ -67,7 +70,7 @@
         <TextBox Text="{Binding ProfilesDir, UpdateSourceTrigger=PropertyChanged}" />
       </DockPanel>
 
-      <TextBlock Grid.Row="1" Grid.Column="0" VerticalAlignment="Center" Text="modifiers.lua (optional)" />
+      <TextBlock Grid.Row="1" Grid.Column="0" VerticalAlignment="Center" Text="{Binding ModifiersLabel}" />
       <DockPanel Grid.Row="1" Grid.Column="1" Margin="8,2,0,2">
         <Button DockPanel.Dock="Right" Content="Browse…" Width="90" Margin="8,0,0,0" Click="BrowseModifiers_Click" />
         <TextBox Text="{Binding ModifiersPath, UpdateSourceTrigger=PropertyChanged}" />
@@ -75,6 +78,7 @@
 
       <TextBlock Grid.Row="2" Grid.Column="0" VerticalAlignment="Center" Text="MOZA AB9 configuration" />
       <ComboBox Grid.Row="2" Grid.Column="1" Margin="8,2,0,2"
+                IsEnabled="{Binding IsMozaConfigurationEnabled}"
                 SelectedValue="{Binding MozaGrip, UpdateSourceTrigger=PropertyChanged}"
                 SelectedValuePath="Tag"
                 ToolTip="Applied only when a generic MOZA AB9 profile is present.">
@@ -83,28 +87,31 @@
         <ComboBoxItem Content="F/A-18C/E/F Grip" Tag="hornet" />
       </ComboBox>
 
-      <TextBlock Grid.Row="3" Grid.Column="0" VerticalAlignment="Center" Text="DCS-Common root (optional)" />
+      <TextBlock Grid.Row="3" Grid.Column="0" VerticalAlignment="Center" Text="{Binding CommonRootLabel}" />
       <DockPanel Grid.Row="3" Grid.Column="1" Margin="8,2,0,2">
         <Button DockPanel.Dock="Right" Content="Browse…" Width="90" Margin="8,0,0,0" Click="BrowseCommon_Click" />
         <TextBox Text="{Binding CommonRoot, UpdateSourceTrigger=PropertyChanged}" />
       </DockPanel>
 
-      <TextBlock Grid.Row="4" Grid.Column="0" VerticalAlignment="Center" Text="Output directory" />
-      <DockPanel Grid.Row="4" Grid.Column="1" Margin="8,2,0,2">
+      <TextBlock Grid.Row="4" Grid.Column="0" VerticalAlignment="Center" Text="Output directory" IsEnabled="{Binding IsConsumerImport}" />
+      <DockPanel Grid.Row="4" Grid.Column="1" Margin="8,2,0,2" IsEnabled="{Binding IsConsumerImport}">
         <Button DockPanel.Dock="Right" Content="Browse…" Width="90" Margin="8,0,0,0" Click="BrowseOutput_Click" />
         <TextBox Text="{Binding OutputDir, UpdateSourceTrigger=PropertyChanged}" />
       </DockPanel>
 
-      <TextBlock Grid.Row="5" Grid.Column="0" VerticalAlignment="Center" Text="Display name" />
+      <TextBlock Grid.Row="5" Grid.Column="0" VerticalAlignment="Center" Text="Display name" IsEnabled="{Binding IsConsumerImport}" />
       <TextBox Grid.Row="5" Grid.Column="1" Margin="8,2,0,2"
+               IsEnabled="{Binding IsConsumerImport}"
                Text="{Binding DisplayName, UpdateSourceTrigger=PropertyChanged}" />
 
-      <TextBlock Grid.Row="6" Grid.Column="0" VerticalAlignment="Center" Text="Input module ID" />
+      <TextBlock Grid.Row="6" Grid.Column="0" VerticalAlignment="Center" Text="Input module ID" IsEnabled="{Binding IsConsumerImport}" />
       <TextBox Grid.Row="6" Grid.Column="1" Margin="8,2,0,2"
+               IsEnabled="{Binding IsConsumerImport}"
                Text="{Binding InputModuleId, UpdateSourceTrigger=PropertyChanged}" />
 
-      <TextBlock Grid.Row="7" Grid.Column="0" VerticalAlignment="Center" Text="Kneeboard ID" />
+      <TextBlock Grid.Row="7" Grid.Column="0" VerticalAlignment="Center" Text="Kneeboard ID" IsEnabled="{Binding IsConsumerImport}" />
       <TextBox Grid.Row="7" Grid.Column="1" Margin="8,2,0,2"
+               IsEnabled="{Binding IsConsumerImport}"
                Text="{Binding KneeboardId, UpdateSourceTrigger=PropertyChanged}" />
 
       <StackPanel Grid.Row="8" Grid.Column="0" Grid.ColumnSpan="2" Orientation="Horizontal" Margin="0,8,0,0">
@@ -112,6 +119,9 @@
         <Button Content="Proceed" Padding="16,6" Margin="8,0,0,0" Command="{Binding ProceedCommand}" />
         <TextBlock Margin="16,0,0,0" VerticalAlignment="Center" Text="{Binding SummaryText}" FontWeight="SemiBold" />
       </StackPanel>
+      <TextBlock Grid.Row="9" Grid.Column="0" Grid.ColumnSpan="2" Margin="0,6,0,0"
+                 Foreground="#9C0006" FontWeight="SemiBold" TextWrapping="Wrap"
+                 Text="{Binding PreviewErrorText}" />
     </Grid>
 
     <Border DockPanel.Dock="Top" BorderBrush="#CBD5E1" BorderThickness="1" CornerRadius="3" Padding="6" Margin="0,0,0,8">
@@ -121,6 +131,7 @@
         <TextBlock Background="#FFEB9C" Padding="6,2" Margin="0,0,6,0" Text="Changed" />
         <TextBlock Background="#FFEB9C" Foreground="#9C0006" Padding="6,2" Margin="0,0,6,0" Text="Out of sync" />
         <TextBlock Background="#FFC7CE" Padding="6,2" Margin="0,0,6,0" Text="Unused" />
+        <TextBlock Background="#DDEBF7" Padding="6,2" Margin="0,0,6,0" Text="Observed" />
         <TextBlock Padding="6,2" Text="White = unchanged / not compared" />
       </StackPanel>
     </Border>

@@ -35,6 +35,16 @@ public class ScaffoldEngineServiceTests
     }
 
     [Fact]
+    public void BuildWriteArguments_CanSuppressUiLayerSelfComposition()
+    {
+        var args = ScaffoldEngineService.BuildWriteArguments(
+            "script.mjs", "profiles", "modifiers.lua", "standalone", null, "root", "out",
+            "UiLayer", "UiLayer", "UiLayer", includeUiLayer: false);
+
+        Assert.Contains("--exclude-ui-layer", args);
+    }
+
+    [Fact]
     public void BuildPreviewArguments_OmitsModifiersWhenNull()
     {
         var args = ScaffoldEngineService.BuildPreviewArguments(

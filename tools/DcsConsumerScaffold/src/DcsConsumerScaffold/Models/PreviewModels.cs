@@ -7,6 +7,7 @@ namespace DcsConsumerScaffold.Models;
 public enum PreviewChangeState
 {
     NotCompared,
+    Observed,
     Unchanged,
     New,
     Changed,
