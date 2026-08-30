@@ -131,9 +131,9 @@ test('built-in MOZA grip selection applies only to a generic AB9 profile', () =>
   assert.equal(hornet.devices[0].mappingSource, 'ui-selection');
 });
 
-test('MOZA grip aliases translate only their verified POV keys', () => {
+test('physical devices translate only their verified DCS POV key variants', () => {
   const map = loadDeviceMap(commonRoot);
-  for (const deviceId of ['moza-ab9-hornet-grip', 'moza-ab9-warthog-grip']) {
+  for (const deviceId of ['tm-warthog-throttle', 'moza-ab9-hornet-grip', 'moza-ab9-warthog-grip']) {
     assert.equal(resolveCatalogInputKey(deviceId, 'JOY_BTN_POV1_U', map), 'JOY_POV1_U');
     assert.equal(resolveCatalogInputKey(deviceId, 'JOY_BTN_POV1_R', map), 'JOY_POV1_R');
     assert.equal(resolveCatalogInputKey(deviceId, 'JOY_BTN_POV1_D', map), 'JOY_POV1_D');

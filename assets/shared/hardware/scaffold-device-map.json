@@ -78,6 +78,12 @@
     }
   ],
   "inputKeyAliases": {
+    "tm-warthog-throttle": {
+      "JOY_BTN_POV1_U": "JOY_POV1_U",
+      "JOY_BTN_POV1_R": "JOY_POV1_R",
+      "JOY_BTN_POV1_D": "JOY_POV1_D",
+      "JOY_BTN_POV1_L": "JOY_POV1_L"
+    },
     "moza-ab9-hornet-grip": {
       "JOY_BTN_POV1_U": "JOY_POV1_U",
       "JOY_BTN_POV1_R": "JOY_POV1_R",
