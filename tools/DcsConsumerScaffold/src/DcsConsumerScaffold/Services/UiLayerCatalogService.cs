@@ -50,7 +50,28 @@ public sealed class UiLayerCatalogService
         await process.WaitForExitAsync(cancellationToken);
         var output = await stdout;
         var error = await stderr;
-        if (process.ExitCode != 0) throw new InvalidOperationException(string.IsNullOrWhiteSpace(error) ? output : error);
+        if (process.ExitCode != 0) throw new InvalidOperationException(ConciseProcessError(
+            string.IsNullOrWhiteSpace(error) ? output : error));
         return output.Split(Environment.NewLine, StringSplitOptions.RemoveEmptyEntries).Last();
+    }
+
+    internal static string ConciseProcessError(string error)
+    {
+        const int maximumLength = 4000;
+        var normalized = error.Replace("\r\n", "\n", StringComparison.Ordinal);
+        var lines = normalized.Split('\n');
+        var diagnostic = Array.FindIndex(lines, line =>
+            line.Contains("SyntaxError:", StringComparison.Ordinal) ||
+            line.Contains("Error:", StringComparison.Ordinal));
+        if (diagnostic > 0)
+        {
+            var source = lines[0].StartsWith("file:", StringComparison.OrdinalIgnoreCase)
+                ? $"{lines[0]}{Environment.NewLine}"
+                : string.Empty;
+            normalized = source + string.Join(Environment.NewLine, lines.Skip(diagnostic));
+        }
+        return normalized.Length <= maximumLength
+            ? normalized.Trim()
+            : $"{normalized[..maximumLength].TrimEnd()}{Environment.NewLine}… error output truncated";
     }
 }
