@@ -23,6 +23,8 @@ In consumer mode, selecting or pasting a profiles directory below `Config/Input/
 
 When the output directory is an existing consumer, repository-only devices are preserved by default. Their red **Unused** state means “not observed in this scaffold session,” not “delete.” Check **Remove** on a repository-only device to request explicit deletion. This protects disconnected and axis-only controllers such as the TPR rudder. UI Layer import likewise merges observed profiles and modifiers into DCS-Common's cumulative global catalog rather than replacing it with a partial snapshot; module packaging still emits only the subset selected by the consumer configuration.
 
+Authoritative UI Layer previews render the selected Saved Games profiles directly and do not compose the shared UI Layer overlay back onto itself. Consumer previews continue to add the applicable shared overlay. In UI Layer mode, consumer-only identity/output fields are disabled, the source `modifiers.lua` and DCS-Common root are required, and **Proceed** remains disabled until all blocking preview errors (including unknown modifiers) are corrected.
+
 Installer (tag `vX.X.X.X`): Inno Setup via shared-github-workflows. The installed EXE still expects **Node on PATH** and a DCS-Common checkout (`DCS_COMMON_ROOT` or browse).
 
 ## Synchronize labels by command

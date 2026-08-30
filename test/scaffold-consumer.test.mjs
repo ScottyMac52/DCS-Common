@@ -598,8 +598,19 @@ test('buildDraftKneeboardConfig includes base layer and modifier layer', () => {
   assert.ok(config.pages[0].layers);
   assert.equal(config.pages[0].layers[0].id, 'base');
   assert.equal(config.pages[0].layers[0].controls['mfd-osb-t1'].key, 'JOY_BTN1');
+  assert.equal(config.pages[0].includeUiLayer, true);
   assert.ok(config.modifiersFile);
   assert.equal(config.modifiers.AVA_F16_S3.mode, 'hold');
+
+  const authoritative = buildDraftKneeboardConfig(preview, {
+    displayName: 'UiLayer',
+    inputModuleId: 'UiLayer',
+    includeUiLayer: false,
+  });
+  assert.equal(authoritative.pages[0].includeUiLayer, false);
+  assert.deepEqual(authoritative.pages[0].layers.map(({ id }) => id), ['base', 'AVA_F16_S3']);
+  assert.deepEqual(Object.values(authoritative.pages[0].layers[0].controls).map(({ command }) => command), ['d1']);
+  assert.deepEqual(Object.values(authoritative.pages[0].layers[1].controls).map(({ command }) => command), ['d2']);
 });
 
 test('writeConsumer preserves the consumer-owned device override map', () => {
@@ -893,6 +904,7 @@ test('semantic modifier alternatives collapse to one logical layer without losin
     inputModuleId: 'UiLayer',
     kneeboardId: 'UiLayer',
     commonRoot,
+    includeUiLayer: false,
   });
   const renderedConfig = loadProfileDrivenConfig('config/kneeboard.json', {
     consumerRoot: outputDir,
@@ -903,6 +915,21 @@ test('semantic modifier alternatives collapse to one logical layer without losin
     'JOY_BTN3 (hold)',
     'JOY_BTN7 (hold)',
   ]);
+
+  const consumerOutput = join(root, 'consumer-with-overlay');
+  writeConsumer({
+    preview,
+    outputDir: consumerOutput,
+    displayName: 'Consumer',
+    inputModuleId: 'Test',
+    kneeboardId: 'Test',
+    commonRoot,
+  });
+  const consumerConfig = loadProfileDrivenConfig('config/kneeboard.json', {
+    consumerRoot: consumerOutput,
+    commonRoot,
+  });
+  assert.ok(consumerConfig.pages[0].legend.some(({ label }) => label === 'UI Layer — grip-shift'));
   assert.deepEqual(renderedConfig.pages[0].labels['viper-tqs-button-05'], [
     { label: 'VR left', fullLabel: 'VR left', color: '#dc2626' },
     { label: 'VR left', fullLabel: 'VR left', color: '#ea580c' },

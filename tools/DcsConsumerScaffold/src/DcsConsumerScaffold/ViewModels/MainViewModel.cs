@@ -31,6 +31,8 @@ public sealed class MainViewModel : INotifyPropertyChanged
     private bool _isBusy;
     private bool _hasPreview;
     private bool _isLoadingPreview;
+    private int _previewErrorCount;
+    private string _previewErrorText = string.Empty;
 
     public MainViewModel(
         ScaffoldEngineService? engine = null,
@@ -69,12 +71,23 @@ public sealed class MainViewModel : INotifyPropertyChanged
                     ? "UI Layer mode: select Saved Games UiLayer joystick profiles, modifiers.lua, and the DCS-Common root."
                     : "Consumer mode: Load Preview, review labels, then Proceed to write the module repository.";
                 PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(IsUiLayerImport)));
+                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(IsConsumerImport)));
+                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(ModifiersLabel)));
+                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(CommonRootLabel)));
+                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(IsMozaConfigurationEnabled)));
                 if (!IsUiLayerImport) ApplyProfileIdentityDefaults();
+                RecomparePreview();
             }
         }
     }
 
     public bool IsUiLayerImport => string.Equals(ImportTarget, "ui-layer", StringComparison.Ordinal);
+    public bool IsConsumerImport => !IsUiLayerImport;
+    public string ModifiersLabel => IsUiLayerImport ? "UI Layer modifiers.lua (required)" : "modifiers.lua (optional)";
+    public string CommonRootLabel => IsUiLayerImport ? "DCS-Common root (required)" : "DCS-Common root (optional)";
+    public bool IsMozaConfigurationEnabled => !HasPreview || Devices.Any(device =>
+        string.Equals(device.MappingSource, "ui-selection", StringComparison.OrdinalIgnoreCase) ||
+        string.Equals(device.MappingSource, "standalone-fallback", StringComparison.OrdinalIgnoreCase));
 
     public string ProfilesDir
     {
@@ -92,7 +105,7 @@ public sealed class MainViewModel : INotifyPropertyChanged
     public string ModifiersPath
     {
         get => _modifiersPath;
-        set => Set(ref _modifiersPath, value);
+        set { if (Set(ref _modifiersPath, value)) RaiseCommands(); }
     }
 
     public string MozaGrip
@@ -104,7 +117,7 @@ public sealed class MainViewModel : INotifyPropertyChanged
     public string CommonRoot
     {
         get => _commonRoot;
-        set => Set(ref _commonRoot, value);
+        set { if (Set(ref _commonRoot, value)) RaiseCommands(); }
     }
 
     public string OutputDir
@@ -170,6 +183,12 @@ public sealed class MainViewModel : INotifyPropertyChanged
         set => Set(ref _summaryText, value);
     }
 
+    public string PreviewErrorText
+    {
+        get => _previewErrorText;
+        private set => Set(ref _previewErrorText, value);
+    }
+
     public bool IsBusy
     {
         get => _isBusy;
@@ -189,6 +208,7 @@ public sealed class MainViewModel : INotifyPropertyChanged
         {
             if (Set(ref _hasPreview, value))
             {
+                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(IsMozaConfigurationEnabled)));
                 RaiseCommands();
             }
         }
@@ -202,6 +222,7 @@ public sealed class MainViewModel : INotifyPropertyChanged
     private bool CanProceed() =>
         !IsBusy &&
         HasPreview &&
+        _previewErrorCount == 0 &&
         !string.IsNullOrWhiteSpace(ProfilesDir) &&
         (IsUiLayerImport
             ? !string.IsNullOrWhiteSpace(CommonRoot) && !string.IsNullOrWhiteSpace(ModifiersPath)
@@ -261,6 +282,8 @@ public sealed class MainViewModel : INotifyPropertyChanged
         CommandLabels.Clear();
         Modifiers.Clear();
         HasPreview = false;
+        _previewErrorCount = 0;
+        PreviewErrorText = string.Empty;
         try
         {
             var (document, stdout, stderr, exitCode) = await _engine.RunPreviewAsync(
@@ -309,6 +332,10 @@ public sealed class MainViewModel : INotifyPropertyChanged
             var errorBlock = document?.Errors is { Count: > 0 }
                 ? string.Join(Environment.NewLine, document.Errors)
                 : string.Empty;
+            _previewErrorCount = document?.Errors?.Count ?? 0;
+            PreviewErrorText = errorBlock;
+            if (IsUiLayerImport) ApplyUiLayerObservedStates();
+            RaiseCommands();
             StatusText = exitCode is 0 or 2
                 ? $"Preview loaded (exit {exitCode}).{Environment.NewLine}{stdout}{Environment.NewLine}{errorBlock}".Trim()
                 : $"Engine exit {exitCode}.{Environment.NewLine}{stderr}{Environment.NewLine}{stdout}{Environment.NewLine}{errorBlock}".Trim();
@@ -403,8 +430,23 @@ public sealed class MainViewModel : INotifyPropertyChanged
 
     private void RecomparePreview()
     {
-        if (_isLoadingPreview || IsUiLayerImport || _comparisonSnapshot is null) return;
+        if (_isLoadingPreview) return;
+        if (IsUiLayerImport)
+        {
+            ApplyUiLayerObservedStates();
+            return;
+        }
+        if (_comparisonSnapshot is null) return;
         _comparison.Apply(_comparisonSnapshot, Devices, Modifiers, Rows, CommandLabels);
+    }
+
+    private void ApplyUiLayerObservedStates()
+    {
+        const string reason = "Observed in the selected authoritative UI Layer source.";
+        foreach (var device in Devices) { device.ChangeState = PreviewChangeState.Observed; device.ChangeReason = reason; }
+        foreach (var modifier in Modifiers) { modifier.ChangeState = PreviewChangeState.Observed; modifier.ChangeReason = reason; }
+        foreach (var row in Rows) { row.ChangeState = PreviewChangeState.Observed; row.ChangeReason = reason; }
+        foreach (var group in CommandLabels) { group.ChangeState = PreviewChangeState.Observed; group.ChangeReason = reason; }
     }
 
     public void RebuildCommandLabels()
@@ -524,7 +566,8 @@ public sealed class MainViewModel : INotifyPropertyChanged
             string.IsNullOrWhiteSpace(DisplayName) ? "Preview" : DisplayName.Trim(),
             string.IsNullOrWhiteSpace(InputModuleId) ? "UiLayer" : InputModuleId.Trim(),
             string.IsNullOrWhiteSpace(KneeboardId) ? "UiLayer" : KneeboardId.Trim(),
-            device.ProfileKey);
+            device.ProfileKey,
+            includeUiLayer: !IsUiLayerImport);
     }
 
     private bool Set<T>(ref T field, T value, [CallerMemberName] string? name = null)

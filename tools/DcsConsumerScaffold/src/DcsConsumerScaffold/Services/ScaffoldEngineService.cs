@@ -100,6 +100,7 @@ public sealed class ScaffoldEngineService
         string kneeboardId,
         string? repoName = null,
         IReadOnlyCollection<string>? removedProfiles = null,
+        bool includeUiLayer = true,
         CancellationToken cancellationToken = default)
     {
         var root = ResolveCommonRoot(commonRoot)
@@ -124,7 +125,7 @@ public sealed class ScaffoldEngineService
             removedProfilesPath = await WriteTemporaryJsonArrayAsync("removed-profiles", removedProfiles, cancellationToken);
 
             var args = BuildWriteArguments(
-                script, profilesDir, modifiersPath, mozaGrip, rolesPath, root, outputDir, displayName, inputModuleId, kneeboardId, repoName, semanticPath, labelsPath, removedProfilesPath);
+                script, profilesDir, modifiersPath, mozaGrip, rolesPath, root, outputDir, displayName, inputModuleId, kneeboardId, repoName, semanticPath, labelsPath, removedProfilesPath, includeUiLayer);
             var (exitCode, stdout, stderr) = await RunNodeAsync(root, args, cancellationToken).ConfigureAwait(false);
             return (stdout, stderr, exitCode);
         }
@@ -152,6 +153,7 @@ public sealed class ScaffoldEngineService
         string inputModuleId,
         string kneeboardId,
         string profileKey,
+        bool includeUiLayer = true,
         CancellationToken cancellationToken = default)
     {
         var root = ResolveCommonRoot(commonRoot)
@@ -163,7 +165,8 @@ public sealed class ScaffoldEngineService
             Directory.CreateDirectory(temporaryRoot);
             var (_, stderr, exitCode) = await RunWriteAsync(
                 profilesDir, modifiersPath, mozaGrip, instanceRoles, semanticModifiers, labels, root,
-                temporaryRoot, displayName, inputModuleId, kneeboardId, cancellationToken: cancellationToken);
+                temporaryRoot, displayName, inputModuleId, kneeboardId,
+                includeUiLayer: includeUiLayer, cancellationToken: cancellationToken);
             if (exitCode is not (0 or 2)) throw new InvalidOperationException($"Temporary scaffold failed: {stderr}");
 
             var script = Path.Combine(root, "scripts", "render-scaffold-preview.mjs");
@@ -312,7 +315,8 @@ public sealed class ScaffoldEngineService
         string? repoName = null,
         string? semanticModifiersPath = null,
         string? labelsPath = null,
-        string? removedProfilesPath = null)
+        string? removedProfilesPath = null,
+        bool includeUiLayer = true)
     {
         var list = new List<string>
         {
@@ -350,6 +354,7 @@ public sealed class ScaffoldEngineService
         AddOptionalFile(list, "--semantic-modifiers", semanticModifiersPath);
         AddOptionalFile(list, "--labels", labelsPath);
         AddOptionalFile(list, "--remove-profiles", removedProfilesPath);
+        if (!includeUiLayer) list.Add("--exclude-ui-layer");
 
         if (!string.IsNullOrWhiteSpace(repoName))
         {
