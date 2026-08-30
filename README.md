@@ -43,7 +43,7 @@ Then refine `config/kneeboard.json` and follow the [consumer repository setup gu
 
 Using DCS modifiers (hold or toggle) with layered kneeboard pages? See [profile-driven kneeboards — operator workflow](docs/profile-driven-kneeboards.md) and the [toggle-layer fixture](examples/modifiers-toggle-layer/).
 
-Shared UI Layer functions are composed with aircraft labels from one canonical hardware definition. See [shared UI Layer overlays](docs/ui-layer-overlays.md) for completed mappings, fill-in templates, and explicit exemptions.
+Shared UI Layer functions are composed with aircraft labels from one canonical hardware definition. See the [definitive UI Layer workflow](docs/definitive-ui-layer.md) for manual catalog maintenance and effective-binding module projection, and [shared UI Layer overlays](docs/ui-layer-overlays.md) for completed mappings, fill-in templates, and explicit exemptions.
 
 App CI/release (four-part tags `vX.X.X.X`, Inno Setup): [scaffold-app.yml](.github/workflows/scaffold-app.yml) via [shared-github-workflows](https://github.com/ScottyMac52/shared-github-workflows). Plan notes: [project plan](docs/project-plans/consumer-scaffold-wpf.md).
 

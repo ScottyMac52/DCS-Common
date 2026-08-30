@@ -2,6 +2,7 @@ import { readFileSync } from 'node:fs';
 import { dirname, isAbsolute, join, resolve } from 'node:path';
 import { loadSharedHardware, resolveDcsCommonRoot, modifierColorAt, MODIFIER_COLOR_CONTRACT } from './shared-hardware-consumer.mjs';
 import { composeUiLayerLabels } from './ui-layer-overlays.mjs';
+import { pageProfileIds, resolveConfiguredProfileApplicability } from './effective-profile-applicability.mjs';
 
 function unescapeLuaString(value) {
   return value.replace(/\\([\\"nrt])/g, (_, code) => ({ '\\': '\\', '"': '"', n: '\n', r: '\r', t: '\t' })[code]);
@@ -178,6 +179,7 @@ export function loadProfileDrivenConfig(configPath, options = {}) {
   if (config.schemaVersion !== 1) throw new Error('Kneeboard configuration schemaVersion must be 1.');
   if (!config.aircraft || !Array.isArray(config.pages)) throw new Error('Kneeboard configuration requires aircraft and pages.');
   const modifierCatalog = buildModifierCatalog(config, consumerRoot);
+  const applicability = resolveConfiguredProfileApplicability(config, consumerRoot, { parseProfile: parseDcsDiffLua });
 
   const profileCache = new Map();
   const profile = (id) => {
@@ -257,8 +259,12 @@ export function loadProfileDrivenConfig(configPath, options = {}) {
     });
   }
 
+  const applicablePages = expandedPages.filter((page) => {
+    const ids = pageProfileIds(page, config);
+    return ids.size === 0 || [...ids].some((id) => applicability.profiles.get(id)?.effective);
+  });
   const outputFiles = new Set();
-  const pages = expandedPages.map((page) => {
+  const pages = applicablePages.map((page) => {
     if (!page.file || !page.deviceId) throw new Error('Every configured page requires file and deviceId.');
     if (outputFiles.has(page.file)) throw new Error(`Duplicate configured page file: ${page.file}`);
     outputFiles.add(page.file);
@@ -269,113 +275,4 @@ export function loadProfileDrivenConfig(configPath, options = {}) {
     }
     const layerModifiers = resolveModifierSet(page.modifierIds, modifierCatalog, page.file);
     const labelVariants = {};
-    for (const [controlId, configuredReference] of Object.entries(page.controls ?? {})) {
-      if (!calloutIds.includes(controlId) && !page.allowUnrenderedControls) {
-        throw new Error(`${page.file}: ${controlId} is not a ${page.deviceId} control.`);
-      }
-      const references = Array.isArray(configuredReference) ? configuredReference : [configuredReference];
-      if (references.length === 0) throw new Error(`${page.file}:${controlId} must reference at least one profile binding.`);
-      const resolvedVariants = references.map((reference) => {
-        const expectedModifiers = resolveModifierSet(reference.modifiers ?? page.modifierIds, modifierCatalog, `${page.file}:${controlId}`);
-        const matches = profile(reference.profile).bindings.flatMap((binding) => binding.added
-          .filter((input) => input.key === reference.key && sameChord(input.reformers, expectedModifiers))
-          .map((input) => ({ binding, input })))
-          .filter(({ binding }) => !reference.command || binding.command === reference.command);
-        if (matches.length !== 1) {
-          throw new Error(`${page.file}: ${reference.profile}:${reference.key} resolves to ${matches.length} bindings; specify command when ambiguous.`);
-        }
-        return {
-          label: reference.label ?? matches[0].binding.name,
-          modifiers: reference.modifiers ?? page.modifierIds,
-        };
-      });
-      labelVariants[controlId] = resolvedVariants;
-      const resolvedLabels = resolvedVariants.map(({ label }) => label);
-      const resolvedLabel = [...new Set(resolvedLabels)].join(' / ');
-      if (labels[controlId] === undefined || labels[controlId] === '') {
-        labels[controlId] = resolvedLabel;
-      } else if (references.some((reference) => reference.label !== undefined)) {
-        labels[controlId] = resolvedLabel;
-      }
-    }
-
-    // Color index = order of first appearance among modifiers actually used on this page (not full catalog).
-    const usedOrder = [];
-    const noteUsed = (ids) => {
-      for (const id of ids) {
-        if (!usedOrder.includes(id)) usedOrder.push(id);
-      }
-    };
-    const labelColors = {};
-    for (const [controlId, configuredReference] of Object.entries(page.controls ?? {})) {
-      const reference = Array.isArray(configuredReference) ? configuredReference[0] : configuredReference;
-      const modIds = page.controlModifiers?.[controlId] ?? reference.modifiers ?? page.modifierIds ?? [];
-      if (!modIds.length) {
-        // Leave base colour to the SVG default so light-background overlays
-        // (black text) and dark-box callouts (white text) both work.
-        continue;
-      }
-      noteUsed(modIds);
-      const primary = modIds[0];
-      const colorIndex = usedOrder.indexOf(primary) + 1; // 1..N
-      labelColors[controlId] = modifierColorAt(colorIndex);
-    }
-    for (const [controlId, modifierId] of Object.entries(page.modifierCallouts ?? {})) {
-      noteUsed([modifierId]);
-      labelColors[controlId] = modifierColorAt(usedOrder.indexOf(modifierId) + 1);
-    }
-    for (const [controlId, variants] of Object.entries(labelVariants)) {
-      const modifierSets = new Set(variants.map((variant) => variant.modifiers.join('\0')));
-      if (variants.length < 2 || modifierSets.size < 2) continue;
-      labels[controlId] = variants.map((variant) => {
-        const primary = variant.modifiers[0];
-        const color = primary ? modifierColorAt(usedOrder.indexOf(primary) + 1) : null;
-        return { label: variant.label, fullLabel: variant.label, color };
-      });
-    }
-    // UI Layer functions are composed after aircraft/profile variants so neither source
-    // silently replaces the other. A page can opt out explicitly for exceptional output.
-    const includeUiLayer = page.includeUiLayer !== false
-      && (page.includeUiLayer === true || config.includeUiLayer === true);
-    const uiLayer = includeUiLayer
-      ? composeUiLayerLabels(page.deviceId, labels, { catalog: undefined, deviceInstance: page.deviceInstance ?? null })
-      : null;
-    if (uiLayer) labels = uiLayer.labels;
-
-    // Only force a colour when a modifier is active; base stays device-native.
-
-    const legendOut = [];
-    if (usedOrder.length > 0) {
-      legendOut.push({ label: 'Base (no modifier)', fill: modifierColorAt(0) });
-      for (const [i, id] of usedOrder.entries()) {
-        const entry = modifierCatalog.get(id);
-        const mode = entry?.mode ? ` (${entry.mode})` : '';
-        legendOut.push({
-          label: `${entry?.label ?? id}${mode}`,
-          fill: modifierColorAt(i + 1),
-          modifierId: id,
-        });
-      }
-    }
-
-    if (uiLayer?.legend) {
-      if (legendOut.length === 0) {
-        legendOut.push({ label: 'Base (no modifier)', fill: modifierColorAt(0) });
-      }
-      if (!legendOut.some((entry) => entry.modifierId === uiLayer.legend.modifierId)) {
-        legendOut.push(uiLayer.legend);
-      }
-    }
-
-    return {
-      ...page,
-      labels,
-      labelColors,
-      legend: legendOut,
-      modifierIds: [...page.modifierIds],
-      modifiers: layerModifiers.map((nativeName) => [...modifierCatalog.values()].find((entry) => entry.nativeName === nativeName)),
-      uiLayerTemplate: uiLayer?.template ?? null,
-    };
-  });
-  return { ...config, commonRoot, consumerRoot, modifierCatalog: Object.fromEntries(modifierCatalog), pages };
-}
+    for (c]½ßKh‘éì¶»§q«^w&—FR‚v6öæf–rö¶æVV&ö&Bæ§6öârÂ¥4ôâç7G&–æv–g’†¶æVV&ö&BÂçVÆÂÂ"’“°¢–b‚G'•'Vâ’°¢f÷"†6öç7B·&öf–ÆT¶W’Â&VÆF—fUÒöbö&¦V7BæVçG&–W2†G&gD¶æVV&ö&Bç&öf–ÆW2óò·Ò’’°¢6öç7B&Wf–÷W2ÒW†—7F–æt¶æVV&ö&Còç&öf–ÆW3òå·&öf–ÆT¶W•Ó°¢–b‡G—Vöb&Wf–÷W2ÓÒw7G&–ærrÇÂ&Wf–÷W2ÓÓÒ&VÆF—fR’6öçF–çVS°¢6öç7Bö'6öÆWFRÒ¦ö–â†÷WBÂ&Wf–÷W2“°¢–b†W†—7G57–æ2†ö'6öÆWFR’’VæÆ–æµ7–æ2†ö'6öÆWFR“°¢Ð¢f÷"†6öç7B&öf–ÆT¶W’öbÖW&vRç&VÖ÷fVE&öf–ÆW2’°¢6öç7B&VÆF—fRÒW†—7F–æt¶æVV&ö&Còç&öf–ÆW3òå·&öf–ÆT¶W•Ó°¢–b‡G—Vöb&VÆF—fRÓÒw7G&–ærr’6öçF–çVS°¢6öç7B'6öÇWFRÒ¦ö–â†÷WBÂ&VÆF—fR“°¢–b†W†—7G57–æ2†'6öÇWFR’’VæÆ–æµ7–æ2†'6öÇWFR“°¢Ð¢Ð ¢w&—FR‚w6¶vRæ§6öârÂÇ•Fö¶Vç2‡&VEFV×ÆFR†6öÖÖöå&ö÷BÂw6¶vRæ§6öâçF×Âr’ÂFö¶Vç2’“°¢w&—FR‚u$TDÔRæÖBrÂÇ•Fö¶Vç2‡&VEFV×ÆFR†6öÖÖöå&ö÷BÂu$TDÔRæÖBçF×Âr’ÂFö¶Vç2’“°¢w&—FR‚w67&—G2ö'V–ÆBÖ¶æVV&ö&BæÖ§2rÂ&VEFV×ÆFR†6öÖÖöå&ö÷BÂv'V–ÆBÖ¶æVV&ö&BæÖ§2çF×Âr’“°¢w&—FR‚w67&—G2÷FW7BÖ¶æVV&ö&BæÖ§2rÂÇ•Fö¶Vç2‡&VEFV×ÆFR†6öÖÖöå&ö÷BÂwFW7BÖ¶æVV&ö&BæÖ§2çF×Âr’ÂFö¶Vç2’“°¢w&—FR‚w67&—G2÷fW'6–öâæÖ§2rÂ&VEFV×ÆFR†6öÖÖöå&ö÷BÂwfW'6–öâæÖ§2çF×Âr’“°¢w&—FR‚w67&—G2÷FW7B×fW'6–öæ–æræÖ§2rÂ&VEFV×ÆFR†6öÖÖöå&ö÷BÂwFW7B×fW'6–öæ–æræÖ§2çF×Âr’“°¢w&—FR‚ræv—F‡V"÷v÷&¶fÆ÷w2ö'V–ÆBç–ÖÂrÂÇ•Fö¶Vç2‡&VEFV×ÆFR†6öÖÖöå&ö÷BÂv'V–ÆBç–ÖÂçF×Âr’ÂFö¶Vç2’“°¢w&—FR‚ræv—F‡V"÷v÷&¶fÆ÷w2÷&VÆV6Rç–ÖÂrÂÇ•Fö¶Vç2‡&VEFV×ÆFR†6öÖÖöå&ö÷BÂw&VÆV6Rç–ÖÂçF×Âr’ÂFö¶Vç2’“°¢w&—FR‚w6¶v–ærö÷fvÖRõ$TDÔRåE…BrÂÇ•Fö¶Vç2‡&VEFV×ÆFR†6öÖÖöå&ö÷BÂv÷fvÖRÕ$TDÔRåE…BçF×Âr’ÂFö¶Vç2’“°¢w&—FR‚w6¶v–ær÷&VÆV6Rõ$TÄT4RÔäõDU2æÖBrÂÇ•Fö¶Vç2‡&VEFV×ÆFR†6öÖÖöå&ö÷BÂu$TÄT4RÔäõDU2æÖBçF×Âr’ÂFö¶Vç2’“° ¢w&—FR€¢w67&—G2ô'V–ÆBÔ÷dtÔRç3rÀ¢Ç•Fö¶Vç2‡&VEFV×ÆFR†6öÖÖöå&ö÷BÂt'V–ÆBÔ÷dtÔRç3çF×Âr’ÂFö¶Vç2’À¢“°¢w&—FR€¢w67&—G2õFW7BÕ6¶vRç3rÀ¢Ç•Fö¶Vç2‡&VEFV×ÆFR†6öÖÖöå&ö÷BÂuFW7BÕ6¶vRç3çF×Âr’ÂFö¶Vç2’À¢“°¢w&—FR€¢w67&—G2ô'V–ÆBÕ&VÆV6Rç3rÀ¢Ç•Fö¶Vç2‡&VEFV×ÆFR†6öÖÖöå&ö÷BÂt'V–ÆBÕ&VÆV6Rç3çF×Âr’ÂFö¶Vç2’À¢“° ¢6öç7B&W÷'DÆ–æW2Ò°¢r244ddôÄBÕ$Uõ%BrÀ¢rrÀ¢vVæW&FVB'’66fföÆBÖ6öç7VÖW"æÖ§2f÷"¢¢G¶F—7Æ”æÖWÒ¢¦À¢rrÀ¢Ò–çWBÖöGVÆS¢ÆG¶–çWDÖöGVÆT–GÕÆÀ¢Ò¶æVV&ö&B”C¢ÆG¶¶æVV&ö&D–GÕÆÀ¢Ò&öf–ÆW3¢G·&Wf–Wrç7VÖÖ'’ç&öf–ÆT6÷VçGÖÀ¢ÒÖVBFWf–6W3¢G·&Wf–Wrç7VÖÖ'’æÖVDFWf–6W7ÖÀ¢ÒVæÖVBFWf–6W3¢G·&Wf–Wrç7VÖÖ'’çVæÖVDFWf–6W7ÖÀ¢Ò&Wf–WrW'&÷'3¢G·&Wf–Wrç7VÖÖ'’æW'&÷$6÷VçGÖÀ¢Ò&W6W'fVB'6VçB&öf–ÆW3¢G¶ÖW&vRç&W6W'fVE&öf–ÆW2æÆVæwF‡ÖÀ¢ÒW‡Æ–6—FÇ’&VÖ÷fVB&öf–ÆW3¢G¶ÖW&vRç&VÖ÷fVE&öf–ÆW2æÆVæwF‡ÖÀ¢rrÀ¢r22FWf–6W2rÀ¢rrÀ¢ââç&Wf–WræFWf–6W2æÖ€¢†B’Óà¢ÒÆG¶Bç&öf–ÆTf–ÆWÕÆ(i"&öf–ÆRÆG¶Bç&öf–ÆT¶W’óòr¢¥TäÔTB¢¢wÕÆ(i"G¶BæFWf–6T–Bóòr¢¥TäÔTB¢¢wÒ‚G¶BæÖ–æu6÷W&6WÒG¶Bç&öÆRòÂ&öÆRG¶Bç&öÆWÖ¢rwÒG¶BæwV–BòÂuT”BG¶BæwV–GÖ¢rwÒG¶BæÖ–æu6÷W&6RÓÓÒw7FæFÆöæRÖfÆÆ&6²ròs²vVæW&–2#’&öf–Æ^(	G6VÆV7BF†R–ç7FÆÆVBw&—r¢rwÒ–À¢’À¢ââæÖW&vRç&W6W'fVE&öf–ÆW2æÖ‚‡&öf–ÆR’ÓâÒÆG·&öf–ÆWÕÆ(i"&W6W'fVBv†–ÆR'6VçBg&öÒF†—266fföÆB6W76–öæ’À¢ââæÖW&vRç&VÖ÷fVE&öf–ÆW2æÖ‚‡&öf–ÆR’ÓâÒÆG·&öf–ÆWÕÆ(i"W‡Æ–6—FÇ’&VÖ÷fVF’À¢rrÀ¢r22&–æF–æw2rÀ¢rrÀ¢wÂFWf–6RÂ6öçG&öÂÂD526öÖÖæBæÖRÂFWf–6RÆ&VÂÂVffV7F—fRÆ&VÂÂÆ&VÂ6÷W&6RÂrÀ¢wÂÒÒÒÂÒÒÒÂÒÒÒÂÒÒÒÂÒÒÒÂÒÒÒÂrÀ¢ââç&Wf–Wrç&÷w2æÖ‚‡&÷r’Óâ°¢6öç7B6VÆÂÒ‡fÇVR’Óâ7G&–ær‡fÇVRóòrr’ç&WÆ6TÆÂ‚wÂrÂuÅÇÂr’ç&WÆ6TÆÂ‚uÆârÂrr“°¢&WGW&âÂG¶6VÆÂ‡&÷rç7FVÒ—ÒÂG¶6VÆÂ‡&÷ræ¶W’—ÒÂG¶6VÆÂ‡&÷rææÖR—ÒÂG¶6VÆÂ‡&÷ræFWf–6TÆ&VÂ—ÒÂG¶6VÆÂ‡&÷ræÆ&VÂ—ÒÂG¶6VÆÂ‡&÷ræÆ&VÅ6÷W&6R—ÒÆ°¢Ò’À¢rrÀ¢r22æW‡B7FW2rÀ¢rrÀ¢sâ&Wf–Wr6öæf–rö¶æVV&ö&Bæ§6öæ†G&gB6öçG&öÇ2öÆ–W'2’ârÀ¢s"â&Wf–WrÆ&VÇ6Â–æ—F–Æ—¦VBg&öÒ–×÷'FVBD526öÖÖæBæÖW2âW6RV6‚&÷~(	—2D52Ô6öÖÖöâFWf–6RÆ&VÂv†Vâ†&Gv&RÖ÷&–VçFVB6ÆÆ÷WB—26ÆV&W"ârÀ¢s2â&Wf–Wr&WVFVBÖFWf–6R&öÆW2â7WÇ’Ò×&öÆW6Fò&WÆ6RuT”BÖ&6¶VBFVfVÇG2v—F‚6VÖçF–2æÖW27V6‚2ÆVgB×Fæ²Ö6öçG&öÂârÀ¢sBâçÒ6–æB6WBD55ô4ôÔÔôåõ$ôõFFòD52Ô6öÖÖöâ6†V6¶÷WBârÀ¢sRâçÒ'Vâ'V–ÆC¦¶æVV&ö&FòçÒ'VâFW7C¦¶æVV&ö&FòçÒ'VâFW7C§fW'6–öæ–ævârÀ¢sbâfÆW6‚÷WB6¶v–ær67&—G2–bF†R7GV'2æVVB6öç7VÖW"×7V6–f–2–çfVçF÷'’6†V6·2ârÀ¢rrÀ¢r22ÆææVBf–ÆW2rÀ¢rrÀ¢ââçÆææVBæÖ‚‡’ÓâÒG·Ö’À¢Ó°¢w&—FR‚u44ddôÄBÕ$Uõ%BæÖBrÂG·&W÷'DÆ–æW2æ¦ö–â‚uÆâr—ÕÆæ“° ¢&WGW&â°¢÷WGWDF—#¢÷WBÀ¢&WôæÖS¢æÖRÀ¢ÆææVDf–ÆW3¢ÆææVBÀ¢¶æVV&ö&BÀ¢G'•'VâÀ¢W'&÷'3¢&Wf–WræW'&÷'2À¢Ó°§Ð ¦W‡÷'BgVæ7F–öâÖ–â†&wbÒ&ö6W72æ&wbç6Æ–6Rƒ"’’°¢6öç7B÷F–öç2Ò'6T&w2†&wb“°¢–b†÷F–öç2æ†VÇ’°¢&–çD†VÇ‚“°¢&WGW&â°¢Ð ¢–b‚÷F–öç2ç&öf–ÆW4F—"’°¢&–çD†VÇ‚“°¢6öç6öÆRæW'&÷"‚uÆäW'&÷#¢Ò×&öf–ÆW2ÖF—"—2&WV—&VBâr“°¢&WGW&â°¢Ð ¢6öç7B&Wf–WrÒ'V–ÆE&Wf–Wr‡°¢&öf–ÆW4F—#¢÷F–öç2ç&öf–ÆW4F—"À¢ÖöF–f–W'5Fƒ¢÷F–öç2æÖöF–f–W'5F‚À¢ÖFƒ¢÷F–öç2æÖF‚À¢&öÆW5Fƒ¢÷F–öç2ç&öÆW5F‚À¢6VÖçF–4ÖöF–f–W'5Fƒ¢÷F–öç2ç6VÖçF–4ÖöF–f–W'5F‚À¢Æ&VÇ5Fƒ¢÷F–öç2æÆ&VÇ5F‚À¢Ö÷¦w&—¢÷F–öç2æÖ÷¦w&—À¢6öÖÖöå&ö÷C¢÷F–öç2æ6öÖÖöå&ö÷BÀ¢Ò“° ¢–b†÷F–öç2ç&Wf–Wt§6öâ’°¢w&—FTf–ÆU7–æ2†÷F–öç2ç&Wf–Wt§6öâÂG´¥4ôâç7G&–æv–g’‡&Wf–WrÂçVÆÂÂ"—ÕÆæÂwWFc‚r“°¢6öç6öÆRæÆör†w&÷FR&Wf–Ws¢G¶÷F–öç2ç&Wf–Wt§6öçÖ“°¢Ð ¢–b†÷F–öç2æ÷WGWDF—"’°¢–b‚÷F–öç2æF—7Æ”æÖRÇÂ÷F–öç2æ–çWDÖöGVÆT–BÇÂ÷F–öç2æ¶æVV&ö&D–B’°¢6öç6öÆRæW'&÷"‚uw&—FRÖöFR&WV—&W2ÒÖF—7Æ’ÖæÖRÂÒÖ–çWBÖÖöGVÆRÖ–BÂæBÒÖ¶æVV&ö&BÖ–Bâr“°¢&WGW&â°¢Ð¢6öç7B&W7VÇBÒw&—FT6öç7VÖW"‡°¢&Wf–WrÀ¢÷WGWDF—#¢÷F–öç2æ÷WGWDF—"À¢F—7Æ”æÖS¢÷F–öç2æF—7Æ”æÖRÀ¢–çWDÖöGVÆT–C¢÷F–öç2æ–çWDÖöGVÆT–BÀ¢¶æVV&ö&D–C¢÷F–öç2æ¶æVV&ö&D–BÀ¢&WôæÖS¢÷F–öç2ç&WôæÖRÀ¢&VÖ÷fVE&öf–ÆW3¢÷F–öç2ç&VÖ÷fU&öf–ÆW5F‚ò¥4ôâç'6R‡&VDf–ÆU7–æ2†÷F–öç2ç&VÖ÷fU&öf–ÆW5F‚ÂwWFc‚r’’¢µÒÀ¢–æ6ÇVFUV”Æ–W#¢÷F–öç2æ–æ6ÇVFUV”Æ–W"À¢G'•'Vã¢÷F–öç2æG'•'VâÀ¢6öÖÖöå&ö÷C¢÷F–öç2æ6öÖÖöå&ö÷BÀ¢Ò“°¢6öç6öÆRæÆör€¢G·&W7VÇBæG'•'VâòtG'’×'Vâr¢uw&÷FRwÒ6öç7VÖW"VæFW"G·&W7VÇBæ÷WGWDF—'Ò‚G·&W7VÇBçÆææVDf–ÆW2æÆVæwF‡ÒF‡2–À¢“°¢Ð ¢–b‚÷F–öç2ç&Wf–Wt§6öâbb÷F–öç2æ÷WGWDF—"’°¢&–çD†VÇ‚“°¢6öç6öÆRæW'&÷"‚uÆäW'&÷#¢&÷f–FRÒ×&Wf–WrÖ§6öâæBö÷"ÒÖ÷WGWBÖF—"âr“°¢&WGW&â°¢Ð ¢6öç6öÆRæÆör€¢&öf–ÆW3ÒG·&Wf–Wrç7VÖÖ'’ç&öf–ÆT6÷VçGÒ&÷w3ÒG·&Wf–Wrç7VÖÖ'’ç&÷t6÷VçGÒÖVCÒG·&Wf–Wrç7VÖÖ'’æÖVDFWf–6W7ÒVæÖVCÒG·&Wf–Wrç7VÖÖ'’çVæÖVDFWf–6W7ÒW'&÷'3ÒG·&Wf–Wrç7VÖÖ'’æW'&÷$6÷VçGÖÀ¢“°¢&WGW&â&Wf–WræW'&÷'2æÆVæwF‚âò"¢°§Ð ¦6öç7B—4F—&V7E'VâÒ&ö6W72æ&we³Òbb&W6öÇfR‡&ö6W72æ&we³Ò’ÓÓÒf–ÆUU$ÅFõF‚†–×÷'BæÖWFçW&Â“°¦–b†—4F—&V7E'Vâ’°¢G'’°¢&ö6W72æW†—D6öFRÒÖ–â‚“°¢Ò6F6‚†W'&÷"’°¢6öç6öÆRæW'&÷"†W'&÷"æÖW76vRóòW'&÷"“°¢&ö6W72æW†—D6öFRÒ°¢Ð§Ð

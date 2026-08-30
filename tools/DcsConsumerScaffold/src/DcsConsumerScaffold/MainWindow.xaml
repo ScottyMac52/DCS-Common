@@ -33,6 +33,8 @@
       <TextBlock FontSize="18" FontWeight="SemiBold" Text="DCS Input Profile Importer" />
       <TextBlock Margin="0,4,0,0" TextWrapping="Wrap" Foreground="#555"
                  Text="Load Preview, review the resolved devices and labels, then Proceed with the selected import target." />
+      <Button HorizontalAlignment="Left" Margin="0,6,0,0" Padding="12,4"
+              Content="Open Definitive UI Layer Editor…" Click="OpenUiLayerEditor_Click" />
       <DockPanel Margin="0,8,0,0">
         <TextBlock Width="160" VerticalAlignment="Center" Text="Import target" />
         <ComboBox Width="310" HorizontalAlignment="Left"

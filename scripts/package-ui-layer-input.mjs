@@ -3,6 +3,7 @@ import { existsSync, mkdirSync, readFileSync, readdirSync, statSync, unlinkSync,
 import { basename, dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { parseDcsDiffLua, parseDcsModifiersLua } from './profile-driven-kneeboard.mjs';
+import { analyzeProfileSource, pageProfileIds, resolveConfiguredProfileApplicability } from './effective-profile-applicability.mjs';
 
 const GUID_SUFFIX = /\s*\{[0-9A-Fa-f-]{36}\}\s*$/u;
 
@@ -100,7 +101,7 @@ export function tailorDiffLua(source, availableModifiers, { filename = 'profile.
 }
 
 export function hasEffectiveAdditions(source, { filename = 'profile.diff.lua' } = {}) {
-  return parseDcsDiffLua(source, { filename }).bindings.some((binding) => binding.added.length > 0);
+  return analyzeProfileSource(source, { filename, parseProfile: parseDcsDiffLua }).effective;
 }
 
 export function tailorModifiers(source, activePhysicalDevices, allowedDeviceModifiers = null) {
@@ -153,38 +154,33 @@ function configuredProfiles(config) {
   if (references.size === 0) throw new Error('kneeboard.json does not reference any configured profiles from its pages.');
   const filenames = new Set();
   const profileIdsByFilename = new Map();
+  const categoryByFilename = new Map();
   for (const profileId of references) {
     const profilePath = config.profiles?.[profileId];
     if (!profilePath) throw new Error(`kneeboard.json references unknown profile: ${profileId}`);
-    const filename = String(profilePath).replace(/\\/g, '/').split('/').at(-1);
+    const parts = String(profilePath).replace(/\\/g, '/').split('/');
+    const filename = parts.at(-1);
+    categoryByFilename.set(filename, parts.at(-2) ?? 'joystick');
     filenames.add(filename);
     if (!profileIdsByFilename.has(filename)) profileIdsByFilename.set(filename, []);
     profileIdsByFilename.get(filename).push(profileId);
   }
-  return { filenames, profileIdsByFilename };
+  return { filenames, profileIdsByFilename, categoryByFilename };
 }
 
 function configuredDeviceIds(config) {
   return new Set((config.pages ?? []).map((page) => page?.deviceId).filter((value) => typeof value === 'string'));
 }
 
-export function selectedUiLayerModifiers(commonRoot, config) {
+export function selectedUiLayerModifiers(commonRoot, config, applicableDeviceIds = null) {
   const manifestPath = join(commonRoot, 'assets', 'shared', 'hardware', 'manifest.json');
   const devices = JSON.parse(readFileSync(manifestPath, 'utf8')).devices ?? [];
-  return new Set([...configuredDeviceIds(config)].map((deviceId) => {
+  const selectedDevices = applicableDeviceIds ?? configuredDeviceIds(config);
+  return new Set([...selectedDevices].map((deviceId) => {
     const device = devices.find((candidate) => candidate.id === deviceId || candidate.aliases?.includes(deviceId));
     if (!device) return null;
     return device.uiLayerModifiers?.[deviceId] ?? (device.id === deviceId ? device.uiLayerModifier : null);
   }).filter(Boolean));
-}
-
-function retainedNoOpProfiles(config) {
-  return new Set((config.packaging?.retainNoOpProfiles ?? []).map((value) => String(value).toLocaleLowerCase()));
-}
-
-function shouldRetainNoOp(filename, profileIds, retain) {
-  return [filename, filename.replace(/\.diff\.lua$/iu, ''), ...profileIds]
-    .map((value) => value.toLocaleLowerCase()).some((value) => retain.has(value));
 }
 
 function findModuleDestinationJoystick(destination) {
@@ -198,25 +194,26 @@ function findModuleDestinationJoystick(destination) {
 export function packageUiLayerInput({ commonRoot, consumerJoystickDir, destination, configPath, moduleDestinationJoystick }) {
   const resolvedConfigPath = configPath ? resolve(configPath) : findConfig(consumerJoystickDir);
   const config = JSON.parse(readFileSync(resolvedConfigPath, 'utf8'));
-  const { filenames: configuredFilenames, profileIdsByFilename } = configuredProfiles(config);
-  const retainNoOp = retainedNoOpProfiles(config);
+  const { filenames: configuredFilenames, profileIdsByFilename, categoryByFilename } = configuredProfiles(config);
+  const consumerRoot = dirname(dirname(resolvedConfigPath));
+  const applicability = resolveConfiguredProfileApplicability(config, consumerRoot, { parseProfile: parseDcsDiffLua });
   const consumerProfiles = readdirSync(consumerJoystickDir).filter((name) => name.endsWith('.diff.lua'));
   const activeProfiles = [];
   const skippedProfiles = [];
   for (const filename of consumerProfiles) {
-    if (!configuredFilenames.has(filename)) {
+    if (!configuredFilenames.has(filename) || categoryByFilename.get(filename) !== 'joystick') {
       skippedProfiles.push({ filename, reason: 'not selected by config/kneeboard.json' });
       continue;
     }
-    const source = readFileSync(join(consumerJoystickDir, filename), 'utf8');
-    const retained = shouldRetainNoOp(filename, profileIdsByFilename.get(filename) ?? [], retainNoOp);
-    if (!hasEffectiveAdditions(source, { filename }) && !retained) {
+    const profileIds = profileIdsByFilename.get(filename) ?? [];
+    if (!profileIds.some((profileId) => applicability.profiles.get(profileId)?.effective)) {
       skippedProfiles.push({ filename, reason: 'no effective key or axis additions' });
       continue;
     }
     activeProfiles.push(filename);
   }
-  const missing = [...configuredFilenames].filter((filename) => !consumerProfiles.includes(filename));
+  const missing = [...configuredFilenames].filter((filename) =>
+    categoryByFilename.get(filename) === 'joystick' && !consumerProfiles.includes(filename));
   if (missing.length) throw new Error(`Configured profile file(s) not found: ${missing.join(', ')}`);
 
   const stagedJoystick = moduleDestinationJoystick ?? findModuleDestinationJoystick(destination);
@@ -227,35 +224,53 @@ export function packageUiLayerInput({ commonRoot, consumerJoystickDir, destinati
     }
   }
 
-  const activePhysicalDevices = new Set(activeProfiles.map(physicalDeviceName));
+  const effectiveConfiguredProfiles = [...applicability.profiles.values()].filter((profile) => profile.referenced && profile.effective);
+  const activePhysicalDevices = new Set(effectiveConfiguredProfiles.map((profile) => physicalDeviceName(profile.filename)));
   const sourceRoot = join(commonRoot, 'assets', 'shared', 'ui-layer', 'input', 'UiLayer');
-  const sourceJoystick = join(sourceRoot, 'joystick');
-  const destinationJoystick = join(destination, 'joystick');
-  mkdirSync(destinationJoystick, { recursive: true });
-  const selectedModifiers = selectedUiLayerModifiers(commonRoot, config);
+  mkdirSync(destination, { recursive: true });
+  const applicableDeviceIds = new Set((config.pages ?? [])
+    .filter((page) => [...pageProfileIds(page, config)].some((profileId) => applicability.profiles.get(profileId)?.effective))
+    .map((page) => page?.deviceId).filter((value) => typeof value === 'string'));
+  const selectedModifiers = selectedUiLayerModifiers(commonRoot, config, applicableDeviceIds);
   const tailoredModifiers = tailorModifiers(readFileSync(join(sourceRoot, 'modifiers.lua'), 'utf8'), activePhysicalDevices, selectedModifiers);
   const availableModifiers = new Set(parseDcsModifiersLua(tailoredModifiers, { filename: 'UiLayer/modifiers.lua' }).modifiers.map(({ name }) => name));
   writeFileSync(join(destination, 'modifiers.lua'), tailoredModifiers, 'utf8');
 
   const copiedProfiles = [];
   const skippedUiLayerProfiles = [];
-  for (const filename of readdirSync(sourceJoystick).filter((name) => name.endsWith('.diff.lua'))) {
-    if (!activePhysicalDevices.has(physicalDeviceName(filename))) {
-      skippedUiLayerProfiles.push({ filename, reason: 'device not active in target module configuration' });
-      continue;
+  for (const category of ['joystick', 'keyboard', 'mouse']) {
+    const sourceCategory = join(sourceRoot, category);
+    if (!existsSync(sourceCategory)) continue;
+    const destinationCategory = join(destination, category);
+    for (const filename of readdirSync(sourceCategory).filter((name) => name.endsWith('.diff.lua'))) {
+      if (!activePhysicalDevices.has(physicalDeviceName(filename))) {
+        skippedUiLayerProfiles.push({ filename: `${category}/${filename}`, reason: 'device not active in target module configuration' });
+        continue;
+      }
+      const tailored = tailorDiffLua(readFileSync(join(sourceCategory, filename), 'utf8'), availableModifiers, { filename });
+      if (!hasEffectiveAdditions(tailored, { filename })) {
+        skippedUiLayerProfiles.push({ filename: `${category}/${filename}`, reason: 'no effective additions after modifier tailoring' });
+        continue;
+      }
+      mkdirSync(destinationCategory, { recursive: true });
+      writeFileSync(join(destinationCategory, filename), tailored, 'utf8');
+      copiedProfiles.push(`${category}/${filename}`);
     }
-    const tailored = tailorDiffLua(readFileSync(join(sourceJoystick, filename), 'utf8'), availableModifiers, { filename });
-    if (!hasEffectiveAdditions(tailored, { filename })) {
-      skippedUiLayerProfiles.push({ filename, reason: 'no effective additions after modifier tailoring' });
-      continue;
+  }
+  const copied = new Set(copiedProfiles);
+  for (const category of ['joystick', 'keyboard', 'mouse']) {
+    const destinationCategory = join(destination, category);
+    if (!existsSync(destinationCategory)) continue;
+    for (const filename of readdirSync(destinationCategory).filter((name) => name.endsWith('.diff.lua'))) {
+      if (!copied.has(`${category}/${filename}`)) unlinkSync(join(destinationCategory, filename));
     }
-    writeFileSync(join(destinationJoystick, filename), tailored, 'utf8');
-    copiedProfiles.push(filename);
   }
   return {
     activePhysicalDevices: [...activePhysicalDevices].sort(), activeProfiles: activeProfiles.sort(),
     availableModifiers: [...availableModifiers].sort(), copiedProfiles: copiedProfiles.sort(),
     skippedProfiles, skippedUiLayerProfiles,
+    applicability: [...applicability.profiles.values()].map(({ profileId, filename, referenced, effective, keyCount, axisCount, reason }) =>
+      ({ profileId, filename, referenced, effective, keyCount, axisCount, reason })),
   };
 }
 
@@ -269,6 +284,10 @@ function main(argv = process.argv.slice(2)) {
     destination: resolve(destination), configPath: configPath ? resolve(configPath) : undefined });
   console.log(`Configured module profiles: ${result.activeProfiles.join(', ') || 'none'}`);
   for (const skipped of result.skippedProfiles) console.log(`Skipped module profile ${skipped.filename}: ${skipped.reason}`);
+  for (const profile of result.applicability) console.log(
+    `Applicability ${profile.profileId}: ${profile.effective ? 'included' : 'excluded'} ` +
+    `(keys=${profile.keyCount}, axes=${profile.axisCount}; ${profile.reason})`,
+  );
   console.log(`Available UI Layer modifiers: ${result.availableModifiers.join(', ') || 'none'}`);
   console.log(`Packaged ${result.copiedProfiles.length} UI Layer profile(s) for: ${result.activePhysicalDevices.join(', ') || 'no joystick devices'}`);
   for (const skipped of result.skippedUiLayerProfiles) console.log(`Skipped UI Layer profile ${skipped.filename}: ${skipped.reason}`);

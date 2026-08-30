@@ -61,11 +61,11 @@ test('hasEffectiveAdditions distinguishes key, axis, empty, and deletion-only pr
 
 test('tailorModifiers keeps keyboard and only explicitly selected device modifiers', () => {
   const source = readFileSync(join(root, 'assets/shared/ui-layer/input/UiLayer/modifiers.lua'), 'utf8');
-  const tailored = tailorModifiers(source, new Set(['Ava [R] Viper', 'MOZA AB9 FFB Base']), new Set(['TM_AVA_BASE_F16_MODIFIER']));
+  const tailored = tailorModifiers(source, new Set(['Ava [R] Viper', 'MOZA AB9 FFB Base']), new Set(['AVA_BASE_MODIFIER_BTN3']));
   assert.match(tailored, /\["LShift"\]/);
-  assert.match(tailored, /\["TM_AVA_BASE_F16_MODIFIER"\]/);
+  assert.match(tailored, /\["AVA_BASE_MODIFIER_BTN3"\]/);
   assert.doesNotMatch(tailored, /\["VKB_F14_BTN7"\]/);
-  assert.doesNotMatch(tailored, /\["MOZA_F16_F18_BTN3"\]/);
+  assert.doesNotMatch(tailored, /\["MOZA_MODIFIER_BTN3"\]/);
 });
 
 test('tailorDiffLua removes dangling alternatives and preserves valid shifted bindings', () => {
@@ -75,7 +75,7 @@ test('tailorDiffLua removes dangling alternatives and preserves valid shifted bi
   const parsed = parseDcsDiffLua(tailored, { filename });
   assert.ok(parsed.bindings.every((binding) => binding.added.every((input) => input.reformers.every((name) => name === 'VKB_F14_BTN7'))));
   assert.match(tailored, /VKB_F14_BTN7/);
-  assert.doesNotMatch(tailored, /MOZA_F16_F18_BTN3|TM_AVA_BASE_F16_MODIFIER/);
+  assert.doesNotMatch(tailored, /MOZA_MODIFIER_BTN3|AVA_BASE_MODIFIER_BTN3/);
 });
 
 test('package uses configured profiles, removes no-op and stale module files, and closes modifier references', () => {
@@ -102,13 +102,13 @@ test('package uses configured profiles, removes no-op and stale module files, an
   assert.deepEqual(readdirSync(fixture.stagedJoystick).sort(), [ava, mfd].sort());
   assert.ok(result.skippedProfiles.some(({ filename, reason }) => filename === stale && /not selected/.test(reason)));
   assert.ok(result.skippedProfiles.some(({ filename, reason }) => filename === empty && /no effective/.test(reason)));
-  assert.deepEqual(result.availableModifiers.filter((name) => !/^L|^R/.test(name)), ['TM_AVA_BASE_F16_MODIFIER']);
+  assert.deepEqual(result.availableModifiers.filter((name) => !/^L|^R/.test(name)), ['AVA_BASE_MODIFIER_BTN3']);
   const packagedMfd = readFileSync(join(fixture.destination, 'joystick', mfd), 'utf8');
-  assert.match(packagedMfd, /TM_AVA_BASE_F16_MODIFIER/);
-  assert.doesNotMatch(packagedMfd, /VKB_F14_BTN7|MOZA_F16_F18_BTN3/);
+  assert.match(packagedMfd, /AVA_BASE_MODIFIER_BTN3/);
+  assert.doesNotMatch(packagedMfd, /VKB_F14_BTN7|MOZA_MODIFIER_BTN3/);
 });
 
-test('explicit retainNoOpProfiles escape hatch preserves an intentionally empty selected module profile', () => {
+test('empty selected module profiles are excluded even when legacy retainNoOpProfiles is present', () => {
   const filename = 'Ava [R] Viper {11111111-1111-1111-1111-111111111111}.diff.lua';
   const fixture = createConsumer({
     profiles: { ava: { filename, source: 'local diff = {}\nreturn diff\n' } },
@@ -117,16 +117,36 @@ test('explicit retainNoOpProfiles escape hatch preserves an intentionally empty 
   });
   const result = packageUiLayerInput({ commonRoot: root, consumerJoystickDir: fixture.consumerJoystick,
     destination: fixture.destination, moduleDestinationJoystick: fixture.stagedJoystick });
-  assert.deepEqual(result.activeProfiles, [filename]);
-  assert.deepEqual(readdirSync(fixture.stagedJoystick), [filename]);
+  assert.deepEqual(result.activeProfiles, []);
+  assert.deepEqual(readdirSync(fixture.stagedJoystick), []);
+});
+
+test('configured keyboard additions project the definitive keyboard UI Layer profile', () => {
+  const fixture = createConsumer({ profiles: {}, pages: [] });
+  const moduleKeyboard = join(fixture.consumerRoot, 'src/Config/Input/Test/keyboard');
+  mkdirSync(moduleKeyboard, { recursive: true });
+  writeFileSync(join(moduleKeyboard, 'Keyboard.diff.lua'), `local diff = { ["keyDiffs"] = {
+    ["screenshot"] = { ["added"] = { [1] = { ["key"] = "Back" }, }, ["name"] = "Make Screenshot", },
+  } } return diff`);
+  writeFileSync(join(fixture.consumerRoot, 'config/kneeboard.json'), JSON.stringify({
+    schemaVersion: 1,
+    aircraft: 'Test',
+    profiles: { keyboard: 'src/Config/Input/Test/keyboard/Keyboard.diff.lua' },
+    pages: [{ file: 'KEYBOARD', deviceId: 'keyboard', profile: 'keyboard', controls: {} }],
+  }));
+
+  const result = packageUiLayerInput({ commonRoot: root, consumerJoystickDir: fixture.consumerJoystick,
+    destination: fixture.destination, moduleDestinationJoystick: fixture.stagedJoystick });
+  assert.ok(result.copiedProfiles.includes('keyboard/Keyboard.diff.lua'));
+  assert.match(readFileSync(join(fixture.destination, 'keyboard/Keyboard.diff.lua'), 'utf8'), /LAlt/);
 });
 
 test('stick configuration matrix exposes exactly one device modifier family', () => {
   const cases = [
     { deviceId: 'vkb-f14-gunfighter', filename: ' VKBSim Gunfighter F14   {2D5CEC70-5189-11f1-8001-444553540000}.diff.lua', expected: 'VKB_F14_BTN7' },
-    { deviceId: 'moza-ab9-hornet-grip', filename: 'MOZA AB9 FFB Base {71DA6210-432E-11f1-8001-444553540000}.diff.lua', expected: 'MOZA_F16_F18_BTN3' },
-    { deviceId: 'moza-ab9-warthog-grip', filename: 'MOZA AB9 FFB Base {71DA6210-432E-11f1-8001-444553540000}.diff.lua', expected: 'MOZA_F16_F18_BTN3' },
-    { deviceId: 'ava-base-f16c', filename: 'Ava [R] Viper {F77212B0-00A8-11f1-8001-444553540000}.diff.lua', expected: 'TM_AVA_BASE_F16_MODIFIER' },
+    { deviceId: 'moza-ab9-hornet-grip', filename: 'MOZA AB9 FFB Base {71DA6210-432E-11f1-8001-444553540000}.diff.lua', expected: 'MOZA_MODIFIER_BTN3' },
+    { deviceId: 'moza-ab9-warthog-grip', filename: 'MOZA AB9 FFB Base {71DA6210-432E-11f1-8001-444553540000}.diff.lua', expected: 'MOZA_MODIFIER_BTN3' },
+    { deviceId: 'ava-base-f16c', filename: 'Ava [R] Viper {F77212B0-00A8-11f1-8001-444553540000}.diff.lua', expected: 'AVA_BASE_MODIFIER_BTN3' },
   ];
   for (const item of cases) {
     const fixture = createConsumer({ profiles: { stick: { filename: item.filename, source: diffLua() } },
@@ -146,7 +166,7 @@ test('modifier selection is owned by the shared hardware definition', () => {
   assert.equal(manifest.devices.find(({ id }) => id === 'vkb-f14-gunfighter').uiLayerModifier, 'VKB_F14_BTN7');
   assert.equal(
     manifest.devices.find(({ id }) => id === 'tm-warthog-grip').uiLayerModifiers['moza-ab9-warthog-grip'],
-    'MOZA_F16_F18_BTN3',
+    'MOZA_MODIFIER_BTN3',
   );
 });
 

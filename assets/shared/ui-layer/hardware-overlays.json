@@ -21,7 +21,7 @@
     },
     "tm-warthog-grip": {
       "status": "template",
-      "modifier": "TM_AVA_BASE_F16_MODIFIER",
+      "modifier": "AVA_BASE_MODIFIER_BTN3",
       "bindings": {
         "recenter-vr": "warthog-grip-pinky",
         "vr-zoom": "warthog-grip-cms-push",
@@ -33,7 +33,7 @@
     },
     "grip-f18c": {
       "status": "template",
-      "modifier": "MOZA_F16_F18_BTN3",
+      "modifier": "MOZA_MODIFIER_BTN3",
       "bindings": {
         "recenter-vr": "hornet-grip-paddle",
         "vr-zoom": "hornet-grip-weapon-select-push",
@@ -56,7 +56,10 @@
         "recenter-vr": "mfd-rocker-con-down",
         "time-accelerate": "mfd-rocker-brt-up",
         "time-decelerate": "mfd-rocker-brt-down",
-        "vr-left-hand": "mfd-rocker-sym"
+        "vr-left-hand": "mfd-rocker-sym",
+        "restart-mission": "mfd-osb-b1-shifted",
+        "f10-map-coordinates": "mfd-osb-r3-shifted",
+        "make-screenshot": "mfd-rocker-lvl"
       }
     },
     "viper-tqs-mission-pack": {

@@ -32,6 +32,29 @@ test('rejects files that do not return the diff table', () => {
   assert.throws(() => parseDcsDiffLua('return {}'), /return the diff table/);
 });
 
+test('module projection excludes no-op pages and retains axis-only device pages', () => {
+  const consumerRoot = mkdtempSync(join(tmpdir(), 'dcs-effective-pages-'));
+  writeFileSync(join(consumerRoot, 'empty.diff.lua'), 'local diff = {}\nreturn diff\n');
+  writeFileSync(join(consumerRoot, 'axis.diff.lua'), `local diff = { ["axisDiffs"] = {
+    ["rudder"] = { ["added"] = { [1] = { ["key"] = "JOY_Z" }, }, ["name"] = "Rudder", },
+  } } return diff`);
+  writeFileSync(join(consumerRoot, 'kneeboard.json'), JSON.stringify({
+    schemaVersion: 1,
+    aircraft: 'Test',
+    profiles: { empty: 'empty.diff.lua', axis: 'axis.diff.lua' },
+    pages: [
+      { file: 'EMPTY', deviceId: 'tm-mfd', profile: 'empty', controls: {} },
+      { file: 'AXIS', deviceId: 'tm-tpr', profile: 'axis', controls: {}, allowUnrenderedControls: true },
+    ],
+  }));
+  const config = loadProfileDrivenConfig('kneeboard.json', { consumerRoot, commonRoot });
+  assert.deepEqual(config.pages.map(({ file }) => file), ['AXIS']);
+  assert.deepEqual(config.applicability.map(({ profileId, effective, axisCount }) => ({ profileId, effective, axisCount })), [
+    { profileId: 'empty', effective: false, axisCount: 0 },
+    { profileId: 'axis', effective: true, axisCount: 1 },
+  ]);
+});
+
 const modifiersSource = `local modifiers = {
   ["AVA_F16_S3"] = { ["device"] = "Ava Viper {GUID}", ["key"] = "JOY_BTN3", ["switch"] = false },
   ["LShift"] = { ["device"] = "Keyboard", ["key"] = "LShift", ["switch"] = false },

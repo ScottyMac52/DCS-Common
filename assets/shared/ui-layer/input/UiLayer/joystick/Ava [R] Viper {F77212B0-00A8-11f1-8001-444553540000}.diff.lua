@@ -5,7 +5,7 @@ local diff = {
 				[1] = {
 					["key"] = "JOY_BTN_POV1_L",
 					["reformers"] = {
-						[1] = "TM_AVA_BASE_F16_MODIFIER",
+						[1] = "AVA_BASE_MODIFIER_BTN3",
 					},
 				},
 			},
@@ -16,7 +16,7 @@ local diff = {
 				[1] = {
 					["key"] = "JOY_BTN4",
 					["reformers"] = {
-						[1] = "TM_AVA_BASE_F16_MODIFIER",
+						[1] = "AVA_BASE_MODIFIER_BTN3",
 					},
 				},
 			},
@@ -25,9 +25,9 @@ local diff = {
 		["d246pnilunilcdnilvdnilvpnilvunil"] = {
 			["added"] = {
 				[1] = {
-					["key"] = "JOY_BTN_POV1_U",
+					["key"] = "JOY_BTN_POV1_D",
 					["reformers"] = {
-						[1] = "TM_AVA_BASE_F16_MODIFIER",
+						[1] = "AVA_BASE_MODIFIER_BTN3",
 					},
 				},
 			},
@@ -36,9 +36,9 @@ local diff = {
 		["d2604pnilu2604cdnilvd1vpnilvu0"] = {
 			["added"] = {
 				[1] = {
-					["key"] = "JOY_BTN19",
+					["key"] = "JOY_BTN1",
 					["reformers"] = {
-						[1] = "TM_AVA_BASE_F16_MODIFIER",
+						[1] = "AVA_BASE_MODIFIER_BTN3",
 					},
 				},
 			},
@@ -47,9 +47,9 @@ local diff = {
 		["d2605pnilu2605cdnilvd1vpnilvu0"] = {
 			["added"] = {
 				[1] = {
-					["key"] = "JOY_BTN15",
+					["key"] = "JOY_BTN6",
 					["reformers"] = {
-						[1] = "TM_AVA_BASE_F16_MODIFIER",
+						[1] = "AVA_BASE_MODIFIER_BTN3",
 					},
 				},
 			},
@@ -60,11 +60,22 @@ local diff = {
 				[1] = {
 					["key"] = "JOY_BTN_POV1_R",
 					["reformers"] = {
-						[1] = "TM_AVA_BASE_F16_MODIFIER",
+						[1] = "AVA_BASE_MODIFIER_BTN3",
 					},
 				},
 			},
 			["name"] = "Time accelerate",
+		},
+		["d816pnilunilcdnilvdnilvpnilvunil"] = {
+			["added"] = {
+				[1] = {
+					["key"] = "JOY_BTN_POV1_U",
+					["reformers"] = {
+						[1] = "AVA_BASE_MODIFIER_BTN3",
+					},
+				},
+			},
+			["name"] = "Active Pause",
 		},
 	},
 }
