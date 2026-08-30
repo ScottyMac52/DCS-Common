@@ -71,7 +71,7 @@ public partial class MainWindow : Window
         if (e.Row.Item is PreviewDevice { IsRepositoryOnly: true } or
             PreviewModifier { IsRepositoryOnly: true } or
             CommandLabelGroup { IsRepositoryOnly: true })
-            e.Cancel = true;
+            e.Cancel = !string.Equals(e.Column.Header?.ToString(), "Remove", StringComparison.Ordinal);
     }
 
     private void ResetLabel_Click(object sender, RoutedEventArgs e)

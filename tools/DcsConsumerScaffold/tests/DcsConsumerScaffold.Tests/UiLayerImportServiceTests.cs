@@ -52,8 +52,11 @@ public sealed class UiLayerImportServiceTests
 
         var profiles = Path.Combine(source.Path, "joystick");
         Directory.CreateDirectory(profiles);
+        File.WriteAllText(Path.Combine(uiRoot, "input", "UiLayer", "joystick", "Disconnected.diff.lua"), "return { preserved = true }");
+        File.WriteAllText(Path.Combine(uiRoot, "input", "UiLayer", "joystick", "Renamed Device {AAAAAAAA-AAAA-AAAA-AAAA-AAAAAAAAAAAA}.diff.lua"), "return { old = true }");
         File.WriteAllText(Path.Combine(profiles, "MFD 3.diff.lua"), "return {}");
         File.WriteAllText(Path.Combine(profiles, "MOZA AB9.diff.lua"), "return {}");
+        File.WriteAllText(Path.Combine(profiles, "Renamed Device {BBBBBBBB-BBBB-BBBB-BBBB-BBBBBBBBBBBB}.diff.lua"), "return { new = true }");
         var modifiers = Path.Combine(source.Path, "modifiers.lua");
         File.WriteAllText(modifiers, "return {}");
 
@@ -97,7 +100,50 @@ public sealed class UiLayerImportServiceTests
         Assert.Equal(1, result.ExemptBindingCount);
 
         Assert.True(File.Exists(Path.Combine(uiRoot, "input", "UiLayer", "joystick", "MFD 3.diff.lua")));
+        Assert.True(File.Exists(Path.Combine(uiRoot, "input", "UiLayer", "joystick", "Disconnected.diff.lua")));
+        Assert.False(File.Exists(Path.Combine(uiRoot, "input", "UiLayer", "joystick", "Renamed Device {AAAAAAAA-AAAA-AAAA-AAAA-AAAAAAAAAAAA}.diff.lua")));
+        Assert.True(File.Exists(Path.Combine(uiRoot, "input", "UiLayer", "joystick", "Renamed Device {BBBBBBBB-BBBB-BBBB-BBBB-BBBBBBBBBBBB}.diff.lua")));
+        Assert.Equal(1, result.PreservedProfileCount);
         Assert.Equal("return {}", File.ReadAllText(Path.Combine(uiRoot, "input", "UiLayer", "modifiers.lua")));
+    }
+
+    [Fact]
+    public void MergeModifiers_PreservesUnobservedDefinitionsAndUpdatesObservedDefinitions()
+    {
+        var existing = """
+            local modifiers = {
+              ["VKB_SHIFT"] = {
+                ["device"] = "VKB",
+                ["key"] = "JOY_BTN7",
+                ["switch"] = false,
+              },
+              ["MFD_SHIFT"] = {
+                ["device"] = "MFD 3",
+                ["key"] = "JOY_BTN20",
+                ["switch"] = false,
+              },
+            }
+            return modifiers
+            """;
+        var observed = """
+            local modifiers = {
+              ["MFD_SHIFT"] = {
+                ["device"] = "MFD 3",
+                ["key"] = "JOY_BTN19",
+                ["switch"] = false,
+              },
+            }
+            return modifiers
+            """;
+
+        var merged = UiLayerImportService.MergeModifiers(existing, observed, out var preserved);
+
+        Assert.Equal(1, preserved);
+        Assert.Contains("VKB_SHIFT", merged);
+        Assert.Contains("JOY_BTN7", merged);
+        Assert.Contains("MFD_SHIFT", merged);
+        Assert.Contains("JOY_BTN19", merged);
+        Assert.DoesNotContain("JOY_BTN20", merged);
     }
 
     [Fact]

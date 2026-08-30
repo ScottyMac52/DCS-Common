@@ -13,6 +13,7 @@ import {
   loadCalloutCatalog,
   parseArgs,
   buildDraftKneeboardConfig,
+  mergeModifierSources,
   writeConsumer,
 } from '../scripts/scaffold-consumer.mjs';
 import { loadProfileDrivenConfig } from '../scripts/profile-driven-kneeboard.mjs';
@@ -666,6 +667,88 @@ test('writeConsumer materializes profiles, kneeboard.json, and report', () => {
   const packageJson = JSON.parse(readFileSync(join(out, 'package.json'), 'utf8'));
   assert.equal(packageJson.name, 'DCS-F-16C-Components');
   assert.ok(result.plannedFiles.length > 5);
+});
+
+test('writeConsumer preserves absent repository devices and removes them only when explicitly requested', () => {
+  const root = mkdtempSync(join(tmpdir(), 'scaffold-preserve-absent-'));
+  const profilesDir = join(root, 'joystick');
+  const out = join(root, 'consumer');
+  const moduleJoystick = join(out, 'src/Config/Input/FA-18C_hornet/joystick');
+  mkdirSync(profilesDir);
+  mkdirSync(moduleJoystick, { recursive: true });
+  const mfd = 'F16 MFD 1.diff.lua';
+  const tpr = 'T-Pendular-Rudder {14ED3D40-3F58-11f1-8002-444553540000}.diff.lua';
+  const emptyDevice = 'Disconnected Panel.diff.lua';
+  writeFileSync(join(profilesDir, mfd), `local diff = { ["keyDiffs"] = {
+    ["d1"] = { ["added"] = { [1] = { ["key"] = "JOY_BTN1" }, }, ["name"] = "OSB 1", },
+  } } return diff`);
+  writeFileSync(join(moduleJoystick, tpr), `local diff = { ["axisDiffs"] = {
+    ["a2003cdnil"] = { ["added"] = { [1] = { ["key"] = "JOY_Z" }, }, ["name"] = "Rudder", },
+  } } return diff`);
+  writeFileSync(join(moduleJoystick, emptyDevice), 'local diff = {} return diff');
+  mkdirSync(join(out, 'config'), { recursive: true });
+  writeFileSync(join(out, 'config/kneeboard.json'), JSON.stringify({
+    schemaVersion: 1,
+    aircraft: 'FA-18C_hornet',
+    packaging: { retainNoOpProfiles: ['intentional-device'] },
+    profiles: {
+      'tm-tpr': `src/Config/Input/FA-18C_hornet/joystick/${tpr}`,
+      'disconnected-panel': `src/Config/Input/FA-18C_hornet/joystick/${emptyDevice}`,
+    },
+    pages: [{ file: 'TPR', deviceId: 'tm-tpr', controls: {
+      'tpr-axis-rudder': { profile: 'tm-tpr', key: 'JOY_Z', command: 'a2003cdnil' },
+    } }, { file: 'PANEL', deviceId: 'disconnected-panel', controls: {} }],
+  }, null, 2));
+
+  const preview = buildPreview({ profilesDir, commonRoot });
+  writeConsumer({ preview, outputDir: out, displayName: 'FA-18C_hornet', inputModuleId: 'FA-18C_hornet',
+    kneeboardId: 'FA-18C_hornet', commonRoot });
+
+  let config = JSON.parse(readFileSync(join(out, 'config/kneeboard.json'), 'utf8'));
+  assert.ok(config.profiles['tm-tpr']);
+  assert.ok(config.pages.some((page) => page.deviceId === 'tm-tpr'));
+  assert.ok(config.pages.some((page) => page.deviceId === 'disconnected-panel'));
+  assert.deepEqual(config.packaging.retainNoOpProfiles, ['intentional-device']);
+  assert.ok(existsSync(join(moduleJoystick, tpr)));
+  assert.match(readFileSync(join(out, 'SCAFFOLD-REPORT.md'), 'utf8'), /tm-tpr.*preserved while absent/);
+
+  writeConsumer({ preview, outputDir: out, displayName: 'FA-18C_hornet', inputModuleId: 'FA-18C_hornet',
+    kneeboardId: 'FA-18C_hornet', commonRoot, removedProfiles: ['tm-tpr'] });
+  config = JSON.parse(readFileSync(join(out, 'config/kneeboard.json'), 'utf8'));
+  assert.equal(config.profiles['tm-tpr'], undefined);
+  assert.equal(config.pages.some((page) => page.deviceId === 'tm-tpr'), false);
+  assert.equal(existsSync(join(moduleJoystick, tpr)), false);
+});
+
+test('mergeModifierSources preserves unobserved global modifiers and updates observed ones', () => {
+  const existing = `local modifiers = {
+    ["VKB_SHIFT"] = {
+      ["device"] = "VKB",
+      ["key"] = "JOY_BTN7",
+      ["switch"] = false,
+    },
+    ["MFD_SHIFT"] = {
+      ["device"] = "MFD 3",
+      ["key"] = "JOY_BTN20",
+      ["switch"] = false,
+    },
+  }
+  return modifiers`;
+  const observed = `local modifiers = {
+    ["MFD_SHIFT"] = {
+      ["device"] = "MFD 3",
+      ["key"] = "JOY_BTN19",
+      ["switch"] = false,
+    },
+  }
+  return modifiers`;
+
+  const merged = mergeModifierSources(existing, observed);
+  assert.match(merged, /VKB_SHIFT/);
+  assert.match(merged, /JOY_BTN7/);
+  assert.match(merged, /MFD_SHIFT/);
+  assert.match(merged, /JOY_BTN19/);
+  assert.doesNotMatch(merged, /JOY_BTN20/);
 });
 
 

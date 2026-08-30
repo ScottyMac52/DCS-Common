@@ -15,6 +15,7 @@ import {
   mkdirSync,
   copyFileSync,
   cpSync,
+  unlinkSync,
 } from 'node:fs';
 import { basename, dirname, join, resolve, relative } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -51,6 +52,7 @@ Optional:
   --roles <path>              consumer-owned profile filename/GUID to semantic instance roles (JSON)
   --semantic-modifiers <path> modifier name or device+key to semantic modifier ID (JSON)
   --labels <path>             stable binding identity to editable label override (JSON)
+  --remove-profiles <path>    explicit repository profile keys to remove (JSON array)
   --moza-grip <value>          standalone, viper, or hornet; applies to generic AB9 profiles
   --common-root <path>
   --repo-name <name>          default: derived from display name
@@ -71,6 +73,7 @@ export function parseArgs(argv = process.argv.slice(2)) {
     rolesPath: null,
     semanticModifiersPath: null,
     labelsPath: null,
+    removeProfilesPath: null,
     mozaGrip: null,
     commonRoot: defaultCommonRoot,
     displayName: null,
@@ -96,6 +99,7 @@ export function parseArgs(argv = process.argv.slice(2)) {
     else if (arg === '--roles') options.rolesPath = next();
     else if (arg === '--semantic-modifiers') options.semanticModifiersPath = next();
     else if (arg === '--labels') options.labelsPath = next();
+    else if (arg === '--remove-profiles') options.removeProfilesPath = next();
     else if (arg === '--moza-grip') options.mozaGrip = next().toLowerCase();
     else if (arg === '--common-root') options.commonRoot = resolve(next());
     else if (arg === '--display-name') options.displayName = next();
@@ -682,7 +686,71 @@ export function buildDraftKneeboardConfig(preview, { displayName, inputModuleId 
   return config;
 }
 
-export function writeConsumer({ preview, outputDir, displayName, inputModuleId, kneeboardId, repoName, dryRun = false, commonRoot = defaultCommonRoot }) {
+function profileReferences(value, result = new Set()) {
+  if (Array.isArray(value)) {
+    for (const item of value) profileReferences(item, result);
+  } else if (value && typeof value === 'object') {
+    for (const [key, item] of Object.entries(value)) {
+      if (key === 'profile' && typeof item === 'string') result.add(item);
+      else profileReferences(item, result);
+    }
+  }
+  return result;
+}
+
+function modifierEntries(source) {
+  const entries = new Map();
+  const pattern = /\["([^"]+)"\]\s*=\s*\{([\s\S]*?)\n\s*\},?/gu;
+  for (const match of source.matchAll(pattern)) entries.set(match[1], match[2].trim());
+  return entries;
+}
+
+export function mergeModifierSources(existingSource, observedSource) {
+  const existing = modifierEntries(existingSource);
+  const observed = modifierEntries(observedSource);
+  if (existing.size === 0 && observed.size === 0) return observedSource;
+  for (const [name, body] of observed) existing.set(name, body);
+  const lines = ['local modifiers = {'];
+  for (const [name, body] of [...existing].sort(([left], [right]) => left.localeCompare(right))) {
+    lines.push(`  ["${name}"] = {`);
+    lines.push(...body.split('\n').map((line) => `    ${line.trim()}`));
+    lines.push('  },');
+  }
+  lines.push('}', 'return modifiers', '');
+  return lines.join('\n');
+}
+
+export function mergeConsumerConfig(draft, existing, removedProfiles = []) {
+  if (!existing || typeof existing !== 'object') return { config: draft, preservedProfiles: [], removedProfiles: [] };
+  const removed = new Set(removedProfiles);
+  const currentProfiles = new Set(Object.keys(draft.profiles ?? {}));
+  const preservedProfiles = Object.keys(existing.profiles ?? {})
+    .filter((profile) => !currentProfiles.has(profile) && !removed.has(profile));
+  const config = { ...existing, ...draft };
+  config.profiles = { ...(existing.profiles ?? {}), ...(draft.profiles ?? {}) };
+  for (const profile of removed) delete config.profiles[profile];
+
+  const currentPages = draft.pages ?? [];
+  const pageIdentity = (page) => `${page?.deviceId ?? ''}|${page?.deviceInstance ?? ''}`.toLocaleLowerCase();
+  const profileIdentity = (page) => page?.deviceInstance
+    ? `${page?.deviceId ?? ''}-${String(page.deviceInstance).replace(/^MFD/iu, '')}`.toLocaleLowerCase()
+    : String(page?.deviceId ?? '').toLocaleLowerCase();
+  const currentPageIdentities = new Set(currentPages.map(pageIdentity));
+  const retainedPages = (existing.pages ?? []).filter((page) => {
+    const references = profileReferences(page);
+    if ([...references].some((profile) => removed.has(profile))) return false;
+    if (removed.has(profileIdentity(page))) return false;
+    if (references.size > 0) return [...references].every((profile) => !currentProfiles.has(profile));
+    return !currentPageIdentities.has(pageIdentity(page));
+  });
+  config.pages = [...currentPages, ...retainedPages];
+  config.semanticModifiers = { ...(existing.semanticModifiers ?? {}), ...(draft.semanticModifiers ?? {}) };
+  if (existing.modifiers || draft.modifiers) config.modifiers = { ...(existing.modifiers ?? {}), ...(draft.modifiers ?? {}) };
+  if (!draft.modifiersFile && existing.modifiersFile) config.modifiersFile = existing.modifiersFile;
+  return { config, preservedProfiles, removedProfiles: [...removed].filter((profile) => existing.profiles?.[profile]) };
+}
+
+export function writeConsumer({ preview, outputDir, displayName, inputModuleId, kneeboardId, repoName, removedProfiles = [], dryRun = false, commonRoot = defaultCommonRoot }) {
   const out = resolve(outputDir);
   const name = repoName ?? `DCS-${slugifyId(displayName)}-Components`;
   const tokens = {
@@ -715,7 +783,13 @@ export function writeConsumer({ preview, outputDir, displayName, inputModuleId, 
     copy(source, `${joystickRel}/${device.profileFile}`);
   }
   if (preview.modifiersPath && existsSync(preview.modifiersPath)) {
-    copy(preview.modifiersPath, `src/Config/Input/${inputModuleId}/modifiers.lua`);
+    const modifierRel = `src/Config/Input/${inputModuleId}/modifiers.lua`;
+    const existingModifierPath = join(out, modifierRel);
+    const observedModifiers = readFileSync(preview.modifiersPath, 'utf8');
+    const mergedModifiers = existsSync(existingModifierPath)
+      ? mergeModifierSources(readFileSync(existingModifierPath, 'utf8'), observedModifiers)
+      : observedModifiers;
+    write(modifierRel, mergedModifiers);
   }
   if (preview.mapPath && existsSync(preview.mapPath)) {
     copy(preview.mapPath, 'config/scaffold-device-overrides.json');
@@ -730,8 +804,26 @@ export function writeConsumer({ preview, outputDir, displayName, inputModuleId, 
     copy(preview.labelsPath, 'config/scaffold-label-overrides.json');
   }
 
-  const kneeboard = buildDraftKneeboardConfig(preview, { displayName, inputModuleId });
+  const draftKneeboard = buildDraftKneeboardConfig(preview, { displayName, inputModuleId });
+  const existingConfigPath = join(out, 'config/kneeboard.json');
+  const existingKneeboard = existsSync(existingConfigPath) ? JSON.parse(readFileSync(existingConfigPath, 'utf8')) : null;
+  const merge = mergeConsumerConfig(draftKneeboard, existingKneeboard, removedProfiles);
+  const kneeboard = merge.config;
   write('config/kneeboard.json', JSON.stringify(kneeboard, null, 2));
+  if (!dryRun) {
+    for (const [profileKey, relative] of Object.entries(draftKneeboard.profiles ?? {})) {
+      const previous = existingKneeboard?.profiles?.[profileKey];
+      if (typeof previous !== 'string' || previous === relative) continue;
+      const obsolete = join(out, previous);
+      if (existsSync(obsolete)) unlinkSync(obsolete);
+    }
+    for (const profileKey of merge.removedProfiles) {
+      const relative = existingKneeboard?.profiles?.[profileKey];
+      if (typeof relative !== 'string') continue;
+      const absolute = join(out, relative);
+      if (existsSync(absolute)) unlinkSync(absolute);
+    }
+  }
 
   write('package.json', applyTokens(readTemplate(commonRoot, 'package.json.tmpl'), tokens));
   write('README.md', applyTokens(readTemplate(commonRoot, 'README.md.tmpl'), tokens));
@@ -768,6 +860,8 @@ export function writeConsumer({ preview, outputDir, displayName, inputModuleId, 
     `- Mapped devices: ${preview.summary.mappedDevices}`,
     `- Unmapped devices: ${preview.summary.unmappedDevices}`,
     `- Preview errors: ${preview.summary.errorCount}`,
+    `- Preserved absent profiles: ${merge.preservedProfiles.length}`,
+    `- Explicitly removed profiles: ${merge.removedProfiles.length}`,
     '',
     '## Devices',
     '',
@@ -775,6 +869,8 @@ export function writeConsumer({ preview, outputDir, displayName, inputModuleId, 
       (d) =>
         `- \`${d.profileFile}\` → profile \`${d.profileKey ?? '**UNMAPPED**'}\` → ${d.deviceId ?? '**UNMAPPED**'} (${d.mappingSource}${d.role ? `, role ${d.role}` : ''}${d.guid ? `, GUID ${d.guid}` : ''}${d.mappingSource === 'standalone-fallback' ? '; generic AB9 profile—select the installed grip' : ''})`,
     ),
+    ...merge.preservedProfiles.map((profile) => `- \`${profile}\` → preserved while absent from this scaffold session`),
+    ...merge.removedProfiles.map((profile) => `- \`${profile}\` → explicitly removed`),
     '',
     '## Bindings',
     '',
@@ -851,6 +947,7 @@ export function main(argv = process.argv.slice(2)) {
       inputModuleId: options.inputModuleId,
       kneeboardId: options.kneeboardId,
       repoName: options.repoName,
+      removedProfiles: options.removeProfilesPath ? JSON.parse(readFileSync(options.removeProfilesPath, 'utf8')) : [],
       dryRun: options.dryRun,
       commonRoot: options.commonRoot,
     });

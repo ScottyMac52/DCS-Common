@@ -57,7 +57,8 @@ public class ScaffoldEngineServiceTests
             displayName: "F-16C",
             inputModuleId: "F-16C_50",
             kneeboardId: "F-16C_50",
-            repoName: "DCS-F-16C-Components");
+            repoName: "DCS-F-16C-Components",
+            removedProfilesPath: "removed.json");
 
         Assert.Contains("--output-dir", args);
         Assert.Contains("out", args);
@@ -73,6 +74,8 @@ public class ScaffoldEngineServiceTests
         Assert.Contains("--modifiers", args);
         Assert.Contains("--moza-grip", args);
         Assert.Contains("viper", args);
+        Assert.Contains("--remove-profiles", args);
+        Assert.Contains("removed.json", args);
     }
 
     [Fact]

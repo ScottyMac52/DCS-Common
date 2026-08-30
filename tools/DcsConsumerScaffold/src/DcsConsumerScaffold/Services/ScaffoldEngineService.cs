@@ -99,6 +99,7 @@ public sealed class ScaffoldEngineService
         string inputModuleId,
         string kneeboardId,
         string? repoName = null,
+        IReadOnlyCollection<string>? removedProfiles = null,
         CancellationToken cancellationToken = default)
     {
         var root = ResolveCommonRoot(commonRoot)
@@ -109,6 +110,7 @@ public sealed class ScaffoldEngineService
         string? rolesPath = null;
         string? semanticPath = null;
         string? labelsPath = null;
+        string? removedProfilesPath = null;
         try
         {
             if (instanceRoles is { Count: > 0 })
@@ -119,9 +121,10 @@ public sealed class ScaffoldEngineService
             }
             semanticPath = await WriteTemporaryJsonAsync("semantic-modifiers", semanticModifiers, cancellationToken);
             labelsPath = await WriteTemporaryJsonAsync("labels", labels, cancellationToken);
+            removedProfilesPath = await WriteTemporaryJsonArrayAsync("removed-profiles", removedProfiles, cancellationToken);
 
             var args = BuildWriteArguments(
-                script, profilesDir, modifiersPath, mozaGrip, rolesPath, root, outputDir, displayName, inputModuleId, kneeboardId, repoName, semanticPath, labelsPath);
+                script, profilesDir, modifiersPath, mozaGrip, rolesPath, root, outputDir, displayName, inputModuleId, kneeboardId, repoName, semanticPath, labelsPath, removedProfilesPath);
             var (exitCode, stdout, stderr) = await RunNodeAsync(root, args, cancellationToken).ConfigureAwait(false);
             return (stdout, stderr, exitCode);
         }
@@ -133,6 +136,7 @@ public sealed class ScaffoldEngineService
             }
             DeleteTemporary(semanticPath);
             DeleteTemporary(labelsPath);
+            DeleteTemporary(removedProfilesPath);
         }
     }
 
@@ -189,6 +193,17 @@ public sealed class ScaffoldEngineService
     private static async Task<string?> WriteTemporaryJsonAsync(
         string stem,
         IReadOnlyDictionary<string, string>? values,
+        CancellationToken cancellationToken)
+    {
+        if (values is not { Count: > 0 }) return null;
+        var path = Path.Combine(Path.GetTempPath(), $"dcs-scaffold-{stem}-{Guid.NewGuid():N}.json");
+        await File.WriteAllTextAsync(path, JsonSerializer.Serialize(values), cancellationToken).ConfigureAwait(false);
+        return path;
+    }
+
+    private static async Task<string?> WriteTemporaryJsonArrayAsync(
+        string stem,
+        IReadOnlyCollection<string>? values,
         CancellationToken cancellationToken)
     {
         if (values is not { Count: > 0 }) return null;
@@ -296,7 +311,8 @@ public sealed class ScaffoldEngineService
         string kneeboardId,
         string? repoName = null,
         string? semanticModifiersPath = null,
-        string? labelsPath = null)
+        string? labelsPath = null,
+        string? removedProfilesPath = null)
     {
         var list = new List<string>
         {
@@ -333,6 +349,7 @@ public sealed class ScaffoldEngineService
         }
         AddOptionalFile(list, "--semantic-modifiers", semanticModifiersPath);
         AddOptionalFile(list, "--labels", labelsPath);
+        AddOptionalFile(list, "--remove-profiles", removedProfilesPath);
 
         if (!string.IsNullOrWhiteSpace(repoName))
         {
