@@ -108,7 +108,11 @@ test('complete test articles render every configured page', async () => {
   const pngFiles = readdirSync(result.pngDir).filter((file) => file.endsWith('.png'));
   const svgFiles = readdirSync(result.svgDir).filter((file) => file.endsWith('.svg'));
 
-  assert.equal(result.pageCount, buildCompleteMock(root).config.pages.length + 1);
+  const configuredPageCount = buildCompleteMock(root).config.pages.length + 1;
+  assert.ok(result.pageCount > configuredPageCount,
+    'readable binding companions expand the configured locator pages');
+  assert.ok(pngFiles.includes('09-WINCTRL-ICP-BINDINGS-1.png'));
+  assert.ok(svgFiles.includes('09-WINCTRL-ICP-BINDINGS-1.svg'));
   assert.equal(pngFiles.length, result.pageCount);
   assert.equal(svgFiles.length, result.pageCount);
 });
