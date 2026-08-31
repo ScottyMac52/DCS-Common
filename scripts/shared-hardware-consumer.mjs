@@ -158,6 +158,91 @@ ${legendSvg}
   };
 }
 
+const READABLE_BINDINGS_PER_PAGE = 12;
+
+function displayLabel(value) {
+  if (Array.isArray(value)) return value.map((entry) => entry?.label ?? entry).filter(Boolean).join(' / ');
+  return value?.label ?? value ?? '';
+}
+
+function wrapBindingLabel(value, max = 38) {
+  const words = String(value).trim().split(/\s+/u).filter(Boolean);
+  const lines = [];
+  for (const word of words) {
+    const current = lines.at(-1);
+    if (!current || `${current} ${word}`.length > max) lines.push(word);
+    else lines[lines.length - 1] = `${current} ${word}`;
+  }
+  if (lines.length <= 2) return lines;
+  return [lines[0], `${lines.slice(1).join(' ').slice(0, max - 1).trimEnd()}…`];
+}
+
+function renderReadableBindingsPage({ deviceId, title, kicker, entries, footer }) {
+  const cards = entries.map((entry, index) => {
+    const column = index % 2;
+    const row = Math.floor(index / 2);
+    const x = 54 + column * 566;
+    const y = 180 + row * 216;
+    const lines = wrapBindingLabel(entry.functionLabel);
+    return `  <g data-readable-binding="${escapeXml(entry.id)}">
+    <rect x="${x}" y="${y}" width="532" height="184" rx="18" fill="#0b1b2e" stroke="#2e5878" stroke-width="2"/>
+    <text x="${x + 24}" y="${y + 45}" font-family="Arial,sans-serif" font-size="22" font-weight="700" fill="#63d7ff">${escapeXml(entry.hardwareLabel)}</text>
+    <text x="${x + 24}" y="${y + 98}" font-family="Arial,sans-serif" font-size="30" font-weight="800" fill="#f5f9ff">${escapeXml(lines[0] ?? '')}</text>
+    ${lines[1] ? `<text x="${x + 24}" y="${y + 139}" font-family="Arial,sans-serif" font-size="30" font-weight="800" fill="#f5f9ff">${escapeXml(lines[1])}</text>` : ''}
+  </g>`;
+  }).join('\n');
+  return `<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="1600" viewBox="0 0 1200 1600">
+  <desc>Readable DCS-Common bindings: ${escapeXml(deviceId)}</desc>
+  <rect width="1200" height="1600" fill="#06101d"/>
+  <rect width="1200" height="16" fill="#46d8ff"/>
+  <text x="54" y="80" font-family="Arial,sans-serif" font-size="44" font-weight="700" fill="#f5f9ff">${escapeXml(title)}</text>
+  <text x="56" y="126" font-family="Arial,sans-serif" font-size="20" font-weight="700" fill="#ffc95c">${escapeXml(kicker)}</text>
+${cards}
+  <text x="54" y="1570" font-family="Arial,sans-serif" font-size="18" fill="#8ea5bd">${escapeXml(footer)}</text>
+</svg>`;
+}
+
+/**
+ * Render the visual device locator plus large-print binding pages. Dense diagrams
+ * remain useful for locating controls while the companion pages keep every
+ * configured function readable at DCS and VR kneeboard scale.
+ */
+export function renderSharedHardwarePages(options) {
+  const { deviceId, labels = {}, title, kicker = '', provenance, footer = '', commonRoot } = options;
+  const overview = renderSharedHardwarePage(options);
+  const { device, svg, calloutIds } = loadSharedHardware(deviceId, { commonRoot });
+  const values = Array.isArray(labels)
+    ? Object.fromEntries(calloutIds.map((id, index) => [id, labels[index] ?? '']))
+    : labels;
+  const hardwareLabels = new Map([...svg.matchAll(/<text id="lbl-([^"]+)"[^>]*>([\s\S]*?)<\/text>/g)]
+    .map((match) => [match[1], match[2].replace(/<[^>]+>/g, '').trim()]));
+  const entries = calloutIds.map((id) => ({
+    id,
+    hardwareLabel: hardwareLabels.get(id) || id,
+    functionLabel: displayLabel(values[id]),
+  })).filter((entry) => entry.functionLabel.trim());
+  if (entries.length === 0) return [{ file: options.file, svg: overview.svg, kind: 'locator' }];
+
+  const pageFooter = provenance ? formatProvenanceFooter({ commonRoot, ...provenance }) : footer;
+  const pages = [{ file: options.file, svg: overview.svg, kind: 'locator' }];
+  for (let offset = 0; offset < entries.length; offset += READABLE_BINDINGS_PER_PAGE) {
+    const pageNumber = Math.floor(offset / READABLE_BINDINGS_PER_PAGE) + 1;
+    const pageCount = Math.ceil(entries.length / READABLE_BINDINGS_PER_PAGE);
+    pages.push({
+      file: `${options.file}-BINDINGS-${pageNumber}`,
+      kind: 'bindings',
+      svg: renderReadableBindingsPage({
+        deviceId: device.id,
+        title: title ?? device.label,
+        kicker: `${kicker ? `${kicker} • ` : ''}READABLE BINDINGS ${pageNumber} / ${pageCount}`,
+        entries: entries.slice(offset, offset + READABLE_BINDINGS_PER_PAGE),
+        footer: pageFooter,
+      }),
+    });
+  }
+  return pages;
+}
+
 export function renderSharedHardwareInstancesPage({ instances, title, kicker = '', footer = '', provenance, commonRoot }) {
   if (!Array.isArray(instances) || instances.length === 0) throw new Error('At least one shared hardware instance is required.');
   const rendered = instances.map((instance, index) => {
