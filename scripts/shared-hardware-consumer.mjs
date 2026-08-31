@@ -187,6 +187,7 @@ function renderReadableBindingsPage({ deviceId, title, kicker, entries, footer }
     return `  <g data-readable-binding="${escapeXml(entry.id)}">
     <rect x="${x}" y="${y}" width="532" height="184" rx="18" fill="#0b1b2e" stroke="#2e5878" stroke-width="2"/>
     <text x="${x + 24}" y="${y + 45}" font-family="Arial,sans-serif" font-size="22" font-weight="700" fill="#63d7ff">${escapeXml(entry.hardwareLabel)}</text>
+    <text x="${x + 508}" y="${y + 45}" text-anchor="end" font-family="Arial,sans-serif" font-size="20" font-weight="800" fill="#ffc95c">${escapeXml(entry.inputKey)}</text>
     <text x="${x + 24}" y="${y + 98}" font-family="Arial,sans-serif" font-size="30" font-weight="800" fill="#f5f9ff">${escapeXml(lines[0] ?? '')}</text>
     ${lines[1] ? `<text x="${x + 24}" y="${y + 139}" font-family="Arial,sans-serif" font-size="30" font-weight="800" fill="#f5f9ff">${escapeXml(lines[1])}</text>` : ''}
   </g>`;
@@ -216,16 +217,20 @@ export function renderSharedHardwarePages(options) {
     : labels;
   const hardwareLabels = new Map([...svg.matchAll(/<text id="lbl-([^"]+)"[^>]*>([\s\S]*?)<\/text>/g)]
     .map((match) => [match[1], match[2].replace(/<[^>]+>/g, '').trim()]));
+  const inputKeys = new Map();
   const catalogSource = readFileSync(join(commonRoot, 'assets/shared/hardware', device.lua), 'utf8');
   for (const match of catalogSource.matchAll(/\{([^{}]*\bid\s*=\s*"(?:\\.|[^"])*"[^{}]*)\}/g)) {
     const field = (name) => match[1].match(new RegExp(`\\b${name}\\s*=\\s*"((?:\\\\.|[^"])*)"`))?.[1];
     const id = field('id');
     const hardwareLabel = field('hardwareLabel');
+    const inputKey = field('key');
     if (id && hardwareLabel) hardwareLabels.set(id, hardwareLabel);
+    if (id && inputKey) inputKeys.set(id, inputKey);
   }
   const entries = calloutIds.map((id) => ({
     id,
     hardwareLabel: hardwareLabels.get(id) || id,
+    inputKey: inputKeys.get(id) || '',
     functionLabel: displayLabel(values[id]),
   })).filter((entry) => entry.functionLabel.trim());
   if (entries.length === 0) return [{ file: options.file, svg: overview.svg, kind: 'locator' }];
