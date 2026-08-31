@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { formatProvenanceFooter, loadSharedHardware, renderSharedHardwareInstancesPage, renderSharedHardwarePage } from '../scripts/shared-hardware-consumer.mjs';
+import { formatProvenanceFooter, loadSharedHardware, renderSharedHardwareInstancesPage, renderSharedHardwarePage, renderSharedHardwarePages } from '../scripts/shared-hardware-consumer.mjs';
 
 const commonRoot = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 
@@ -59,4 +59,30 @@ test('consumer page embeds the populated shared SVG', () => {
   assert.match(rendered.svg, /data:image\/svg\+xml;base64,/);
   assert.match(rendered.svg, /Shared DCS-Common device: moza-ab9/);
   assert.deepEqual(rendered.calloutIds, ['moza-ab9-pitch-axis', 'moza-ab9-roll-axis']);
+});
+
+test('dense device output includes large-print binding pages and omits empty callouts', () => {
+  const labels = Object.fromEntries(Array.from({ length: 14 }, (_, index) => [
+    `winctrl-icp-btn-${String(index + 1).padStart(2, '0')}`,
+    `Configured function ${index + 1}`,
+  ]));
+  labels['winctrl-icp-btn-15'] = '';
+  const pages = renderSharedHardwarePages({
+    deviceId: 'winctrl-icp',
+    file: '09-WINCTRL-ICP',
+    title: 'WINCTRL ViperAce ICP',
+    labels,
+    commonRoot,
+  });
+
+  assert.equal(pages.length, 3, 'locator plus two readable binding pages');
+  assert.deepEqual(pages.map(({ file }) => file), [
+    '09-WINCTRL-ICP',
+    '09-WINCTRL-ICP-BINDINGS-1',
+    '09-WINCTRL-ICP-BINDINGS-2',
+  ]);
+  assert.match(pages[1].svg, /READABLE BINDINGS 1 \/ 2/);
+  assert.match(pages[1].svg, /font-size="30"/);
+  assert.match(pages[1].svg, /Configured function 1/);
+  assert.doesNotMatch(pages[2].svg, /winctrl-icp-btn-15/);
 });
