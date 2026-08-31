@@ -2,6 +2,8 @@
 
 Aircraft repositories keep their DCS `.diff.lua` profiles as binding data and add a JSON composition file. DCS-Common parses the profiles, validates every referenced joystick key, and supplies the DCS binding name as the default kneeboard label. A short `label` override is allowed when the DCS name is too long for the hardware diagram.
 
+Each configured device renders as **one locator page**. Callout type on that diagram is forced to 16px (13px when stacked modifier variants share a callout) so the page is readable in DCS and VR without companion `*-BINDINGS-*` list pages. The old list pages remain available only when a consumer passes `includeReadableBindings: true` into `renderSharedHardwarePages`.
+
 When a page uses `controls`, any page-level `labels` map must be **ID-keyed** (callout id → text). An ordered `labels` **array** is only valid on pages **without** `controls`; the loader rejects `controls` + array labels with `profile-driven controls require ID-keyed labels`. Prefer ID-keyed `labels` and/or per-control `"label"` for profile-driven pages.
 
 ```json
