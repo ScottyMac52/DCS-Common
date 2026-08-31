@@ -109,10 +109,10 @@ test('complete test articles render every configured page', async () => {
   const svgFiles = readdirSync(result.svgDir).filter((file) => file.endsWith('.svg'));
 
   const configuredPageCount = buildCompleteMock(root).config.pages.length + 1;
-  assert.ok(result.pageCount > configuredPageCount,
-    'readable binding companions expand the configured locator pages');
-  assert.ok(pngFiles.includes('09-WINCTRL-ICP-BINDINGS-1.png'));
-  assert.ok(svgFiles.includes('09-WINCTRL-ICP-BINDINGS-1.svg'));
+  assert.equal(result.pageCount, configuredPageCount,
+    'default output is one locator page per configured device plus the summary');
+  assert.ok(!pngFiles.includes('09-WINCTRL-ICP-BINDINGS-1.png'));
+  assert.ok(!svgFiles.includes('09-WINCTRL-ICP-BINDINGS-1.svg'));
   assert.equal(pngFiles.length, result.pageCount);
   assert.equal(svgFiles.length, result.pageCount);
 });
