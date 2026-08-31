@@ -22,7 +22,7 @@
         <mxCell id="connector-vkb-hat" edge="1" parent="1" source="label-vkb-hat" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;strokeColor=#00bfff;dashed=1;" target="anchor-vkb-hat" value="">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
-        <mxCell id="label-vkb-trim-right" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#1e293b;strokeColor=#00bfff;fontColor=#f1f5f9;fontSize=11;" value="Trim right" vertex="1">
+        <mxCell id="label-vkb-trim-right" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#1e293b;strokeColor=#00bfff;fontColor=#f1f5f9;fontSize=11;" value="RWD" vertex="1">
           <mxGeometry height="26" width="210" x="675" y="236" as="geometry" />
         </mxCell>
         <mxCell id="anchor-vkb-trim-right" parent="1" style="ellipse;whiteSpace=wrap;html=1;fillColor=#00bfff;strokeColor=#0f172a;strokeWidth=1.5;" value="" vertex="1">
@@ -31,7 +31,7 @@
         <mxCell id="connector-vkb-trim-right" edge="1" parent="1" source="label-vkb-trim-right" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;strokeColor=#00bfff;dashed=1;" target="anchor-vkb-trim-right" value="">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
-        <mxCell id="label-vkb-trim-up" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#1e293b;strokeColor=#00bfff;fontColor=#f1f5f9;fontSize=11;" value="Trim up" vertex="1">
+        <mxCell id="label-vkb-trim-up" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#1e293b;strokeColor=#00bfff;fontColor=#f1f5f9;fontSize=11;" value="Nose Down" vertex="1">
           <mxGeometry height="26" width="210" x="675" y="185" as="geometry" />
         </mxCell>
         <mxCell id="anchor-vkb-trim-up" parent="1" style="ellipse;whiteSpace=wrap;html=1;fillColor=#00bfff;strokeColor=#0f172a;strokeWidth=1.5;" value="" vertex="1">
@@ -40,7 +40,7 @@
         <mxCell id="connector-vkb-trim-up" edge="1" parent="1" source="label-vkb-trim-up" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;strokeColor=#00bfff;dashed=1;" target="anchor-vkb-trim-up" value="">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
-        <mxCell id="label-vkb-trim-down" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#1e293b;strokeColor=#00bfff;fontColor=#f1f5f9;fontSize=11;" value="Trim down" vertex="1">
+        <mxCell id="label-vkb-trim-down" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#1e293b;strokeColor=#00bfff;fontColor=#f1f5f9;fontSize=11;" value="Nose Up" vertex="1">
           <mxGeometry height="26" width="210" x="675" y="287" as="geometry" />
         </mxCell>
         <mxCell id="anchor-vkb-trim-down" parent="1" style="ellipse;whiteSpace=wrap;html=1;fillColor=#00bfff;strokeColor=#0f172a;strokeWidth=1.5;" value="" vertex="1">
@@ -49,7 +49,7 @@
         <mxCell id="connector-vkb-trim-down" edge="1" parent="1" source="label-vkb-trim-down" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;strokeColor=#00bfff;dashed=1;" target="anchor-vkb-trim-down" value="">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
-        <mxCell id="label-vkb-trim-left" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#1e293b;strokeColor=#00bfff;fontColor=#f1f5f9;fontSize=11;" value="Trim left" vertex="1">
+        <mxCell id="label-vkb-trim-left" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#1e293b;strokeColor=#00bfff;fontColor=#f1f5f9;fontSize=11;" value="LWD" vertex="1">
           <mxGeometry height="26" width="210" x="675" y="135" as="geometry" />
         </mxCell>
         <mxCell id="anchor-vkb-trim-left" parent="1" style="ellipse;whiteSpace=wrap;html=1;fillColor=#00bfff;strokeColor=#0f172a;strokeWidth=1.5;" value="" vertex="1">
