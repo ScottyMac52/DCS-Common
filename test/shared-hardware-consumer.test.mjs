@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { formatProvenanceFooter, loadSharedHardware, renderSharedHardwareInstancesPage, renderSharedHardwarePage, renderSharedHardwarePages } from '../scripts/shared-hardware-consumer.mjs';
+import { CALLOUT_FONT_SIZE, formatProvenanceFooter, loadSharedHardware, renderSharedHardwareInstancesPage, renderSharedHardwarePage, renderSharedHardwarePages } from '../scripts/shared-hardware-consumer.mjs';
 
 const commonRoot = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 
@@ -61,7 +61,7 @@ test('consumer page embeds the populated shared SVG', () => {
   assert.deepEqual(rendered.calloutIds, ['moza-ab9-pitch-axis', 'moza-ab9-roll-axis']);
 });
 
-test('dense device output includes large-print binding pages and omits empty callouts', () => {
+test('dense device output is a single locator page with enlarged callout type', () => {
   const labels = Object.fromEntries(Array.from({ length: 14 }, (_, index) => [
     `winctrl-icp-btn-${String(index + 1).padStart(2, '0')}`,
     `Configured function ${index + 1}`,
@@ -72,6 +72,33 @@ test('dense device output includes large-print binding pages and omits empty cal
     file: '09-WINCTRL-ICP',
     title: 'WINCTRL ViperAce ICP',
     labels,
+    commonRoot,
+  });
+
+  assert.equal(pages.length, 1, 'locator only — no companion BINDINGS pages');
+  assert.deepEqual(pages.map(({ file }) => file), ['09-WINCTRL-ICP']);
+  assert.equal(pages[0].kind, 'locator');
+  assert.doesNotMatch(pages[0].svg, /READABLE BINDINGS/);
+
+  const loaded = loadSharedHardware('winctrl-icp', { commonRoot, labels });
+  assert.match(loaded.svg, new RegExp(`id="lbl-winctrl-icp-btn-01"[^>]*font-size="${CALLOUT_FONT_SIZE}"`));
+  assert.match(loaded.svg, />Configured</);
+  assert.match(loaded.svg, />function 1</);
+  assert.match(loaded.svg, /font-weight="700"/);
+});
+
+test('readable binding pages remain available when explicitly requested', () => {
+  const labels = Object.fromEntries(Array.from({ length: 14 }, (_, index) => [
+    `winctrl-icp-btn-${String(index + 1).padStart(2, '0')}`,
+    `Configured function ${index + 1}`,
+  ]));
+  labels['winctrl-icp-btn-15'] = '';
+  const pages = renderSharedHardwarePages({
+    deviceId: 'winctrl-icp',
+    file: '09-WINCTRL-ICP',
+    title: 'WINCTRL ViperAce ICP',
+    labels,
+    includeReadableBindings: true,
     commonRoot,
   });
 
