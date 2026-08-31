@@ -216,6 +216,13 @@ export function renderSharedHardwarePages(options) {
     : labels;
   const hardwareLabels = new Map([...svg.matchAll(/<text id="lbl-([^"]+)"[^>]*>([\s\S]*?)<\/text>/g)]
     .map((match) => [match[1], match[2].replace(/<[^>]+>/g, '').trim()]));
+  const catalogSource = readFileSync(join(commonRoot, 'assets/shared/hardware', device.lua), 'utf8');
+  for (const match of catalogSource.matchAll(/\{([^{}]*\bid\s*=\s*"(?:\\.|[^"])*"[^{}]*)\}/g)) {
+    const field = (name) => match[1].match(new RegExp(`\\b${name}\\s*=\\s*"((?:\\\\.|[^"])*)"`))?.[1];
+    const id = field('id');
+    const hardwareLabel = field('hardwareLabel');
+    if (id && hardwareLabel) hardwareLabels.set(id, hardwareLabel);
+  }
   const entries = calloutIds.map((id) => ({
     id,
     hardwareLabel: hardwareLabels.get(id) || id,

@@ -4,7 +4,7 @@ import { fileURLToPath } from 'node:url';
 import sharp from 'sharp';
 
 import { writeCompleteMock } from './generate-complete-build-mock.mjs';
-import { renderSharedHardwarePage } from './shared-hardware-consumer.mjs';
+import { renderSharedHardwarePages } from './shared-hardware-consumer.mjs';
 import { loadProfileDrivenConfig } from './profile-driven-kneeboard.mjs';
 import { renderKneeboard } from './kneeboard-renderer.mjs';
 
@@ -22,8 +22,17 @@ export async function generateTestArticles({ consumerRoot, commonRoot }) {
   mkdirSync(svgDir, { recursive: true });
   mkdirSync(pngDir, { recursive: true });
 
-  const pages = [...(rawConfig.summaryPages || []), ...config.pages]
+  const configuredPages = [...(rawConfig.summaryPages || []), ...config.pages]
     .sort((left, right) => left.file.localeCompare(right.file));
+
+  const pages = configuredPages.flatMap((page) => {
+    if (!page.deviceId) return [{ ...page, outputFile: page.file }];
+    return renderSharedHardwarePages({
+      ...page,
+      commonRoot,
+      provenance: { consumer: `DCS-${aircraftFolder}-Components`, page: '{{PAGE}}' },
+    }).map((rendered) => ({ ...page, outputFile: rendered.file, renderedSvg: rendered.svg }));
+  });
 
   for (const [index, page] of pages.entries()) {
     if (page.type === 'summary') {
@@ -38,16 +47,9 @@ export async function generateTestArticles({ consumerRoot, commonRoot }) {
         await sharp(Buffer.from(svg)).png().toFile(join(pngDir, `${page.file}.png`));
       }
     } else if (page.deviceId) {
-      const rendered = renderSharedHardwarePage({
-        ...page,
-        commonRoot,
-        provenance: {
-          consumer: `DCS-${aircraftFolder}-Components`,
-          page: `${index + 1} / ${pages.length}`,
-        },
-      });
-      writeFileSync(join(svgDir, `${page.file}.svg`), rendered.svg, 'utf8');
-      await sharp(Buffer.from(rendered.svg)).png().toFile(join(pngDir, `${page.file}.png`));
+      const svg = page.renderedSvg.replaceAll('{{PAGE}}', `${index + 1} / ${pages.length}`);
+      writeFileSync(join(svgDir, `${page.outputFile}.svg`), svg, 'utf8');
+      await sharp(Buffer.from(svg)).png().toFile(join(pngDir, `${page.outputFile}.png`));
     }
   }
 
