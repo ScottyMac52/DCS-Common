@@ -87,6 +87,33 @@ export function resolveDcsCommonRoot(consumerRoot = process.cwd()) {
   return resolve(root);
 }
 
+/** DCS / VR kneeboard scale. Source templates ship 8–11px type; that is unreadable in-sim. */
+export const CALLOUT_FONT_SIZE = 16;
+export const CALLOUT_VARIANT_FONT_SIZE = 13;
+const CALLOUT_WRAP = 18;
+
+function applyCalloutType(tag, fontSize) {
+  let next = tag;
+  if (/\bfont-size="[^"]*"/.test(next)) next = next.replace(/\bfont-size="[^"]*"/, `font-size="${fontSize}"`);
+  else next = next.replace(/>$/, ` font-size="${fontSize}">`);
+  if (/\bfont-weight="[^"]*"/.test(next)) next = next.replace(/\bfont-weight="[^"]*"/, 'font-weight="700"');
+  else next = next.replace(/>$/, ' font-weight="700">');
+  return next;
+}
+
+function wrapCalloutLabel(value, max = CALLOUT_WRAP) {
+  const words = String(value).trim().split(/\s+/u).filter(Boolean);
+  if (words.length === 0) return [''];
+  const lines = [];
+  for (const word of words) {
+    const current = lines.at(-1);
+    if (!current || `${current} ${word}`.length > max) lines.push(word);
+    else lines[lines.length - 1] = `${current} ${word}`;
+  }
+  if (lines.length <= 2) return lines;
+  return [lines[0], `${lines.slice(1).join(' ').slice(0, max - 1).trimEnd()}…`];
+}
+
 export function loadSharedHardware(deviceId, { commonRoot = resolveDcsCommonRoot(), labels = {}, labelColors = {} } = {}) {
   validateDisplayLabels(labels);
   const hardwareRoot = join(commonRoot, 'assets/shared/hardware');
@@ -109,18 +136,18 @@ export function loadSharedHardware(deviceId, { commonRoot = resolveDcsCommonRoot
   for (const id of calloutIds) {
     const configuredValue = values[id] ?? '';
     const variants = Array.isArray(configuredValue) ? configuredValue : null;
-    const value = escapeXml(configuredValue);
     const color = labelColors[id];
     svg = svg.replace(new RegExp(`(<text id="lbl-${id}"[^>]*>)[\\s\\S]*?(</text>)`), (match, open, close) => {
-      let tag = open;
+      let tag = applyCalloutType(open, variants ? CALLOUT_VARIANT_FONT_SIZE : CALLOUT_FONT_SIZE);
       if (variants) {
         const x = tag.match(/\bx="([^"]+)"/)?.[1] ?? '0';
-        const firstDy = -Math.max(0, variants.length - 1) * 5;
+        const lineHeight = 16;
+        const firstDy = -Math.max(0, variants.length - 1) * (lineHeight / 2);
         const lines = variants.map((entry, index) => {
           const fill = entry?.color ? ` fill="${escapeXml(entry.color)}"` : '';
-          const dy = index === 0 ? firstDy : 10;
+          const dy = index === 0 ? firstDy : lineHeight;
           const fullLabel = entry?.fullLabel ? ` data-full-label="${escapeXml(entry.fullLabel)}"` : '';
-          return `<tspan x="${escapeXml(x)}" dy="${dy}" font-size="9"${fill}${fullLabel}>${escapeXml(entry?.label ?? entry)}</tspan>`;
+          return `<tspan x="${escapeXml(x)}" dy="${dy}" font-size="${CALLOUT_VARIANT_FONT_SIZE}" font-weight="700"${fill}${fullLabel}>${escapeXml(entry?.label ?? entry)}</tspan>`;
         }).join('');
         return `${tag}${lines}${close}`;
       }
@@ -129,7 +156,14 @@ export function loadSharedHardware(deviceId, { commonRoot = resolveDcsCommonRoot
         if (/\bfill="[^"]*"/.test(tag)) tag = tag.replace(/\bfill="[^"]*"/, `fill="${fill}"`);
         else tag = tag.replace(/>$/, ` fill="${fill}">`);
       }
-      return `${tag}${value}${close}`;
+      const wrapped = wrapCalloutLabel(configuredValue);
+      if (wrapped.length <= 1) return `${tag}${escapeXml(wrapped[0] ?? '')}${close}`;
+      const x = tag.match(/\bx="([^"]+)"/)?.[1] ?? '0';
+      const tspans = wrapped.map((line, index) => {
+        const dy = index === 0 ? -8 : 16;
+        return `<tspan x="${escapeXml(x)}" dy="${dy}" font-size="${CALLOUT_FONT_SIZE}" font-weight="700">${escapeXml(line)}</tspan>`;
+      }).join('');
+      return `${tag}${tspans}${close}`;
     });
   }
   return { device, svg, calloutIds };
@@ -204,13 +238,16 @@ ${cards}
 }
 
 /**
- * Render the visual device locator plus large-print binding pages. Dense diagrams
- * remain useful for locating controls while the companion pages keep every
- * configured function readable at DCS and VR kneeboard scale.
+ * Render the hardware locator page. Callout type is enlarged on the diagram so
+ * DCS / VR kneeboards stay readable without companion list pages.
+ * Pass includeReadableBindings: true to restore the old *-BINDINGS-* list pages.
  */
 export function renderSharedHardwarePages(options) {
   const { deviceId, labels = {}, title, kicker = '', provenance, footer = '', commonRoot } = options;
   const overview = renderSharedHardwarePage(options);
+  if (!options.includeReadableBindings) {
+    return [{ file: options.file, svg: overview.svg, kind: 'locator' }];
+  }
   const { device, svg, calloutIds } = loadSharedHardware(deviceId, { commonRoot });
   const values = Array.isArray(labels)
     ? Object.fromEntries(calloutIds.map((id, index) => [id, labels[index] ?? '']))
