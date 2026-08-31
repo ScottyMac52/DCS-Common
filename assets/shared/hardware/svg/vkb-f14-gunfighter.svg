@@ -11,22 +11,22 @@
   <line x1="475" y1="89" x2="780" y2="236" stroke="#00bfff" stroke-width="1.5" stroke-dasharray="5 3" opacity="0.75"/>
   <circle cx="475" cy="89" r="5" fill="#00bfff" stroke="#0f172a" stroke-width="1.5"/>
   <rect x="675" y="236" width="210" height="26" rx="4" fill="#1e293b" stroke="#00bfff" stroke-width="1.5"/>
-  <text id="lbl-vkb-trim-right" x="780" y="253" text-anchor="middle" font-family="Arial,sans-serif" font-size="11" fill="#f1f5f9">Trim right</text>
+  <text id="lbl-vkb-trim-right" x="780" y="253" text-anchor="middle" font-family="Arial,sans-serif" font-size="11" fill="#f1f5f9">RWD</text>
   <!-- callout:vkb-trim-up -->
   <line x1="439" y1="48" x2="780" y2="185" stroke="#00bfff" stroke-width="1.5" stroke-dasharray="5 3" opacity="0.75"/>
   <circle cx="439" cy="48" r="5" fill="#00bfff" stroke="#0f172a" stroke-width="1.5"/>
   <rect x="675" y="185" width="210" height="26" rx="4" fill="#1e293b" stroke="#00bfff" stroke-width="1.5"/>
-  <text id="lbl-vkb-trim-up" x="780" y="202" text-anchor="middle" font-family="Arial,sans-serif" font-size="11" fill="#f1f5f9">Trim up</text>
+  <text id="lbl-vkb-trim-up" x="780" y="202" text-anchor="middle" font-family="Arial,sans-serif" font-size="11" fill="#f1f5f9">Nose Down</text>
   <!-- callout:vkb-trim-down -->
   <line x1="431" y1="111" x2="780" y2="287" stroke="#00bfff" stroke-width="1.5" stroke-dasharray="5 3" opacity="0.75"/>
   <circle cx="431" cy="111" r="5" fill="#00bfff" stroke="#0f172a" stroke-width="1.5"/>
   <rect x="675" y="287" width="210" height="26" rx="4" fill="#1e293b" stroke="#00bfff" stroke-width="1.5"/>
-  <text id="lbl-vkb-trim-down" x="780" y="304" text-anchor="middle" font-family="Arial,sans-serif" font-size="11" fill="#f1f5f9">Trim down</text>
+  <text id="lbl-vkb-trim-down" x="780" y="304" text-anchor="middle" font-family="Arial,sans-serif" font-size="11" fill="#f1f5f9">Nose Up</text>
   <!-- callout:vkb-trim-left -->
   <line x1="405" y1="89" x2="780" y2="135" stroke="#00bfff" stroke-width="1.5" stroke-dasharray="5 3" opacity="0.75"/>
   <circle cx="405" cy="89" r="5" fill="#00bfff" stroke="#0f172a" stroke-width="1.5"/>
   <rect x="675" y="135" width="210" height="26" rx="4" fill="#1e293b" stroke="#00bfff" stroke-width="1.5"/>
-  <text id="lbl-vkb-trim-left" x="780" y="152" text-anchor="middle" font-family="Arial,sans-serif" font-size="11" fill="#f1f5f9">Trim left</text>
+  <text id="lbl-vkb-trim-left" x="780" y="152" text-anchor="middle" font-family="Arial,sans-serif" font-size="11" fill="#f1f5f9">LWD</text>
   <!-- callout:vkb-btn-release -->
   <line x1="513" y1="87" x2="780" y2="61" stroke="#00bfff" stroke-width="1.5" stroke-dasharray="5 3" opacity="0.75"/>
   <circle cx="513" cy="87" r="5" fill="#00bfff" stroke="#0f172a" stroke-width="1.5"/>
