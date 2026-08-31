@@ -7,7 +7,7 @@ const scriptDir = dirname(fileURLToPath(import.meta.url));
 const root = resolve(scriptDir, '..');
 const commonRoot = resolve(process.env.DCS_COMMON_ROOT ?? join(root, '.dcs-common'));
 
-const { renderSharedHardwarePage } = await import(
+const { renderSharedHardwarePages } = await import(
   pathToFileURL(join(commonRoot, 'scripts/shared-hardware-consumer.mjs'))
 );
 const { loadProfileDrivenConfig } = await import(
@@ -29,10 +29,19 @@ rmSync(pngDir, { recursive: true, force: true });
 mkdirSync(svgDir, { recursive: true });
 mkdirSync(pngDir, { recursive: true });
 
-const allPages = [
+const configuredPages = [
   ...(rawConfig.summaryPages || []),
   ...config.pages,
 ].sort((a, b) => a.file.localeCompare(b.file));
+
+const allPages = configuredPages.flatMap((page) => {
+  if (!page.deviceId) return [{ ...page, outputFile: page.file }];
+  return renderSharedHardwarePages({
+    ...page,
+    commonRoot,
+    provenance: { consumer: `DCS-${aircraftFolder}-Components`, page: '{{PAGE}}' },
+  }).map((rendered) => ({ ...page, outputFile: rendered.file, renderedSvg: rendered.svg }));
+});
 
 const totalPages = allPages.length;
 
@@ -54,17 +63,9 @@ for (const [index, page] of allPages.entries()) {
       await sharp(Buffer.from(svgContent)).png().toFile(join(pngDir, `${page.file}.png`));
     }
   } else if (page.deviceId) {
-    const hardwareRender = renderSharedHardwarePage({
-      ...page,
-      commonRoot,
-      provenance: {
-        consumer: `DCS-${aircraftFolder}-Components`,
-        page: `${index + 1} / ${totalPages}`,
-      },
-    });
-
-    writeFileSync(join(svgDir, `${page.file}.svg`), hardwareRender.svg, 'utf8');
-    await sharp(Buffer.from(hardwareRender.svg)).png().toFile(join(pngDir, `${page.file}.png`));
+    const svg = page.renderedSvg.replaceAll('{{PAGE}}', `${index + 1} / ${totalPages}`);
+    writeFileSync(join(svgDir, `${page.outputFile}.svg`), svg, 'utf8');
+    await sharp(Buffer.from(svg)).png().toFile(join(pngDir, `${page.outputFile}.png`));
   }
 }
 
