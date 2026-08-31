@@ -84,5 +84,6 @@ test('dense device output includes large-print binding pages and omits empty cal
   assert.match(pages[1].svg, /READABLE BINDINGS 1 \/ 2/);
   assert.match(pages[1].svg, /font-size="30"/);
   assert.match(pages[1].svg, /Configured function 1/);
+  assert.match(pages[1].svg, />COM 1<\//, 'uses the friendly hardware label from the Lua catalog');
   assert.doesNotMatch(pages[2].svg, /winctrl-icp-btn-15/);
 });
