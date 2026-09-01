@@ -476,6 +476,36 @@ test('buildPreview emits base and modifier rows with hold mode', () => {
   assert.equal(preview.modifiers[0].mode, 'hold');
 });
 
+test('scaffold applies and reports per-instance TM MFD categories', () => {
+  const root = mkdtempSync(join(tmpdir(), 'scaffold-mfd-categories-'));
+  const profilesDir = join(root, 'joystick');
+  mkdirSync(profilesDir);
+  const profileName = 'F16 MFD 1 {C5BE49A0-2342-11EE-8001-444553540000}.diff.lua';
+  writeFileSync(join(profilesDir, profileName), `local diff = { ["keyDiffs"] = {
+    ["d1"] = { ["added"] = { [1] = { ["key"] = "JOY_BTN1" }, }, ["name"] = "Set SP 1", },
+  } } return diff`);
+  const categoriesPath = join(root, 'categories.json');
+  writeFileSync(categoriesPath, JSON.stringify({
+    'tm-mfd-1': { top: 'Jester Steerpoints', right: 'Jester Radar', bottom: 'Radar Range', left: 'Targets' },
+  }));
+  const preview = buildPreview({ profilesDir, mfdCategoriesPath: categoriesPath, commonRoot });
+  assert.deepEqual(preview.devices[0].categoryLabels, {
+    top: 'Jester Steerpoints', right: 'Jester Radar', bottom: 'Radar Range', left: 'Targets',
+  });
+  const config = buildDraftKneeboardConfig(preview, { displayName: 'F-14B(U)', inputModuleId: 'F-14BU' });
+  assert.deepEqual(config.pages[0].categoryLabels, preview.devices[0].categoryLabels);
+
+  const out = join(root, 'consumer');
+  writeConsumer({ preview, outputDir: out, displayName: 'F-14B(U)', inputModuleId: 'F-14BU', kneeboardId: 'F-14BU', commonRoot });
+  assert.match(readFileSync(join(out, 'SCAFFOLD-REPORT.md'), 'utf8'), /top=Jester Steerpoints/);
+  assert.ok(existsSync(join(out, 'config/scaffold-mfd-category-overrides.json')));
+
+  const refreshWithoutCategoryInput = buildPreview({ profilesDir, commonRoot });
+  writeConsumer({ preview: refreshWithoutCategoryInput, outputDir: out, displayName: 'F-14B(U)', inputModuleId: 'F-14BU', kneeboardId: 'F-14BU', commonRoot });
+  const refreshed = JSON.parse(readFileSync(join(out, 'config/kneeboard.json'), 'utf8'));
+  assert.equal(refreshed.pages[0].categoryLabels.top, 'Jester Steerpoints', 'rescaffolding preserves current categories');
+});
+
 test('buildPreview reports profile reformers missing from modifiers.lua', () => {
   const root = mkdtempSync(join(tmpdir(), 'scaffold-missing-modifier-'));
   const profilesDir = join(root, 'joystick');

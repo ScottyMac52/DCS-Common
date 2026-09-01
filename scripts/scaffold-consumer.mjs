@@ -52,6 +52,7 @@ Optional:
   --roles <path>              consumer-owned profile filename/GUID to semantic instance roles (JSON)
   --semantic-modifiers <path> modifier name or device+key to semantic modifier ID (JSON)
   --labels <path>             stable binding identity to editable label override (JSON)
+  --mfd-categories <path>     profile key/file to top/right/bottom/left category labels (JSON)
   --remove-profiles <path>    explicit repository profile keys to remove (JSON array)
   --exclude-ui-layer          do not compose shared UI Layer overlays into generated preview pages
   --moza-grip <value>          standalone, viper, or hornet; applies to generic AB9 profiles
@@ -74,6 +75,7 @@ export function parseArgs(argv = process.argv.slice(2)) {
     rolesPath: null,
     semanticModifiersPath: null,
     labelsPath: null,
+    mfdCategoriesPath: null,
     removeProfilesPath: null,
     includeUiLayer: true,
     mozaGrip: null,
@@ -101,6 +103,7 @@ export function parseArgs(argv = process.argv.slice(2)) {
     else if (arg === '--roles') options.rolesPath = next();
     else if (arg === '--semantic-modifiers') options.semanticModifiersPath = next();
     else if (arg === '--labels') options.labelsPath = next();
+    else if (arg === '--mfd-categories') options.mfdCategoriesPath = next();
     else if (arg === '--remove-profiles') options.removeProfilesPath = next();
     else if (arg === '--exclude-ui-layer') options.includeUiLayer = false;
     else if (arg === '--moza-grip') options.mozaGrip = next().toLowerCase();
@@ -322,7 +325,7 @@ export function assignDeviceInstances(devices, rows, roleOverrides = {}, errors 
   }
 }
 
-export function buildPreview({ profilesDir, modifiersPath = null, mapPath = null, rolesPath = null, semanticModifiersPath = null, labelsPath = null, mozaGrip = null, commonRoot = defaultCommonRoot }) {
+export function buildPreview({ profilesDir, modifiersPath = null, mapPath = null, rolesPath = null, semanticModifiersPath = null, labelsPath = null, mfdCategoriesPath = null, mozaGrip = null, commonRoot = defaultCommonRoot }) {
   if (!profilesDir || !existsSync(profilesDir) || !statSync(profilesDir).isDirectory()) {
     throw new Error(`profiles directory not found: ${profilesDir}`);
   }
@@ -332,6 +335,7 @@ export function buildPreview({ profilesDir, modifiersPath = null, mapPath = null
   const roleOverrides = rolesPath ? JSON.parse(readFileSync(rolesPath, 'utf8')) : {};
   const semanticOverrides = semanticModifiersPath ? JSON.parse(readFileSync(semanticModifiersPath, 'utf8')) : {};
   const labelOverrides = labelsPath ? JSON.parse(readFileSync(labelsPath, 'utf8')) : {};
+  const mfdCategoryOverrides = mfdCategoriesPath ? JSON.parse(readFileSync(mfdCategoriesPath, 'utf8')) : {};
 
   let modifiers = [];
   const modifierErrors = [];
@@ -483,6 +487,27 @@ export function buildPreview({ profilesDir, modifiersPath = null, mapPath = null
 
   assignDeviceInstances(devices, rows, roleOverrides, errors);
 
+  const categorySides = new Set(['top', 'right', 'bottom', 'left']);
+  for (const device of devices.filter(({ deviceId }) => deviceId === 'tm-mfd')) {
+    const configured = mfdCategoryOverrides[device.profileKey] ?? mfdCategoryOverrides[device.profileFile];
+    if (configured === undefined) continue;
+    if (!configured || Array.isArray(configured) || typeof configured !== 'object') {
+      errors.push(`${device.profileFile}: MFD categories must be an object`);
+      continue;
+    }
+    const unknown = Object.keys(configured).filter((side) => !categorySides.has(side));
+    if (unknown.length > 0) {
+      errors.push(`${device.profileFile}: unknown MFD category side(s): ${unknown.join(', ')}`);
+      continue;
+    }
+    const invalid = Object.entries(configured).find(([, value]) => typeof value !== 'string');
+    if (invalid) {
+      errors.push(`${device.profileFile}: MFD category ${invalid[0]} must be a string`);
+      continue;
+    }
+    device.categoryLabels = { ...configured };
+  }
+
   for (const modifier of modifiers) {
     const modifierGuid = modifier.device.match(/\{([0-9A-Fa-f-]{36})\}\s*$/u)?.[1]?.toLowerCase() ?? null;
     const modifierStem = normalizedPhysicalDevice(modifier.device);
@@ -510,6 +535,7 @@ export function buildPreview({ profilesDir, modifiersPath = null, mapPath = null
     rolesPath: rolesPath ? resolve(rolesPath) : null,
     semanticModifiersPath: semanticModifiersPath ? resolve(semanticModifiersPath) : null,
     labelsPath: labelsPath ? resolve(labelsPath) : null,
+    mfdCategoriesPath: mfdCategoriesPath ? resolve(mfdCategoriesPath) : null,
     mozaGrip,
     modifiers: modifiers.map(({ name, device, key, mode, semanticModifier, profileFile, profileKey, deviceId, calloutId }) =>
       ({ name, device, key, mode, semanticModifier, profileFile, profileKey, deviceId, calloutId })),
@@ -645,6 +671,9 @@ export function buildDraftKneeboardConfig(preview, { displayName, inputModuleId,
       labels,
       modifierCallouts,
     };
+    if (device.deviceId === 'tm-mfd' && device.categoryLabels) {
+      page.categoryLabels = { ...device.categoryLabels };
+    }
 
     if (layerControls.size === 0) {
       page.controls = controls;
@@ -740,6 +769,12 @@ export function mergeConsumerConfig(draft, existing, removedProfiles = []) {
     ? `${page?.deviceId ?? ''}-${String(page.deviceInstance).replace(/^MFD/iu, '')}`.toLocaleLowerCase()
     : String(page?.deviceId ?? '').toLocaleLowerCase();
   const currentPageIdentities = new Set(currentPages.map(pageIdentity));
+  const existingPagesByIdentity = new Map((existing.pages ?? []).map((page) => [pageIdentity(page), page]));
+  for (const page of currentPages) {
+    if (page.deviceId !== 'tm-mfd' || page.categoryLabels !== undefined) continue;
+    const previous = existingPagesByIdentity.get(pageIdentity(page));
+    if (previous?.categoryLabels !== undefined) page.categoryLabels = { ...previous.categoryLabels };
+  }
   const retainedPages = (existing.pages ?? []).filter((page) => {
     const references = profileReferences(page);
     if ([...references].some((profile) => removed.has(profile))) return false;
@@ -806,6 +841,9 @@ export function writeConsumer({ preview, outputDir, displayName, inputModuleId, 
   }
   if (preview.labelsPath && existsSync(preview.labelsPath)) {
     copy(preview.labelsPath, 'config/scaffold-label-overrides.json');
+  }
+  if (preview.mfdCategoriesPath && existsSync(preview.mfdCategoriesPath)) {
+    copy(preview.mfdCategoriesPath, 'config/scaffold-mfd-category-overrides.json');
   }
 
   const draftKneeboard = buildDraftKneeboardConfig(preview, { displayName, inputModuleId, includeUiLayer });
@@ -876,6 +914,14 @@ export function writeConsumer({ preview, outputDir, displayName, inputModuleId, 
     ...merge.preservedProfiles.map((profile) => `- \`${profile}\` → preserved while absent from this scaffold session`),
     ...merge.removedProfiles.map((profile) => `- \`${profile}\` → explicitly removed`),
     '',
+    '## TM MFD categories',
+    '',
+    ...preview.devices.filter((device) => device.deviceId === 'tm-mfd').map((device) => {
+      const categories = device.categoryLabels ?? {};
+      const text = ['top', 'right', 'bottom', 'left'].map((side) => `${side}=${categories[side] ?? ''}`).join('; ');
+      return `- \`${device.profileKey}\`: ${text}`;
+    }),
+    '',
     '## Bindings',
     '',
     '| Device | Control | DCS command name | Device label | Effective label | Label source |',
@@ -930,6 +976,7 @@ export function main(argv = process.argv.slice(2)) {
     rolesPath: options.rolesPath,
     semanticModifiersPath: options.semanticModifiersPath,
     labelsPath: options.labelsPath,
+    mfdCategoriesPath: options.mfdCategoriesPath,
     mozaGrip: options.mozaGrip,
     commonRoot: options.commonRoot,
   });

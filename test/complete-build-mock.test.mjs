@@ -51,6 +51,12 @@ test('complete-build MFD page identifies the represented hardware instance', () 
 
   assert.equal(page.title, 'TM MFD — MFD3');
   assert.equal(page.deviceInstance, 'MFD3');
+  assert.deepEqual(page.categoryLabels, {
+    top: 'Jester Steerpoints',
+    right: 'Radar Control',
+    bottom: 'Radar Range',
+    left: 'Target Management',
+  });
 });
 
 test('complete-build summary uses the renderer text field for every TX row', () => {

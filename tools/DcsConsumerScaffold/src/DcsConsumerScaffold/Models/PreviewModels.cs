@@ -48,6 +48,10 @@ public sealed class PreviewDevice : INotifyPropertyChanged
     private PreviewChangeState _changeState = PreviewChangeState.NotCompared;
     private string _changeReason = "Select an output repository to compare.";
     private bool _removeRequested;
+    private string _categoryTop = string.Empty;
+    private string _categoryRight = string.Empty;
+    private string _categoryBottom = string.Empty;
+    private string _categoryLeft = string.Empty;
     [JsonPropertyName("profileFile")]
     public string? ProfileFile { get; set; }
 
@@ -116,6 +120,34 @@ public sealed class PreviewDevice : INotifyPropertyChanged
     public bool CanEdit => !IsRepositoryOnly;
 
     [JsonIgnore]
+    public bool IsMfdDevice => string.Equals(DeviceId, "tm-mfd", StringComparison.OrdinalIgnoreCase);
+
+    [JsonIgnore]
+    public string CategoryTop { get => _categoryTop; set => Set(ref _categoryTop, value ?? string.Empty); }
+
+    [JsonIgnore]
+    public string CategoryRight { get => _categoryRight; set => Set(ref _categoryRight, value ?? string.Empty); }
+
+    [JsonIgnore]
+    public string CategoryBottom { get => _categoryBottom; set => Set(ref _categoryBottom, value ?? string.Empty); }
+
+    [JsonIgnore]
+    public string CategoryLeft { get => _categoryLeft; set => Set(ref _categoryLeft, value ?? string.Empty); }
+
+    [JsonIgnore]
+    public string CategorySummary => IsMfdDevice
+        ? $"Top: {CategoryTop}; Right: {CategoryRight}; Bottom: {CategoryBottom}; Left: {CategoryLeft}"
+        : string.Empty;
+
+    public IReadOnlyDictionary<string, string> MfdCategoryLabels() => new Dictionary<string, string>(StringComparer.Ordinal)
+    {
+        ["top"] = CategoryTop,
+        ["right"] = CategoryRight,
+        ["bottom"] = CategoryBottom,
+        ["left"] = CategoryLeft,
+    };
+
+    [JsonIgnore]
     public string PreviewReason => CanPreview ? "Preview generated kneeboard" : "Resolve this device and at least one binding before previewing";
 
     public event PropertyChangedEventHandler? PropertyChanged;
@@ -125,6 +157,8 @@ public sealed class PreviewDevice : INotifyPropertyChanged
         if (EqualityComparer<T>.Default.Equals(field, value)) return false;
         field = value;
         PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(name));
+        if (name is nameof(CategoryTop) or nameof(CategoryRight) or nameof(CategoryBottom) or nameof(CategoryLeft))
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(CategorySummary)));
         return true;
     }
 }

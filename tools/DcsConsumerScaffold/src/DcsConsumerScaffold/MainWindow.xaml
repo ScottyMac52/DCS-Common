@@ -152,6 +152,18 @@
           <DataGridTextColumn Header="deviceId" Binding="{Binding DeviceId}" Width="*" IsReadOnly="True" />
           <DataGridTextColumn Header="GUID / physical instance" Binding="{Binding PhysicalInstance}" Width="1.5*" IsReadOnly="True" />
           <DataGridTextColumn Header="Role (optional)" Binding="{Binding Role, UpdateSourceTrigger=PropertyChanged}" Width="1.2*" />
+          <DataGridTemplateColumn Header="Top category" Width="125">
+            <DataGridTemplateColumn.CellTemplate><DataTemplate><TextBox Text="{Binding CategoryTop, UpdateSourceTrigger=PropertyChanged}" IsEnabled="{Binding IsMfdDevice}" ToolTip="Functional category for TM MFD OSB01–OSB05" /></DataTemplate></DataGridTemplateColumn.CellTemplate>
+          </DataGridTemplateColumn>
+          <DataGridTemplateColumn Header="Right category" Width="125">
+            <DataGridTemplateColumn.CellTemplate><DataTemplate><TextBox Text="{Binding CategoryRight, UpdateSourceTrigger=PropertyChanged}" IsEnabled="{Binding IsMfdDevice}" ToolTip="Functional category for TM MFD OSB06–OSB10" /></DataTemplate></DataGridTemplateColumn.CellTemplate>
+          </DataGridTemplateColumn>
+          <DataGridTemplateColumn Header="Bottom category" Width="125">
+            <DataGridTemplateColumn.CellTemplate><DataTemplate><TextBox Text="{Binding CategoryBottom, UpdateSourceTrigger=PropertyChanged}" IsEnabled="{Binding IsMfdDevice}" ToolTip="Functional category for TM MFD OSB11–OSB15" /></DataTemplate></DataGridTemplateColumn.CellTemplate>
+          </DataGridTemplateColumn>
+          <DataGridTemplateColumn Header="Left category" Width="125">
+            <DataGridTemplateColumn.CellTemplate><DataTemplate><TextBox Text="{Binding CategoryLeft, UpdateSourceTrigger=PropertyChanged}" IsEnabled="{Binding IsMfdDevice}" ToolTip="Functional category for TM MFD OSB16–OSB20" /></DataTemplate></DataGridTemplateColumn.CellTemplate>
+          </DataGridTemplateColumn>
           <DataGridTextColumn Header="Profile key" Binding="{Binding ProfileKey}" Width="1.5*" IsReadOnly="True" />
           <DataGridTextColumn Header="State" Binding="{Binding ChangeState}" Width="95" IsReadOnly="True" />
           <DataGridTemplateColumn Header="Remove" Width="70">

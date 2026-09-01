@@ -77,4 +77,10 @@ Consumers must apply these colors in order. Do not invent additional colors with
 
 Consumers that spread the page object into `renderSharedHardwarePage` (as F4U does) pick up coloring and the legend automatically once the kneeboard config declares modifiers and uses them on controls or layers.
 
+### Presentation callouts
+
+Use `presentation-<stable-id>` for editable visual text that does not represent a physical Lua control. The deterministic exporter emits these as `presentation:` regions with `meta-<stable-id>` text IDs. They remain deliberately separate from normal `label-*` / `lbl-*` physical callouts, so schema-v1 Lua/draw.io/SVG control parity remains exact.
+
+The TM MFD uses this contract for `mfd-category-top`, `mfd-category-right`, `mfd-category-bottom`, and `mfd-category-left`. Consumer `categoryLabels` populate those fields; blank values cover the directional watermark without creating fabricated bindings.
+
 This pattern was introduced with the WINCTRL PTO2 redesign (issue #87) and is the expected approach for future devices.

@@ -22,6 +22,7 @@ public sealed class PreviewComparisonServiceTests
                 DeviceId = "tm-mfd",
                 InstanceHint = "3",
                 BindingCount = 1,
+                CategoryTop = "Jester Steerpoints",
             };
             var row = Row("mfd3", "mfd-osb-t1", "JOY_BTN1", "command-one", "Repository label");
             var modifiers = new List<PreviewModifier>
@@ -41,6 +42,38 @@ public sealed class PreviewComparisonServiceTests
             Assert.Equal(PreviewChangeState.Unchanged, group.ChangeState);
             Assert.Contains(devices, item => item.IsRepositoryOnly && item.ProfileKey == "old-device" && item.ChangeState == PreviewChangeState.Unused);
             Assert.Contains(commands, item => item.IsRepositoryOnly && item.Command == "old-command" && item.ChangeState == PreviewChangeState.Unused);
+        }
+        finally
+        {
+            repository.Delete(recursive: true);
+        }
+    }
+
+    [Fact]
+    public void Apply_MarksMfdCategoryChangesOnThePhysicalInstance()
+    {
+        var repository = CreateRepository();
+        try
+        {
+            var service = new PreviewComparisonService();
+            var snapshot = service.Load(repository.FullName);
+            var device = new PreviewDevice
+            {
+                ProfileKey = "mfd3",
+                ProfileFile = "F16 MFD 3.diff.lua",
+                DeviceId = "tm-mfd",
+                InstanceHint = "3",
+                BindingCount = 1,
+                CategoryTop = "VR and Views",
+            };
+            var row = Row("mfd3", "mfd-osb-t1", "JOY_BTN1", "command-one", "Repository label");
+            var group = new CommandLabelGroup { Command = "command-one" };
+            group.Refresh([row]);
+
+            service.Apply(snapshot, new List<PreviewDevice> { device }, new List<PreviewModifier>(), [row], new List<CommandLabelGroup> { group });
+
+            Assert.Equal(PreviewChangeState.Changed, device.ChangeState);
+            Assert.Contains("MFD side categories changed", device.ChangeReason);
         }
         finally
         {
@@ -132,6 +165,7 @@ public sealed class PreviewComparisonServiceTests
                 {
                   "deviceId": "tm-mfd",
                   "deviceInstance": "MFD3",
+                  "categoryLabels": { "top": "Jester Steerpoints" },
                   "layers": [
                     {
                       "modifiers": ["SHIFT"],

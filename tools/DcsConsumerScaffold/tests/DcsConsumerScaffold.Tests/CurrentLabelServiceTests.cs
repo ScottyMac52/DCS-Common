@@ -20,6 +20,12 @@ public sealed class CurrentLabelServiceTests
                     {
                       "deviceId": "tm-mfd",
                       "deviceInstance": "MFD3",
+                      "categoryLabels": {
+                        "top": "Jester Steerpoints",
+                        "right": "Jester Radar",
+                        "bottom": "Radar Range",
+                        "left": "Targets"
+                      },
                       "controls": {
                         "mfd-osb-t1": {
                           "profile": "tm-mfd-3",
@@ -72,6 +78,10 @@ public sealed class CurrentLabelServiceTests
             Assert.Equal("device", missing.LabelSource);
             Assert.Equal("Shared future label", newDeviceRow.Label);
             Assert.Equal("device", newDeviceRow.LabelSource);
+            Assert.Equal("Jester Steerpoints", mfd.CategoryTop);
+            Assert.Equal("Jester Radar", mfd.CategoryRight);
+            Assert.Equal("Radar Range", mfd.CategoryBottom);
+            Assert.Equal("Targets", mfd.CategoryLeft);
         }
         finally
         {

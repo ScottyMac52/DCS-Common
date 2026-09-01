@@ -68,7 +68,8 @@ public class ScaffoldEngineServiceTests
             inputModuleId: "F-16C_50",
             kneeboardId: "F-16C_50",
             repoName: "DCS-F-16C-Components",
-            removedProfilesPath: "removed.json");
+            removedProfilesPath: "removed.json",
+            mfdCategoriesPath: "mfd-categories.json");
 
         Assert.Contains("--output-dir", args);
         Assert.Contains("out", args);
@@ -86,6 +87,8 @@ public class ScaffoldEngineServiceTests
         Assert.Contains("viper", args);
         Assert.Contains("--remove-profiles", args);
         Assert.Contains("removed.json", args);
+        Assert.Contains("--mfd-categories", args);
+        Assert.Contains("mfd-categories.json", args);
     }
 
     [Fact]
@@ -107,6 +110,23 @@ public class ScaffoldEngineServiceTests
         Assert.Equal("1c8a8840-5386-11f1-8001-444553540000", row.PhysicalInstance);
         Assert.Equal("supercharger", row.Role);
         Assert.Equal("logitech-throttle-quadrant-supercharger", row.ProfileKey);
+    }
+
+    [Fact]
+    public void PreviewDevice_ExposesIndependentMfdCategoryValues()
+    {
+        var device = new PreviewDevice
+        {
+            DeviceId = "tm-mfd",
+            CategoryTop = "Jester Steerpoints",
+            CategoryRight = "Radar",
+            CategoryBottom = "Range",
+            CategoryLeft = "Targets",
+        };
+
+        Assert.True(device.IsMfdDevice);
+        Assert.Equal("Jester Steerpoints", device.MfdCategoryLabels()["top"]);
+        Assert.Contains("Left: Targets", device.CategorySummary);
     }
 
     [Fact]

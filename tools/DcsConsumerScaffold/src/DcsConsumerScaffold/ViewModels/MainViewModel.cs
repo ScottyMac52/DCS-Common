@@ -400,7 +400,8 @@ public sealed class MainViewModel : INotifyPropertyChanged
                 removedProfiles: Devices
                     .Where(device => device.IsRepositoryOnly && device.RemoveRequested && !string.IsNullOrWhiteSpace(device.ProfileKey))
                     .Select(device => device.ProfileKey!)
-                    .ToArray());
+                    .ToArray(),
+                mfdCategories: MfdCategoryOverrides());
 
             StatusText = exitCode is 0 or 2
                 ? $"Proceed finished (exit {exitCode}). See SCAFFOLD-REPORT.md under the output folder.{Environment.NewLine}{stdout}{Environment.NewLine}{stderr}".Trim()
@@ -506,7 +507,9 @@ public sealed class MainViewModel : INotifyPropertyChanged
 
     private void Device_PropertyChanged(object? sender, PropertyChangedEventArgs e)
     {
-        if (e.PropertyName == nameof(PreviewDevice.Role)) RecomparePreview();
+        if (e.PropertyName is nameof(PreviewDevice.Role) or nameof(PreviewDevice.CategoryTop) or
+            nameof(PreviewDevice.CategoryRight) or nameof(PreviewDevice.CategoryBottom) or
+            nameof(PreviewDevice.CategoryLeft)) RecomparePreview();
     }
 
     private void UntrackRows()
@@ -523,6 +526,13 @@ public sealed class MainViewModel : INotifyPropertyChanged
     public IReadOnlyDictionary<string, string> LabelOverrides() => Rows
         .Where(row => !string.IsNullOrWhiteSpace(row.BindingId) && row.LabelSource != "dcs")
         .ToDictionary(row => row.BindingId!, row => row.Label ?? string.Empty, StringComparer.Ordinal);
+
+    public IReadOnlyDictionary<string, IReadOnlyDictionary<string, string>> MfdCategoryOverrides() => Devices
+        .Where(device => !device.IsRepositoryOnly && device.IsMfdDevice && !string.IsNullOrWhiteSpace(device.ProfileKey))
+        .ToDictionary(
+            device => device.ProfileKey!,
+            device => device.MfdCategoryLabels(),
+            StringComparer.OrdinalIgnoreCase);
 
     public CurrentLabelImportResult ImportCurrentLabels(PreviewDevice device)
     {
@@ -567,6 +577,7 @@ public sealed class MainViewModel : INotifyPropertyChanged
             string.IsNullOrWhiteSpace(InputModuleId) ? "UiLayer" : InputModuleId.Trim(),
             string.IsNullOrWhiteSpace(KneeboardId) ? "UiLayer" : KneeboardId.Trim(),
             device.ProfileKey,
+            MfdCategoryOverrides(),
             includeUiLayer: !IsUiLayerImport);
     }
 

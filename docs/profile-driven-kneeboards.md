@@ -43,6 +43,36 @@ MOZA profiles may expose the cardinal POV directions as `JOY_BTN_POV1_U/R/D/L`, 
 
 See [Consumer repository setup](consumer-repository-setup.md#generic-moza-ab9-grip-selection) for copyable CLI and WPF instructions.
 
+## TM MFD side categories
+
+TM MFD pages can replace the fixed directional words in the center display with optional functional categories for each five-button side. These values are presentation metadata: they do not represent DCS commands or physical controls and do not affect binding counts, modifiers, or UI Layer applicability.
+
+```json
+{
+  "file": "02-TM-MFD-1",
+  "deviceId": "tm-mfd",
+  "deviceInstance": "MFD1",
+  "categoryLabels": {
+    "top": "Jester Steerpoints",
+    "right": "Jester Radar",
+    "bottom": "Radar Range",
+    "left": "Target Management"
+  }
+}
+```
+
+Only `top`, `right`, `bottom`, and `left` are accepted. Missing or blank values render blank. A modifier layer may override selected sides; unspecified sides inherit the page values and an explicit empty string clears an inherited category.
+
+```json
+{
+  "id": "shifted",
+  "categoryLabels": { "top": "VR and View Controls" },
+  "controls": {}
+}
+```
+
+For the F-14B(U), a useful MFD 1 top category is **Jester Steerpoints**, grouping Set SP 1, Set SP 2, Set SP 3, Set FP, and Set IP.
+
 ## Modifier layers (overview)
 
 Set `modifiersFile` to import native DCS modifier declarations and map stable consumer aliases through `modifiers`. A page may define `layers`; each layer resolves the same physical controls using an exact modifier chord and becomes a deterministic output page.
