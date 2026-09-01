@@ -43,7 +43,9 @@ public sealed class CurrentLabelService
                 continue;
             }
 
-            var result = ApplyPage(SelectPage(pages, device), selectedRows);
+            var selectedPage = SelectPage(pages, device);
+            ApplyMfdCategories(selectedPage, device);
+            var result = ApplyPage(selectedPage, selectedRows);
             currentCount += result.CurrentCount;
             sharedCount += result.SharedHardwareCount;
         }
@@ -77,6 +79,7 @@ public sealed class CurrentLabelService
             .Where(page => StringEquals(Property(page, "deviceId"), device.DeviceId))
             .ToList();
         var page = SelectPage(pages, device);
+        ApplyMfdCategories(page, device);
         var selectedRows = RowsForDevice(device, rows);
         if (selectedRows.Count == 0)
             throw new InvalidOperationException($"No preview rows belong to {device.ProfileKey}.");
@@ -241,6 +244,18 @@ public sealed class CurrentLabelService
                 if (defined) labels[new BindingKey(control.Name, key, command)] = label;
             }
         }
+    }
+
+    private static void ApplyMfdCategories(JsonElement page, PreviewDevice device)
+    {
+        if (!device.IsMfdDevice ||
+            !page.TryGetProperty("categoryLabels", out var categories) ||
+            categories.ValueKind != JsonValueKind.Object) return;
+
+        device.CategoryTop = Property(categories, "top") ?? string.Empty;
+        device.CategoryRight = Property(categories, "right") ?? string.Empty;
+        device.CategoryBottom = Property(categories, "bottom") ?? string.Empty;
+        device.CategoryLeft = Property(categories, "left") ?? string.Empty;
     }
 
     private static CurrentLabelImportResult ApplyPage(JsonElement page, IReadOnlyList<PreviewRow> selectedRows)

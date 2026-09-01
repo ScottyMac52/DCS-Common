@@ -114,7 +114,9 @@ function wrapCalloutLabel(value, max = CALLOUT_WRAP) {
   return [lines[0], `${lines.slice(1).join(' ').slice(0, max - 1).trimEnd()}…`];
 }
 
-export function loadSharedHardware(deviceId, { commonRoot = resolveDcsCommonRoot(), labels = {}, labelColors = {} } = {}) {
+export function loadSharedHardware(deviceId, {
+  commonRoot = resolveDcsCommonRoot(), labels = {}, labelColors = {}, categoryLabels = {},
+} = {}) {
   validateDisplayLabels(labels);
   const hardwareRoot = join(commonRoot, 'assets/shared/hardware');
   const manifest = JSON.parse(readFileSync(join(hardwareRoot, 'manifest.json'), 'utf8'));
@@ -130,6 +132,7 @@ export function loadSharedHardware(deviceId, { commonRoot = resolveDcsCommonRoot
     svg = `${svg.slice(0, insertionPoint)}${masks}\n${svg.slice(insertionPoint)}`;
   }
   const calloutIds = [...svg.matchAll(/<text id="lbl-([^"]+)"/g)].map((match) => match[1]);
+  const presentationIds = [...svg.matchAll(/<text id="meta-([^"]+)"/g)].map((match) => match[1]);
   const values = Array.isArray(labels)
     ? Object.fromEntries(calloutIds.map((id, index) => [id, labels[index] ?? '']))
     : labels;
@@ -166,11 +169,28 @@ export function loadSharedHardware(deviceId, { commonRoot = resolveDcsCommonRoot
       return `${tag}${tspans}${close}`;
     });
   }
-  return { device, svg, calloutIds };
+  const categoryValues = Object.fromEntries(Object.entries(categoryLabels ?? {}).map(([side, value]) => [
+    side.startsWith('mfd-category-') ? side : `mfd-category-${side}`,
+    value,
+  ]));
+  for (const id of presentationIds) {
+    const configuredValue = categoryValues[id] ?? '';
+    svg = svg.replace(new RegExp(`(<text id="meta-${id}"[^>]*>)[\\s\\S]*?(</text>)`), (match, open, close) => {
+      const tag = applyCalloutType(open, CALLOUT_FONT_SIZE);
+      const wrapped = wrapCalloutLabel(configuredValue, 16);
+      if (wrapped.length <= 1) return `${tag}${escapeXml(wrapped[0] ?? '')}${close}`;
+      const x = tag.match(/\bx="([^"]+)"/)?.[1] ?? '0';
+      const tspans = wrapped.map((line, index) =>
+        `<tspan x="${escapeXml(x)}" dy="${index === 0 ? -8 : 16}" font-size="${CALLOUT_FONT_SIZE}" font-weight="700">${escapeXml(line)}</tspan>`
+      ).join('');
+      return `${tag}${tspans}${close}`;
+    });
+  }
+  return { device, svg, calloutIds, presentationIds };
 }
 
-export function renderSharedHardwarePage({ deviceId, labels = {}, labelColors = {}, legend = [], title, kicker = '', footer = '', provenance, commonRoot }) {
-  const { device, svg, calloutIds } = loadSharedHardware(deviceId, { commonRoot, labels, labelColors });
+export function renderSharedHardwarePage({ deviceId, labels = {}, labelColors = {}, categoryLabels = {}, legend = [], title, kicker = '', footer = '', provenance, commonRoot }) {
+  const { device, svg, calloutIds } = loadSharedHardware(deviceId, { commonRoot, labels, labelColors, categoryLabels });
   const encoded = Buffer.from(svg).toString('base64');
   const pageTitle = escapeXml(title ?? device.label);
   const pageFooter = provenance ? formatProvenanceFooter({ commonRoot, ...provenance }) : footer;

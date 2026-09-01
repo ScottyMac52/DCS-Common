@@ -83,6 +83,7 @@ test('MFD has separate primary and shifted OSB fields plus eight rocker position
   assert.equal((xml.match(/id="label-mfd-osb-(?![^\"]*-shifted)/g) ?? []).length, 20);
   assert.equal((xml.match(/id="label-mfd-osb-[^\"]+-shifted"/g) ?? []).length, 20);
   assert.equal((xml.match(/id="label-mfd-rocker-/g) ?? []).length, 8);
+  assert.equal((xml.match(/id="presentation-mfd-category-(?:top|right|bottom|left)"/g) ?? []).length, 4);
   assert.equal((xml.match(/id="(?:anchor|connector)-mfd-/g) ?? []).length, 0);
 });
 

@@ -85,7 +85,7 @@ function endpoint(label, anchor) {
   return { x: cx, y: dy > 0 ? label.y + label.height : label.y };
 }
 
-function renderLabelBox(lines, label, id) {
+function renderLabelBox(lines, label, id, textPrefix = 'lbl') {
   const style = label.style || '';
   const fillColor = styleValue(style, 'fillColor') || '#1e293b';
   const fontColor = styleValue(style, 'fontColor') || '#f1f5f9';
@@ -99,7 +99,7 @@ function renderLabelBox(lines, label, id) {
 
   // Vertical centering approximation for pure-text overlays and chips
   const textY = label.y + Math.round(Number(label.height) / 2) + 4;
-  lines.push(`  <text id=\"lbl-${esc(id)}\" x=\"${label.x + label.width / 2}\" y=\"${textY}\" text-anchor=\"middle\" font-family=\"Arial,sans-serif\" font-size=\"${esc(fontSize)}\" fill=\"${esc(fontColor)}\">${esc(label.value)}</text>`);
+  lines.push(`  <text id=\"${textPrefix}-${esc(id)}\" x=\"${label.x + label.width / 2}\" y=\"${textY}\" text-anchor=\"middle\" font-family=\"Arial,sans-serif\" font-size=\"${esc(fontSize)}\" fill=\"${esc(fontColor)}\">${esc(label.value)}</text>`);
 
   // Optional button-number watermark (controlled by export-config.json or --watermarks).
   // Data lives in the draw.io label style as buttonNumber=N.
@@ -136,6 +136,7 @@ function render(device, xml) {
   const images = all.filter((cell) => cell.id.startsWith('hardware-image-'));
   const connectors = all.filter((cell) => cell.id.startsWith('connector-'));
   const labels = all.filter((cell) => cell.id.startsWith('label-'));
+  const presentations = all.filter((cell) => cell.id.startsWith('presentation-'));
   const masks = all.filter((cell) => cell.id.startsWith('mask-'));
   const footer = byId.get('footer');
   // Callout style: connectors + anchors. Box-only style: label-* without connectors
@@ -187,6 +188,13 @@ function render(device, xml) {
     const id = label.id.startsWith('label-') ? label.id.slice('label-'.length) : label.id;
     lines.push(`  <!-- box:${id} -->`);
     renderLabelBox(lines, label, id);
+  }
+
+  // Presentation fields are editable text regions, not physical controls.
+  for (const presentation of presentations) {
+    const id = presentation.id.slice('presentation-'.length);
+    lines.push(`  <!-- presentation:${id} -->`);
+    renderLabelBox(lines, presentation, id, 'meta');
   }
 
   lines.push(`  <text x=\"${width / 2}\" y=\"${height - 8}\" text-anchor=\"middle\" font-family=\"Arial,sans-serif\" font-size=\"12\" fill=\"#475569\">${esc(footer.value)}</text>`);

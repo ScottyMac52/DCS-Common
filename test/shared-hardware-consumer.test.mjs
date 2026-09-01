@@ -12,6 +12,26 @@ test('consumer API resolves stable device IDs and fills shared labels', () => {
   assert.match(loaded.svg, /Test binding/);
 });
 
+test('TM MFD renders non-bindable side categories independently from physical controls', () => {
+  const loaded = loadSharedHardware('tm-mfd', {
+    commonRoot,
+    categoryLabels: {
+      top: 'Jester Steerpoints',
+      right: 'Jester Radar',
+      bottom: 'Radar Range',
+      left: 'Target Management',
+    },
+  });
+  assert.equal(loaded.calloutIds.length, 48, '20 base + 20 shifted OSBs + 8 rockers remain physical callouts');
+  assert.deepEqual(loaded.presentationIds, [
+    'mfd-category-top', 'mfd-category-right', 'mfd-category-bottom', 'mfd-category-left',
+  ]);
+  assert.match(loaded.svg, /id="meta-mfd-category-top"[^>]*>[\s\S]*Jester/);
+  assert.match(loaded.svg, /Steerpoints/);
+  assert.match(loaded.svg, />Target</);
+  assert.match(loaded.svg, />Management</);
+});
+
 test('consumer API resolves AVA Base + F-16C to the TM Warthog Joystick', () => {
   const loaded = loadSharedHardware('ava-base-f16c', { commonRoot });
   assert.equal(loaded.device.id, 'tm-warthog-grip');

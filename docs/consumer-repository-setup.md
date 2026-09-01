@@ -43,6 +43,8 @@ The importer treats the canonical hardware model, the GUID-qualified physical in
 
 The WPF preview lists every physical instance. For repeated hardware, optionally enter roles such as `left-tank-control` and `right-tank-control` before selecting **Proceed**. With no role, the scaffold uses a stable GUID-backed profile key. Existing numbered devices such as MFD 1–4 keep their established aliases.
 
+For every detected TM MFD instance, the same grid exposes **Top category**, **Right category**, **Bottom category**, and **Left category**. These fields describe the functional group assigned to each five-button side. Current values are loaded from the destination repository, remain independent for MFD1–MFD4, and are preserved during rescaffolding. Clear a field intentionally to render that category blank. Category text is not added to the command-label grid because it is page metadata rather than a DCS binding.
+
 CLI users can provide the same choices with `--roles`:
 
 ```json

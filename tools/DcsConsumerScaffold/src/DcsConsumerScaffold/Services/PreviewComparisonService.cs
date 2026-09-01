@@ -11,7 +11,8 @@ public sealed record RepositoryDevice(
     string DeviceId,
     string? Instance,
     string? Role,
-    HashSet<string> Bindings);
+    HashSet<string> Bindings,
+    IReadOnlyDictionary<string, string> CategoryLabels);
 
 public sealed record RepositoryModifier(
     string SemanticName,
@@ -55,10 +56,13 @@ public sealed class PreviewComparisonService
                 var deviceId = Property(page, "deviceId") ?? string.Empty;
                 var instance = Property(page, "deviceInstance");
                 var role = Property(page, "role");
-                ReadScope(page, deviceId, instance, role, profiles, devices, commands, usedModifiers);
+                var pageCategories = ReadCategoryLabels(page);
+                ReadScope(page, deviceId, instance, role, pageCategories, profiles, devices, commands, usedModifiers);
                 if (page.TryGetProperty("layers", out var layers) && layers.ValueKind == JsonValueKind.Array)
                     foreach (var layer in layers.EnumerateArray())
-                        ReadScope(layer, deviceId, instance, role, profiles, devices, commands, usedModifiers);
+                        ReadScope(layer, deviceId, instance, role,
+                            MergeCategories(pageCategories, ReadCategoryLabels(layer)),
+                            profiles, devices, commands, usedModifiers);
             }
         }
 
@@ -67,7 +71,8 @@ public sealed class PreviewComparisonService
             true,
             false,
             devices.Values.Select(item => new RepositoryDevice(
-                item.ProfileKey, item.ProfileFile, item.DeviceId, item.Instance, item.Role, item.Bindings)).ToList(),
+                item.ProfileKey, item.ProfileFile, item.DeviceId, item.Instance, item.Role, item.Bindings,
+                item.CategoryLabels)).ToList(),
             modifiers,
             commands.ToDictionary(
                 pair => pair.Key,
@@ -122,6 +127,7 @@ public sealed class PreviewComparisonService
             if (!Same(device.DeviceId, current.DeviceId)) reasons.Add($"deviceId changed: {current.DeviceId} → {device.DeviceId}");
             if (!Same(device.InstanceHint, NormalizeInstance(current.Instance))) reasons.Add("physical instance changed");
             if (!Same(device.Role, current.Role)) reasons.Add($"role changed: {current.Role ?? "(none)"} → {device.Role ?? "(none)"}");
+            if (!SameCategories(device, current.CategoryLabels)) reasons.Add("MFD side categories changed");
             if (!loadedBindings.SetEquals(current.Bindings)) reasons.Add("effective bindings changed");
             var state = reasons.Count == 0 ? PreviewChangeState.Unchanged : PreviewChangeState.Changed;
             var reason = reasons.Count == 0 ? "Physical device instance is unchanged." : string.Join("; ", reasons);
@@ -131,7 +137,7 @@ public sealed class PreviewComparisonService
 
         foreach (var current in snapshot.Devices.Where(item => !matched.Contains(item)))
         {
-            devices.Add(new PreviewDevice
+            var repositoryOnly = new PreviewDevice
             {
                 ProfileKey = current.ProfileKey,
                 ProfileFile = current.ProfileFile,
@@ -144,7 +150,12 @@ public sealed class PreviewComparisonService
                 IsRepositoryOnly = true,
                 ChangeState = PreviewChangeState.Unused,
                 ChangeReason = "Definition exists in the repository but not in the loaded input.",
-            });
+            };
+            repositoryOnly.CategoryTop = current.CategoryLabels.GetValueOrDefault("top", string.Empty);
+            repositoryOnly.CategoryRight = current.CategoryLabels.GetValueOrDefault("right", string.Empty);
+            repositoryOnly.CategoryBottom = current.CategoryLabels.GetValueOrDefault("bottom", string.Empty);
+            repositoryOnly.CategoryLeft = current.CategoryLabels.GetValueOrDefault("left", string.Empty);
+            devices.Add(repositoryOnly);
         }
     }
 
@@ -260,6 +271,7 @@ public sealed class PreviewComparisonService
         string deviceId,
         string? instance,
         string? role,
+        IReadOnlyDictionary<string, string> categoryLabels,
         IReadOnlyDictionary<string, string> profiles,
         IDictionary<string, MutableDevice> devices,
         IDictionary<string, MutableCommand> commands,
@@ -289,6 +301,7 @@ public sealed class PreviewComparisonService
                     device = new(profile, profileFile, deviceId, instance, role);
                     devices[profile] = device;
                 }
+                foreach (var (side, label) in categoryLabels) device.CategoryLabels[side] = label;
                 var referenceModifiers = ReadStringArray(reference, "modifiers").ToArray();
                 var effectiveModifiers = referenceModifiers.Length > 0 ? referenceModifiers : scopeModifiers;
                 var signature = BindingSignature(control.Name, key, command, effectiveModifiers);
@@ -357,6 +370,32 @@ public sealed class PreviewComparisonService
         if (!element.TryGetProperty(name, out var values) || values.ValueKind != JsonValueKind.Array) return [];
         return values.EnumerateArray().Where(value => value.ValueKind == JsonValueKind.String)
             .Select(value => value.GetString() ?? string.Empty).Where(value => value.Length > 0).ToArray();
+    }
+
+    private static IReadOnlyDictionary<string, string> ReadCategoryLabels(JsonElement element)
+    {
+        var result = new Dictionary<string, string>(StringComparer.Ordinal);
+        if (!element.TryGetProperty("categoryLabels", out var categories) || categories.ValueKind != JsonValueKind.Object)
+            return result;
+        foreach (var property in categories.EnumerateObject())
+            if (property.Value.ValueKind == JsonValueKind.String) result[property.Name] = property.Value.GetString() ?? string.Empty;
+        return result;
+    }
+
+    private static IReadOnlyDictionary<string, string> MergeCategories(
+        IReadOnlyDictionary<string, string> baseline,
+        IReadOnlyDictionary<string, string> overrides)
+    {
+        var result = new Dictionary<string, string>(baseline, StringComparer.Ordinal);
+        foreach (var (side, label) in overrides) result[side] = label;
+        return result;
+    }
+
+    private static bool SameCategories(PreviewDevice device, IReadOnlyDictionary<string, string> current)
+    {
+        var loaded = device.MfdCategoryLabels();
+        return loaded.All(pair => Same(pair.Value, current.GetValueOrDefault(pair.Key, string.Empty))) &&
+               current.All(pair => Same(pair.Value, loaded.GetValueOrDefault(pair.Key, string.Empty)));
     }
 
     private static RepositoryDevice? MatchDevice(PreviewDevice device, IReadOnlyList<RepositoryDevice> candidates) =>
@@ -428,6 +467,7 @@ public sealed class PreviewComparisonService
         public string? Instance { get; } = instance;
         public string? Role { get; } = role;
         public HashSet<string> Bindings { get; } = new(StringComparer.Ordinal);
+        public Dictionary<string, string> CategoryLabels { get; } = new(StringComparer.Ordinal);
     }
 
     private sealed class MutableCommand(string command)

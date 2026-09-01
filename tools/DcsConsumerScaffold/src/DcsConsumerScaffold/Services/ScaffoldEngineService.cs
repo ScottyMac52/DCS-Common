@@ -100,6 +100,7 @@ public sealed class ScaffoldEngineService
         string kneeboardId,
         string? repoName = null,
         IReadOnlyCollection<string>? removedProfiles = null,
+        IReadOnlyDictionary<string, IReadOnlyDictionary<string, string>>? mfdCategories = null,
         bool includeUiLayer = true,
         CancellationToken cancellationToken = default)
     {
@@ -112,6 +113,7 @@ public sealed class ScaffoldEngineService
         string? semanticPath = null;
         string? labelsPath = null;
         string? removedProfilesPath = null;
+        string? mfdCategoriesPath = null;
         try
         {
             if (instanceRoles is { Count: > 0 })
@@ -123,9 +125,10 @@ public sealed class ScaffoldEngineService
             semanticPath = await WriteTemporaryJsonAsync("semantic-modifiers", semanticModifiers, cancellationToken);
             labelsPath = await WriteTemporaryJsonAsync("labels", labels, cancellationToken);
             removedProfilesPath = await WriteTemporaryJsonArrayAsync("removed-profiles", removedProfiles, cancellationToken);
+            mfdCategoriesPath = await WriteTemporaryObjectAsync("mfd-categories", mfdCategories, cancellationToken);
 
             var args = BuildWriteArguments(
-                script, profilesDir, modifiersPath, mozaGrip, rolesPath, root, outputDir, displayName, inputModuleId, kneeboardId, repoName, semanticPath, labelsPath, removedProfilesPath, includeUiLayer);
+                script, profilesDir, modifiersPath, mozaGrip, rolesPath, root, outputDir, displayName, inputModuleId, kneeboardId, repoName, semanticPath, labelsPath, removedProfilesPath, mfdCategoriesPath, includeUiLayer);
             var (exitCode, stdout, stderr) = await RunNodeAsync(root, args, cancellationToken).ConfigureAwait(false);
             return (stdout, stderr, exitCode);
         }
@@ -138,6 +141,7 @@ public sealed class ScaffoldEngineService
             DeleteTemporary(semanticPath);
             DeleteTemporary(labelsPath);
             DeleteTemporary(removedProfilesPath);
+            DeleteTemporary(mfdCategoriesPath);
         }
     }
 
@@ -153,6 +157,7 @@ public sealed class ScaffoldEngineService
         string inputModuleId,
         string kneeboardId,
         string profileKey,
+        IReadOnlyDictionary<string, IReadOnlyDictionary<string, string>>? mfdCategories = null,
         bool includeUiLayer = true,
         CancellationToken cancellationToken = default)
     {
@@ -166,7 +171,7 @@ public sealed class ScaffoldEngineService
             var (_, stderr, exitCode) = await RunWriteAsync(
                 profilesDir, modifiersPath, mozaGrip, instanceRoles, semanticModifiers, labels, root,
                 temporaryRoot, displayName, inputModuleId, kneeboardId,
-                includeUiLayer: includeUiLayer, cancellationToken: cancellationToken);
+                mfdCategories: mfdCategories, includeUiLayer: includeUiLayer, cancellationToken: cancellationToken);
             if (exitCode is not (0 or 2)) throw new InvalidOperationException($"Temporary scaffold failed: {stderr}");
 
             var script = Path.Combine(root, "scripts", "render-scaffold-preview.mjs");
@@ -207,6 +212,17 @@ public sealed class ScaffoldEngineService
     private static async Task<string?> WriteTemporaryJsonArrayAsync(
         string stem,
         IReadOnlyCollection<string>? values,
+        CancellationToken cancellationToken)
+    {
+        if (values is not { Count: > 0 }) return null;
+        var path = Path.Combine(Path.GetTempPath(), $"dcs-scaffold-{stem}-{Guid.NewGuid():N}.json");
+        await File.WriteAllTextAsync(path, JsonSerializer.Serialize(values), cancellationToken).ConfigureAwait(false);
+        return path;
+    }
+
+    private static async Task<string?> WriteTemporaryObjectAsync<T>(
+        string stem,
+        IReadOnlyDictionary<string, T>? values,
         CancellationToken cancellationToken)
     {
         if (values is not { Count: > 0 }) return null;
@@ -316,6 +332,7 @@ public sealed class ScaffoldEngineService
         string? semanticModifiersPath = null,
         string? labelsPath = null,
         string? removedProfilesPath = null,
+        string? mfdCategoriesPath = null,
         bool includeUiLayer = true)
     {
         var list = new List<string>
@@ -354,6 +371,7 @@ public sealed class ScaffoldEngineService
         AddOptionalFile(list, "--semantic-modifiers", semanticModifiersPath);
         AddOptionalFile(list, "--labels", labelsPath);
         AddOptionalFile(list, "--remove-profiles", removedProfilesPath);
+        AddOptionalFile(list, "--mfd-categories", mfdCategoriesPath);
         if (!includeUiLayer) list.Add("--exclude-ui-layer");
 
         if (!string.IsNullOrWhiteSpace(repoName))

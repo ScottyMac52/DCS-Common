@@ -145,5 +145,17 @@
   <!-- box:mfd-rocker-con-down -->
   <rect x="742" y="608" width="49" height="49" rx="4" fill="#292929" stroke="none" stroke-width="1.5"/>
   <text id="lbl-mfd-rocker-con-down" x="766.5" y="637" text-anchor="middle" font-family="Arial,sans-serif" font-size="8" fill="#ffffff">CON down</text>
+  <!-- presentation:mfd-category-top -->
+  <rect x="414" y="278" width="132" height="58" rx="4" fill="#ffffff" stroke="none" stroke-width="1.5"/>
+  <text id="meta-mfd-category-top" x="480" y="311" text-anchor="middle" font-family="Arial,sans-serif" font-size="10" fill="#000000"></text>
+  <!-- presentation:mfd-category-right -->
+  <rect x="518" y="340" width="150" height="58" rx="4" fill="#ffffff" stroke="none" stroke-width="1.5"/>
+  <text id="meta-mfd-category-right" x="593" y="373" text-anchor="middle" font-family="Arial,sans-serif" font-size="10" fill="#000000"></text>
+  <!-- presentation:mfd-category-bottom -->
+  <rect x="414" y="392" width="132" height="58" rx="4" fill="#ffffff" stroke="none" stroke-width="1.5"/>
+  <text id="meta-mfd-category-bottom" x="480" y="425" text-anchor="middle" font-family="Arial,sans-serif" font-size="10" fill="#000000"></text>
+  <!-- presentation:mfd-category-left -->
+  <rect x="292" y="340" width="150" height="58" rx="4" fill="#ffffff" stroke="none" stroke-width="1.5"/>
+  <text id="meta-mfd-category-left" x="367" y="373" text-anchor="middle" font-family="Arial,sans-serif" font-size="10" fill="#000000"></text>
   <text x="480" y="712" text-anchor="middle" font-family="Arial,sans-serif" font-size="12" fill="#475569">TM MFD - 28 buttons + 0 axes</text>
 </svg>

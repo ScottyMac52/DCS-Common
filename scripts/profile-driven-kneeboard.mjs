@@ -171,6 +171,24 @@ function sameChord(left, right) {
   return left.length === right.length && left.every((value, index) => value === right[index]);
 }
 
+const MFD_CATEGORY_SIDES = new Set(['top', 'right', 'bottom', 'left']);
+
+function validateMfdCategoryLabels(value, context) {
+  if (value === undefined) return {};
+  if (!value || Array.isArray(value) || typeof value !== 'object') {
+    throw new Error(`${context}: categoryLabels must be an object.`);
+  }
+  const result = {};
+  for (const [side, label] of Object.entries(value)) {
+    if (!MFD_CATEGORY_SIDES.has(side)) {
+      throw new Error(`${context}: unknown TM MFD category side: ${side}. Expected top, right, bottom, or left.`);
+    }
+    if (typeof label !== 'string') throw new Error(`${context}: categoryLabels.${side} must be a string.`);
+    result[side] = label;
+  }
+  return result;
+}
+
 export function loadProfileDrivenConfig(configPath, options = {}) {
   const consumerRoot = resolve(options.consumerRoot ?? dirname(resolve(configPath)));
   const commonRoot = resolve(options.commonRoot ?? resolveDcsCommonRoot(consumerRoot));
@@ -198,8 +216,16 @@ export function loadProfileDrivenConfig(configPath, options = {}) {
   // page.separateModifierPages = true to restore the old one-file-per-layer behavior.
   const expandedPages = [];
   for (const page of config.pages) {
+    if ((page.categoryLabels || page.layers?.some((layer) => layer.categoryLabels)) && page.deviceId !== 'tm-mfd') {
+      throw new Error(`${page.file}: categoryLabels are supported only for tm-mfd pages.`);
+    }
     if (!page.layers?.length) {
-      expandedPages.push({ ...page, modifierIds: page.modifiers ?? [], controlModifiers: {} });
+      expandedPages.push({
+        ...page,
+        categoryLabels: validateMfdCategoryLabels(page.categoryLabels, page.file),
+        modifierIds: page.modifiers ?? [],
+        controlModifiers: {},
+      });
       continue;
     }
     if (page.separateModifierPages) {
@@ -213,6 +239,10 @@ export function loadProfileDrivenConfig(configPath, options = {}) {
           kicker: layer.kicker ?? page.kicker,
           controls: layer.controls ?? {},
           labels: layer.labels ?? {},
+          categoryLabels: validateMfdCategoryLabels(
+            { ...(page.categoryLabels ?? {}), ...(layer.categoryLabels ?? {}) },
+            `${page.file}:${layer.id}`,
+          ),
           modifierIds: layer.modifiers ?? [],
           controlModifiers: {},
         });
@@ -222,6 +252,7 @@ export function loadProfileDrivenConfig(configPath, options = {}) {
     // Combined page: merge all layers onto page.file
     const controls = {};
     const labels = { ...(page.labels ?? {}) };
+    const categoryLabels = { ...validateMfdCategoryLabels(page.categoryLabels, page.file) };
     const controlModifiers = {}; // controlId -> modifier id list for coloring
     const usedModifierIds = [];
     for (const layer of page.layers) {
@@ -245,6 +276,7 @@ export function loadProfileDrivenConfig(configPath, options = {}) {
           ...references.flatMap((item) => item.modifiers),
         ])];
       }
+      Object.assign(categoryLabels, validateMfdCategoryLabels(layer.categoryLabels, `${page.file}:${layer.id}`));
     }
     expandedPages.push({
       ...page,
@@ -254,6 +286,7 @@ export function loadProfileDrivenConfig(configPath, options = {}) {
       kicker: page.kicker,
       controls,
       labels,
+      categoryLabels,
       modifierIds: usedModifierIds,
       controlModifiers,
     });

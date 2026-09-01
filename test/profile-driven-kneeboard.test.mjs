@@ -97,6 +97,39 @@ test('expands base and S3 layers and resolves the same OSB by exact modifier cho
   assert.equal(config.pages[0].modifiers[0].mode, 'hold');
 });
 
+test('TM MFD category labels inherit and override across layers', () => {
+  const consumerRoot = mkdtempSync(join(tmpdir(), 'dcs-mfd-categories-'));
+  writeFileSync(join(consumerRoot, 'profile.diff.lua'), `local diff = { ["keyDiffs"] = {
+    ["base"] = { ["added"] = { [1] = { ["key"] = "JOY_BTN1" }, }, ["name"] = "Set SP 1", },
+  } } return diff`);
+  writeFileSync(join(consumerRoot, 'kneeboard.json'), JSON.stringify({
+    schemaVersion: 1, aircraft: 'F-14B(U)', profiles: { mfd1: 'profile.diff.lua' },
+    pages: [{
+      file: 'MFD1', deviceId: 'tm-mfd', categoryLabels: { top: 'Jester Steerpoints', left: 'Targets' },
+      layers: [
+        { id: 'base', controls: { 'mfd-osb-t1': { profile: 'mfd1', key: 'JOY_BTN1' } } },
+        { id: 'shifted', categoryLabels: { top: 'VR and Views', left: '' }, controls: {} },
+      ],
+    }],
+  }));
+  const config = loadProfileDrivenConfig('kneeboard.json', { consumerRoot, commonRoot });
+  assert.deepEqual(config.pages[0].categoryLabels, { top: 'VR and Views', left: '' });
+});
+
+test('TM MFD category validation rejects unknown sides and non-MFD use', () => {
+  const consumerRoot = mkdtempSync(join(tmpdir(), 'dcs-invalid-categories-'));
+  writeFileSync(join(consumerRoot, 'profile.diff.lua'), `local diff = { ["keyDiffs"] = {
+    ["base"] = { ["added"] = { [1] = { ["key"] = "JOY_BTN1" }, }, ["name"] = "One", },
+  } } return diff`);
+  const writeConfig = (page) => writeFileSync(join(consumerRoot, 'kneeboard.json'), JSON.stringify({
+    schemaVersion: 1, aircraft: 'Test', profiles: { p: 'profile.diff.lua' }, pages: [page],
+  }));
+  writeConfig({ file: 'MFD', deviceId: 'tm-mfd', categoryLabels: { diagonal: 'Nope' }, controls: { 'mfd-osb-t1': { profile: 'p', key: 'JOY_BTN1' } } });
+  assert.throws(() => loadProfileDrivenConfig('kneeboard.json', { consumerRoot, commonRoot }), /unknown TM MFD category side: diagonal/);
+  writeConfig({ file: 'GRIP', deviceId: 'vkb-f14-gunfighter', categoryLabels: { top: 'Nope' }, controls: { 'vkb-trigger': { profile: 'p', key: 'JOY_BTN1' } } });
+  assert.throws(() => loadProfileDrivenConfig('kneeboard.json', { consumerRoot, commonRoot }), /supported only for tm-mfd/);
+});
+
 test('rejects ambiguous bindings for the same key and modifier chord', () => {
   const consumerRoot = mkdtempSync(join(tmpdir(), 'dcs-modifier-conflict-'));
   writeFileSync(join(consumerRoot, 'profile.diff.lua'), `local diff = { ["keyDiffs"] = {

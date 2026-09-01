@@ -61,6 +61,14 @@ export function buildCompleteMock(commonRoot) {
       deviceInstance: device.id === 'tm-mfd' ? 'MFD3' : null,
       title: device.id === 'tm-mfd' ? `${device.label.toUpperCase()} — MFD3` : device.label.toUpperCase(),
       kicker: 'TEST DEVICE',
+      ...(device.id === 'tm-mfd' ? {
+        categoryLabels: {
+          top: 'Jester Steerpoints',
+          right: 'Radar Control',
+          bottom: 'Radar Range',
+          left: 'Target Management',
+        },
+      } : {}),
       labels,
       controls: references,
       allowUnrenderedControls: true,
