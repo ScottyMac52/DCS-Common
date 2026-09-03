@@ -122,10 +122,13 @@ test('built-in MOZA grip selection applies only to a generic AB9 profile', () =>
   const viper = buildPreview({ profilesDir, mozaGrip: 'viper', commonRoot });
   assert.equal(viper.devices[0].deviceId, 'moza-ab9-warthog-grip');
   assert.equal(viper.devices[0].mappingSource, 'ui-selection');
-  assert.equal(
-    buildDraftKneeboardConfig(viper, { displayName: 'F-16C', inputModuleId: 'F-16C_50' }).pages[0].deviceId,
-    'moza-ab9-warthog-grip',
-  );
+  const viperConfig = buildDraftKneeboardConfig(viper, {
+    displayName: 'F-16C',
+    inputModuleId: 'F-16C_50',
+  });
+  assert.equal(viperConfig.pages[0].deviceId, 'moza-ab9-warthog-grip');
+  assert.equal(viperConfig.pages[0].controls['warthog-grip-stage1'].label, 'Trigger');
+  assert.equal(viperConfig.pages[0].labels, undefined, 'plain binding labels must not be duplicated');
 
   const hornet = buildPreview({ profilesDir, mozaGrip: 'hornet', commonRoot });
   assert.equal(hornet.devices[0].deviceId, 'moza-ab9-hornet-grip');
@@ -244,8 +247,21 @@ test('MOZA POV bindings resolve base and modified callouts for both grips', () =
     const modifierCallout = expected.grip === 'hornet'
       ? 'hornet-grip-nws-undesignate'
       : 'warthog-grip-paddle';
-    assert.equal(config.pages[0].labels[modifierCallout], 'SHIFT / MODIFIER');
+    assert.deepEqual(
+      config.pages[0].labels,
+      { [modifierCallout]: 'SHIFT / MODIFIER' },
+      'page labels must contain only non-binding modifier callouts',
+    );
     assert.equal(config.pages[0].modifierCallouts[modifierCallout], 'LOOK_MODE');
+    assert.ok(config.pages[0].layers.every((layer) => layer.labels === undefined));
+    assert.equal(
+      config.pages[0].layers[0].controls[expected.callouts.JOY_BTN_POV1_U].label,
+      'Trim, nose up',
+    );
+    assert.equal(
+      config.pages[0].layers[1].controls[expected.callouts.JOY_BTN_POV1_L].label,
+      'Glance left',
+    );
     assert.equal(
       config.pages[0].layers[0].controls[expected.callouts.JOY_BTN_POV1_U].key,
       'JOY_BTN_POV1_U',
