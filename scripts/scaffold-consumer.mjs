@@ -622,12 +622,11 @@ export function buildDraftKneeboardConfig(preview, { displayName, inputModuleId,
       if (!row.chord) {
         if (!controls[row.calloutId]) {
           controls[row.calloutId] = reference;
-          labels[row.calloutId] = effectiveLabel;
         }
       } else {
         const layerId = row.semanticChord || row.chord;
         if (!layerControls.has(layerId)) {
-          layerControls.set(layerId, { controls: {}, labels: {}, nativeChords: new Set() });
+          layerControls.set(layerId, { controls: {}, nativeChords: new Set() });
         }
         const layer = layerControls.get(layerId);
         layer.nativeChords.add(row.chord);
@@ -637,7 +636,6 @@ export function buildDraftKneeboardConfig(preview, { displayName, inputModuleId,
         });
         if (!layer.controls[row.calloutId]) {
           layer.controls[row.calloutId] = reference;
-          layer.labels[row.calloutId] = effectiveLabel;
         } else {
           const existing = Array.isArray(layer.controls[row.calloutId])
             ? layer.controls[row.calloutId]
@@ -666,11 +664,11 @@ export function buildDraftKneeboardConfig(preview, { displayName, inputModuleId,
       title,
       kicker: device.role ? `ROLE ${device.role.toUpperCase()}` : device.instanceHint ? `INSTANCE ${device.instanceHint}` : 'SCAFFOLD DRAFT',
       _comment:
-        'labels default to the imported DCS command name and remain editable; deviceLabel contains the canonical DCS-Common hardware label. ' +
-        'keep callout IDs in sync with controls. You can also set "label" on a controls entry.',
-      labels,
+        'profile-driven labels are edited on each controls entry; page labels are reserved for non-binding callouts. ' +
+        'keep callout IDs in sync with controls.',
       modifierCallouts,
     };
+    if (Object.keys(labels).length > 0) page.labels = labels;
     if (device.deviceId === 'tm-mfd' && device.categoryLabels) {
       page.categoryLabels = { ...device.categoryLabels };
     }
@@ -679,7 +677,7 @@ export function buildDraftKneeboardConfig(preview, { displayName, inputModuleId,
       page.controls = controls;
     } else {
       const layers = [
-        { id: 'base', controls, labels: { ...labels } },
+        { id: 'base', controls },
       ];
       for (const [semanticChord, layerMap] of layerControls) {
         const nativeChords = [...layerMap.nativeChords].sort();
@@ -689,7 +687,6 @@ export function buildDraftKneeboardConfig(preview, { displayName, inputModuleId,
           title: `${title} • ${semanticChord}`,
           activators: nativeChords,
           controls: layerMap.controls,
-          labels: layerMap.labels,
         });
       }
       page.layers = layers;
