@@ -197,9 +197,10 @@ Notes:
 - `summaryPages` are consumer-owned text/layout pages rendered through `kneeboard-renderer.mjs`.
 - `pages` with a `deviceId` are shared-hardware pages rendered through `shared-hardware-consumer.mjs`.
 - **Labels vs controls**
-  - **ID-keyed object** (`"labels": { "callout-id": "Text" }`): preferred; works with or without `controls`.
+  - **`controls[callout-id].label`**: canonical override for a profile-driven binding. Display text defaults to the DCS binding name when this optional field is absent. The scaffolder initializes it from the selected effective label and serializes it only once.
+  - **ID-keyed object** (`"labels": { "callout-id": "Text" }`): use for callouts without a profile-driven control reference, such as a modifier callout. Legacy configurations that contain binding labels here remain supported.
   - **Ordered array** (`"labels": ["Text", …]`): aligned to shared-SVG callout document order; **only** when the page has **no** `controls`. Combining an array with `controls` fails the build (`profile-driven controls require ID-keyed labels`).
-  - **`controls`**: profile-driven wiring (`profile` + `key`). Display text defaults to the DCS binding name; optional per-control `"label"` shortens it. Scaffold pre-fills an ID-keyed `labels` map from those names for easy edits.
+  - **`controls`**: profile-driven wiring (`profile` + `key`, plus optional `command` when disambiguation is required).
 - Callout labels must describe **functions**, not physical button prefixes (`JOY_BTN12: ...` is rejected).
 - Keep output filenames and page order stable after publication because OpenKneeboard and user documentation may depend on them.
 
