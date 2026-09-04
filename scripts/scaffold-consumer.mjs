@@ -750,8 +750,24 @@ export function mergeModifierSources(existingSource, observedSource) {
   return lines.join('\n');
 }
 
+function ensureMfdCategoryLabels(pages = []) {
+  for (const page of pages) {
+    if (page.deviceId !== 'tm-mfd') continue;
+    const categories = page.categoryLabels ?? {};
+    page.categoryLabels = {
+      top: categories.top ?? '',
+      right: categories.right ?? '',
+      bottom: categories.bottom ?? '',
+      left: categories.left ?? '',
+    };
+  }
+}
+
 export function mergeConsumerConfig(draft, existing, removedProfiles = []) {
-  if (!existing || typeof existing !== 'object') return { config: draft, preservedProfiles: [], removedProfiles: [] };
+  if (!existing || typeof existing !== 'object') {
+    ensureMfdCategoryLabels(draft.pages);
+    return { config: draft, preservedProfiles: [], removedProfiles: [] };
+  }
   const removed = new Set(removedProfiles);
   const currentProfiles = new Set(Object.keys(draft.profiles ?? {}));
   const preservedProfiles = Object.keys(existing.profiles ?? {})
@@ -780,16 +796,7 @@ export function mergeConsumerConfig(draft, existing, removedProfiles = []) {
     return !currentPageIdentities.has(pageIdentity(page));
   });
   config.pages = [...currentPages, ...retainedPages];
-  for (const page of config.pages) {
-    if (page.deviceId !== 'tm-mfd') continue;
-    const categories = page.categoryLabels ?? {};
-    page.categoryLabels = {
-      top: categories.top ?? '',
-      right: categories.right ?? '',
-      bottom: categories.bottom ?? '',
-      left: categories.left ?? '',
-    };
-  }
+  ensureMfdCategoryLabels(config.pages);
   config.semanticModifiers = { ...(existing.semanticModifiers ?? {}), ...(draft.semanticModifiers ?? {}) };
   if (existing.modifiers || draft.modifiers) config.modifiers = { ...(existing.modifiers ?? {}), ...(draft.modifiers ?? {}) };
   if (!draft.modifiersFile && existing.modifiersFile) config.modifiersFile = existing.modifiersFile;
