@@ -13,6 +13,7 @@ import {
   loadCalloutCatalog,
   parseArgs,
   buildDraftKneeboardConfig,
+  mergeConsumerConfig,
   mergeModifierSources,
   writeConsumer,
 } from '../scripts/scaffold-consumer.mjs';
@@ -490,6 +491,57 @@ test('buildPreview emits base and modifier rows with hold mode', () => {
   assert.deepEqual(shifted.modifierModes, ['hold']);
   assert.equal(shifted.status, 'OK');
   assert.equal(preview.modifiers[0].mode, 'hold');
+});
+
+test('consumer merge guarantees complete TM MFD category fields', () => {
+  const blankCategories = { top: '', right: '', bottom: '', left: '' };
+  const newDraft = {
+    profiles: {},
+    pages: [
+      { file: '01-MFD', deviceId: 'tm-mfd', deviceInstance: 'MFD1' },
+      { file: '02-TPR', deviceId: 'tm-tpr' },
+    ],
+    semanticModifiers: {},
+  };
+  const created = mergeConsumerConfig(newDraft, null);
+  assert.deepEqual(created.config.pages[0].categoryLabels, blankCategories);
+  assert.equal(created.config.pages[1].categoryLabels, undefined, 'non-MFD pages remain unchanged');
+
+  const existing = {
+    profiles: {},
+    pages: [{
+      file: '01-MFD',
+      deviceId: 'tm-mfd',
+      deviceInstance: 'MFD1',
+      categoryLabels: {
+        top: 'Jester Steerpoints',
+        right: 'Jester Radar',
+        bottom: 'Radar Range',
+        left: 'Targets',
+      },
+    }],
+    semanticModifiers: {},
+  };
+  const refreshDraft = {
+    profiles: {},
+    pages: [{ file: '01-MFD', deviceId: 'tm-mfd', deviceInstance: 'MFD1' }],
+    semanticModifiers: {},
+  };
+  const refreshed = mergeConsumerConfig(refreshDraft, existing);
+  assert.deepEqual(refreshed.config.pages[0].categoryLabels, existing.pages[0].categoryLabels);
+
+  const clearDraft = {
+    profiles: {},
+    pages: [{
+      file: '01-MFD',
+      deviceId: 'tm-mfd',
+      deviceInstance: 'MFD1',
+      categoryLabels: { top: '', right: '', bottom: '', left: '' },
+    }],
+    semanticModifiers: {},
+  };
+  const cleared = mergeConsumerConfig(clearDraft, existing);
+  assert.deepEqual(cleared.config.pages[0].categoryLabels, blankCategories);
 });
 
 test('scaffold applies and reports per-instance TM MFD categories', () => {
