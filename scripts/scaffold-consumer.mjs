@@ -780,6 +780,16 @@ export function mergeConsumerConfig(draft, existing, removedProfiles = []) {
     return !currentPageIdentities.has(pageIdentity(page));
   });
   config.pages = [...currentPages, ...retainedPages];
+  for (const page of config.pages) {
+    if (page.deviceId !== 'tm-mfd') continue;
+    const categories = page.categoryLabels ?? {};
+    page.categoryLabels = {
+      top: categories.top ?? '',
+      right: categories.right ?? '',
+      bottom: categories.bottom ?? '',
+      left: categories.left ?? '',
+    };
+  }
   config.semanticModifiers = { ...(existing.semanticModifiers ?? {}), ...(draft.semanticModifiers ?? {}) };
   if (existing.modifiers || draft.modifiers) config.modifiers = { ...(existing.modifiers ?? {}), ...(draft.modifiers ?? {}) };
   if (!draft.modifiersFile && existing.modifiersFile) config.modifiersFile = existing.modifiersFile;
