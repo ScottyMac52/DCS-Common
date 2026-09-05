@@ -6,6 +6,7 @@
  * Write:   --output-dir (+ identity flags) materializes a consumer skeleton.
  * Requires Node.js on PATH.
  */
+import { createHash } from 'node:crypto';
 import {
   readdirSync,
   readFileSync,
@@ -579,6 +580,7 @@ function aliasFromModifierName(name) {
 /** Draft kneeboard.json from preview rows (base chord only for controls; layers stubbed when modifiers exist). */
 export function buildDraftKneeboardConfig(preview, { displayName, inputModuleId, includeUiLayer = true }) {
   const profiles = {};
+  const canonicalLabels = {};
   for (const device of preview.devices) {
     if (!device.deviceId) continue;
     const key = profileKeyFromDevice(device);
@@ -593,7 +595,6 @@ export function buildDraftKneeboardConfig(preview, { displayName, inputModuleId,
       mode: mod.mode,
       semanticModifier: mod.semanticModifier,
       deviceId: mod.deviceId,
-      label: mod.name,
     };
   }
 
@@ -617,7 +618,9 @@ export function buildDraftKneeboardConfig(preview, { displayName, inputModuleId,
       // Include keyDiffs and axisDiffs so throttle/stick/rudder axes are scaffolded.
 
       const effectiveLabel = row.label ?? row.defaultLabel ?? row.deviceLabel ?? '';
-      const reference = { profile: profileKey, key: row.key, command: row.command, label: effectiveLabel };
+      const labelId = `binding-${createHash('sha256').update(row.bindingId).digest('hex').slice(0, 16)}`;
+      canonicalLabels[labelId] = effectiveLabel;
+      const reference = { profile: profileKey, key: row.key, command: row.command, labelId };
 
       if (!row.chord) {
         if (!controls[row.calloutId]) {
@@ -664,7 +667,7 @@ export function buildDraftKneeboardConfig(preview, { displayName, inputModuleId,
       title,
       kicker: device.role ? `ROLE ${device.role.toUpperCase()}` : device.instanceHint ? `INSTANCE ${device.instanceHint}` : 'SCAFFOLD DRAFT',
       _comment:
-        'profile-driven labels are edited on each controls entry; page labels are reserved for non-binding callouts. ' +
+        'binding labels are stored once in the root labels dictionary; page labels are reserved for non-binding callouts. ' +
         'keep callout IDs in sync with controls.',
       modifierCallouts,
     };
@@ -700,6 +703,7 @@ export function buildDraftKneeboardConfig(preview, { displayName, inputModuleId,
     aircraft: displayName,
     includeUiLayer: true,
     profiles,
+    labels: canonicalLabels,
     pages: [...pagesByDevice.values()],
     semanticModifiers: Object.fromEntries(
       preview.semanticModifiers.map((id) => [id, preview.modifiers
@@ -849,15 +853,6 @@ export function writeConsumer({ preview, outputDir, displayName, inputModuleId, 
   }
   if (preview.rolesPath && existsSync(preview.rolesPath)) {
     copy(preview.rolesPath, 'config/scaffold-instance-roles.json');
-  }
-  if (preview.semanticModifiersPath && existsSync(preview.semanticModifiersPath)) {
-    copy(preview.semanticModifiersPath, 'config/scaffold-semantic-modifiers.json');
-  }
-  if (preview.labelsPath && existsSync(preview.labelsPath)) {
-    copy(preview.labelsPath, 'config/scaffold-label-overrides.json');
-  }
-  if (preview.mfdCategoriesPath && existsSync(preview.mfdCategoriesPath)) {
-    copy(preview.mfdCategoriesPath, 'config/scaffold-mfd-category-overrides.json');
   }
 
   const draftKneeboard = buildDraftKneeboardConfig(preview, { displayName, inputModuleId, includeUiLayer });
