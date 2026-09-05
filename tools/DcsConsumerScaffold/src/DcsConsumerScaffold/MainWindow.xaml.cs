@@ -1,9 +1,11 @@
+using System.ComponentModel;
 using System.IO;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using DcsConsumerScaffold.Models;
+using DcsConsumerScaffold.Services;
 using DcsConsumerScaffold.ViewModels;
 using Microsoft.Win32;
 
@@ -12,12 +14,125 @@ namespace DcsConsumerScaffold;
 public partial class MainWindow : Window
 {
     private readonly MainViewModel _viewModel = new();
+    private readonly ScaffoldSolutionService _solutionService = new();
 
     public MainWindow()
     {
         InitializeComponent();
         Title = ApplicationDisplayTitle.Format(typeof(MainWindow).Assembly.GetName().Version);
         DataContext = _viewModel;
+        Closing += MainWindow_Closing;
+    }
+
+
+    private void OpenSolution_Click(object sender, RoutedEventArgs e)
+    {
+        if (!ConfirmDiscardChanges()) return;
+        var dialog = new OpenFileDialog
+        {
+            Title = "Open scaffolding solution",
+            Filter = "DCS scaffolding solutions (*.dcs-scaffold.json)|*.dcs-scaffold.json|JSON files (*.json)|*.json|All files (*.*)|*.*",
+        };
+        if (dialog.ShowDialog(this) != true) return;
+
+        try
+        {
+            var document = _solutionService.Load(dialog.FileName);
+            _viewModel.LoadSolution(document, dialog.FileName);
+        }
+        catch (Exception ex)
+        {
+            MessageBox.Show(this, ex.Message, "Unable to open solution", MessageBoxButton.OK, MessageBoxImage.Error);
+        }
+    }
+
+    private void SaveSolution_Click(object sender, RoutedEventArgs e) => SaveCurrentSolution();
+
+    private void SaveSolutionAs_Click(object sender, RoutedEventArgs e) => SaveSolutionAs();
+
+    private void DeleteSolution_Click(object sender, RoutedEventArgs e)
+    {
+        if (string.IsNullOrWhiteSpace(_viewModel.SolutionPath)) return;
+        var fullPath = Path.GetFullPath(_viewModel.SolutionPath);
+        var answer = MessageBox.Show(this,
+            $"Permanently delete only this scaffolding solution JSON?{Environment.NewLine}{Environment.NewLine}{fullPath}",
+            "Delete scaffolding solution",
+            MessageBoxButton.YesNo,
+            MessageBoxImage.Warning);
+        if (answer != MessageBoxResult.Yes) return;
+
+        try
+        {
+            _solutionService.Delete(fullPath);
+            _viewModel.MarkSolutionDeleted();
+        }
+        catch (Exception ex)
+        {
+            MessageBox.Show(this, ex.Message, "Unable to delete solution", MessageBoxButton.OK, MessageBoxImage.Error);
+        }
+    }
+
+    private bool SaveCurrentSolution()
+    {
+        if (string.IsNullOrWhiteSpace(_viewModel.SolutionPath)) return SaveSolutionAs();
+        return SaveSolution(_viewModel.SolutionPath);
+    }
+
+    private bool SaveSolutionAs()
+    {
+        var suggestedName = string.IsNullOrWhiteSpace(_viewModel.DisplayName)
+            ? "scaffold"
+            : string.Concat(_viewModel.DisplayName.Select(ch => Path.GetInvalidFileNameChars().Contains(ch) ? '-' : ch));
+        var dialog = new SaveFileDialog
+        {
+            Title = "Save scaffolding solution",
+            Filter = "DCS scaffolding solutions (*.dcs-scaffold.json)|*.dcs-scaffold.json|JSON files (*.json)|*.json",
+            DefaultExt = ".dcs-scaffold.json",
+            AddExtension = true,
+            OverwritePrompt = true,
+            FileName = $"{suggestedName}.dcs-scaffold.json",
+        };
+        return dialog.ShowDialog(this) == true && SaveSolution(dialog.FileName);
+    }
+
+    private bool SaveSolution(string path)
+    {
+        try
+        {
+            var document = _viewModel.CaptureSolution();
+            if (string.IsNullOrWhiteSpace(document.Name))
+                document.Name = Path.GetFileNameWithoutExtension(path);
+            _solutionService.Save(path, document);
+            _viewModel.MarkSolutionSaved(path);
+            _viewModel.StatusText = $"Saved scaffolding solution '{Path.GetFullPath(path)}'.";
+            return true;
+        }
+        catch (Exception ex)
+        {
+            MessageBox.Show(this, ex.Message, "Unable to save solution", MessageBoxButton.OK, MessageBoxImage.Error);
+            return false;
+        }
+    }
+
+    private bool ConfirmDiscardChanges()
+    {
+        if (!_viewModel.IsSolutionDirty) return true;
+        var answer = MessageBox.Show(this,
+            "The scaffolding solution has unsaved changes. Save them first?",
+            "Unsaved scaffolding solution",
+            MessageBoxButton.YesNoCancel,
+            MessageBoxImage.Warning);
+        return answer switch
+        {
+            MessageBoxResult.Yes => SaveCurrentSolution(),
+            MessageBoxResult.No => true,
+            _ => false,
+        };
+    }
+
+    private void MainWindow_Closing(object? sender, CancelEventArgs e)
+    {
+        if (!ConfirmDiscardChanges()) e.Cancel = true;
     }
 
     private void BrowseProfiles_Click(object sender, RoutedEventArgs e)
