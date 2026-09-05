@@ -755,10 +755,10 @@ function ensureMfdCategoryLabels(pages = []) {
     if (page.deviceId !== 'tm-mfd') continue;
     const categories = page.categoryLabels ?? {};
     page.categoryLabels = {
-      top: categories.top ?? '',
-      right: categories.right ?? '',
-      bottom: categories.bottom ?? '',
-      left: categories.left ?? '',
+      top: categories.top?.trim() || 'TOP',
+      right: categories.right?.trim() || 'RIGHT',
+      bottom: categories.bottom?.trim() || 'BOTTOM',
+      left: categories.left?.trim() || 'LEFT',
     };
   }
 }
