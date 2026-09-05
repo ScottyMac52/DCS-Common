@@ -45,7 +45,7 @@ public sealed class CurrentLabelService
 
             var selectedPage = SelectPage(pages, device);
             ApplyMfdCategories(selectedPage, device);
-            var result = ApplyPage(selectedPage, selectedRows);
+            var result = ApplyPage(selectedPage, selectedRows, ReadCanonicalLabels(document.RootElement));
             currentCount += result.CurrentCount;
             sharedCount += result.SharedHardwareCount;
         }
@@ -83,7 +83,7 @@ public sealed class CurrentLabelService
         var selectedRows = RowsForDevice(device, rows);
         if (selectedRows.Count == 0)
             throw new InvalidOperationException($"No preview rows belong to {device.ProfileKey}.");
-        return ApplyPage(page, selectedRows);
+        return ApplyPage(page, selectedRows, ReadCanonicalLabels(document.RootElement));
     }
 
     public CurrentLabelImportResult ApplyUiLayer(
@@ -211,7 +211,16 @@ public sealed class CurrentLabelService
             $"The destination repository has multiple {device.DeviceId} pages and none uniquely matches {device.ProfileKey}.");
     }
 
-    private static void ReadScope(JsonElement scope, IDictionary<BindingKey, string?> labels)
+    private static Dictionary<string, string?> ReadCanonicalLabels(JsonElement root)
+    {
+        var result = new Dictionary<string, string?>(StringComparer.Ordinal);
+        if (!root.TryGetProperty("labels", out var labels) || labels.ValueKind != JsonValueKind.Object) return result;
+        foreach (var property in labels.EnumerateObject())
+            if (property.Value.ValueKind == JsonValueKind.String) result[property.Name] = property.Value.GetString();
+        return result;
+    }
+
+    private static void ReadScope(JsonElement scope, IDictionary<BindingKey, string?> labels, IReadOnlyDictionary<string, string?> canonicalLabels)
     {
         var scopeLabels = new Dictionary<string, string?>(StringComparer.Ordinal);
         if (scope.TryGetProperty("labels", out var labelElement) && labelElement.ValueKind == JsonValueKind.Object)
@@ -240,7 +249,12 @@ public sealed class CurrentLabelService
                 var defined = reference.TryGetProperty("label", out var referenceLabel) &&
                     referenceLabel.ValueKind == JsonValueKind.String;
                 if (defined) label = referenceLabel.GetString();
-                else defined = scopeLabels.TryGetValue(control.Name, out label);
+                else
+                {
+                    var labelId = Property(reference, "labelId");
+                    defined = !string.IsNullOrWhiteSpace(labelId) && canonicalLabels.TryGetValue(labelId, out label);
+                }
+                if (!defined) defined = scopeLabels.TryGetValue(control.Name, out label);
                 if (defined) labels[new BindingKey(control.Name, key, command)] = label;
             }
         }
@@ -258,13 +272,13 @@ public sealed class CurrentLabelService
         device.CategoryLeft = Property(categories, "left") ?? string.Empty;
     }
 
-    private static CurrentLabelImportResult ApplyPage(JsonElement page, IReadOnlyList<PreviewRow> selectedRows)
+    private static CurrentLabelImportResult ApplyPage(JsonElement page, IReadOnlyList<PreviewRow> selectedRows, IReadOnlyDictionary<string, string?> canonicalLabels)
     {
         var current = new Dictionary<BindingKey, string?>();
-        ReadScope(page, current);
+        ReadScope(page, current, canonicalLabels);
         if (page.TryGetProperty("layers", out var layers) && layers.ValueKind == JsonValueKind.Array)
         {
-            foreach (var layer in layers.EnumerateArray()) ReadScope(layer, current);
+            foreach (var layer in layers.EnumerateArray()) ReadScope(layer, current, canonicalLabels);
         }
 
         var currentCount = 0;
