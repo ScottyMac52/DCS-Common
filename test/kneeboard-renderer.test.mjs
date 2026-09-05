@@ -74,3 +74,30 @@ test('renders positioned callouts with exact control anchors', async () => {
   assert.match(svg, /BTN 25 \/ 26/);
   assert.match(svg, /Time Accel \/ Decel/);
 });
+
+
+test('renders the extended summary accent palette', async () => {
+  const outputDir = mkdtempSync(join(tmpdir(), 'dcs-common-accents-'));
+  const accentConfig = {
+    pages: [{
+      type: 'summary',
+      file: '01-ACCENTS',
+      title: 'MANUFACTURER ACCENTS',
+      kicker: 'COLOR PALETTE',
+      items: [
+        { key: 'TM', text: 'Thrustmaster', accent: 'blue' },
+        { key: 'WIN', text: 'WINCTRL', accent: 'cyan' },
+        { key: 'VKB', text: 'VKB', accent: 'orange' },
+        { key: 'OYT', text: 'OnYourTwelve', accent: 'purple' },
+        { key: 'MOZA', text: 'MOZA', accent: 'red' },
+        { key: 'OTHER', text: 'Other', accent: 'green' },
+      ],
+    }],
+  };
+
+  await renderKneeboard({ config: accentConfig, outputDir, rootDir: resolve(__dirname, '..') });
+  const svg = readFileSync(join(outputDir, '01-ACCENTS.svg'), 'utf8');
+  for (const color of ['#579dff', '#46d8ff', '#ff9d45', '#bd7cff', '#ff6b76', '#5fda91']) {
+    assert.match(svg, new RegExp(color));
+  }
+});

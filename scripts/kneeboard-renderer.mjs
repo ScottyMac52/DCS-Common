@@ -12,6 +12,20 @@ try {
 const scriptDir = dirname(fileURLToPath(import.meta.url));
 const rootDir = resolve(scriptDir, '..');
 
+const SUMMARY_ACCENTS = Object.freeze({
+  cyan: { fill: '#15314e', stroke: '#46d8ff' },
+  gold: { fill: '#3e2d12', stroke: '#ffc95c' },
+  red: { fill: '#38131c', stroke: '#ff6b76' },
+  blue: { fill: '#142b52', stroke: '#579dff' },
+  orange: { fill: '#412511', stroke: '#ff9d45' },
+  purple: { fill: '#301b46', stroke: '#bd7cff' },
+  green: { fill: '#153526', stroke: '#5fda91' },
+});
+
+function summaryAccent(name) {
+  return SUMMARY_ACCENTS[name] || SUMMARY_ACCENTS.cyan;
+}
+
 function esc(value) {
   return String(value)
     .replaceAll('&', '&amp;')
@@ -63,9 +77,7 @@ function summaryPage(page, index, pageCount) {
   const cards = page.items.map((entry, itemIndex) => {
     const x = 96 + (itemIndex % 2) * 480;
     const y = 220 + Math.floor(itemIndex / 2) * 170;
-    const accent = entry.accent || 'cyan';
-    const fill = accent === 'red' ? '#38131c' : accent === 'gold' ? '#3e2d12' : '#15314e';
-    const stroke = accent === 'red' ? '#ff6b76' : accent === 'gold' ? '#ffc95c' : '#46d8ff';
+    const { fill, stroke } = summaryAccent(entry.accent);
     const lines = wrap(entry.text, 28, 2);
     return `<g>
       <rect x="${x}" y="${y}" width="420" height="130" rx="16" fill="${fill}" stroke="${stroke}" stroke-width="2"/>
