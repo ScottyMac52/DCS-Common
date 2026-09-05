@@ -1,3 +1,5 @@
+using System.IO;
+using Xunit;
 using DcsConsumerScaffold.Services;
 
 namespace DcsConsumerScaffold.Tests;
