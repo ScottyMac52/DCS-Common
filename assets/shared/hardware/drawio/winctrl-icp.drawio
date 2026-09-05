@@ -86,7 +86,7 @@
           <mxGeometry height="10" width="10" x="688" y="345.2" as="geometry" />
         </mxCell>
         <mxCell id="label-winctrl-icp-btn-09" parent="1" style="rounded=1;arcSize=18;whiteSpace=wrap;html=1;fillColor=#1e293b;strokeColor=#00bfff;strokeWidth=1.5;fontColor=#f1f5f9;fontFamily=Arial;fontSize=10;align=center;verticalAlign=middle;" value="Button 9 — ICP key 3" vertex="1">
-          <mxGeometry height="27" width="120" x="270" y="219" as="geometry" />
+          <mxGeometry height="27" width="120" x="270" y="218" as="geometry" />
         </mxCell>
         <mxCell id="connector-winctrl-icp-btn-09" edge="1" parent="1" source="label-winctrl-icp-btn-09" style="endArrow=none;html=1;strokeColor=#00bfff;strokeWidth=1.5;dashed=1;dashPattern=5 3;opacity=75;" target="anchor-winctrl-icp-btn-09" value="">
           <mxGeometry relative="1" as="geometry" />
@@ -94,8 +94,8 @@
         <mxCell id="anchor-winctrl-icp-btn-10" parent="1" style="ellipse;whiteSpace=wrap;html=1;fillColor=#00bfff;strokeColor=#0f172a;strokeWidth=1.5;" value="" vertex="1">
           <mxGeometry height="10" width="10" x="742" y="345.2" as="geometry" />
         </mxCell>
-        <mxCell id="label-winctrl-icp-btn-10" parent="1" style="rounded=1;arcSize=18;whiteSpace=wrap;html=1;fillColor=#1e293b;strokeColor=#00bfff;strokeWidth=1.5;fontColor=#f1f5f9;fontFamily=Arial;fontSize=10;align=center;verticalAlign=middle;" value="Button 10 — ICP key 4" vertex="1">
-          <mxGeometry height="27" width="120" x="10" y="260" as="geometry" />
+        <mxCell id="label-winctrl-icp-btn-10" parent="1" style="rounded=1;arcSize=18;whiteSpace=wrap;html=1;fillColor=#1e293b;strokeColor=#00bfff;strokeWidth=1.5;fontColor=#f1f5f9;fontFamily=Arial;fontSize=10;align=center;verticalAlign=middle;" value="Button 10 — RCL" vertex="1">
+          <mxGeometry height="27" width="120" x="400" y="218" as="geometry" />
         </mxCell>
         <mxCell id="connector-winctrl-icp-btn-10" edge="1" parent="1" source="label-winctrl-icp-btn-10" style="endArrow=none;html=1;strokeColor=#00bfff;strokeWidth=1.5;dashed=1;dashPattern=5 3;opacity=75;" target="anchor-winctrl-icp-btn-10" value="">
           <mxGeometry relative="1" as="geometry" />
@@ -103,8 +103,8 @@
         <mxCell id="anchor-winctrl-icp-btn-11" parent="1" style="ellipse;whiteSpace=wrap;html=1;fillColor=#00bfff;strokeColor=#0f172a;strokeWidth=1.5;" value="" vertex="1">
           <mxGeometry height="10" width="10" x="607" y="389" as="geometry" />
         </mxCell>
-        <mxCell id="label-winctrl-icp-btn-11" parent="1" style="rounded=1;arcSize=18;whiteSpace=wrap;html=1;fillColor=#1e293b;strokeColor=#00bfff;strokeWidth=1.5;fontColor=#f1f5f9;fontFamily=Arial;fontSize=10;align=center;verticalAlign=middle;" value="Button 11 — ICP key 5" vertex="1">
-          <mxGeometry height="27" width="120" x="140" y="260" as="geometry" />
+        <mxCell id="label-winctrl-icp-btn-11" parent="1" style="rounded=1;arcSize=18;whiteSpace=wrap;html=1;fillColor=#1e293b;strokeColor=#00bfff;strokeWidth=1.5;fontColor=#f1f5f9;fontFamily=Arial;fontSize=10;align=center;verticalAlign=middle;" value="Button 11 — ICP key 4" vertex="1">
+          <mxGeometry height="27" width="120" x="10" y="260" as="geometry" />
         </mxCell>
         <mxCell id="connector-winctrl-icp-btn-11" edge="1" parent="1" source="label-winctrl-icp-btn-11" style="endArrow=none;html=1;strokeColor=#00bfff;strokeWidth=1.5;dashed=1;dashPattern=5 3;opacity=75;" target="anchor-winctrl-icp-btn-11" value="">
           <mxGeometry relative="1" as="geometry" />
@@ -112,8 +112,8 @@
         <mxCell id="anchor-winctrl-icp-btn-12" parent="1" style="ellipse;whiteSpace=wrap;html=1;fillColor=#00bfff;strokeColor=#0f172a;strokeWidth=1.5;" value="" vertex="1">
           <mxGeometry height="10" width="10" x="644" y="388.5" as="geometry" />
         </mxCell>
-        <mxCell id="label-winctrl-icp-btn-12" parent="1" style="rounded=1;arcSize=18;whiteSpace=wrap;html=1;fillColor=#1e293b;strokeColor=#00bfff;strokeWidth=1.5;fontColor=#f1f5f9;fontFamily=Arial;fontSize=10;align=center;verticalAlign=middle;" value="Button 12 — ICP key 6" vertex="1">
-          <mxGeometry height="27" width="120" x="270" y="260" as="geometry" />
+        <mxCell id="label-winctrl-icp-btn-12" parent="1" style="rounded=1;arcSize=18;whiteSpace=wrap;html=1;fillColor=#1e293b;strokeColor=#00bfff;strokeWidth=1.5;fontColor=#f1f5f9;fontFamily=Arial;fontSize=10;align=center;verticalAlign=middle;" value="Button 12 — ICP key 5" vertex="1">
+          <mxGeometry height="27" width="120" x="140" y="260" as="geometry" />
         </mxCell>
         <mxCell id="connector-winctrl-icp-btn-12" edge="1" parent="1" source="label-winctrl-icp-btn-12" style="endArrow=none;html=1;strokeColor=#00bfff;strokeWidth=1.5;dashed=1;dashPattern=5 3;opacity=75;" target="anchor-winctrl-icp-btn-12" value="">
           <mxGeometry relative="1" as="geometry" />
@@ -121,8 +121,8 @@
         <mxCell id="anchor-winctrl-icp-btn-13" parent="1" style="ellipse;whiteSpace=wrap;html=1;fillColor=#00bfff;strokeColor=#0f172a;strokeWidth=1.5;" value="" vertex="1">
           <mxGeometry height="10" width="10" x="688" y="389" as="geometry" />
         </mxCell>
-        <mxCell id="label-winctrl-icp-btn-13" parent="1" style="rounded=1;arcSize=18;whiteSpace=wrap;html=1;fillColor=#1e293b;strokeColor=#00bfff;strokeWidth=1.5;fontColor=#f1f5f9;fontFamily=Arial;fontSize=10;align=center;verticalAlign=middle;" value="Button 13 — ICP key 7" vertex="1">
-          <mxGeometry height="27" width="120" x="10" y="301.2" as="geometry" />
+        <mxCell id="label-winctrl-icp-btn-13" parent="1" style="rounded=1;arcSize=18;whiteSpace=wrap;html=1;fillColor=#1e293b;strokeColor=#00bfff;strokeWidth=1.5;fontColor=#f1f5f9;fontFamily=Arial;fontSize=10;align=center;verticalAlign=middle;" value="Button 13 — ICP key 6" vertex="1">
+          <mxGeometry height="27" width="120" x="270" y="260" as="geometry" />
         </mxCell>
         <mxCell id="connector-winctrl-icp-btn-13" edge="1" parent="1" source="label-winctrl-icp-btn-13" style="endArrow=none;html=1;strokeColor=#00bfff;strokeWidth=1.5;dashed=1;dashPattern=5 3;opacity=75;" target="anchor-winctrl-icp-btn-13" value="">
           <mxGeometry relative="1" as="geometry" />
@@ -335,20 +335,20 @@
         <mxCell id="anchor-winctrl-icp-btn-34" parent="1" style="ellipse;whiteSpace=wrap;html=1;fillColor=#00bfff;strokeColor=#0f172a;strokeWidth=1.5;" value="" vertex="1">
           <mxGeometry height="10" width="10" x="802" y="630" as="geometry" />
         </mxCell>
-        <mxCell id="label-winctrl-icp-btn-17" parent="1" style="rounded=1;arcSize=18;whiteSpace=wrap;html=1;fillColor=#1e293b;strokeColor=#00bfff;strokeWidth=1.5;fontColor=#f1f5f9;fontFamily=Arial;fontSize=10;align=center;verticalAlign=middle;" value="Button 17 — RCL" vertex="1">
-          <mxGeometry height="27" width="120" x="400" y="218" as="geometry" />
+        <mxCell id="label-winctrl-icp-btn-17" parent="1" style="rounded=1;arcSize=18;whiteSpace=wrap;html=1;fillColor=#1e293b;strokeColor=#00bfff;strokeWidth=1.5;fontColor=#f1f5f9;fontFamily=Arial;fontSize=10;align=center;verticalAlign=middle;" value="Button 17 — ICP key 9" vertex="1">
+          <mxGeometry height="27" width="120" x="270" y="301.2" as="geometry" />
         </mxCell>
-        <mxCell id="label-winctrl-icp-btn-18" parent="1" style="rounded=1;arcSize=18;whiteSpace=wrap;html=1;fillColor=#1e293b;strokeColor=#00bfff;strokeWidth=1.5;fontColor=#f1f5f9;fontFamily=Arial;fontSize=10;align=center;verticalAlign=middle;" value="Button 18 — ENTR" vertex="1">
+        <mxCell id="label-winctrl-icp-btn-18" parent="1" style="rounded=1;arcSize=18;whiteSpace=wrap;html=1;fillColor=#1e293b;strokeColor=#00bfff;strokeWidth=1.5;fontColor=#f1f5f9;fontFamily=Arial;fontSize=10;align=center;verticalAlign=middle;" value="Button 18 — ICP key 0" vertex="1">
+          <mxGeometry height="27" width="120" x="400" y="301.2" as="geometry" />
+        </mxCell>
+        <mxCell id="label-winctrl-icp-btn-14" parent="1" style="rounded=1;arcSize=18;whiteSpace=wrap;html=1;fillColor=#1e293b;strokeColor=#00bfff;strokeWidth=1.5;fontColor=#f1f5f9;fontFamily=Arial;fontSize=10;align=center;verticalAlign=middle;" value="Button 14 — ENTR" vertex="1">
           <mxGeometry height="27" width="120" x="400" y="260" as="geometry" />
         </mxCell>
-        <mxCell id="label-winctrl-icp-btn-14" parent="1" style="rounded=1;arcSize=18;whiteSpace=wrap;html=1;fillColor=#1e293b;strokeColor=#00bfff;strokeWidth=1.5;fontColor=#f1f5f9;fontFamily=Arial;fontSize=10;align=center;verticalAlign=middle;" value="Button 14 — ICP key 8" vertex="1">
+        <mxCell id="label-winctrl-icp-btn-15" parent="1" style="rounded=1;arcSize=18;whiteSpace=wrap;html=1;fillColor=#1e293b;strokeColor=#00bfff;strokeWidth=1.5;fontColor=#f1f5f9;fontFamily=Arial;fontSize=10;align=center;verticalAlign=middle;" value="Button 15 — ICP key 7" vertex="1">
+          <mxGeometry height="27" width="120" x="10" y="301.2" as="geometry" />
+        </mxCell>
+        <mxCell id="label-winctrl-icp-btn-16" parent="1" style="rounded=1;arcSize=18;whiteSpace=wrap;html=1;fillColor=#1e293b;strokeColor=#00bfff;strokeWidth=1.5;fontColor=#f1f5f9;fontFamily=Arial;fontSize=10;align=center;verticalAlign=middle;" value="Button 16 — ICP key 8" vertex="1">
           <mxGeometry height="27" width="120" x="140" y="301.2" as="geometry" />
-        </mxCell>
-        <mxCell id="label-winctrl-icp-btn-15" parent="1" style="rounded=1;arcSize=18;whiteSpace=wrap;html=1;fillColor=#1e293b;strokeColor=#00bfff;strokeWidth=1.5;fontColor=#f1f5f9;fontFamily=Arial;fontSize=10;align=center;verticalAlign=middle;" value="Button 15 — ICP key 9" vertex="1">
-          <mxGeometry height="27" width="120" x="270" y="300" as="geometry" />
-        </mxCell>
-        <mxCell id="label-winctrl-icp-btn-16" parent="1" style="rounded=1;arcSize=18;whiteSpace=wrap;html=1;fillColor=#1e293b;strokeColor=#00bfff;strokeWidth=1.5;fontColor=#f1f5f9;fontFamily=Arial;fontSize=10;align=center;verticalAlign=middle;" value="Button 16 — ICP key 0" vertex="1">
-          <mxGeometry height="27" width="120" x="400" y="301.2" as="geometry" />
         </mxCell>
         <mxCell id="anchor-winctrl-icp-axis-y" parent="1" style="ellipse;whiteSpace=wrap;html=1;fillColor=#00bfff;strokeColor=#0f172a;strokeWidth=1.5;" value="" vertex="1">
           <mxGeometry height="10" width="10" x="560" y="342.7" as="geometry" />
