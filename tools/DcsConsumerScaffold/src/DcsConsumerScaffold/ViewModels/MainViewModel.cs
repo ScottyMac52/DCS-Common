@@ -33,6 +33,11 @@ public sealed class MainViewModel : INotifyPropertyChanged
     private bool _isLoadingPreview;
     private int _previewErrorCount;
     private string _previewErrorText = string.Empty;
+    private ScaffoldSolutionDecisions? _pendingSolutionDecisions;
+    private string? _solutionPath;
+    private string _solutionName = string.Empty;
+    private bool _isSolutionDirty;
+    private bool _suppressSolutionDirty;
 
     public MainViewModel(
         ScaffoldEngineService? engine = null,
@@ -59,6 +64,56 @@ public sealed class MainViewModel : INotifyPropertyChanged
     public ObservableCollection<PreviewModifier> Modifiers { get; }
     public ObservableCollection<CommandLabelGroup> CommandLabels { get; }
 
+    public string? SolutionPath
+    {
+        get => _solutionPath;
+        private set
+        {
+            if (Set(ref _solutionPath, value))
+            {
+                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(SolutionDisplay)));
+                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(CanSaveSolution)));
+                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(CanDeleteSolution)));
+            }
+        }
+    }
+
+    public string SolutionName
+    {
+        get => _solutionName;
+        private set
+        {
+            if (Set(ref _solutionName, value))
+                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(SolutionDisplay)));
+        }
+    }
+
+    public string SolutionDisplay => string.IsNullOrWhiteSpace(SolutionPath)
+        ? "Unsaved scaffolding solution"
+        : $"{SolutionName} — {SolutionPath}{(IsSolutionDirty ? " *" : string.Empty)}";
+
+    public bool IsSolutionDirty
+    {
+        get => _isSolutionDirty;
+        private set
+        {
+            if (Set(ref _isSolutionDirty, value))
+                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(SolutionDisplay)));
+        }
+    }
+
+    public bool CanSaveSolution => !string.IsNullOrWhiteSpace(SolutionPath) && HasCompleteSolution;
+    public bool CanSaveSolutionAs => HasCompleteSolution;
+    public bool CanDeleteSolution => !string.IsNullOrWhiteSpace(SolutionPath);
+    public bool HasCompleteSolution =>
+        !string.IsNullOrWhiteSpace(ProfilesDir) &&
+        (IsUiLayerImport
+            ? !string.IsNullOrWhiteSpace(ModifiersPath) && !string.IsNullOrWhiteSpace(CommonRoot)
+            : !string.IsNullOrWhiteSpace(OutputDir) &&
+              !string.IsNullOrWhiteSpace(DisplayName) &&
+              !string.IsNullOrWhiteSpace(InputModuleId) &&
+              !string.IsNullOrWhiteSpace(KneeboardId));
+
     public string ImportTarget
     {
         get => _importTarget;
@@ -77,6 +132,7 @@ public sealed class MainViewModel : INotifyPropertyChanged
                 PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(IsMozaConfigurationEnabled)));
                 if (!IsUiLayerImport) ApplyProfileIdentityDefaults();
                 RecomparePreview();
+                MarkSolutionDirty();
             }
         }
     }
@@ -98,6 +154,7 @@ public sealed class MainViewModel : INotifyPropertyChanged
             {
                 ApplyProfileIdentityDefaults();
                 RaiseCommands();
+                MarkSolutionDirty();
             }
         }
     }
@@ -105,19 +162,19 @@ public sealed class MainViewModel : INotifyPropertyChanged
     public string ModifiersPath
     {
         get => _modifiersPath;
-        set { if (Set(ref _modifiersPath, value)) RaiseCommands(); }
+        set { if (Set(ref _modifiersPath, value)) { RaiseCommands(); MarkSolutionDirty(); } }
     }
 
     public string MozaGrip
     {
         get => _mozaGrip;
-        set => Set(ref _mozaGrip, value);
+        set { if (Set(ref _mozaGrip, value)) MarkSolutionDirty(); }
     }
 
     public string CommonRoot
     {
         get => _commonRoot;
-        set { if (Set(ref _commonRoot, value)) RaiseCommands(); }
+        set { if (Set(ref _commonRoot, value)) { RaiseCommands(); MarkSolutionDirty(); } }
     }
 
     public string OutputDir
@@ -128,6 +185,7 @@ public sealed class MainViewModel : INotifyPropertyChanged
             if (Set(ref _outputDir, value))
             {
                 RaiseCommands();
+                MarkSolutionDirty();
             }
         }
     }
@@ -141,6 +199,7 @@ public sealed class MainViewModel : INotifyPropertyChanged
             {
                 _displayNameIsInferred = false;
                 RaiseCommands();
+                MarkSolutionDirty();
             }
         }
     }
@@ -154,6 +213,7 @@ public sealed class MainViewModel : INotifyPropertyChanged
             {
                 _inputModuleIdIsInferred = false;
                 RaiseCommands();
+                MarkSolutionDirty();
             }
         }
     }
@@ -167,6 +227,7 @@ public sealed class MainViewModel : INotifyPropertyChanged
             {
                 _kneeboardIdIsInferred = false;
                 RaiseCommands();
+                MarkSolutionDirty();
             }
         }
     }
@@ -235,6 +296,9 @@ public sealed class MainViewModel : INotifyPropertyChanged
     {
         LoadPreviewCommand.RaiseCanExecuteChanged();
         ProceedCommand.RaiseCanExecuteChanged();
+        PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(HasCompleteSolution)));
+        PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(CanSaveSolution)));
+        PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(CanSaveSolutionAs)));
     }
 
     private void ApplyProfileIdentityDefaults()
@@ -343,6 +407,7 @@ public sealed class MainViewModel : INotifyPropertyChanged
                 existingLabels.CurrentCount + existingLabels.SharedHardwareCount > 0)
                 StatusText = $"{StatusText}{Environment.NewLine}Loaded {existingLabels.CurrentCount} current repository labels; " +
                     $"used {existingLabels.SharedHardwareCount} shared-hardware fallbacks.";
+            ApplyPendingSolutionDecisions();
         }
         catch (Exception ex)
         {
@@ -498,18 +563,23 @@ public sealed class MainViewModel : INotifyPropertyChanged
             string.Equals(item.Command, row.Command, StringComparison.Ordinal));
         group?.Refresh(Rows);
         RecomparePreview();
+        MarkSolutionDirty();
     }
 
     private void Modifier_PropertyChanged(object? sender, PropertyChangedEventArgs e)
     {
-        if (e.PropertyName == nameof(PreviewModifier.SemanticModifier)) RecomparePreview();
+        if (e.PropertyName == nameof(PreviewModifier.SemanticModifier)) { RecomparePreview(); MarkSolutionDirty(); }
     }
 
     private void Device_PropertyChanged(object? sender, PropertyChangedEventArgs e)
     {
         if (e.PropertyName is nameof(PreviewDevice.Role) or nameof(PreviewDevice.CategoryTop) or
             nameof(PreviewDevice.CategoryRight) or nameof(PreviewDevice.CategoryBottom) or
-            nameof(PreviewDevice.CategoryLeft)) RecomparePreview();
+            nameof(PreviewDevice.CategoryLeft) or nameof(PreviewDevice.RemoveRequested))
+        {
+            RecomparePreview();
+            MarkSolutionDirty();
+        }
     }
 
     private void UntrackRows()
@@ -581,6 +651,182 @@ public sealed class MainViewModel : INotifyPropertyChanged
             MfdCategoryOverrides(),
             includeUiLayer: !IsUiLayerImport);
     }
+
+
+    public ScaffoldSolutionDocument CaptureSolution()
+    {
+        var decisions = new ScaffoldSolutionDecisions();
+        if (_pendingSolutionDecisions is not null)
+        {
+            foreach (var item in _pendingSolutionDecisions.InstanceRoles) decisions.InstanceRoles[item.Key] = item.Value;
+            foreach (var item in _pendingSolutionDecisions.SemanticModifiers) decisions.SemanticModifiers[item.Key] = item.Value;
+            foreach (var item in _pendingSolutionDecisions.LabelOverrides) decisions.LabelOverrides[item.Key] = item.Value;
+            foreach (var item in _pendingSolutionDecisions.MfdCategories) decisions.MfdCategories[item.Key] = item.Value;
+            foreach (var item in _pendingSolutionDecisions.RemovedProfiles) decisions.RemovedProfiles.Add(item);
+        }
+
+        foreach (var device in Devices.Where(item => !item.IsRepositoryOnly && !string.IsNullOrWhiteSpace(item.ProfileFile) && !string.IsNullOrWhiteSpace(item.Role)))
+            decisions.InstanceRoles[device.ProfileFile!] = device.Role!.Trim();
+        foreach (var modifier in ModifierOverrides()) decisions.SemanticModifiers[modifier.Key] = modifier.Value;
+        foreach (var label in LabelOverrides()) decisions.LabelOverrides[label.Key] = label.Value;
+        foreach (var device in Devices.Where(item => !item.IsRepositoryOnly && item.IsMfdDevice && !string.IsNullOrWhiteSpace(item.ProfileKey)))
+            decisions.MfdCategories[device.ProfileKey!] = new ScaffoldMfdCategories
+            {
+                Top = device.CategoryTop,
+                Right = device.CategoryRight,
+                Bottom = device.CategoryBottom,
+                Left = device.CategoryLeft,
+            };
+        foreach (var device in Devices.Where(item => item.IsRepositoryOnly && item.RemoveRequested && !string.IsNullOrWhiteSpace(item.ProfileKey)))
+            decisions.RemovedProfiles.Add(device.ProfileKey!);
+
+        return new ScaffoldSolutionDocument
+        {
+            Name = string.IsNullOrWhiteSpace(SolutionName) ? DisplayName : SolutionName,
+            Import = new ScaffoldSolutionImport
+            {
+                Target = ImportTarget,
+                ProfilesDirectory = ProfilesDir,
+                ModifiersPath = NullIfBlank(ModifiersPath),
+                MozaGrip = MozaGrip,
+                CommonRoot = NullIfBlank(CommonRoot),
+                OutputDirectory = NullIfBlank(OutputDir),
+                DisplayName = NullIfBlank(DisplayName),
+                InputModuleId = NullIfBlank(InputModuleId),
+                KneeboardId = NullIfBlank(KneeboardId),
+            },
+            Decisions = decisions,
+        };
+    }
+
+    public void LoadSolution(ScaffoldSolutionDocument document, string path)
+    {
+        ScaffoldSolutionService.Validate(document);
+        _suppressSolutionDirty = true;
+        try
+        {
+            ImportTarget = document.Import.Target;
+            ProfilesDir = document.Import.ProfilesDirectory;
+            ModifiersPath = document.Import.ModifiersPath ?? string.Empty;
+            MozaGrip = document.Import.MozaGrip;
+            CommonRoot = document.Import.CommonRoot ?? string.Empty;
+            OutputDir = document.Import.OutputDirectory ?? string.Empty;
+            DisplayName = document.Import.DisplayName ?? string.Empty;
+            InputModuleId = document.Import.InputModuleId ?? string.Empty;
+            KneeboardId = document.Import.KneeboardId ?? string.Empty;
+            _pendingSolutionDecisions = document.Decisions ?? new ScaffoldSolutionDecisions();
+            UntrackRows();
+            Devices.Clear();
+            Rows.Clear();
+            Modifiers.Clear();
+            CommandLabels.Clear();
+            HasPreview = false;
+            SummaryText = string.Empty;
+            PreviewErrorText = string.Empty;
+            SolutionName = string.IsNullOrWhiteSpace(document.Name)
+                ? Path.GetFileNameWithoutExtension(path)
+                : document.Name;
+            SolutionPath = Path.GetFullPath(path);
+            IsSolutionDirty = false;
+            StatusText = $"Loaded scaffolding solution '{SolutionName}'. Select Load Preview to reconcile its saved decisions.";
+        }
+        finally
+        {
+            _suppressSolutionDirty = false;
+        }
+    }
+
+    public void MarkSolutionSaved(string path)
+    {
+        SolutionPath = Path.GetFullPath(path);
+        if (string.IsNullOrWhiteSpace(SolutionName))
+            SolutionName = Path.GetFileNameWithoutExtension(path);
+        IsSolutionDirty = false;
+    }
+
+    public void MarkSolutionDeleted()
+    {
+        SolutionPath = null;
+        IsSolutionDirty = true;
+        StatusText = "Solution file deleted. The current workspace is retained as unsaved.";
+    }
+
+    private void ApplyPendingSolutionDecisions()
+    {
+        if (_pendingSolutionDecisions is null) return;
+        var restored = 0;
+        restored += ApplyMap(_pendingSolutionDecisions.InstanceRoles, key =>
+            Devices.Where(device => !device.IsRepositoryOnly && string.Equals(device.ProfileFile, key, StringComparison.OrdinalIgnoreCase)).ToList(),
+            (device, value) => device.Role = value);
+        restored += ApplyMap(_pendingSolutionDecisions.SemanticModifiers, key =>
+            Modifiers.Where(modifier => !modifier.IsRepositoryOnly && string.Equals(modifier.Name, key, StringComparison.OrdinalIgnoreCase)).ToList(),
+            (modifier, value) => modifier.SemanticModifier = value);
+        restored += ApplyMap(_pendingSolutionDecisions.LabelOverrides, key =>
+            Rows.Where(row => string.Equals(row.BindingId, key, StringComparison.Ordinal)).ToList(),
+            (row, value) => row.ApplyLabel(value, "solution"));
+        restored += ApplyMap(_pendingSolutionDecisions.MfdCategories, key =>
+            Devices.Where(device => !device.IsRepositoryOnly && device.IsMfdDevice &&
+                string.Equals(device.ProfileKey, key, StringComparison.OrdinalIgnoreCase)).ToList(),
+            (device, value) =>
+            {
+                device.CategoryTop = value.Top;
+                device.CategoryRight = value.Right;
+                device.CategoryBottom = value.Bottom;
+                device.CategoryLeft = value.Left;
+            });
+
+        foreach (var key in _pendingSolutionDecisions.RemovedProfiles.ToList())
+        {
+            var matches = Devices.Where(device => device.IsRepositoryOnly &&
+                string.Equals(device.ProfileKey, key, StringComparison.OrdinalIgnoreCase)).ToList();
+            if (matches.Count != 1) continue;
+            matches[0].RemoveRequested = true;
+            _pendingSolutionDecisions.RemovedProfiles.Remove(key);
+            restored++;
+        }
+
+        RebuildCommandLabels();
+        var unmatched = _pendingSolutionDecisions.InstanceRoles.Count +
+            _pendingSolutionDecisions.SemanticModifiers.Count +
+            _pendingSolutionDecisions.LabelOverrides.Count +
+            _pendingSolutionDecisions.MfdCategories.Count +
+            _pendingSolutionDecisions.RemovedProfiles.Count;
+        IsSolutionDirty = false;
+        StatusText += $"{Environment.NewLine}Restored {restored} saved decisions; {unmatched} no longer match the current preview.";
+    }
+
+    private int ApplyMap<TItem, TValue>(
+        IDictionary<string, TValue> pending,
+        Func<string, List<TItem>> find,
+        Action<TItem, TValue> apply)
+    {
+        var restored = 0;
+        _suppressSolutionDirty = true;
+        try
+        {
+            foreach (var item in pending.ToList())
+            {
+                var matches = find(item.Key);
+                if (matches.Count != 1) continue;
+                apply(matches[0], item.Value);
+                pending.Remove(item.Key);
+                restored++;
+            }
+        }
+        finally
+        {
+            _suppressSolutionDirty = false;
+        }
+        return restored;
+    }
+
+    private void MarkSolutionDirty()
+    {
+        if (_suppressSolutionDirty) return;
+        IsSolutionDirty = true;
+    }
+
+    private static string? NullIfBlank(string value) => string.IsNullOrWhiteSpace(value) ? null : value;
 
     private bool Set<T>(ref T field, T value, [CallerMemberName] string? name = null)
     {
