@@ -566,12 +566,29 @@ test('scaffold applies and reports per-instance TM MFD categories', () => {
   const out = join(root, 'consumer');
   writeConsumer({ preview, outputDir: out, displayName: 'F-14B(U)', inputModuleId: 'F-14BU', kneeboardId: 'F-14BU', commonRoot });
   assert.match(readFileSync(join(out, 'SCAFFOLD-REPORT.md'), 'utf8'), /top=Jester Steerpoints/);
-  assert.ok(existsSync(join(out, 'config/scaffold-mfd-category-overrides.json')));
+  assert.equal(existsSync(join(out, 'config/scaffold-mfd-category-overrides.json')), false);
+
+  for (const obsolete of [
+    'scaffold-label-overrides.json',
+    'scaffold-mfd-category-overrides.json',
+    'scaffold-semantic-modifiers.json',
+    'summary-pages.json',
+  ]) {
+    writeFileSync(join(out, 'config', obsolete), '{}');
+  }
 
   const refreshWithoutCategoryInput = buildPreview({ profilesDir, commonRoot });
   writeConsumer({ preview: refreshWithoutCategoryInput, outputDir: out, displayName: 'F-14B(U)', inputModuleId: 'F-14BU', kneeboardId: 'F-14BU', commonRoot });
   const refreshed = JSON.parse(readFileSync(join(out, 'config/kneeboard.json'), 'utf8'));
   assert.equal(refreshed.pages[0].categoryLabels.top, 'Jester Steerpoints', 'rescaffolding preserves current categories');
+  for (const obsolete of [
+    'scaffold-label-overrides.json',
+    'scaffold-mfd-category-overrides.json',
+    'scaffold-semantic-modifiers.json',
+    'summary-pages.json',
+  ]) {
+    assert.equal(existsSync(join(out, 'config', obsolete)), false, `${obsolete} must not persist`);
+  }
 });
 
 test('buildPreview reports profile reformers missing from modifiers.lua', () => {
