@@ -6,17 +6,18 @@ Publisher: **Vyper Industries** · TFM: `net10.0-windows` · Assembly: `DcsConsu
 
 ## Capabilities
 
-1. **Load Preview** — `scaffold-consumer.mjs --preview-json`
-2. **Physical device roles** — review every GUID-distinct device and optionally name repeated instances (for example, `left-tank-control` and `right-tank-control`)
-3. **MOZA AB9 configuration** — select standalone, F-16C Viper Grip, or F/A-18C/E/F Grip
-4. **Semantic modifiers** — assign one semantic ID to alternative device-qualified physical modifiers without globally aliasing button numbers
-5. **Editable labels** — initialize each label from the imported DCS Lua command name, show the DCS-Common `hardwareLabel` separately as **Device Label**, and edit, intentionally blank, or replace the label with the device label
-6. **Command labels** — edit one label per exact DCS command and explicitly apply it to every matching device binding while retaining per-binding overrides
-7. **Current and default labels** — Load Preview automatically imports labels for every device from an existing destination repository; undefined labels fall back to DCS-Common shared hardware. Use per-device **Current** to refresh repository labels or **Default** to restore the imported DCS label values.
-8. **Per-device kneeboard preview** — render the selected physical instance through the production SVG/PNG pipeline in a modal viewer before writing the consumer repository
-9. **Import target** — choose a normal consumer module or the authoritative DCS-Common UI Layer
-10. **Proceed** — writes a consumer tree in consumer mode, or safely synchronizes only `assets/shared/ui-layer` in UI Layer mode
-11. **Definitive UI Layer Editor** — load the complete canonical catalog without connected devices, inspect profiles/bindings/modifiers, reconcile an imported UiLayer folder with explicit per-file actions, validate, and save atomically
+1. **Scaffolding solutions** — open, save, revise, and delete versioned JSON workspaces containing every normal importer input and reviewed decision
+2. **Load Preview** — `scaffold-consumer.mjs --preview-json`
+3. **Physical device roles** — review every GUID-distinct device and optionally name repeated instances (for example, `left-tank-control` and `right-tank-control`)
+4. **MOZA AB9 configuration** — select standalone, F-16C Viper Grip, or F/A-18C/E/F Grip
+5. **Semantic modifiers** — assign one semantic ID to alternative device-qualified physical modifiers without globally aliasing button numbers
+6. **Editable labels** — initialize each label from the imported DCS Lua command name, show the DCS-Common `hardwareLabel` separately as **Device Label**, and edit, intentionally blank, or replace the label with the device label
+7. **Command labels** — edit one label per exact DCS command and explicitly apply it to every matching device binding while retaining per-binding overrides
+8. **Current and default labels** — Load Preview automatically imports labels for every device from an existing destination repository; undefined labels fall back to DCS-Common shared hardware. Use per-device **Current** to refresh repository labels or **Default** to restore the imported DCS label values.
+9. **Per-device kneeboard preview** — render the selected physical instance through the production SVG/PNG pipeline in a modal viewer before writing the consumer repository
+10. **Import target** — choose a normal consumer module or the authoritative DCS-Common UI Layer
+11. **Proceed** — writes a consumer tree in consumer mode, or safely synchronizes only `assets/shared/ui-layer` in UI Layer mode
+12. **Definitive UI Layer Editor** — load the complete canonical catalog without connected devices, inspect profiles/bindings/modifiers, reconcile an imported UiLayer folder with explicit per-file actions, validate, and save atomically
 
 The selected grip is applied only to generic MOZA AB9 profiles and is preserved as the generated page `deviceId`. No JSON override file is required in the WPF importer; the preview grids show how each mapping and physical instance was resolved. Repeated devices automatically receive stable GUID-backed profile keys. Entering a role gives that physical instance a readable, GUID-associated alias in the generated consumer.
 
@@ -27,6 +28,20 @@ When the output directory is an existing consumer, repository-only devices are p
 Authoritative UI Layer previews render the selected Saved Games profiles directly and do not compose the shared UI Layer overlay back onto itself. Consumer previews continue to add the applicable shared overlay. In UI Layer mode, consumer-only identity/output fields are disabled, the source `modifiers.lua` and DCS-Common root are required, and **Proceed** remains disabled until all blocking preview errors (including unknown modifiers) are corrected.
 
 Installer (tag `vX.X.X.X`): Inno Setup via shared-github-workflows. The installed EXE still expects **Node on PATH** and a DCS-Common checkout (`DCS_COMMON_ROOT` or browse).
+
+## Reuse a scaffolding solution
+
+The main importer can save its complete workspace as an indented, versioned `.dcs-scaffold.json` file. This includes the import target, paths, MOZA grip choice, consumer identities, device roles, semantic modifiers, binding-label overrides, MFD side categories, and explicit repository-only removal requests.
+
+- **Open…** validates a solution and populates the form without running Node or writing any repository.
+- Select **Load Preview** to re-read the current DCS profiles and reconcile saved decisions by their stable identifiers.
+- Unmatched decisions are retained in the solution and reported instead of being guessed or discarded.
+- **Save** atomically replaces the open solution; **Save As…** creates a separate solution.
+- **Delete…** confirms the exact JSON path and deletes only that file. The current values remain in the importer as an unsaved workspace.
+- Relative paths are interpreted from the solution file's directory. Absolute paths are recommended for machine-local solutions.
+- Invalid JSON and unsupported schema versions leave the current workspace unchanged.
+
+The solution file never contains generated previews, generated consumer content, credentials, or any state from the **Definitive UI Layer Editor**. A solution controls the normal preview/scaffold workflow only.
 
 ## Synchronize labels by command
 
