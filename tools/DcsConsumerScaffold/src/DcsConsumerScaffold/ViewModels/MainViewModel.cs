@@ -38,6 +38,7 @@ public sealed class MainViewModel : INotifyPropertyChanged
     private string _solutionName = string.Empty;
     private bool _isSolutionDirty;
     private bool _suppressSolutionDirty;
+    private readonly Dictionary<string, (string Raw, string Resolved)> _loadedSolutionPaths = new(StringComparer.Ordinal);
 
     public MainViewModel(
         ScaffoldEngineService? engine = null,
@@ -686,11 +687,11 @@ public sealed class MainViewModel : INotifyPropertyChanged
             Import = new ScaffoldSolutionImport
             {
                 Target = ImportTarget,
-                ProfilesDirectory = ProfilesDir,
-                ModifiersPath = NullIfBlank(ModifiersPath),
+                ProfilesDirectory = PersistedPath(nameof(ProfilesDir), ProfilesDir)!,
+                ModifiersPath = PersistedPath(nameof(ModifiersPath), ModifiersPath),
                 MozaGrip = MozaGrip,
-                CommonRoot = NullIfBlank(CommonRoot),
-                OutputDirectory = NullIfBlank(OutputDir),
+                CommonRoot = PersistedPath(nameof(CommonRoot), CommonRoot),
+                OutputDirectory = PersistedPath(nameof(OutputDir), OutputDir),
                 DisplayName = NullIfBlank(DisplayName),
                 InputModuleId = NullIfBlank(InputModuleId),
                 KneeboardId = NullIfBlank(KneeboardId),
@@ -706,11 +707,12 @@ public sealed class MainViewModel : INotifyPropertyChanged
         try
         {
             ImportTarget = document.Import.Target;
-            ProfilesDir = document.Import.ProfilesDirectory;
-            ModifiersPath = document.Import.ModifiersPath ?? string.Empty;
+            _loadedSolutionPaths.Clear();
+            ProfilesDir = LoadPath(nameof(ProfilesDir), document.Import.ProfilesDirectory, path);
+            ModifiersPath = LoadPath(nameof(ModifiersPath), document.Import.ModifiersPath, path);
             MozaGrip = document.Import.MozaGrip;
-            CommonRoot = document.Import.CommonRoot ?? string.Empty;
-            OutputDir = document.Import.OutputDirectory ?? string.Empty;
+            CommonRoot = LoadPath(nameof(CommonRoot), document.Import.CommonRoot, path);
+            OutputDir = LoadPath(nameof(OutputDir), document.Import.OutputDirectory, path);
             DisplayName = document.Import.DisplayName ?? string.Empty;
             InputModuleId = document.Import.InputModuleId ?? string.Empty;
             KneeboardId = document.Import.KneeboardId ?? string.Empty;
@@ -824,6 +826,23 @@ public sealed class MainViewModel : INotifyPropertyChanged
     {
         if (_suppressSolutionDirty) return;
         IsSolutionDirty = true;
+    }
+
+    private string LoadPath(string propertyName, string? value, string solutionPath)
+    {
+        if (string.IsNullOrWhiteSpace(value)) return string.Empty;
+        var resolved = ScaffoldSolutionService.ResolvePath(value, solutionPath);
+        _loadedSolutionPaths[propertyName] = (value, resolved);
+        return resolved;
+    }
+
+    private string? PersistedPath(string propertyName, string value)
+    {
+        if (string.IsNullOrWhiteSpace(value)) return null;
+        return _loadedSolutionPaths.TryGetValue(propertyName, out var loaded) &&
+               string.Equals(value, loaded.Resolved, StringComparison.OrdinalIgnoreCase)
+            ? loaded.Raw
+            : value;
     }
 
     private static string? NullIfBlank(string value) => string.IsNullOrWhiteSpace(value) ? null : value;
