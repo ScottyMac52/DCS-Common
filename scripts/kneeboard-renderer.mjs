@@ -12,7 +12,7 @@ try {
 const scriptDir = dirname(fileURLToPath(import.meta.url));
 const rootDir = resolve(scriptDir, '..');
 
-const ACCENTS = Object.freeze({
+const SUMMARY_ACCENTS = Object.freeze({
   cyan: { fill: '#15314e', stroke: '#46d8ff' },
   gold: { fill: '#3e2d12', stroke: '#ffc95c' },
   red: { fill: '#38131c', stroke: '#ff6b76' },
@@ -22,8 +22,8 @@ const ACCENTS = Object.freeze({
   green: { fill: '#153526', stroke: '#5fda91' },
 });
 
-function accentColors(name) {
-  return ACCENTS[name] || ACCENTS.cyan;
+function summaryAccent(name) {
+  return SUMMARY_ACCENTS[name] || SUMMARY_ACCENTS.cyan;
 }
 
 function esc(value) {
@@ -77,7 +77,7 @@ function summaryPage(page, index, pageCount) {
   const cards = page.items.map((entry, itemIndex) => {
     const x = 96 + (itemIndex % 2) * 480;
     const y = 220 + Math.floor(itemIndex / 2) * 170;
-    const { fill, stroke } = accentColors(entry.accent);
+    const { fill, stroke } = summaryAccent(entry.accent);
     const lines = wrap(entry.text, 28, 2);
     return `<g>
       <rect x="${x}" y="${y}" width="420" height="130" rx="16" fill="${fill}" stroke="${stroke}" stroke-width="2"/>
@@ -110,7 +110,7 @@ function hardwarePage(page, index, pageCount) {
     const y = entry.y ?? fallbackY;
     const width = entry.width ?? 260;
     const height = entry.height ?? 44;
-    const accent = accentColors(entry.accent).stroke;
+    const accent = entry.accent === 'red' ? '#ff6b76' : entry.accent === 'gold' ? '#ffc95c' : '#46d8ff';
     const anchors = entry.anchors || (entry.anchor ? [entry.anchor] : []);
     const controls = entry.controls || (entry.control ? [entry.control] : []);
     const lineX = side === 'left' ? x + width : x;
@@ -140,7 +140,7 @@ function hardwarePage(page, index, pageCount) {
         drawPositionedCallout(entry, side, x, y);
         return;
       }
-      const accent = accentColors(entry.accent).stroke;
+      const accent = entry.accent === 'red' ? '#ff6b76' : entry.accent === 'gold' ? '#ffc95c' : '#46d8ff';
       body.push(`<rect x="${x}" y="${y}" width="260" height="44" rx="10" fill="#12253d" stroke="${accent}" stroke-width="2"/>`);
       body.push(`<text x="${x + 18}" y="${y + 28}" font-family="Segoe UI, Arial, sans-serif" font-size="16" font-weight="800" fill="${accent}">${esc(entry.key)}</text>`);
       body.push(`<text x="${x + 130}" y="${y + 28}" text-anchor="middle" dominant-baseline="middle" font-family="Segoe UI, Arial, sans-serif" font-size="14" font-weight="600" fill="#f5f9ff">${esc(entry.text)}</text>`);
@@ -151,7 +151,7 @@ function hardwarePage(page, index, pageCount) {
   if (page.notes?.length) {
     page.notes.forEach((note, indexNote) => {
       const y = 1320 + indexNote * 74;
-      const accent = accentColors(note.accent).stroke;
+      const accent = note.accent === 'red' ? '#ff6b76' : note.accent === 'gold' ? '#ffc95c' : '#46d8ff';
       body.push(`<rect x="120" y="${y}" width="960" height="56" rx="12" fill="#11253c" stroke="${accent}" stroke-width="2"/>`);
       body.push(`<text x="150" y="${y + 23}" font-family="Segoe UI, Arial, sans-serif" font-size="16" font-weight="800" fill="${accent}">${esc(note.key)}</text>`);
       body.push(`<text x="280" y="${y + 24}" font-family="Segoe UI, Arial, sans-serif" font-size="15" font-weight="600" fill="#f5f9ff">${esc(note.text)}</text>`);
