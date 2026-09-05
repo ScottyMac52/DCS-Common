@@ -113,6 +113,17 @@ public class ScaffoldEngineServiceTests
     }
 
     [Fact]
+    public void PreviewDevice_DefaultsMfdCategoriesToVisibleSideLabels()
+    {
+        var device = new PreviewDevice { DeviceId = "tm-mfd" };
+
+        Assert.Equal("TOP", device.MfdCategoryLabels()["top"]);
+        Assert.Equal("RIGHT", device.MfdCategoryLabels()["right"]);
+        Assert.Equal("BOTTOM", device.MfdCategoryLabels()["bottom"]);
+        Assert.Equal("LEFT", device.MfdCategoryLabels()["left"]);
+    }
+
+    [Fact]
     public void PreviewDevice_ExposesIndependentMfdCategoryValues()
     {
         var device = new PreviewDevice
@@ -193,12 +204,21 @@ public class ScaffoldEngineServiceTests
             Label = "toggle VR Zoom"
         };
         deviceSelection.ResetLabel();
+        var importedCurrentMatchingDefault = new PreviewRow
+        {
+            BindingId = "current-default",
+            DefaultLabel = "toggle VR Zoom",
+            DeviceLabel = "MIC depress",
+        };
+        importedCurrentMatchingDefault.ApplyLabel("toggle VR Zoom", "current");
         viewModel.Rows.Add(dcsDefault);
         viewModel.Rows.Add(deviceSelection);
+        viewModel.Rows.Add(importedCurrentMatchingDefault);
 
         var overrides = viewModel.LabelOverrides();
 
         Assert.False(overrides.ContainsKey("dcs"));
+        Assert.False(overrides.ContainsKey("current-default"));
         Assert.Equal("MIC depress", overrides["device"]);
     }
 
