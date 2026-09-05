@@ -128,7 +128,9 @@ test('built-in MOZA grip selection applies only to a generic AB9 profile', () =>
     inputModuleId: 'F-16C_50',
   });
   assert.equal(viperConfig.pages[0].deviceId, 'moza-ab9-warthog-grip');
-  assert.equal(viperConfig.pages[0].controls['warthog-grip-stage1'].label, 'Trigger');
+  const viperTrigger = viperConfig.pages[0].controls['warthog-grip-stage1'];
+  assert.equal(viperTrigger.label, undefined);
+  assert.equal(viperConfig.labels[viperTrigger.labelId], 'Trigger');
   assert.equal(viperConfig.pages[0].labels, undefined, 'plain binding labels must not be duplicated');
 
   const hornet = buildPreview({ profilesDir, mozaGrip: 'hornet', commonRoot });
@@ -255,14 +257,12 @@ test('MOZA POV bindings resolve base and modified callouts for both grips', () =
     );
     assert.equal(config.pages[0].modifierCallouts[modifierCallout], 'LOOK_MODE');
     assert.ok(config.pages[0].layers.every((layer) => layer.labels === undefined));
-    assert.equal(
-      config.pages[0].layers[0].controls[expected.callouts.JOY_BTN_POV1_U].label,
-      'Trim, nose up',
-    );
-    assert.equal(
-      config.pages[0].layers[1].controls[expected.callouts.JOY_BTN_POV1_L].label,
-      'Glance left',
-    );
+    const baseTrim = config.pages[0].layers[0].controls[expected.callouts.JOY_BTN_POV1_U];
+    const shiftedGlance = config.pages[0].layers[1].controls[expected.callouts.JOY_BTN_POV1_L];
+    assert.equal(baseTrim.label, undefined);
+    assert.equal(shiftedGlance.label, undefined);
+    assert.equal(config.labels[baseTrim.labelId], 'Trim, nose up');
+    assert.equal(config.labels[shiftedGlance.labelId], 'Glance left');
     assert.equal(
       config.pages[0].layers[0].controls[expected.callouts.JOY_BTN_POV1_U].key,
       'JOY_BTN_POV1_U',
@@ -1054,5 +1054,7 @@ test('label defaults to the DCS name, exposes the device label, and supports bla
   assert.equal(overridden.rows[0].label, '');
   assert.equal(overridden.rows[0].labelSource, 'user');
   const config = buildDraftKneeboardConfig(overridden, { displayName: 'UiLayer', inputModuleId: 'UiLayer' });
-  assert.equal(config.pages[0].labels['vkb-paddle'], '');
+  const paddle = config.pages[0].controls['vkb-paddle'];
+  assert.equal(paddle.label, undefined);
+  assert.equal(config.labels[paddle.labelId], '');
 });
