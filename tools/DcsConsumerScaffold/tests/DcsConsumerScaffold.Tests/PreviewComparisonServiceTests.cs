@@ -165,7 +165,7 @@ public sealed class PreviewComparisonServiceTests
                 {
                   "deviceId": "tm-mfd",
                   "deviceInstance": "MFD3",
-                  "categoryLabels": { "top": "Jester Steerpoints" },
+                  "categoryLabels": { "top": "Jester Steerpoints", "right": "RIGHT", "bottom": "BOTTOM", "left": "LEFT" },
                   "layers": [
                     {
                       "modifiers": ["SHIFT"],
