@@ -862,6 +862,15 @@ export function writeConsumer({ preview, outputDir, displayName, inputModuleId, 
   const kneeboard = merge.config;
   write('config/kneeboard.json', JSON.stringify(kneeboard, null, 2));
   if (!dryRun) {
+    for (const obsoleteConfig of [
+      'scaffold-label-overrides.json',
+      'scaffold-mfd-category-overrides.json',
+      'scaffold-semantic-modifiers.json',
+      'summary-pages.json',
+    ]) {
+      const obsoletePath = join(out, 'config', obsoleteConfig);
+      if (existsSync(obsoletePath)) unlinkSync(obsoletePath);
+    }
     for (const [profileKey, relative] of Object.entries(draftKneeboard.profiles ?? {})) {
       const previous = existingKneeboard?.profiles?.[profileKey];
       if (typeof previous !== 'string' || previous === relative) continue;
