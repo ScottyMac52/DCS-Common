@@ -48,6 +48,7 @@ public sealed class PreviewComparisonService
         var profiles = ReadProfiles(root);
         var devices = new Dictionary<string, MutableDevice>(StringComparer.OrdinalIgnoreCase);
         var commands = new Dictionary<string, MutableCommand>(StringComparer.Ordinal);
+        var canonicalLabels = ReadCanonicalLabels(root);
         var usedModifiers = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
         if (root.TryGetProperty("pages", out var pages) && pages.ValueKind == JsonValueKind.Array)
         {
@@ -57,12 +58,12 @@ public sealed class PreviewComparisonService
                 var instance = Property(page, "deviceInstance");
                 var role = Property(page, "role");
                 var pageCategories = ReadCategoryLabels(page);
-                ReadScope(page, deviceId, instance, role, pageCategories, profiles, devices, commands, usedModifiers);
+                ReadScope(page, deviceId, instance, role, pageCategories, canonicalLabels, profiles, devices, commands, usedModifiers);
                 if (page.TryGetProperty("layers", out var layers) && layers.ValueKind == JsonValueKind.Array)
                     foreach (var layer in layers.EnumerateArray())
                         ReadScope(layer, deviceId, instance, role,
                             MergeCategories(pageCategories, ReadCategoryLabels(layer)),
-                            profiles, devices, commands, usedModifiers);
+                            canonicalLabels, profiles, devices, commands, usedModifiers);
             }
         }
 
@@ -257,6 +258,15 @@ public sealed class PreviewComparisonService
         }
     }
 
+    private static Dictionary<string, string?> ReadCanonicalLabels(JsonElement root)
+    {
+        var result = new Dictionary<string, string?>(StringComparer.Ordinal);
+        if (!root.TryGetProperty("labels", out var labels) || labels.ValueKind != JsonValueKind.Object) return result;
+        foreach (var property in labels.EnumerateObject())
+            if (property.Value.ValueKind == JsonValueKind.String) result[property.Name] = property.Value.GetString();
+        return result;
+    }
+
     private static Dictionary<string, string> ReadProfiles(JsonElement root)
     {
         var result = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
@@ -272,6 +282,7 @@ public sealed class PreviewComparisonService
         string? instance,
         string? role,
         IReadOnlyDictionary<string, string> categoryLabels,
+        IReadOnlyDictionary<string, string?> canonicalLabels,
         IReadOnlyDictionary<string, string> profiles,
         IDictionary<string, MutableDevice> devices,
         IDictionary<string, MutableCommand> commands,
@@ -315,7 +326,11 @@ public sealed class PreviewComparisonService
                 }
                 commandEntry.Bindings.Add(signature);
                 var referenceLabel = Property(reference, "label");
-                commandEntry.Label ??= referenceLabel ?? labels.GetValueOrDefault(control.Name);
+                var labelId = Property(reference, "labelId");
+                var canonicalLabel = !string.IsNullOrWhiteSpace(labelId)
+                    ? canonicalLabels.GetValueOrDefault(labelId)
+                    : null;
+                commandEntry.Label ??= referenceLabel ?? canonicalLabel ?? labels.GetValueOrDefault(control.Name);
             }
         }
     }

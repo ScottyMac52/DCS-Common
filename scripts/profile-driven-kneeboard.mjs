@@ -324,7 +324,7 @@ export function loadProfileDrivenConfig(configPath, options = {}) {
           throw new Error(`${page.file}: ${reference.profile}:${reference.key} resolves to ${matches.length} bindings; specify command when ambiguous.`);
         }
         return {
-          label: reference.label ?? matches[0].binding.name,
+          label: reference.label ?? config.labels?.[reference.labelId] ?? matches[0].binding.name,
           modifiers: reference.modifiers ?? page.modifierIds,
         };
       });
