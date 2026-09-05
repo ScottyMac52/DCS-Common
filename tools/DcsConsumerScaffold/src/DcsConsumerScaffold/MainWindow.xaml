@@ -35,6 +35,24 @@
                  Text="Load Preview, review the resolved devices and labels, then Proceed with the selected import target." />
       <Button HorizontalAlignment="Left" Margin="0,6,0,0" Padding="12,4"
               Content="Open Definitive UI Layer Editor…" Click="OpenUiLayerEditor_Click" />
+      <Border Margin="0,8,0,0" Padding="8" BorderBrush="#CCC" BorderThickness="1" CornerRadius="3">
+        <DockPanel>
+          <StackPanel DockPanel.Dock="Right" Orientation="Horizontal">
+            <Button Content="Open…" Padding="10,3" Margin="4,0,0,0" Click="OpenSolution_Click" />
+            <Button Content="Save" Padding="10,3" Margin="4,0,0,0" Click="SaveSolution_Click"
+                    IsEnabled="{Binding CanSaveSolution}" />
+            <Button Content="Save As…" Padding="10,3" Margin="4,0,0,0" Click="SaveSolutionAs_Click"
+                    IsEnabled="{Binding CanSaveSolutionAs}" />
+            <Button Content="Delete…" Padding="10,3" Margin="4,0,0,0" Click="DeleteSolution_Click"
+                    IsEnabled="{Binding CanDeleteSolution}" />
+          </StackPanel>
+          <StackPanel>
+            <TextBlock FontWeight="SemiBold" Text="Scaffolding solution" />
+            <TextBlock Margin="0,2,8,0" Foreground="#555" TextTrimming="CharacterEllipsis"
+                       ToolTip="{Binding SolutionPath}" Text="{Binding SolutionDisplay}" />
+          </StackPanel>
+        </DockPanel>
+      </Border>
       <DockPanel Margin="0,8,0,0">
         <TextBlock Width="160" VerticalAlignment="Center" Text="Import target" />
         <ComboBox Width="310" HorizontalAlignment="Left"
