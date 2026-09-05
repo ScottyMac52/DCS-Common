@@ -138,6 +138,22 @@ test('WINCTRL ICP source matches the 34-button and four-axis reference image', (
   for (const axis of ['JOY_X', 'JOY_Y', 'JOY_RX', 'JOY_RY']) {
     assert.match(lua, new RegExp(`key = "${axis}"`));
   }
+
+  const keypad = [
+    [7, 'ICP key 1', 10, 218], [8, 'ICP key 2', 140, 218], [9, 'ICP key 3', 270, 218], [10, 'RCL', 400, 218],
+    [11, 'ICP key 4', 10, 260], [12, 'ICP key 5', 140, 260], [13, 'ICP key 6', 270, 260], [14, 'ENTR', 400, 260],
+    [15, 'ICP key 7', 10, 301.2], [16, 'ICP key 8', 140, 301.2], [17, 'ICP key 9', 270, 301.2], [18, 'ICP key 0', 400, 301.2],
+  ];
+  for (const [button, hardwareLabel, x, y] of keypad) {
+    const id = `winctrl-icp-btn-${String(button).padStart(2, '0')}`;
+    assert.match(lua, new RegExp(
+      `id = "${id}", key = "JOY_BTN${button}", type = "button", hardwareLabel = "${hardwareLabel}"`));
+    const cell = xml.match(new RegExp(
+      `<mxCell id="label-${id}"[^>]*value="Button ${button} — ${hardwareLabel}"[^>]*>\\s*<mxGeometry[^>]* x="([^"]+)" y="([^"]+)"`));
+    assert.ok(cell, `${id} must retain its physical label and geometry`);
+    assert.equal(Number(cell[1]), x);
+    assert.equal(Number(cell[2]), y);
+  }
 });
 
 
