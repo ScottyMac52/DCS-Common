@@ -494,7 +494,7 @@ test('buildPreview emits base and modifier rows with hold mode', () => {
 });
 
 test('consumer merge guarantees complete TM MFD category fields', () => {
-  const blankCategories = { top: '', right: '', bottom: '', left: '' };
+  const defaultCategories = { top: 'TOP', right: 'RIGHT', bottom: 'BOTTOM', left: 'LEFT' };
   const newDraft = {
     profiles: {},
     pages: [
@@ -504,7 +504,7 @@ test('consumer merge guarantees complete TM MFD category fields', () => {
     semanticModifiers: {},
   };
   const created = mergeConsumerConfig(newDraft, null);
-  assert.deepEqual(created.config.pages[0].categoryLabels, blankCategories);
+  assert.deepEqual(created.config.pages[0].categoryLabels, defaultCategories);
   assert.equal(created.config.pages[1].categoryLabels, undefined, 'non-MFD pages remain unchanged');
 
   const existing = {
@@ -541,7 +541,7 @@ test('consumer merge guarantees complete TM MFD category fields', () => {
     semanticModifiers: {},
   };
   const cleared = mergeConsumerConfig(clearDraft, existing);
-  assert.deepEqual(cleared.config.pages[0].categoryLabels, blankCategories);
+  assert.deepEqual(cleared.config.pages[0].categoryLabels, defaultCategories);
 });
 
 test('scaffold applies and reports per-instance TM MFD categories', () => {

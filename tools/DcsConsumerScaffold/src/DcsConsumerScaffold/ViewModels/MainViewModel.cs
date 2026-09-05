@@ -524,7 +524,8 @@ public sealed class MainViewModel : INotifyPropertyChanged
         .ToDictionary(modifier => modifier.Name!, modifier => modifier.SemanticModifier!.Trim(), StringComparer.OrdinalIgnoreCase);
 
     public IReadOnlyDictionary<string, string> LabelOverrides() => Rows
-        .Where(row => !string.IsNullOrWhiteSpace(row.BindingId) && row.LabelSource != "dcs")
+        .Where(row => !string.IsNullOrWhiteSpace(row.BindingId) &&
+            !string.Equals(row.Label, row.DefaultLabel, StringComparison.Ordinal))
         .ToDictionary(row => row.BindingId!, row => row.Label ?? string.Empty, StringComparer.Ordinal);
 
     public IReadOnlyDictionary<string, IReadOnlyDictionary<string, string>> MfdCategoryOverrides() => Devices

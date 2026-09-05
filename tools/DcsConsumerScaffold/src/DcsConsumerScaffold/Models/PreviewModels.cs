@@ -48,10 +48,10 @@ public sealed class PreviewDevice : INotifyPropertyChanged
     private PreviewChangeState _changeState = PreviewChangeState.NotCompared;
     private string _changeReason = "Select an output repository to compare.";
     private bool _removeRequested;
-    private string _categoryTop = string.Empty;
-    private string _categoryRight = string.Empty;
-    private string _categoryBottom = string.Empty;
-    private string _categoryLeft = string.Empty;
+    private string _categoryTop = "TOP";
+    private string _categoryRight = "RIGHT";
+    private string _categoryBottom = "BOTTOM";
+    private string _categoryLeft = "LEFT";
     [JsonPropertyName("profileFile")]
     public string? ProfileFile { get; set; }
 
