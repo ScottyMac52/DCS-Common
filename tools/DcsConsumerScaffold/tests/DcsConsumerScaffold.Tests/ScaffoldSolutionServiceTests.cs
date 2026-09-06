@@ -15,8 +15,6 @@ public sealed class ScaffoldSolutionServiceTests
         var document = Consumer();
         document.Decisions.InstanceRoles["profile.lua"] = "rio";
         document.Decisions.SemanticModifiers["MFD3_BTN1"] = "shift";
-        document.Decisions.LabelOverrides["binding-1"] = string.Empty;
-        document.Decisions.MfdCategories["mfd1"] = new() { Top = "Jester", Right = "Radar", Bottom = "Steerpoints", Left = "Navigation" };
         document.Decisions.RemovedProfiles.Add("old-device");
 
         service.Save(path, document);
@@ -25,10 +23,48 @@ public sealed class ScaffoldSolutionServiceTests
         Assert.Equal("consumer", loaded.Import.Target);
         Assert.Equal("standalone", loaded.Import.MozaGrip);
         Assert.Equal("rio", loaded.Decisions.InstanceRoles["profile.lua"]);
-        Assert.Equal(string.Empty, loaded.Decisions.LabelOverrides["binding-1"]);
-        Assert.Equal("Radar", loaded.Decisions.MfdCategories["mfd1"].Right);
         Assert.Contains("old-device", loaded.Decisions.RemovedProfiles);
         Assert.EndsWith(Environment.NewLine, File.ReadAllText(path));
+    }
+
+    [Fact]
+    public void LegacyLabelFields_AreIgnoredAndNotWrittenBack()
+    {
+        using var temp = new TempDirectory();
+        var path = Path.Combine(temp.Path, "legacy.dcs-scaffold.json");
+        File.WriteAllText(path, """
+            {
+              "schemaVersion": 1,
+              "name": "Legacy",
+              "import": {
+                "target": "consumer",
+                "profilesDirectory": "profiles",
+                "mozaGrip": "standalone",
+                "outputDirectory": "output",
+                "displayName": "Legacy",
+                "inputModuleId": "Legacy",
+                "kneeboardId": "Legacy"
+              },
+              "decisions": {
+                "instanceRoles": {},
+                "semanticModifiers": {},
+                "labelOverrides": { "old-binding": "stale" },
+                "mfdCategories": {
+                  "mfd1": { "top": "stale", "right": "stale", "bottom": "stale", "left": "stale" }
+                },
+                "removedProfiles": []
+              }
+            }
+            """);
+
+        var service = new ScaffoldSolutionService();
+        var document = service.Load(path);
+        service.Save(path, document);
+        var saved = File.ReadAllText(path);
+
+        Assert.DoesNotContain("labelOverrides", saved);
+        Assert.DoesNotContain("mfdCategories", saved);
+        Assert.DoesNotContain("stale", saved);
     }
 
     [Fact]
