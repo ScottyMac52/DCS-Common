@@ -34,7 +34,7 @@ Installer (tag `vX.X.X.X`): Inno Setup via shared-github-workflows. The installe
 The main importer can save its complete workspace as an indented, versioned `.dcs-scaffold.json` file. This includes the import target, paths, MOZA grip choice, consumer identities, device roles, semantic modifiers, and explicit repository-only removal requests.
 
 - **Open…** validates a solution and populates the form without running Node or writing any repository.
-- Select **Load Preview** to re-read the current DCS profiles and reconcile saved decisions by their stable identifiers.
+- Select **Load Preview** to re-read the current DCS profiles and reconcile saved non-label decisions by their stable identifiers. Every consumer preview discards labels from the previous in-memory preview, then reloads binding labels and MFD side categories from the destination repository’s current `config/kneeboard.json`.
 - Unmatched decisions are retained in the solution and reported instead of being guessed or discarded.
 - **Save** atomically replaces the open solution; **Save As…** creates a separate solution.
 - **Delete…** confirms the exact JSON path and deletes only that file. The current values remain in the importer as an unsaved workspace.
