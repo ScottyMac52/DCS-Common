@@ -57,29 +57,8 @@ public sealed class ScaffoldSolutionDecisions
     [JsonPropertyName("semanticModifiers")]
     public SortedDictionary<string, string> SemanticModifiers { get; set; } = new(StringComparer.OrdinalIgnoreCase);
 
-    [JsonPropertyName("labelOverrides")]
-    public SortedDictionary<string, string> LabelOverrides { get; set; } = new(StringComparer.Ordinal);
-
-    [JsonPropertyName("mfdCategories")]
-    public SortedDictionary<string, ScaffoldMfdCategories> MfdCategories { get; set; } = new(StringComparer.OrdinalIgnoreCase);
-
     [JsonPropertyName("removedProfiles")]
     public SortedSet<string> RemovedProfiles { get; set; } = new(StringComparer.OrdinalIgnoreCase);
-}
-
-public sealed class ScaffoldMfdCategories
-{
-    [JsonPropertyName("top")]
-    public string Top { get; set; } = "TOP";
-
-    [JsonPropertyName("right")]
-    public string Right { get; set; } = "RIGHT";
-
-    [JsonPropertyName("bottom")]
-    public string Bottom { get; set; } = "BOTTOM";
-
-    [JsonPropertyName("left")]
-    public string Left { get; set; } = "LEFT";
 }
 
 public sealed class ScaffoldSolutionService

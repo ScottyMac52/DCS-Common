@@ -39,7 +39,7 @@ public sealed class ScaffoldSolutionViewModelTests
     }
 
     [Fact]
-    public void CaptureSolution_PreservesEveryReviewedDecision()
+    public void CaptureSolution_PreservesOnlyNonLabelDecisions()
     {
         var viewModel = new MainViewModel
         {
@@ -81,8 +81,6 @@ public sealed class ScaffoldSolutionViewModelTests
 
         Assert.Equal("pilot", document.Decisions.InstanceRoles["mfd.lua"]);
         Assert.Equal("shift", document.Decisions.SemanticModifiers["MFD3_BTN1"]);
-        Assert.Equal(string.Empty, document.Decisions.LabelOverrides["binding-1"]);
-        Assert.Equal("Radar", document.Decisions.MfdCategories["mfd1"].Right);
         Assert.Contains("unused", document.Decisions.RemovedProfiles);
     }
 

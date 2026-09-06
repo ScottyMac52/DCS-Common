@@ -31,7 +31,7 @@ Installer (tag `vX.X.X.X`): Inno Setup via shared-github-workflows. The installe
 
 ## Reuse a scaffolding solution
 
-The main importer can save its complete workspace as an indented, versioned `.dcs-scaffold.json` file. This includes the import target, paths, MOZA grip choice, consumer identities, device roles, semantic modifiers, binding-label overrides, MFD side categories, and explicit repository-only removal requests.
+The main importer can save its complete workspace as an indented, versioned `.dcs-scaffold.json` file. This includes the import target, paths, MOZA grip choice, consumer identities, device roles, semantic modifiers, and explicit repository-only removal requests.
 
 - **Open…** validates a solution and populates the form without running Node or writing any repository.
 - Select **Load Preview** to re-read the current DCS profiles and reconcile saved decisions by their stable identifiers.
@@ -41,7 +41,7 @@ The main importer can save its complete workspace as an indented, versioned `.dc
 - Relative paths are interpreted from the solution file's directory. Absolute paths are recommended for machine-local solutions.
 - Invalid JSON and unsupported schema versions leave the current workspace unchanged.
 
-The solution file never contains generated previews, generated consumer content, credentials, or any state from the **Definitive UI Layer Editor**. A solution controls the normal preview/scaffold workflow only.
+The solution file never contains binding labels or MFD side-category labels. Those values always come from the destination repository’s current `config/kneeboard.json` when **Load Preview** runs, keeping that file authoritative and preventing saved solutions from reviving stale or orphaned labels. Legacy solution files containing `labelOverrides` or `mfdCategories` are accepted, but those properties are ignored and removed the next time the solution is saved. The solution also never contains generated previews, generated consumer content, credentials, or any state from the **Definitive UI Layer Editor**.
 
 ## Synchronize labels by command
 

@@ -565,7 +565,6 @@ public sealed class MainViewModel : INotifyPropertyChanged
             string.Equals(item.Command, row.Command, StringComparison.Ordinal));
         group?.Refresh(Rows);
         RecomparePreview();
-        MarkSolutionDirty();
     }
 
     private void Modifier_PropertyChanged(object? sender, PropertyChangedEventArgs e)
@@ -575,9 +574,7 @@ public sealed class MainViewModel : INotifyPropertyChanged
 
     private void Device_PropertyChanged(object? sender, PropertyChangedEventArgs e)
     {
-        if (e.PropertyName is nameof(PreviewDevice.Role) or nameof(PreviewDevice.CategoryTop) or
-            nameof(PreviewDevice.CategoryRight) or nameof(PreviewDevice.CategoryBottom) or
-            nameof(PreviewDevice.CategoryLeft) or nameof(PreviewDevice.RemoveRequested))
+        if (e.PropertyName is nameof(PreviewDevice.Role) or nameof(PreviewDevice.RemoveRequested))
         {
             RecomparePreview();
             MarkSolutionDirty();
@@ -662,23 +659,12 @@ public sealed class MainViewModel : INotifyPropertyChanged
         {
             foreach (var item in _pendingSolutionDecisions.InstanceRoles) decisions.InstanceRoles[item.Key] = item.Value;
             foreach (var item in _pendingSolutionDecisions.SemanticModifiers) decisions.SemanticModifiers[item.Key] = item.Value;
-            foreach (var item in _pendingSolutionDecisions.LabelOverrides) decisions.LabelOverrides[item.Key] = item.Value;
-            foreach (var item in _pendingSolutionDecisions.MfdCategories) decisions.MfdCategories[item.Key] = item.Value;
             foreach (var item in _pendingSolutionDecisions.RemovedProfiles) decisions.RemovedProfiles.Add(item);
         }
 
         foreach (var device in Devices.Where(item => !item.IsRepositoryOnly && !string.IsNullOrWhiteSpace(item.ProfileFile) && !string.IsNullOrWhiteSpace(item.Role)))
             decisions.InstanceRoles[device.ProfileFile!] = device.Role!.Trim();
         foreach (var modifier in ModifierOverrides()) decisions.SemanticModifiers[modifier.Key] = modifier.Value;
-        foreach (var label in LabelOverrides()) decisions.LabelOverrides[label.Key] = label.Value;
-        foreach (var device in Devices.Where(item => !item.IsRepositoryOnly && item.IsMfdDevice && !string.IsNullOrWhiteSpace(item.ProfileKey)))
-            decisions.MfdCategories[device.ProfileKey!] = new ScaffoldMfdCategories
-            {
-                Top = device.CategoryTop,
-                Right = device.CategoryRight,
-                Bottom = device.CategoryBottom,
-                Left = device.CategoryLeft,
-            };
         foreach (var device in Devices.Where(item => item.IsRepositoryOnly && item.RemoveRequested && !string.IsNullOrWhiteSpace(item.ProfileKey)))
             decisions.RemovedProfiles.Add(device.ProfileKey!);
 
@@ -764,19 +750,6 @@ public sealed class MainViewModel : INotifyPropertyChanged
         restored += ApplyMap(_pendingSolutionDecisions.SemanticModifiers, key =>
             Modifiers.Where(modifier => !modifier.IsRepositoryOnly && string.Equals(modifier.Name, key, StringComparison.OrdinalIgnoreCase)).ToList(),
             (modifier, value) => modifier.SemanticModifier = value);
-        restored += ApplyMap(_pendingSolutionDecisions.LabelOverrides, key =>
-            Rows.Where(row => string.Equals(row.BindingId, key, StringComparison.Ordinal)).ToList(),
-            (row, value) => row.ApplyLabel(value, "solution"));
-        restored += ApplyMap(_pendingSolutionDecisions.MfdCategories, key =>
-            Devices.Where(device => !device.IsRepositoryOnly && device.IsMfdDevice &&
-                string.Equals(device.ProfileKey, key, StringComparison.OrdinalIgnoreCase)).ToList(),
-            (device, value) =>
-            {
-                device.CategoryTop = value.Top;
-                device.CategoryRight = value.Right;
-                device.CategoryBottom = value.Bottom;
-                device.CategoryLeft = value.Left;
-            });
 
         foreach (var key in _pendingSolutionDecisions.RemovedProfiles.ToList())
         {
@@ -791,8 +764,6 @@ public sealed class MainViewModel : INotifyPropertyChanged
         RebuildCommandLabels();
         var unmatched = _pendingSolutionDecisions.InstanceRoles.Count +
             _pendingSolutionDecisions.SemanticModifiers.Count +
-            _pendingSolutionDecisions.LabelOverrides.Count +
-            _pendingSolutionDecisions.MfdCategories.Count +
             _pendingSolutionDecisions.RemovedProfiles.Count;
         IsSolutionDirty = false;
         StatusText += $"{Environment.NewLine}Restored {restored} saved decisions; {unmatched} no longer match the current preview.";
