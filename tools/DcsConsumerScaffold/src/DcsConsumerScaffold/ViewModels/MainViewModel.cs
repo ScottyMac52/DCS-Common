@@ -341,7 +341,6 @@ public sealed class MainViewModel : INotifyPropertyChanged
         _comparisonSnapshot = null;
         StatusText = "Running Node scaffold engine (preview)…";
         var semanticModifiers = ModifierOverrides();
-        var labels = LabelOverrides();
         Devices.Clear();
         UntrackRows();
         Rows.Clear();
@@ -358,7 +357,7 @@ public sealed class MainViewModel : INotifyPropertyChanged
                 MozaGrip,
                 string.IsNullOrWhiteSpace(CommonRoot) ? null : CommonRoot,
                 semanticModifiers,
-                labels);
+                labels: null);
 
             if (document?.Devices != null)
             {
