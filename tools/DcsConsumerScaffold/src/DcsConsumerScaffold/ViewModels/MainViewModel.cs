@@ -14,6 +14,7 @@ public sealed class MainViewModel : INotifyPropertyChanged
     private readonly CurrentLabelService _currentLabels;
     private readonly UiLayerImportService _uiLayerImport;
     private readonly PreviewComparisonService _comparison;
+    private readonly DcsCommandCatalogService _commandCatalogService;
     private RepositoryPreviewSnapshot? _comparisonSnapshot;
     private string _profilesDir = string.Empty;
     private string _modifiersPath = string.Empty;
@@ -40,23 +41,36 @@ public sealed class MainViewModel : INotifyPropertyChanged
     private bool _isSolutionDirty;
     private bool _suppressSolutionDirty;
     private readonly Dictionary<string, (string Raw, string Resolved)> _loadedSolutionPaths = new(StringComparer.Ordinal);
+    private DcsCommandCatalogDocument? _commandCatalog;
+    private string? _commandCatalogPath;
+    private string _commandSearch = string.Empty;
+    private string _selectedCommandCategory = "All";
+    private string _selectedCommandType = "All";
+    private string _selectedCommandBindingState = "All";
 
     public MainViewModel(
         ScaffoldEngineService? engine = null,
         CurrentLabelService? currentLabels = null,
         UiLayerImportService? uiLayerImport = null,
-        PreviewComparisonService? comparison = null)
+        PreviewComparisonService? comparison = null,
+        DcsCommandCatalogService? commandCatalogService = null)
     {
         _engine = engine ?? new ScaffoldEngineService();
         _currentLabels = currentLabels ?? new CurrentLabelService();
         _uiLayerImport = uiLayerImport ?? new UiLayerImportService();
         _comparison = comparison ?? new PreviewComparisonService();
+        _commandCatalogService = commandCatalogService ?? new DcsCommandCatalogService();
         LoadPreviewCommand = new RelayCommand(async () => await LoadPreviewAsync(), CanLoadPreview);
         ProceedCommand = new RelayCommand(async () => await ProceedAsync(), CanProceed);
         Devices = new ObservableCollection<PreviewDevice>();
         Rows = new ObservableCollection<PreviewRow>();
         Modifiers = new ObservableCollection<PreviewModifier>();
         CommandLabels = new ObservableCollection<CommandLabelGroup>();
+        CommandCatalog = new ObservableCollection<DcsCommandCatalogEntry>();
+        FilteredCommands = new ObservableCollection<DcsCommandCatalogEntry>();
+        CommandCategories = new ObservableCollection<string> { "All" };
+        CommandTypes = new ObservableCollection<string> { "All", "button", "axis" };
+        CommandBindingStates = new ObservableCollection<string> { "All", "Bound", "Unbound" };
     }
 
     public event PropertyChangedEventHandler? PropertyChanged;
@@ -65,6 +79,49 @@ public sealed class MainViewModel : INotifyPropertyChanged
     public ObservableCollection<PreviewRow> Rows { get; }
     public ObservableCollection<PreviewModifier> Modifiers { get; }
     public ObservableCollection<CommandLabelGroup> CommandLabels { get; }
+    public ObservableCollection<DcsCommandCatalogEntry> CommandCatalog { get; }
+    public ObservableCollection<DcsCommandCatalogEntry> FilteredCommands { get; }
+    public ObservableCollection<string> CommandCategories { get; }
+    public ObservableCollection<string> CommandTypes { get; }
+    public ObservableCollection<string> CommandBindingStates { get; }
+
+    public string? CommandCatalogPath
+    {
+        get => _commandCatalogPath;
+        private set => Set(ref _commandCatalogPath, value);
+    }
+
+    public string CommandCatalogStatus => _commandCatalog is null
+        ? "No command catalog loaded. Import a schemaVersion 1 catalog after Load Preview."
+        : $"{_commandCatalog.ModuleId} • {CommandCatalog.Count} commands • DCS {_commandCatalog.DcsVersion ?? "unknown"} • {_commandCatalog.Locale ?? "default locale"}";
+
+    public string CommandResultSummary => _commandCatalog is null
+        ? string.Empty
+        : $"Showing {FilteredCommands.Count} of {CommandCatalog.Count}";
+
+    public string CommandSearch
+    {
+        get => _commandSearch;
+        set { if (Set(ref _commandSearch, value)) RefreshCommandFilter(); }
+    }
+
+    public string SelectedCommandCategory
+    {
+        get => _selectedCommandCategory;
+        set { if (Set(ref _selectedCommandCategory, value)) RefreshCommandFilter(); }
+    }
+
+    public string SelectedCommandType
+    {
+        get => _selectedCommandType;
+        set { if (Set(ref _selectedCommandType, value)) RefreshCommandFilter(); }
+    }
+
+    public string SelectedCommandBindingState
+    {
+        get => _selectedCommandBindingState;
+        set { if (Set(ref _selectedCommandBindingState, value)) RefreshCommandFilter(); }
+    }
 
     public string? SolutionPath
     {
@@ -345,6 +402,7 @@ public sealed class MainViewModel : INotifyPropertyChanged
         UntrackRows();
         Rows.Clear();
         CommandLabels.Clear();
+        ClearCommandCatalog();
         Modifiers.Clear();
         HasPreview = false;
         _previewErrorCount = 0;
@@ -494,6 +552,61 @@ public sealed class MainViewModel : INotifyPropertyChanged
             row.PropertyChanged += PreviewRow_PropertyChanged;
         }
         RebuildCommandLabels();
+        RefreshCommandBindingState();
+    }
+
+    public void LoadCommandCatalog(string path)
+    {
+        if (!HasPreview)
+            throw new InvalidOperationException("Load a module preview before importing its DCS command catalog.");
+
+        var document = _commandCatalogService.Load(path, InputModuleId);
+        _commandCatalog = document;
+        CommandCatalogPath = Path.GetFullPath(path);
+        CommandCatalog.Clear();
+        foreach (var command in document.Commands) CommandCatalog.Add(command);
+
+        CommandCategories.Clear();
+        CommandCategories.Add("All");
+        foreach (var category in CommandCatalog.Select(command => command.Category)
+                     .Distinct(StringComparer.OrdinalIgnoreCase).OrderBy(value => value, StringComparer.OrdinalIgnoreCase))
+            CommandCategories.Add(category);
+
+        SelectedCommandCategory = "All";
+        SelectedCommandType = "All";
+        SelectedCommandBindingState = "All";
+        CommandSearch = string.Empty;
+        RefreshCommandBindingState();
+        PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(CommandCatalogStatus)));
+        StatusText = $"Loaded {CommandCatalog.Count} commands for {document.ModuleId} from {Path.GetFileName(path)}.";
+    }
+
+    private void ClearCommandCatalog()
+    {
+        _commandCatalog = null;
+        CommandCatalogPath = null;
+        CommandCatalog.Clear();
+        FilteredCommands.Clear();
+        CommandCategories.Clear();
+        CommandCategories.Add("All");
+        PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(CommandCatalogStatus)));
+        PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(CommandResultSummary)));
+    }
+
+    private void RefreshCommandBindingState()
+    {
+        if (_commandCatalog is null) return;
+        _commandCatalogService.ReconcileBindings(CommandCatalog, Rows);
+        RefreshCommandFilter();
+    }
+
+    private void RefreshCommandFilter()
+    {
+        FilteredCommands.Clear();
+        foreach (var command in _commandCatalogService.Filter(
+                     CommandCatalog, CommandSearch, SelectedCommandCategory, SelectedCommandType, SelectedCommandBindingState))
+            FilteredCommands.Add(command);
+        PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(CommandResultSummary)));
     }
 
     private void RecomparePreview()

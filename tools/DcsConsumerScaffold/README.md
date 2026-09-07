@@ -18,6 +18,7 @@ Publisher: **Vyper Industries** · TFM: `net10.0-windows` · Assembly: `DcsConsu
 10. **Import target** — choose a normal consumer module or the authoritative DCS-Common UI Layer
 11. **Proceed** — writes a consumer tree in consumer mode, or safely synchronizes only `assets/shared/ui-layer` in UI Layer mode
 12. **Definitive UI Layer Editor** — load the complete canonical catalog without connected devices, inspect profiles/bindings/modifiers, reconcile an imported UiLayer folder with explicit per-file actions, validate, and save atomically
+13. **DCS Command Browser (first slice)** — import a versioned module command catalog after Load Preview, then search and filter it by DCS name, category, canonical binding key, type, and bound/unbound state
 
 The selected grip is applied only to generic MOZA AB9 profiles and is preserved as the generated page `deviceId`. No JSON override file is required in the WPF importer; the preview grids show how each mapping and physical instance was resolved. Repeated devices automatically receive stable GUID-backed profile keys. Entering a role gives that physical instance a readable, GUID-associated alias in the generated consumer.
 
@@ -56,6 +57,48 @@ After **Load Preview**, the **Command labels** grid contains one row per distinc
 - **Current** and **Use device** changes are reflected in the command group automatically.
 
 Grouping is a preview/editor feature only. Proceed still persists the existing row-level label overrides, so consumer and UI Layer JSON schemas are unchanged.
+
+## Browse a module command catalog
+
+After **Load Preview**, use **Import catalog…** under **DCS Commands** to load a normalized, user-generated JSON catalog for the selected input module. The importer rejects a mismatched module ID, unsupported schema, duplicate canonical keys, missing identities, and unknown command types before replacing the current browser contents.
+
+Search includes the localized name, raw name, DCS category path, canonical binding key/control ID, and aliases. The category, button/axis, and bound/unbound filters can be combined. Bound state uses an exact, case-sensitive comparison with command identities in the loaded profile; display names are never used as identities.
+
+Minimal schemaVersion 1 example:
+
+```json
+{
+  "schemaVersion": 1,
+  "dcsVersion": "2.9",
+  "moduleId": "FA-18C_hornet",
+  "locale": "en",
+  "generatedAt": "2026-09-07T00:00:00Z",
+  "sourceFingerprint": "user-generated",
+  "commands": [
+    {
+      "bindingKey": "d3001pnilu3001cd1vd1vpnilvu0",
+      "name": "Example command",
+      "rawName": "Example command",
+      "categoryPath": ["HOTAS"],
+      "type": "button",
+      "aliases": ["Example switch"],
+      "actions": {
+        "down": 3001,
+        "up": 3001,
+        "cockpitDeviceId": 1,
+        "valueDown": 1.0,
+        "valueUp": 0.0
+      },
+      "source": {
+        "provider": "installed-dcs",
+        "file": "Input/joystick/default.lua"
+      }
+    }
+  ]
+}
+```
+
+This first delivery is intentionally read-only. It establishes validated command identity and discovery without modifying live Saved Games profiles or executing module Lua. Assigning catalog commands to physical controls requires a subsequent safe profile-rewrite slice that preserves every unrelated `.diff.lua` entry.
 
 ## Import the authoritative UI Layer
 

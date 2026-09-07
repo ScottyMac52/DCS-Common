@@ -186,6 +186,25 @@ public partial class MainWindow : Window
             _viewModel.ApplyCommandLabel(group);
     }
 
+    private void ImportCommandCatalog_Click(object sender, RoutedEventArgs e)
+    {
+        var dialog = new OpenFileDialog
+        {
+            Title = "Import DCS command catalog",
+            Filter = "DCS command catalogs (*.json)|*.json|All files (*.*)|*.*",
+        };
+        if (dialog.ShowDialog(this) != true) return;
+        try
+        {
+            _viewModel.LoadCommandCatalog(dialog.FileName);
+        }
+        catch (Exception ex)
+        {
+            _viewModel.StatusText = ex.Message;
+            MessageBox.Show(this, ex.Message, "Unable to import command catalog", MessageBoxButton.OK, MessageBoxImage.Error);
+        }
+    }
+
     private void PreviewGrid_BeginningEdit(object sender, DataGridBeginningEditEventArgs e)
     {
         if (e.Row.Item is PreviewDevice { IsRepositoryOnly: true } or

@@ -258,6 +258,42 @@
       </DataGrid>
     </GroupBox>
 
+    <GroupBox DockPanel.Dock="Top" Header="DCS Commands (catalog preview)" Margin="0,0,0,8" Padding="4"
+              ToolTip="Search the complete module catalog by DCS name, category, binding key, or alias. Assignment will be added after safe profile rewriting is available.">
+      <DockPanel>
+        <StackPanel DockPanel.Dock="Top">
+          <DockPanel>
+            <Button DockPanel.Dock="Right" Content="Import catalog…" Padding="10,3" Margin="8,0,0,0"
+                    Click="ImportCommandCatalog_Click" IsEnabled="{Binding HasPreview}" />
+            <TextBlock VerticalAlignment="Center" Foreground="#555" Text="{Binding CommandCatalogStatus}" TextTrimming="CharacterEllipsis"
+                       ToolTip="{Binding CommandCatalogPath}" />
+          </DockPanel>
+          <WrapPanel Margin="0,5,0,5">
+            <TextBox Width="260" Margin="0,0,8,0" ToolTip="Search name, category, canonical binding key, or alias"
+                     Text="{Binding CommandSearch, UpdateSourceTrigger=PropertyChanged}" />
+            <ComboBox Width="180" Margin="0,0,8,0" ItemsSource="{Binding CommandCategories}"
+                      SelectedItem="{Binding SelectedCommandCategory, UpdateSourceTrigger=PropertyChanged}" />
+            <ComboBox Width="100" Margin="0,0,8,0" ItemsSource="{Binding CommandTypes}"
+                      SelectedItem="{Binding SelectedCommandType, UpdateSourceTrigger=PropertyChanged}" />
+            <ComboBox Width="100" Margin="0,0,8,0" ItemsSource="{Binding CommandBindingStates}"
+                      SelectedItem="{Binding SelectedCommandBindingState, UpdateSourceTrigger=PropertyChanged}" />
+            <TextBlock VerticalAlignment="Center" Text="{Binding CommandResultSummary}" />
+          </WrapPanel>
+        </StackPanel>
+        <DataGrid ItemsSource="{Binding FilteredCommands}" Height="155" AutoGenerateColumns="False" IsReadOnly="True"
+                  CanUserAddRows="False" HeadersVisibility="Column" AlternatingRowBackground="#F5F7FA">
+          <DataGrid.Columns>
+            <DataGridTextColumn Header="DCS name" Binding="{Binding Name}" Width="2*" />
+            <DataGridTextColumn Header="Category" Binding="{Binding Category}" Width="1.4*" />
+            <DataGridTextColumn Header="Binding key / control ID" Binding="{Binding BindingKey}" Width="2*" />
+            <DataGridTextColumn Header="Type" Binding="{Binding Type}" Width="70" />
+            <DataGridTextColumn Header="State" Binding="{Binding BindingState}" Width="90" />
+            <DataGridTextColumn Header="Source" Binding="{Binding SourceDisplay}" Width="120" />
+          </DataGrid.Columns>
+        </DataGrid>
+      </DockPanel>
+    </GroupBox>
+
     <TextBox DockPanel.Dock="Bottom" Height="90" Margin="0,8,0,0"
              IsReadOnly="True" TextWrapping="Wrap" VerticalScrollBarVisibility="Auto"
              Text="{Binding StatusText}" />
