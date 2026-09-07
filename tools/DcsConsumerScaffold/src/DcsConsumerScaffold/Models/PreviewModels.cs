@@ -123,6 +123,12 @@ public sealed class PreviewDevice : INotifyPropertyChanged
     public bool IsMfdDevice => string.Equals(DeviceId, "tm-mfd", StringComparison.OrdinalIgnoreCase);
 
     [JsonIgnore]
+    public string? PageTitle { get; set; }
+
+    [JsonIgnore]
+    public string? PageKicker { get; set; }
+
+    [JsonIgnore]
     public string CategoryTop { get => _categoryTop; set => Set(ref _categoryTop, value ?? string.Empty); }
 
     [JsonIgnore]
