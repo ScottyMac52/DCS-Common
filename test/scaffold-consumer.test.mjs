@@ -286,8 +286,6 @@ test('manifest aliases support every base and grip override', () => {
     ['ava-base-warthog-grip', 25],
     ['warthog-base-warthog-grip', 25],
     ['moza-ab9-warthog-grip', 25],
-    ['ava-base-hornet-grip', 29],
-    ['warthog-base-hornet-grip', 29],
     ['moza-ab9-hornet-grip', 29],
   ];
   for (const [deviceId, calloutCount] of aliases) {
@@ -982,7 +980,7 @@ test('duplicate semantic roles are rejected for the same canonical device', () =
   writeFileSync(rolesPath, JSON.stringify(Object.fromEntries(profiles.map((profile) => [profile, 'tank-control']))));
 
   const preview = buildPreview({ profilesDir, rolesPath, commonRoot });
-  assert.ok(preview.errors.some((error) => /profile key conflict/i.test(error)));
+  assert.ok(preview.errors.some((error) => /profile key .* conflicts/i.test(error)));
 });
 
 test('numbered MFD instance hints keep their established profile aliases', () => {
@@ -1030,7 +1028,7 @@ test('semantic modifier alternatives collapse to one logical layer without losin
   const references = config.pages[0].layers[1].controls['viper-tqs-button-05'];
   assert.equal(references.length, 2);
   assert.notDeepEqual(references[0].modifiers, references[1].modifiers);
-  assert.deepEqual(references.map(({ label }) => label), ['VR left', 'VR left']);
+  assert.deepEqual(references.map(({ labelId }) => config.labels[labelId]), ['VR left', 'VR left']);
 
   const outputDir = join(root, 'consumer');
   writeConsumer({

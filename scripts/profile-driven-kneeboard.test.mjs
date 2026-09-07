@@ -77,8 +77,10 @@ test('merges base and S3 layers onto one page with shift color and legend', () =
   const config = loadProfileDrivenConfig('kneeboard.json', { consumerRoot, commonRoot });
   assert.equal(config.pages.length, 1, 'layers merge into a single page');
   assert.equal(config.pages[0].file, '02-LEFT-MFD');
-  assert.equal(config.pages[0].labels['mfd-osb-t1'], 'Markpoint shortcut', 'shifted layer label wins on same callout');
-  assert.equal(config.pages[0].labelColors['mfd-osb-t1'], '#dc2626', 'first used modifier is red');
+  assert.deepEqual(config.pages[0].labels['mfd-osb-t1'], [
+    { label: 'Left MFD OSB 1', fullLabel: 'Left MFD OSB 1', color: null },
+    { label: 'Markpoint shortcut', fullLabel: 'Markpoint shortcut', color: '#dc2626' },
+  ], 'base and shifted labels coexist on the shared callout');
   assert.ok(config.pages[0].legend.length >= 2);
   assert.match(config.pages[0].legend[1].label, /S3/);
   assert.equal(config.pages[0].legend[1].fill, '#dc2626');

@@ -40,17 +40,17 @@
   <line x1="391" y1="322" x2="144" y2="520" stroke="#00bfff" stroke-width="1.5" stroke-dasharray="5 3" opacity="0.75"/>
   <circle cx="391" cy="322" r="5" fill="#00bfff" stroke="#0f172a" stroke-width="1.5"/>
   <rect x="10" y="520" width="268" height="22" rx="4" fill="#1e293b" stroke="#00bfff" stroke-width="1.5"/>
-  <text id="lbl-pto2-button-35" x="144" y="535" text-anchor="middle" font-family="Arial,sans-serif" font-size="10" fill="#f1f5f9">Landing gear handle up</text>
+  <text id="lbl-pto2-button-35" x="144" y="535" text-anchor="middle" font-family="Arial,sans-serif" font-size="10" fill="#f1f5f9">Landing gear up</text>
   <!-- callout:pto2-button-36 -->
   <line x1="391" y1="362" x2="144" y2="546" stroke="#00bfff" stroke-width="1.5" stroke-dasharray="5 3" opacity="0.75"/>
   <circle cx="391" cy="362" r="5" fill="#00bfff" stroke="#0f172a" stroke-width="1.5"/>
   <rect x="10" y="546" width="268" height="22" rx="4" fill="#1e293b" stroke="#00bfff" stroke-width="1.5"/>
-  <text id="lbl-pto2-button-36" x="144" y="561" text-anchor="middle" font-family="Arial,sans-serif" font-size="10" fill="#f1f5f9">Landing gear handle center</text>
+  <text id="lbl-pto2-button-36" x="144" y="561" text-anchor="middle" font-family="Arial,sans-serif" font-size="10" fill="#f1f5f9">Landing gear Center</text>
   <!-- callout:pto2-button-37 -->
   <line x1="391" y1="402" x2="144" y2="572" stroke="#00bfff" stroke-width="1.5" stroke-dasharray="5 3" opacity="0.75"/>
   <circle cx="391" cy="402" r="5" fill="#00bfff" stroke="#0f172a" stroke-width="1.5"/>
   <rect x="10" y="572" width="268" height="22" rx="4" fill="#1e293b" stroke="#00bfff" stroke-width="1.5"/>
-  <text id="lbl-pto2-button-37" x="144" y="587" text-anchor="middle" font-family="Arial,sans-serif" font-size="10" fill="#f1f5f9">Landing gear handle down</text>
+  <text id="lbl-pto2-button-37" x="144" y="587" text-anchor="middle" font-family="Arial,sans-serif" font-size="10" fill="#f1f5f9">Landing gear down</text>
   <!-- callout:pto2-button-2 -->
   <line x1="421" y1="452" x2="144" y2="597" stroke="#00bfff" stroke-width="1.5" stroke-dasharray="5 3" opacity="0.75"/>
   <circle cx="421" cy="452" r="5" fill="#00bfff" stroke="#0f172a" stroke-width="1.5"/>
@@ -65,12 +65,12 @@
   <line x1="561" y1="557" x2="144" y2="332" stroke="#00bfff" stroke-width="1.5" stroke-dasharray="5 3" opacity="0.75"/>
   <circle cx="561" cy="557" r="5" fill="#00bfff" stroke="#0f172a" stroke-width="1.5"/>
   <rect x="10" y="310" width="268" height="22" rx="4" fill="#1e293b" stroke="#00bfff" stroke-width="1.5"/>
-  <text id="lbl-pto2-button-12" x="144" y="325" text-anchor="middle" font-family="Arial,sans-serif" font-size="10" fill="#f1f5f9">Hook bypass field</text>
+  <text id="lbl-pto2-button-12" x="144" y="325" text-anchor="middle" font-family="Arial,sans-serif" font-size="10" fill="#f1f5f9">bypass field</text>
   <!-- callout:pto2-button-13 -->
   <line x1="561" y1="602" x2="144" y2="358" stroke="#00bfff" stroke-width="1.5" stroke-dasharray="5 3" opacity="0.75"/>
   <circle cx="561" cy="602" r="5" fill="#00bfff" stroke="#0f172a" stroke-width="1.5"/>
   <rect x="10" y="336" width="268" height="22" rx="4" fill="#1e293b" stroke="#00bfff" stroke-width="1.5"/>
-  <text id="lbl-pto2-button-13" x="144" y="351" text-anchor="middle" font-family="Arial,sans-serif" font-size="10" fill="#f1f5f9">Hook bypass carrier</text>
+  <text id="lbl-pto2-button-13" x="144" y="351" text-anchor="middle" font-family="Arial,sans-serif" font-size="10" fill="#f1f5f9">bypass carrier</text>
   <!-- callout:pto2-button-14 -->
   <line x1="641" y1="557" x2="144" y2="384" stroke="#00bfff" stroke-width="1.5" stroke-dasharray="5 3" opacity="0.75"/>
   <circle cx="641" cy="557" r="5" fill="#00bfff" stroke="#0f172a" stroke-width="1.5"/>
@@ -100,57 +100,57 @@
   <line x1="741" y1="140" x2="144" y2="440" stroke="#00bfff" stroke-width="1.5" stroke-dasharray="5 3" opacity="0.75"/>
   <circle cx="741" cy="140" r="5" fill="#00bfff" stroke="#0f172a" stroke-width="1.5"/>
   <rect x="10" y="440" width="268" height="22" rx="4" fill="#1e293b" stroke="#00bfff" stroke-width="1.5"/>
-  <text id="lbl-pto2-button-17" x="144" y="455" text-anchor="middle" font-family="Arial,sans-serif" font-size="10" fill="#f1f5f9">Select jettison L FUS / MSL</text>
+  <text id="lbl-pto2-button-17" x="144" y="455" text-anchor="middle" font-family="Arial,sans-serif" font-size="10" fill="#f1f5f9">jettison L FUS / MSL</text>
   <!-- callout:pto2-button-18 -->
   <line x1="771" y1="130" x2="1222" y2="91" stroke="#00bfff" stroke-width="1.5" stroke-dasharray="5 3" opacity="0.75"/>
   <circle cx="771" cy="130" r="5" fill="#00bfff" stroke="#0f172a" stroke-width="1.5"/>
   <rect x="1222" y="80" width="268" height="22" rx="4" fill="#1e293b" stroke="#00bfff" stroke-width="1.5"/>
-  <text id="lbl-pto2-button-18" x="1356" y="95" text-anchor="middle" font-family="Arial,sans-serif" font-size="10" fill="#f1f5f9">Select jettison SAFE</text>
+  <text id="lbl-pto2-button-18" x="1356" y="95" text-anchor="middle" font-family="Arial,sans-serif" font-size="10" fill="#f1f5f9">jettison SAFE</text>
   <!-- callout:pto2-button-19 -->
   <line x1="806" y1="140" x2="1222" y2="117" stroke="#00bfff" stroke-width="1.5" stroke-dasharray="5 3" opacity="0.75"/>
   <circle cx="806" cy="140" r="5" fill="#00bfff" stroke="#0f172a" stroke-width="1.5"/>
   <rect x="1222" y="106" width="268" height="22" rx="4" fill="#1e293b" stroke="#00bfff" stroke-width="1.5"/>
-  <text id="lbl-pto2-button-19" x="1356" y="121" text-anchor="middle" font-family="Arial,sans-serif" font-size="10" fill="#f1f5f9">Select jettison R FUS / MSL</text>
+  <text id="lbl-pto2-button-19" x="1356" y="121" text-anchor="middle" font-family="Arial,sans-serif" font-size="10" fill="#f1f5f9">jettison R FUS / MSL</text>
   <!-- callout:pto2-button-20 -->
   <line x1="824" y1="177" x2="1222" y2="143" stroke="#00bfff" stroke-width="1.5" stroke-dasharray="5 3" opacity="0.75"/>
   <circle cx="824" cy="177" r="5" fill="#00bfff" stroke="#0f172a" stroke-width="1.5"/>
   <rect x="1222" y="132" width="268" height="22" rx="4" fill="#1e293b" stroke="#00bfff" stroke-width="1.5"/>
-  <text id="lbl-pto2-button-20" x="1356" y="147" text-anchor="middle" font-family="Arial,sans-serif" font-size="10" fill="#f1f5f9">Select jettison RACK / LCHR</text>
+  <text id="lbl-pto2-button-20" x="1356" y="147" text-anchor="middle" font-family="Arial,sans-serif" font-size="10" fill="#f1f5f9">jettison RACK / LCHR</text>
   <!-- callout:pto2-button-21 -->
   <line x1="804" y1="207" x2="1222" y2="169" stroke="#00bfff" stroke-width="1.5" stroke-dasharray="5 3" opacity="0.75"/>
   <circle cx="804" cy="207" r="5" fill="#00bfff" stroke="#0f172a" stroke-width="1.5"/>
   <rect x="1222" y="158" width="268" height="22" rx="4" fill="#1e293b" stroke="#00bfff" stroke-width="1.5"/>
-  <text id="lbl-pto2-button-21" x="1356" y="173" text-anchor="middle" font-family="Arial,sans-serif" font-size="10" fill="#f1f5f9">Select jettison STORES</text>
+  <text id="lbl-pto2-button-21" x="1356" y="173" text-anchor="middle" font-family="Arial,sans-serif" font-size="10" fill="#f1f5f9">jettison STORES</text>
   <!-- callout:pto2-button-22 -->
   <line x1="754" y1="182" x2="1222" y2="195" stroke="#00bfff" stroke-width="1.5" stroke-dasharray="5 3" opacity="0.75"/>
   <circle cx="754" cy="182" r="5" fill="#00bfff" stroke="#0f172a" stroke-width="1.5"/>
   <rect x="1222" y="184" width="268" height="22" rx="4" fill="#1e293b" stroke="#00bfff" stroke-width="1.5"/>
-  <text id="lbl-pto2-button-22" x="1356" y="199" text-anchor="middle" font-family="Arial,sans-serif" font-size="10" fill="#f1f5f9">Select jettison pushbutton</text>
+  <text id="lbl-pto2-button-22" x="1356" y="199" text-anchor="middle" font-family="Arial,sans-serif" font-size="10" fill="#f1f5f9">Jet Button</text>
   <!-- callout:pto2-button-23 -->
   <line x1="921" y1="140" x2="1356" y2="210" stroke="#00bfff" stroke-width="1.5" stroke-dasharray="5 3" opacity="0.75"/>
   <circle cx="921" cy="140" r="5" fill="#00bfff" stroke="#0f172a" stroke-width="1.5"/>
   <rect x="1222" y="210" width="268" height="22" rx="4" fill="#1e293b" stroke="#00bfff" stroke-width="1.5"/>
-  <text id="lbl-pto2-button-23" x="1356" y="225" text-anchor="middle" font-family="Arial,sans-serif" font-size="10" fill="#f1f5f9">Jet station select center</text>
+  <text id="lbl-pto2-button-23" x="1356" y="225" text-anchor="middle" font-family="Arial,sans-serif" font-size="10" fill="#f1f5f9">Jet Center</text>
   <!-- callout:pto2-button-24 -->
   <line x1="896" y1="172" x2="1356" y2="236" stroke="#00bfff" stroke-width="1.5" stroke-dasharray="5 3" opacity="0.75"/>
   <circle cx="896" cy="172" r="5" fill="#00bfff" stroke="#0f172a" stroke-width="1.5"/>
   <rect x="1222" y="236" width="268" height="22" rx="4" fill="#1e293b" stroke="#00bfff" stroke-width="1.5"/>
-  <text id="lbl-pto2-button-24" x="1356" y="251" text-anchor="middle" font-family="Arial,sans-serif" font-size="10" fill="#f1f5f9">Jet station select LI</text>
+  <text id="lbl-pto2-button-24" x="1356" y="251" text-anchor="middle" font-family="Arial,sans-serif" font-size="10" fill="#f1f5f9">Jet LI</text>
   <!-- callout:pto2-button-25 -->
   <line x1="946" y1="167" x2="1356" y2="262" stroke="#00bfff" stroke-width="1.5" stroke-dasharray="5 3" opacity="0.75"/>
   <circle cx="946" cy="167" r="5" fill="#00bfff" stroke="#0f172a" stroke-width="1.5"/>
   <rect x="1222" y="262" width="268" height="22" rx="4" fill="#1e293b" stroke="#00bfff" stroke-width="1.5"/>
-  <text id="lbl-pto2-button-25" x="1356" y="277" text-anchor="middle" font-family="Arial,sans-serif" font-size="10" fill="#f1f5f9">Jet station select RI</text>
+  <text id="lbl-pto2-button-25" x="1356" y="277" text-anchor="middle" font-family="Arial,sans-serif" font-size="10" fill="#f1f5f9">Jet RI</text>
   <!-- callout:pto2-button-26 -->
   <line x1="896" y1="212" x2="1356" y2="288" stroke="#00bfff" stroke-width="1.5" stroke-dasharray="5 3" opacity="0.75"/>
   <circle cx="896" cy="212" r="5" fill="#00bfff" stroke="#0f172a" stroke-width="1.5"/>
   <rect x="1222" y="288" width="268" height="22" rx="4" fill="#1e293b" stroke="#00bfff" stroke-width="1.5"/>
-  <text id="lbl-pto2-button-26" x="1356" y="303" text-anchor="middle" font-family="Arial,sans-serif" font-size="10" fill="#f1f5f9">Jet station select LO</text>
+  <text id="lbl-pto2-button-26" x="1356" y="303" text-anchor="middle" font-family="Arial,sans-serif" font-size="10" fill="#f1f5f9">Jet LO</text>
   <!-- callout:pto2-button-27 -->
   <line x1="946" y1="212" x2="1356" y2="314" stroke="#00bfff" stroke-width="1.5" stroke-dasharray="5 3" opacity="0.75"/>
   <circle cx="946" cy="212" r="5" fill="#00bfff" stroke="#0f172a" stroke-width="1.5"/>
   <rect x="1222" y="314" width="268" height="22" rx="4" fill="#1e293b" stroke="#00bfff" stroke-width="1.5"/>
-  <text id="lbl-pto2-button-27" x="1356" y="329" text-anchor="middle" font-family="Arial,sans-serif" font-size="10" fill="#f1f5f9">Jet station select RO</text>
+  <text id="lbl-pto2-button-27" x="1356" y="329" text-anchor="middle" font-family="Arial,sans-serif" font-size="10" fill="#f1f5f9">Jet RO</text>
   <!-- callout:pto2-button-32 -->
   <line x1="1098" y1="284" x2="1356" y2="357" stroke="#00bfff" stroke-width="1.5" stroke-dasharray="5 3" opacity="0.75"/>
   <circle cx="1098" cy="284" r="5" fill="#00bfff" stroke="#0f172a" stroke-width="1.5"/>
@@ -190,21 +190,21 @@
   <line x1="816" y1="562" x2="907" y2="693" stroke="#00bfff" stroke-width="1.5" stroke-dasharray="5 3" opacity="0.75"/>
   <circle cx="816" cy="562" r="5" fill="#00bfff" stroke="#0f172a" stroke-width="1.5"/>
   <rect x="773" y="693" width="268" height="22" rx="4" fill="#1e293b" stroke="#00bfff" stroke-width="1.5"/>
-  <text id="lbl-pto2-button-38" x="907" y="708" text-anchor="middle" font-family="Arial,sans-serif" font-size="10" fill="#f1f5f9">Emergency brake / parking brake position 1</text>
+  <text id="lbl-pto2-button-38" x="907" y="708" text-anchor="middle" font-family="Arial,sans-serif" font-size="10" fill="#f1f5f9">EBrake 1</text>
   <!-- callout:pto2-button-39 -->
   <line x1="811" y1="617" x2="907" y2="750" stroke="#00bfff" stroke-width="1.5" stroke-dasharray="5 3" opacity="0.75"/>
   <circle cx="811" cy="617" r="5" fill="#00bfff" stroke="#0f172a" stroke-width="1.5"/>
   <rect x="773" y="750" width="268" height="22" rx="4" fill="#1e293b" stroke="#00bfff" stroke-width="1.5"/>
-  <text id="lbl-pto2-button-39" x="907" y="765" text-anchor="middle" font-family="Arial,sans-serif" font-size="10" fill="#f1f5f9">Emergency brake / parking brake position 2</text>
+  <text id="lbl-pto2-button-39" x="907" y="765" text-anchor="middle" font-family="Arial,sans-serif" font-size="10" fill="#f1f5f9">EBrake 2</text>
   <!-- callout:pto2-button-41 -->
   <line x1="851" y1="587" x2="1046" y2="722" stroke="#00bfff" stroke-width="1.5" stroke-dasharray="5 3" opacity="0.75"/>
   <circle cx="851" cy="587" r="5" fill="#00bfff" stroke="#0f172a" stroke-width="1.5"/>
   <rect x="912" y="722" width="268" height="22" rx="4" fill="#1e293b" stroke="#00bfff" stroke-width="1.5"/>
-  <text id="lbl-pto2-button-41" x="1046" y="737" text-anchor="middle" font-family="Arial,sans-serif" font-size="10" fill="#f1f5f9">Emergency brake / parking brake position 4</text>
+  <text id="lbl-pto2-button-41" x="1046" y="737" text-anchor="middle" font-family="Arial,sans-serif" font-size="10" fill="#f1f5f9">EBrake 4</text>
   <!-- callout:pto2-button-40 -->
   <polyline points="781,583 740,733 740,568 781,568 500,913 653,820 741,722" fill="none" stroke="#00bfff" stroke-width="1.5" stroke-dasharray="5 3" opacity="0.75"/>
   <circle cx="781" cy="583" r="5" fill="#00bfff" stroke="#0f172a" stroke-width="1.5"/>
   <rect x="607" y="722" width="268" height="22" rx="4" fill="#1e293b" stroke="#00bfff" stroke-width="1.5"/>
-  <text id="lbl-pto2-button-40" x="741" y="737" text-anchor="middle" font-family="Arial,sans-serif" font-size="10" fill="#f1f5f9">Emergency brake / parking brake position 3</text>
+  <text id="lbl-pto2-button-40" x="741" y="737" text-anchor="middle" font-family="Arial,sans-serif" font-size="10" fill="#f1f5f9">EBrake 3</text>
   <text x="750" y="972" text-anchor="middle" font-family="Arial,sans-serif" font-size="12" fill="#475569">WINCTRL PTO2 - 41 buttons + 0 axes</text>
 </svg>

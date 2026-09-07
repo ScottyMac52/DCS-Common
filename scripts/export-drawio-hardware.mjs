@@ -215,7 +215,8 @@ for (const device of manifest.devices.filter((entry) => entry.drawio && entry.de
   const output = render(device, xml);
   const target = join(hardwareRoot, device.svg);
   if (checkOnly) {
-    if (readFileSync(target, 'utf8') !== output) stale.push(device.svg);
+    const published = readFileSync(target, 'utf8').replaceAll('\r\n', '\n');
+    if (published !== output.replaceAll('\r\n', '\n')) stale.push(device.svg);
   } else {
     mkdirSync(dirname(target), { recursive: true });
     writeFileSync(target, output, 'utf8');
