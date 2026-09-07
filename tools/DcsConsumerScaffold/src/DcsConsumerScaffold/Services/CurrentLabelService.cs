@@ -79,7 +79,7 @@ public sealed class CurrentLabelService
             .Where(page => StringEquals(Property(page, "deviceId"), device.DeviceId))
             .ToList();
         var page = SelectPage(pages, device);
-        ApplyMfdCategories(page, device);
+        ApplyPagePresentation(page, device);
         var selectedRows = RowsForDevice(device, rows);
         if (selectedRows.Count == 0)
             throw new InvalidOperationException($"No preview rows belong to {device.ProfileKey}.");
