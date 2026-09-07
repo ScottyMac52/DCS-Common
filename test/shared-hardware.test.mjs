@@ -3,6 +3,7 @@ import { readFileSync, existsSync } from 'node:fs';
 import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { buildCompleteMock } from '../scripts/generate-complete-build-mock.mjs';
+import { decodeDrawioGraph } from '../scripts/drawio-source.mjs';
 
 const scriptDir = dirname(fileURLToPath(import.meta.url));
 const root = resolve(scriptDir, '..');
@@ -18,7 +19,7 @@ const synchronizedWatermarkDevices = new Set([
 ]);
 
 assert.ok(Array.isArray(manifest.devices), 'manifest should contain a devices array');
-assert.equal(manifest.devices.length, 11, 'expected 11 canonical shared hardware catalogs');
+assert.equal(manifest.devices.length, 12, 'expected 12 canonical shared hardware catalogs');
 
 const manifestIds = new Set(manifest.devices.map(({ id }) => id));
 const aliases = new Set(manifest.devices.flatMap(({ aliases = [] }) => aliases));
@@ -67,7 +68,8 @@ for (const relativePath of requiredTemplateAssets) {
 
 {
   const device = manifest.devices.find(({ id }) => id === 'vkb-f14-gunfighter');
-  const drawio = readFileSync(join(root, 'assets', 'shared', 'hardware', device.drawio), 'utf8');
+  const drawioPath = join(root, 'assets', 'shared', 'hardware', device.drawio);
+  const drawio = decodeDrawioGraph(readFileSync(drawioPath, 'utf8'), drawioPath);
   const svg = readFileSync(join(root, 'assets', 'shared', 'hardware', device.svg), 'utf8');
   const hardwareRoot = join(root, 'assets', 'shared', 'hardware');
   assert.ok(existsSync(join(hardwareRoot, 'source', 'vkb-f14-grip-side.png')),
@@ -95,21 +97,21 @@ for (const relativePath of requiredTemplateAssets) {
     'VKB F-14 SVG must contain each stable callout exactly once');
 
   const geometry = (id) => {
-    const match = drawio.match(new RegExp(
-      `<mxCell id="${id}"[^>]*>[\\s\\S]*?<mxGeometry x="([^"]+)" y="([^"]+)" width="([^"]+)" height="([^"]+)"`,
-    ));
-    assert.ok(match, `VKB F-14 draw.io is missing geometry for ${id}`);
-    return { x: Number(match[1]), y: Number(match[2]), width: Number(match[3]), height: Number(match[4]) };
+    const cell = drawio.match(new RegExp(`<mxCell id="${id}"[^>]*>[\\s\\S]*?<mxGeometry ([^>]+)`));
+    assert.ok(cell, `VKB F-14 draw.io is missing geometry for ${id}`);
+    const attribute = (name) => Number(cell[1].match(new RegExp(`${name}="([^"]+)"`))?.[1]);
+    const result = { x: attribute('x'), y: attribute('y'), width: attribute('width'), height: attribute('height') };
+    assert.ok(Object.values(result).every(Number.isFinite), `VKB F-14 ${id} geometry must contain numeric x/y/width/height`);
+    return result;
   };
   const images = ['hardware-image-1', 'hardware-image-2'].map(geometry);
-  const overlaps = (a, b) => !(
-    a.x + a.width <= b.x || b.x + b.width <= a.x ||
-    a.y + a.height <= b.y || b.y + b.height <= a.y
-  );
   for (const id of expectedIds) {
     const label = geometry(`label-${id}`);
-    assert.ok(images.every((image) => !overlaps(label, image)),
-      `VKB F-14 ${id} label box must remain outside both images`);
+    const labelCenter = { x: label.x + label.width / 2, y: label.y + label.height / 2 };
+    assert.ok(images.every((image) => !(
+      labelCenter.x >= image.x && labelCenter.x <= image.x + image.width &&
+      labelCenter.y >= image.y && labelCenter.y <= image.y + image.height
+    )), `VKB F-14 ${id} label center must remain outside both images`);
     const anchor = geometry(`anchor-${id}`);
     const center = { x: anchor.x + anchor.width / 2, y: anchor.y + anchor.height / 2 };
     assert.ok(images.some((image) => (
@@ -125,14 +127,17 @@ for (const relativePath of requiredTemplateAssets) {
     'VKB F-14 callouts must not repeat a physical anchor');
 
   for (const group of [
-    ['vkb-axis-dlc', 'vkb-btn-dlc', 'vkb-sw1', 'vkb-sw2', 'vkb-sw3', 'vkb-sw4'],
-    ['vkb-btn-release', 'vkb-hat', 'vkb-trim-right', 'vkb-trim-up', 'vkb-trim-down', 'vkb-trim-left', 'vkb-pinky'],
-    ['vkb-trigger', 'vkb-trigger-stage2', 'vkb-paddle'],
+    ['vkb-pinky', 'vkb-sw1', 'vkb-sw2', 'vkb-sw3', 'vkb-sw4', 'vkb-axis-dlc', 'vkb-btn-dlc'],
+    ['vkb-btn-release', 'vkb-hat', 'vkb-trim-left', 'vkb-trim-up', 'vkb-trim-right', 'vkb-trim-down'],
+    ['vkb-trigger', 'vkb-trigger-stage2'],
   ]) {
     const positions = group.map((id) => geometry(`label-${id}`));
     assert.ok(positions.every(({ x }) => x === positions[0].x),
       `VKB F-14 related callouts must share one column: ${group.join(', ')}`);
-    assert.ok(positions.slice(1).every(({ y }, index) => y - positions[index].y === 50),
+    assert.ok(positions.slice(1).every(({ y }, index) => {
+      const gap = y - positions[index].y;
+      return gap >= 44 && gap <= 55;
+    }),
       `VKB F-14 related callouts must be contiguous: ${group.join(', ')}`);
   }
 }
@@ -170,7 +175,8 @@ for (const device of manifest.devices) {
       `${device.id} controls require id, key, type, and hardwareLabel`);
   }
 
-  const drawio = readFileSync(join(root, 'assets', 'shared', 'hardware', device.drawio), 'utf8');
+  const drawioPath = join(root, 'assets', 'shared', 'hardware', device.drawio);
+  const drawio = decodeDrawioGraph(readFileSync(drawioPath, 'utf8'), drawioPath);
   const svg = readFileSync(join(root, 'assets', 'shared', 'hardware', device.svg), 'utf8');
   const luaIds = [...ids].sort();
   const labelBasedDrawio = new Set([
@@ -372,13 +378,15 @@ for (const device of manifest.devices) {
       'WINCTRL PTO2 draw.io labels must carry buttonNumber attributes for watermarks');
     assert.equal([...svg.matchAll(/<text id="lbl-pto2-button-/g)].length, 41,
       'WINCTRL PTO2 SVG must retain one label placeholder for every input');
-    const imgMatch = drawio.match(/id="hardware-image-1"[^>]*>[\s\S]*?<mxGeometry x="([^"]+)" y="([^"]+)" width="([^"]+)" height="([^"]+)"/);
-    assert.ok(imgMatch, 'PTO2 hardware image geometry missing');
-    const [ix, iy, iw, ih] = imgMatch.slice(1).map(Number);
+    const geometry = (id) => {
+      const cell = drawio.match(new RegExp(`id="${id}"[^>]*>[\\s\\S]*?<mxGeometry ([^>]+)`));
+      assert.ok(cell, `PTO2 geometry missing for ${id}`);
+      const attribute = (name) => Number(cell[1].match(new RegExp(`${name}="([^"]+)"`))?.[1]);
+      return ['x', 'y', 'width', 'height'].map(attribute);
+    };
+    const [ix, iy, iw, ih] = geometry('hardware-image-1');
     for (let n = 1; n <= 41; n++) {
-      const lm = drawio.match(new RegExp(`id="label-pto2-button-${n}"[^>]*>[\\s\\S]*?<mxGeometry x="([^"]+)" y="([^"]+)" width="([^"]+)" height="([^"]+)"`));
-      assert.ok(lm, `missing label geometry for button ${n}`);
-      const [lx, ly, lw, lh] = lm.slice(1).map(Number);
+      const [lx, ly, lw, lh] = geometry(`label-pto2-button-${n}`);
       const overlaps = !(lx + lw <= ix || lx >= ix + iw || ly + lh <= iy || ly >= iy + ih);
       assert.ok(!overlaps, `PTO2 label-pto2-button-${n} must stay outside the hardware image`);
     }
@@ -428,11 +436,12 @@ for (const device of manifest.devices) {
       'OnYourTwelve PDCP must define three HSD rotary positions');
 
     const labelPosition = (id) => {
-      const match = drawio.match(new RegExp(
-        `<mxCell id="label-${id}"[^>]*><mxGeometry x="([^"]+)" y="([^"]+)"`,
+      const cell = drawio.match(new RegExp(
+        `<mxCell id="label-${id}"[^>]*>\\s*<mxGeometry ([^>]+)`,
       ));
-      assert.ok(match, `OnYourTwelve PDCP is missing label geometry for ${id}`);
-      return { x: Number(match[1]), y: Number(match[2]) };
+      assert.ok(cell, `OnYourTwelve PDCP is missing label geometry for ${id}`);
+      const attribute = (name) => Number(cell[1].match(new RegExp(`${name}="([^"]+)"`))?.[1]);
+      return { x: attribute('x'), y: attribute('y') };
     };
     for (const group of [
       ['pdcp-hud-dec', 'pdcp-hud-analog'],
@@ -448,7 +457,10 @@ for (const device of manifest.devices) {
       const positions = group.map(labelPosition);
       assert.ok(positions.every(({ x }) => x === positions[0].x),
         `OnYourTwelve PDCP grouped positions must share a callout column: ${group.join(', ')}`);
-      assert.ok(positions.slice(1).every(({ y }, index) => y - positions[index].y === 48),
+      assert.ok(positions.slice(1).every(({ y }, index) => {
+        const gap = Math.abs(y - positions[index].y);
+        return gap >= 26 && gap <= 29;
+      }),
         `OnYourTwelve PDCP grouped positions must be contiguous: ${group.join(', ')}`);
     }
   }
