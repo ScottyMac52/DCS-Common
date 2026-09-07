@@ -44,7 +44,7 @@ public sealed class CurrentLabelService
             }
 
             var selectedPage = SelectPage(pages, device);
-            ApplyMfdCategories(selectedPage, device);
+            ApplyPagePresentation(selectedPage, device);
             var result = ApplyPage(selectedPage, selectedRows, ReadCanonicalLabels(document.RootElement));
             currentCount += result.CurrentCount;
             sharedCount += result.SharedHardwareCount;
@@ -275,8 +275,10 @@ public sealed class CurrentLabelService
         }
     }
 
-    private static void ApplyMfdCategories(JsonElement page, PreviewDevice device)
+    private static void ApplyPagePresentation(JsonElement page, PreviewDevice device)
     {
+        device.PageTitle = Property(page, "title");
+        device.PageKicker = Property(page, "kicker");
         if (!device.IsMfdDevice ||
             !page.TryGetProperty("categoryLabels", out var categories) ||
             categories.ValueKind != JsonValueKind.Object) return;
