@@ -513,6 +513,12 @@ test('consumer merge guarantees complete TM MFD category fields', () => {
       file: '01-MFD',
       deviceId: 'tm-mfd',
       deviceInstance: 'MFD1',
+      title: 'F/A-18 LEFT DDI',
+      kicker: 'INSTANCE 1',
+      layers: [
+        { id: 'base', controls: {} },
+        { id: 'SHIFT', title: 'Custom shifted DDI', controls: {} },
+      ],
       categoryLabels: {
         top: 'Jester Steerpoints',
         right: 'Jester Radar',
@@ -524,11 +530,26 @@ test('consumer merge guarantees complete TM MFD category fields', () => {
   };
   const refreshDraft = {
     profiles: {},
-    pages: [{ file: '01-MFD', deviceId: 'tm-mfd', deviceInstance: 'MFD1' }],
+    pages: [{
+      file: '01-MFD',
+      deviceId: 'tm-mfd',
+      deviceInstance: 'MFD1',
+      title: 'F16 MFD 1',
+      kicker: 'SCAFFOLD DRAFT',
+      layers: [
+        { id: 'base', controls: {} },
+        { id: 'SHIFT', title: 'F16 MFD 1 • SHIFT', controls: {} },
+        { id: 'NEW', title: 'F16 MFD 1 • NEW', controls: {} },
+      ],
+    }],
     semanticModifiers: {},
   };
   const refreshed = mergeConsumerConfig(refreshDraft, existing);
   assert.deepEqual(refreshed.config.pages[0].categoryLabels, existing.pages[0].categoryLabels);
+  assert.equal(refreshed.config.pages[0].title, 'F/A-18 LEFT DDI');
+  assert.equal(refreshed.config.pages[0].kicker, 'INSTANCE 1');
+  assert.equal(refreshed.config.pages[0].layers[1].title, 'Custom shifted DDI');
+  assert.equal(refreshed.config.pages[0].layers[2].title, 'F/A-18 LEFT DDI • NEW');
 
   const clearDraft = {
     profiles: {},
