@@ -40,10 +40,8 @@ test('consumer API resolves AVA Base + F-16C to the TM Warthog Joystick', () => 
   assert.match(loaded.svg, /id="mask-warthog-grip-paddle"/);
 });
 
-test('consumer API resolves AVA Base + F/A-18C to the Hornet Grip', () => {
-  const loaded = loadSharedHardware('ava-base-f18c', { commonRoot });
-  assert.equal(loaded.device.id, 'grip-f18c');
-  assert.equal(loaded.calloutIds.length, 29);
+test('consumer API rejects the removed AVA Hornet composite alias', () => {
+  assert.throws(() => loadSharedHardware('ava-base-f18c', { commonRoot }), /Unknown shared hardware device/);
 });
 
 test('consumer API rejects physical button prefixes in displayed callouts', () => {
