@@ -220,7 +220,12 @@ public sealed class CurrentLabelService
         return result;
     }
 
-    private static void ReadScope(JsonElement scope, IDictionary<BindingKey, string?> labels, IReadOnlyDictionary<string, string?> canonicalLabels)
+    private static void ReadScope(
+        JsonElement scope,
+        string? layerId,
+        IDictionary<BindingKey, string?> exactLabels,
+        IDictionary<BindingLocationKey, List<string?>> locationLabels,
+        IReadOnlyDictionary<string, string?> canonicalLabels)
     {
         var scopeLabels = new Dictionary<string, string?>(StringComparer.Ordinal);
         if (scope.TryGetProperty("labels", out var labelElement) && labelElement.ValueKind == JsonValueKind.Object)
@@ -255,7 +260,17 @@ public sealed class CurrentLabelService
                     defined = !string.IsNullOrWhiteSpace(labelId) && canonicalLabels.TryGetValue(labelId, out label);
                 }
                 if (!defined) defined = scopeLabels.TryGetValue(control.Name, out label);
-                if (defined) labels[new BindingKey(control.Name, key, command)] = label;
+                if (!defined) continue;
+
+                var exactKey = BindingKey.Create(control.Name, key, command, layerId);
+                exactLabels[exactKey] = label;
+                var locationKey = BindingLocationKey.Create(control.Name, key, layerId);
+                if (!locationLabels.TryGetValue(locationKey, out var candidates))
+                {
+                    candidates = [];
+                    locationLabels[locationKey] = candidates;
+                }
+                candidates.Add(label);
             }
         }
     }
@@ -274,19 +289,42 @@ public sealed class CurrentLabelService
 
     private static CurrentLabelImportResult ApplyPage(JsonElement page, IReadOnlyList<PreviewRow> selectedRows, IReadOnlyDictionary<string, string?> canonicalLabels)
     {
-        var current = new Dictionary<BindingKey, string?>();
-        ReadScope(page, current, canonicalLabels);
+        var exactLabels = new Dictionary<BindingKey, string?>();
+        var locationLabels = new Dictionary<BindingLocationKey, List<string?>>();
+        ReadScope(page, null, exactLabels, locationLabels, canonicalLabels);
         if (page.TryGetProperty("layers", out var layers) && layers.ValueKind == JsonValueKind.Array)
         {
-            foreach (var layer in layers.EnumerateArray()) ReadScope(layer, current, canonicalLabels);
+            foreach (var layer in layers.EnumerateArray())
+            {
+                var layerId = Property(layer, "id");
+                ReadScope(
+                    layer,
+                    StringEquals(layerId, "base") ? null : layerId,
+                    exactLabels,
+                    locationLabels,
+                    canonicalLabels);
+            }
         }
 
         var currentCount = 0;
         var sharedCount = 0;
         foreach (var row in selectedRows)
         {
-            var key = new BindingKey(row.CalloutId ?? string.Empty, row.Key ?? string.Empty, row.Command ?? string.Empty);
-            if (current.TryGetValue(key, out var label))
+            var exactKey = BindingKey.Create(row.CalloutId, row.Key, row.Command, row.SemanticChord);
+            var locationKey = BindingLocationKey.Create(row.CalloutId, row.Key, row.SemanticChord);
+            string? label;
+            var found = exactLabels.TryGetValue(exactKey, out label);
+            if (!found && locationLabels.TryGetValue(locationKey, out var candidates))
+            {
+                var distinctLabels = candidates.Distinct(StringComparer.Ordinal).ToList();
+                if (distinctLabels.Count == 1)
+                {
+                    label = distinctLabels[0];
+                    found = true;
+                }
+            }
+
+            if (found)
             {
                 row.ApplyLabel(label, "current");
                 currentCount++;
@@ -338,6 +376,19 @@ public sealed class CurrentLabelService
     private static bool StringEquals(string? left, string? right) =>
         string.Equals(left, right, StringComparison.OrdinalIgnoreCase);
 
-    private readonly record struct BindingKey(string CalloutId, string Key, string Command);
+    private readonly record struct BindingKey(string CalloutId, string Key, string Command, string LayerId)
+    {
+        public static BindingKey Create(string? calloutId, string? key, string? command, string? layerId) =>
+            new(Normalize(calloutId), Normalize(key), Normalize(command), Normalize(layerId));
+    }
+
+    private readonly record struct BindingLocationKey(string CalloutId, string Key, string LayerId)
+    {
+        public static BindingLocationKey Create(string? calloutId, string? key, string? layerId) =>
+            new(Normalize(calloutId), Normalize(key), Normalize(layerId));
+    }
+
+    private static string Normalize(string? value) => (value ?? string.Empty).Trim().ToUpperInvariant();
+
     private readonly record struct UiLayerBindingKey(string CalloutId, string Command);
 }
