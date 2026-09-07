@@ -15,6 +15,7 @@ public sealed class MainViewModel : INotifyPropertyChanged
     private readonly UiLayerImportService _uiLayerImport;
     private readonly PreviewComparisonService _comparison;
     private readonly DcsCommandCatalogService _commandCatalogService;
+    private readonly InstalledDcsCommandCatalogProvider _installedCommandCatalogProvider;
     private RepositoryPreviewSnapshot? _comparisonSnapshot;
     private string _profilesDir = string.Empty;
     private string _modifiersPath = string.Empty;
@@ -53,13 +54,15 @@ public sealed class MainViewModel : INotifyPropertyChanged
         CurrentLabelService? currentLabels = null,
         UiLayerImportService? uiLayerImport = null,
         PreviewComparisonService? comparison = null,
-        DcsCommandCatalogService? commandCatalogService = null)
+        DcsCommandCatalogService? commandCatalogService = null,
+        InstalledDcsCommandCatalogProvider? installedCommandCatalogProvider = null)
     {
         _engine = engine ?? new ScaffoldEngineService();
         _currentLabels = currentLabels ?? new CurrentLabelService();
         _uiLayerImport = uiLayerImport ?? new UiLayerImportService();
         _comparison = comparison ?? new PreviewComparisonService();
         _commandCatalogService = commandCatalogService ?? new DcsCommandCatalogService();
+        _installedCommandCatalogProvider = installedCommandCatalogProvider ?? new InstalledDcsCommandCatalogProvider();
         LoadPreviewCommand = new RelayCommand(async () => await LoadPreviewAsync(), CanLoadPreview);
         ProceedCommand = new RelayCommand(async () => await ProceedAsync(), CanProceed);
         Devices = new ObservableCollection<PreviewDevice>();
@@ -561,8 +564,25 @@ public sealed class MainViewModel : INotifyPropertyChanged
             throw new InvalidOperationException("Load a module preview before importing its DCS command catalog.");
 
         var document = _commandCatalogService.Load(path, InputModuleId);
+        ApplyCommandCatalog(document, Path.GetFullPath(path));
+        StatusText = $"Loaded {CommandCatalog.Count} commands for {document.ModuleId} from {Path.GetFileName(path)}.";
+    }
+
+    public void LoadInstalledDcsCommandCatalog(string installRoot)
+    {
+        if (!HasPreview)
+            throw new InvalidOperationException("Load a module preview before loading commands from DCS.");
+
+        var result = _installedCommandCatalogProvider.Build(installRoot, InputModuleId);
+        ApplyCommandCatalog(result.Document, Path.GetFullPath(installRoot));
+        var skipped = result.SkippedEntryCount == 0 ? string.Empty : $" Skipped {result.SkippedEntryCount} unresolved definition(s).";
+        StatusText = $"Loaded {CommandCatalog.Count} commands for {result.Document.ModuleId} from {result.SourceFiles.Count} installed DCS input file(s).{skipped}";
+    }
+
+    private void ApplyCommandCatalog(DcsCommandCatalogDocument document, string sourcePath)
+    {
         _commandCatalog = document;
-        CommandCatalogPath = Path.GetFullPath(path);
+        CommandCatalogPath = sourcePath;
         CommandCatalog.Clear();
         foreach (var command in document.Commands) CommandCatalog.Add(command);
 
@@ -578,7 +598,6 @@ public sealed class MainViewModel : INotifyPropertyChanged
         CommandSearch = string.Empty;
         RefreshCommandBindingState();
         PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(CommandCatalogStatus)));
-        StatusText = $"Loaded {CommandCatalog.Count} commands for {document.ModuleId} from {Path.GetFileName(path)}.";
     }
 
     private void ClearCommandCatalog()

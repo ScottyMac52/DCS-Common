@@ -205,6 +205,25 @@ public partial class MainWindow : Window
         }
     }
 
+    private void LoadInstalledDcsCommands_Click(object sender, RoutedEventArgs e)
+    {
+        var dialog = new OpenFolderDialog
+        {
+            Title = "Select the DCS World installation folder",
+            Multiselect = false,
+        };
+        if (dialog.ShowDialog(this) != true) return;
+        try
+        {
+            _viewModel.LoadInstalledDcsCommandCatalog(dialog.FolderName);
+        }
+        catch (Exception ex)
+        {
+            _viewModel.StatusText = ex.Message;
+            MessageBox.Show(this, ex.Message, "Unable to load installed DCS commands", MessageBoxButton.OK, MessageBoxImage.Error);
+        }
+    }
+
     private void PreviewGrid_BeginningEdit(object sender, DataGridBeginningEditEventArgs e)
     {
         if (e.Row.Item is PreviewDevice { IsRepositoryOnly: true } or

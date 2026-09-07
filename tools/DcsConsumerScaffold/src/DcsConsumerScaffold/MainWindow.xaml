@@ -265,6 +265,9 @@
           <DockPanel>
             <Button DockPanel.Dock="Right" Content="Import catalog…" Padding="10,3" Margin="8,0,0,0"
                     Click="ImportCommandCatalog_Click" IsEnabled="{Binding HasPreview}" />
+            <Button DockPanel.Dock="Right" Content="Load from DCS…" Padding="10,3" Margin="8,0,0,0"
+                    Click="LoadInstalledDcsCommands_Click" IsEnabled="{Binding HasPreview}"
+                    ToolTip="Select the root DCS World installation and statically read this module's input definitions" />
             <TextBlock VerticalAlignment="Center" Foreground="#555" Text="{Binding CommandCatalogStatus}" TextTrimming="CharacterEllipsis"
                        ToolTip="{Binding CommandCatalogPath}" />
           </DockPanel>
