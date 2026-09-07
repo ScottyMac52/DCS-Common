@@ -60,7 +60,11 @@ Grouping is a preview/editor feature only. Proceed still persists the existing r
 
 ## Browse a module command catalog
 
-After **Load Preview**, use **Import catalog…** under **DCS Commands** to load a normalized, user-generated JSON catalog for the selected input module. The importer rejects a mismatched module ID, unsupported schema, duplicate canonical keys, missing identities, and unknown command types before replacing the current browser contents.
+After **Load Preview**, use **Load from DCS…** under **DCS Commands** and select the root of the installed DCS World directory. The importer discovers the selected module's joystick and keyboard `default.lua` files below `Mods/aircraft/*/Input/<module-id>`, extracts numeric cockpit button and axis definitions, and immediately loads the resulting searchable catalog. The DCS version comes from `autoupdate.cfg`; a SHA-256 source fingerprint records exactly which definitions produced the catalog.
+
+The provider is deliberately a static reader. It does not execute Lua, call `dofile`/`require`, or load module DLLs. Commands whose action or cockpit-device identity is symbolic and cannot be resolved from a numeric literal are skipped and reported in the status line. This keeps importing safe while still supporting the numeric definitions from which DCS canonical binding keys can be reproduced exactly.
+
+**Import catalog…** remains available for catalogs produced by other trusted tooling. The importer rejects a mismatched module ID, unsupported schema, duplicate canonical keys, missing identities, and unknown command types before replacing the current browser contents.
 
 Search includes the localized name, raw name, DCS category path, canonical binding key/control ID, and aliases. The category, button/axis, and bound/unbound filters can be combined. Bound state uses an exact, case-sensitive comparison with command identities in the loaded profile; display names are never used as identities.
 
@@ -98,7 +102,7 @@ Minimal schemaVersion 1 example:
 }
 ```
 
-This first delivery is intentionally read-only. It establishes validated command identity and discovery without modifying live Saved Games profiles or executing module Lua. Assigning catalog commands to physical controls requires a subsequent safe profile-rewrite slice that preserves every unrelated `.diff.lua` entry.
+Catalog loading remains intentionally read-only. It establishes validated command identity and discovery without modifying live Saved Games profiles or executing module Lua. Assigning catalog commands to physical controls requires a subsequent safe profile-rewrite slice that preserves every unrelated `.diff.lua` entry.
 
 ## Import the authoritative UI Layer
 
