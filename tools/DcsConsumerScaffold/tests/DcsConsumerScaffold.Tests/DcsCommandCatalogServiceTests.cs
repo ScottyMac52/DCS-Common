@@ -1,6 +1,7 @@
 using System.Text.Json;
 using DcsConsumerScaffold.Models;
 using DcsConsumerScaffold.Services;
+using Xunit;
 
 namespace DcsConsumerScaffold.Tests;
 

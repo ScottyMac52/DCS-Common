@@ -94,7 +94,8 @@ public sealed class DcsCommandCatalogService
 
     private static IEnumerable<string> SearchValues(DcsCommandCatalogEntry command) =>
         new[] { command.Name, command.RawName, command.Category, command.BindingKey }
-            .Where(value => !string.IsNullOrWhiteSpace(value))!
+            .OfType<string>()
+            .Where(value => !string.IsNullOrWhiteSpace(value))
             .Concat(command.Aliases);
 
     private static string NormalizeType(string? value) => value?.Trim().ToLowerInvariant() switch
