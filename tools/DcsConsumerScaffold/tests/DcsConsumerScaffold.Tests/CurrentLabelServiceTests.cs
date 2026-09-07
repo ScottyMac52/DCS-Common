@@ -221,6 +221,117 @@ public sealed class CurrentLabelServiceTests
     }
 
     [Fact]
+    public void Apply_UsesRepositoryLabelsWhenCommandsChangeButKeepsModifierLayersDistinct()
+    {
+        var destination = Directory.CreateTempSubdirectory("dcs-current-command-change-");
+        try
+        {
+            var configDirectory = Directory.CreateDirectory(Path.Combine(destination.FullName, "config"));
+            File.WriteAllText(Path.Combine(configDirectory.FullName, "kneeboard.json"), """
+                {
+                  "pages": [
+                    {
+                      "deviceId": "tm-mfd",
+                      "deviceInstance": "MFD1",
+                      "layers": [
+                        {
+                          "id": "base",
+                          "controls": {
+                            "mfd-osb-t1": {
+                              "profile": "tm-mfd-1",
+                              "key": "JOY_BTN1",
+                              "command": "old-base-command",
+                              "label": "Repository base label"
+                            }
+                          }
+                        },
+                        {
+                          "id": "SHIFT",
+                          "controls": {
+                            "mfd-osb-t1": {
+                              "profile": "tm-mfd-1",
+                              "key": "JOY_BTN1",
+                              "command": "old-shift-command",
+                              "label": "Repository shifted label"
+                            }
+                          }
+                        }
+                      ]
+                    }
+                  ]
+                }
+                """);
+
+            var device = new PreviewDevice
+            {
+                DeviceId = "tm-mfd",
+                InstanceHint = "1",
+                ProfileFile = "F16 MFD 1.diff.lua",
+                ProfileKey = "tm-mfd-1",
+            };
+            var baseRow = Row(device, "mfd-osb-t1", "JOY_BTN1", "new-base-command", "Shared OSB01");
+            var shiftedRow = Row(device, "mfd-osb-t1", "JOY_BTN1", "new-shift-command", "Shared OSB01");
+            shiftedRow.SemanticChord = "SHIFT";
+
+            var result = new CurrentLabelService().Apply(destination.FullName, device, [baseRow, shiftedRow]);
+
+            Assert.Equal(2, result.CurrentCount);
+            Assert.Equal(0, result.SharedHardwareCount);
+            Assert.Equal("Repository base label", baseRow.Label);
+            Assert.Equal("Repository shifted label", shiftedRow.Label);
+        }
+        finally
+        {
+            destination.Delete(recursive: true);
+        }
+    }
+
+    [Fact]
+    public void Apply_DoesNotGuessWhenOnePhysicalBindingHasConflictingRepositoryLabels()
+    {
+        var destination = Directory.CreateTempSubdirectory("dcs-current-ambiguous-label-");
+        try
+        {
+            var configDirectory = Directory.CreateDirectory(Path.Combine(destination.FullName, "config"));
+            File.WriteAllText(Path.Combine(configDirectory.FullName, "kneeboard.json"), """
+                {
+                  "pages": [
+                    {
+                      "deviceId": "tm-mfd",
+                      "deviceInstance": "MFD1",
+                      "controls": {
+                        "mfd-osb-t1": [
+                          { "key": "JOY_BTN1", "command": "old-one", "label": "First label" },
+                          { "key": "JOY_BTN1", "command": "old-two", "label": "Second label" }
+                        ]
+                      }
+                    }
+                  ]
+                }
+                """);
+
+            var device = new PreviewDevice
+            {
+                DeviceId = "tm-mfd",
+                InstanceHint = "1",
+                ProfileFile = "F16 MFD 1.diff.lua",
+                ProfileKey = "tm-mfd-1",
+            };
+            var row = Row(device, "mfd-osb-t1", "JOY_BTN1", "new-command", "Shared OSB01");
+
+            var result = new CurrentLabelService().Apply(destination.FullName, device, [row]);
+
+            Assert.Equal(0, result.CurrentCount);
+            Assert.Equal(1, result.SharedHardwareCount);
+            Assert.Equal("Shared OSB01", row.Label);
+        }
+        finally
+        {
+            destination.Delete(recursive: true);
+        }
+    }
+
+    [Fact]
     public void ApplyUiLayer_UsesCanonicalOverlayForAliasAndFallsBackToSharedHardware()
     {
         var common = Directory.CreateTempSubdirectory("dcs-current-ui-layer-");
