@@ -101,6 +101,7 @@ public sealed class ScaffoldEngineService
         string? repoName = null,
         IReadOnlyCollection<string>? removedProfiles = null,
         IReadOnlyDictionary<string, IReadOnlyDictionary<string, string>>? mfdCategories = null,
+        IReadOnlyDictionary<string, IReadOnlyDictionary<string, string>>? pagePresentations = null,
         bool includeUiLayer = true,
         CancellationToken cancellationToken = default)
     {
@@ -114,6 +115,7 @@ public sealed class ScaffoldEngineService
         string? labelsPath = null;
         string? removedProfilesPath = null;
         string? mfdCategoriesPath = null;
+        string? pagePresentationsPath = null;
         try
         {
             if (instanceRoles is { Count: > 0 })
@@ -126,9 +128,10 @@ public sealed class ScaffoldEngineService
             labelsPath = await WriteTemporaryJsonAsync("labels", labels, cancellationToken);
             removedProfilesPath = await WriteTemporaryJsonArrayAsync("removed-profiles", removedProfiles, cancellationToken);
             mfdCategoriesPath = await WriteTemporaryObjectAsync("mfd-categories", mfdCategories, cancellationToken);
+            pagePresentationsPath = await WriteTemporaryObjectAsync("page-presentation", pagePresentations, cancellationToken);
 
             var args = BuildWriteArguments(
-                script, profilesDir, modifiersPath, mozaGrip, rolesPath, root, outputDir, displayName, inputModuleId, kneeboardId, repoName, semanticPath, labelsPath, removedProfilesPath, mfdCategoriesPath, includeUiLayer);
+                script, profilesDir, modifiersPath, mozaGrip, rolesPath, root, outputDir, displayName, inputModuleId, kneeboardId, repoName, semanticPath, labelsPath, removedProfilesPath, mfdCategoriesPath, pagePresentationsPath, includeUiLayer);
             var (exitCode, stdout, stderr) = await RunNodeAsync(root, args, cancellationToken).ConfigureAwait(false);
             return (stdout, stderr, exitCode);
         }
@@ -142,6 +145,7 @@ public sealed class ScaffoldEngineService
             DeleteTemporary(labelsPath);
             DeleteTemporary(removedProfilesPath);
             DeleteTemporary(mfdCategoriesPath);
+            DeleteTemporary(pagePresentationsPath);
         }
     }
 
@@ -158,6 +162,7 @@ public sealed class ScaffoldEngineService
         string kneeboardId,
         string profileKey,
         IReadOnlyDictionary<string, IReadOnlyDictionary<string, string>>? mfdCategories = null,
+        IReadOnlyDictionary<string, IReadOnlyDictionary<string, string>>? pagePresentations = null,
         bool includeUiLayer = true,
         CancellationToken cancellationToken = default)
     {
@@ -171,7 +176,8 @@ public sealed class ScaffoldEngineService
             var (_, stderr, exitCode) = await RunWriteAsync(
                 profilesDir, modifiersPath, mozaGrip, instanceRoles, semanticModifiers, labels, root,
                 temporaryRoot, displayName, inputModuleId, kneeboardId,
-                mfdCategories: mfdCategories, includeUiLayer: includeUiLayer, cancellationToken: cancellationToken);
+                mfdCategories: mfdCategories, pagePresentations: pagePresentations,
+                includeUiLayer: includeUiLayer, cancellationToken: cancellationToken);
             if (exitCode is not (0 or 2)) throw new InvalidOperationException($"Temporary scaffold failed: {stderr}");
 
             var script = Path.Combine(root, "scripts", "render-scaffold-preview.mjs");
@@ -333,6 +339,7 @@ public sealed class ScaffoldEngineService
         string? labelsPath = null,
         string? removedProfilesPath = null,
         string? mfdCategoriesPath = null,
+        string? pagePresentationsPath = null,
         bool includeUiLayer = true)
     {
         var list = new List<string>
@@ -372,6 +379,7 @@ public sealed class ScaffoldEngineService
         AddOptionalFile(list, "--labels", labelsPath);
         AddOptionalFile(list, "--remove-profiles", removedProfilesPath);
         AddOptionalFile(list, "--mfd-categories", mfdCategoriesPath);
+        AddOptionalFile(list, "--page-presentation", pagePresentationsPath);
         if (!includeUiLayer) list.Add("--exclude-ui-layer");
 
         if (!string.IsNullOrWhiteSpace(repoName))
