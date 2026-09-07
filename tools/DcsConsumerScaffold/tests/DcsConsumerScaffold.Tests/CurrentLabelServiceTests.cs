@@ -20,6 +20,8 @@ public sealed class CurrentLabelServiceTests
                     {
                       "deviceId": "tm-mfd",
                       "deviceInstance": "MFD3",
+                      "title": "F/A-18 MPCD",
+                      "kicker": "INSTANCE 3",
                       "categoryLabels": {
                         "top": "Jester Steerpoints",
                         "right": "Jester Radar",
@@ -82,6 +84,8 @@ public sealed class CurrentLabelServiceTests
             Assert.Equal("Jester Radar", mfd.CategoryRight);
             Assert.Equal("Radar Range", mfd.CategoryBottom);
             Assert.Equal("Targets", mfd.CategoryLeft);
+            Assert.Equal("F/A-18 MPCD", mfd.PageTitle);
+            Assert.Equal("INSTANCE 3", mfd.PageKicker);
         }
         finally
         {

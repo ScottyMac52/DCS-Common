@@ -467,7 +467,8 @@ public sealed class MainViewModel : INotifyPropertyChanged
                     .Where(device => device.IsRepositoryOnly && device.RemoveRequested && !string.IsNullOrWhiteSpace(device.ProfileKey))
                     .Select(device => device.ProfileKey!)
                     .ToArray(),
-                mfdCategories: MfdCategoryOverrides());
+                mfdCategories: MfdCategoryOverrides(),
+                pagePresentations: PagePresentationOverrides());
 
             StatusText = exitCode is 0 or 2
                 ? $"Proceed finished (exit {exitCode}). See SCAFFOLD-REPORT.md under the output folder.{Environment.NewLine}{stdout}{Environment.NewLine}{stderr}".Trim()
@@ -603,6 +604,19 @@ public sealed class MainViewModel : INotifyPropertyChanged
             device => device.MfdCategoryLabels(),
             StringComparer.OrdinalIgnoreCase);
 
+    public IReadOnlyDictionary<string, IReadOnlyDictionary<string, string>> PagePresentationOverrides() => Devices
+        .Where(device => !device.IsRepositoryOnly &&
+            !string.IsNullOrWhiteSpace(device.ProfileKey) &&
+            (!string.IsNullOrWhiteSpace(device.PageTitle) || !string.IsNullOrWhiteSpace(device.PageKicker)))
+        .ToDictionary(
+            device => device.ProfileKey!,
+            device => (IReadOnlyDictionary<string, string>)new Dictionary<string, string>(StringComparer.Ordinal)
+            {
+                ["title"] = device.PageTitle ?? string.Empty,
+                ["kicker"] = device.PageKicker ?? string.Empty,
+            },
+            StringComparer.OrdinalIgnoreCase);
+
     public CurrentLabelImportResult ImportCurrentLabels(PreviewDevice device)
     {
         var result = IsUiLayerImport
@@ -647,6 +661,7 @@ public sealed class MainViewModel : INotifyPropertyChanged
             string.IsNullOrWhiteSpace(KneeboardId) ? "UiLayer" : KneeboardId.Trim(),
             device.ProfileKey,
             MfdCategoryOverrides(),
+            PagePresentationOverrides(),
             includeUiLayer: !IsUiLayerImport);
     }
 

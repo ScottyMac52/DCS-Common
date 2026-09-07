@@ -44,7 +44,7 @@ public sealed class CurrentLabelService
             }
 
             var selectedPage = SelectPage(pages, device);
-            ApplyMfdCategories(selectedPage, device);
+            ApplyPagePresentation(selectedPage, device);
             var result = ApplyPage(selectedPage, selectedRows, ReadCanonicalLabels(document.RootElement));
             currentCount += result.CurrentCount;
             sharedCount += result.SharedHardwareCount;
@@ -79,7 +79,7 @@ public sealed class CurrentLabelService
             .Where(page => StringEquals(Property(page, "deviceId"), device.DeviceId))
             .ToList();
         var page = SelectPage(pages, device);
-        ApplyMfdCategories(page, device);
+        ApplyPagePresentation(page, device);
         var selectedRows = RowsForDevice(device, rows);
         if (selectedRows.Count == 0)
             throw new InvalidOperationException($"No preview rows belong to {device.ProfileKey}.");
@@ -275,8 +275,10 @@ public sealed class CurrentLabelService
         }
     }
 
-    private static void ApplyMfdCategories(JsonElement page, PreviewDevice device)
+    private static void ApplyPagePresentation(JsonElement page, PreviewDevice device)
     {
+        device.PageTitle = Property(page, "title");
+        device.PageKicker = Property(page, "kicker");
         if (!device.IsMfdDevice ||
             !page.TryGetProperty("categoryLabels", out var categories) ||
             categories.ValueKind != JsonValueKind.Object) return;
