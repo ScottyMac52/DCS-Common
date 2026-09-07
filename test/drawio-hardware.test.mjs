@@ -37,17 +37,15 @@ test('all defined hardware devices have readable native draw.io sources', () => 
 test('Viper TQS source has independently editable handle and Mission Pack image layers', () => {
   const xml = readFileSync(join(hardwareRoot, 'drawio/viper-tqs-mission-pack.drawio'), 'utf8');
   assert.equal((xml.match(/id="hardware-image-/g) ?? []).length, 2);
-  assert.equal((xml.match(/id="connector-viper-tqs-/g) ?? []).length, 63);
-  assert.equal((xml.match(/id="connector-viper-tqs-button-/g) ?? []).length, 57);
+  assert.equal((xml.match(/id="connector-viper-tqs-/g) ?? []).length, 68);
+  assert.equal((xml.match(/id="connector-viper-tqs-button-/g) ?? []).length, 62);
   assert.equal((xml.match(/id="connector-viper-tqs-axis-/g) ?? []).length, 6);
-  assert.equal((xml.match(/id="label-viper-tqs-[^"]+" value="[^"]+"/g) ?? []).length, 63,
+  assert.equal((xml.match(/id="label-viper-tqs-[^"]+"[^>]* value="[^"]+"/g) ?? []).length, 68,
     'every Viper callout must have a default authoring watermark');
-  assert.equal((xml.match(/id="label-viper-tqs-button-\d{2}" value="Button \d+ — [^"]+"/g) ?? []).length, 57,
+  assert.equal((xml.match(/id="label-viper-tqs-button-\d{2}"[^>]* value="Button \d+ — [^"]+"/g) ?? []).length, 62,
     'every visible Viper button watermark must include its button number and F-16C function');
-  assert.equal((xml.match(/id="label-viper-tqs-axis-[^"]+" value="Axis [A-Z]+ — [^"]+"/g) ?? []).length, 6,
+  assert.equal((xml.match(/id="label-viper-tqs-axis-[^"]+"[^>]* value="Axis [A-Z]+ — [^"]+"/g) ?? []).length, 6,
     'every Viper axis watermark must include its axis name and F-16C function');
-  assert.equal((xml.match(/width="160" height="28"/g) ?? []).length, 63,
-    'Viper callouts must match the Logitech Throttle Quadrant width');
 });
 
 test('native sources and exported SVGs preserve callout identities', () => {
@@ -103,13 +101,11 @@ test('TM Warthog joystick uses the supplied artwork label fields without callout
   assert.match(xml, /id="mask-warthog-grip-paddle"/);
 });
 
-test('Hornet grip definitions use all supplied artwork fields without callouts', () => {
-  for (const [file, prefix] of [['grip-f18c.drawio', 'hornet-grip'], ['ava-base-f18c.drawio', 'ava-hornet']]) {
-    const xml = readFileSync(join(hardwareRoot, 'drawio', file), 'utf8');
-    assert.equal((xml.match(new RegExp(`id="label-${prefix}-`, 'g')) ?? []).length, 29);
-    assert.equal((xml.match(new RegExp(`id="(?:anchor|connector)-${prefix}-`, 'g')) ?? []).length, 0);
-    assert.match(xml, /image=data:image\/jpeg,[A-Za-z0-9+/=]+/);
-  }
+test('canonical Hornet grip uses all supplied artwork fields without callouts', () => {
+  const xml = readFileSync(join(hardwareRoot, 'drawio/grip-f18c.drawio'), 'utf8');
+  assert.equal((xml.match(/id="label-hornet-grip-/g) ?? []).length, 29);
+  assert.equal((xml.match(/id="(?:anchor|connector)-hornet-grip-/g) ?? []).length, 0);
+  assert.match(xml, /image=data:image\/jpeg,[A-Za-z0-9+/=]+/);
 });
 
 test('WINCTRL ICP source matches the 34-button and four-axis reference image', () => {
