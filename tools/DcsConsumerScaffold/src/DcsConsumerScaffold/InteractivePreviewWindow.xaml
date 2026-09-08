@@ -1,0 +1,71 @@
+<Window x:Class="DcsConsumerScaffold.InteractivePreviewWindow"
+ xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+ xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+ Title="Controls preview" Width="1480" Height="900" MinWidth="1050" MinHeight="650" WindowStartupLocation="CenterOwner">
+ <DockPanel Margin="12">
+  <StackPanel DockPanel.Dock="Top" Margin="0,0,0,10">
+   <TextBlock x:Name="DeviceTitle" FontSize="20" FontWeight="SemiBold"/>
+   <TextBlock Text="Drag a command onto a callout. Select a callout to edit its label. Changes stay pending until Proceed." Margin="0,4"/>
+   <WrapPanel>
+    <TextBlock Text="Modifier layer:" VerticalAlignment="Center" Margin="0,0,8,0"/>
+    <ComboBox x:Name="Layers" MinWidth="180" SelectionChanged="LayerChanged"/>
+    <Button Content="New chord…" Click="ChooseChordClicked" Margin="8,0,0,0" Padding="10,4" ToolTip="Combine imported modifiers to assign commands on a new chord"/>
+    <TextBlock Text="Zoom:" VerticalAlignment="Center" Margin="16,0,6,0"/>
+    <Slider x:Name="Zoom" Minimum="0.5" Maximum="3" Value="1" Width="140" ValueChanged="ZoomChanged"/>
+    <Button Content="Rendered kneeboard…" Click="RenderClicked" Margin="16,0,0,0" Padding="10,4"/>
+   </WrapPanel>
+  </StackPanel>
+  <DockPanel DockPanel.Dock="Bottom" Margin="0,10,0,0">
+   <Button DockPanel.Dock="Right" Content="Proceed" Padding="20,6" Margin="8,0,0,0" Click="ProceedClicked"/>
+   <Button DockPanel.Dock="Right" Content="Back" Padding="20,6" Click="BackClicked"/>
+   <StackPanel>
+    <TextBlock x:Name="Message" TextWrapping="Wrap"/>
+    <TextBlock Text="White: unchanged   Green: new   Yellow: replaced   Red: conflict   Gray: unassigned" Margin="0,4"/>
+    <TextBlock Text="{Binding PendingAssignmentSummary}" FontWeight="SemiBold"/>
+   </StackPanel>
+  </DockPanel>
+  <Grid>
+   <Grid.ColumnDefinitions><ColumnDefinition Width="300"/><ColumnDefinition Width="*"/><ColumnDefinition Width="280"/></Grid.ColumnDefinitions>
+   <GroupBox Header="Command catalog" Padding="6">
+    <DockPanel>
+     <StackPanel DockPanel.Dock="Top">
+      <WrapPanel><Button Content="Import catalog…" Click="ImportClicked" Padding="8,4"/><Button Content="Load from DCS…" Click="DcsClicked" Padding="8,4" Margin="6,0,0,0"/></WrapPanel>
+      <TextBox Text="{Binding CommandSearch, UpdateSourceTrigger=PropertyChanged}" ToolTip="Search command, category, key or alias" Margin="0,8,0,4"/>
+      <TextBlock Text="Category"/><ComboBox ItemsSource="{Binding CommandCategories}" SelectedItem="{Binding SelectedCommandCategory}"/>
+      <TextBlock Text="Type" Margin="0,4,0,0"/><ComboBox ItemsSource="{Binding CommandTypes}" SelectedItem="{Binding SelectedCommandType}"/>
+      <TextBlock Text="Availability" Margin="0,4,0,0"/><ComboBox ItemsSource="{Binding CommandAvailabilities}" SelectedItem="{Binding SelectedCommandAvailability}"/>
+      <TextBlock Text="Binding state" Margin="0,4,0,0"/><ComboBox ItemsSource="{Binding CommandBindingStates}" SelectedItem="{Binding SelectedCommandBindingState}"/>
+      <TextBlock Text="{Binding CommandResultSummary}" Margin="0,6"/>
+     </StackPanel>
+     <ListBox x:Name="Commands" ItemsSource="{Binding FilteredCommands}" SelectedItem="{Binding SelectedCatalogCommand}"
+       PreviewMouseLeftButtonDown="DragStart" PreviewMouseMove="CommandDrag">
+      <ListBox.ItemTemplate><DataTemplate><StackPanel Margin="2,4" ToolTip="{Binding UnavailableReason}">
+       <TextBlock Text="{Binding Name}" TextWrapping="Wrap" FontWeight="SemiBold"/>
+       <TextBlock Text="{Binding Category}" FontSize="11" Foreground="#555" TextWrapping="Wrap"/>
+       <TextBlock Text="{Binding Availability}" FontSize="11"/>
+      </StackPanel></DataTemplate></ListBox.ItemTemplate>
+     </ListBox>
+    </DockPanel>
+   </GroupBox>
+   <ScrollViewer Grid.Column="1" HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Auto" Margin="8,0" Background="#E2E8F0">
+    <Canvas x:Name="Diagram" HorizontalAlignment="Left" VerticalAlignment="Top"/>
+   </ScrollViewer>
+   <GroupBox Grid.Column="2" Header="Selected control" Padding="10">
+    <StackPanel>
+     <TextBlock x:Name="PhysicalInput" FontSize="18" FontWeight="SemiBold" TextWrapping="Wrap"/>
+     <TextBlock x:Name="Chord" Margin="0,6" TextWrapping="Wrap"/>
+     <Button Content="Choose assignment chord…" Click="ChooseChordClicked" Margin="0,0,0,10" Padding="8,5"/>
+     <TextBlock Text="Current command" FontWeight="SemiBold"/><TextBlock x:Name="CurrentCommand" TextWrapping="Wrap" Margin="0,2,0,10"/>
+     <TextBlock Text="Pending command" FontWeight="SemiBold"/><TextBlock x:Name="PendingCommand" TextWrapping="Wrap" Margin="0,2,0,10"/>
+     <TextBlock Text="DCS default label" FontWeight="SemiBold"/><TextBlock x:Name="DefaultLabel" TextWrapping="Wrap" Margin="0,2,0,10"/>
+     <TextBlock Text="Displayed label" FontWeight="SemiBold"/><TextBox x:Name="LabelEditor" TextChanged="LabelChanged" IsEnabled="False" Margin="0,4,0,8" TextWrapping="Wrap"/>
+     <Button Content="Assign selected command" Click="AssignClicked" Margin="0,4" Padding="8,5"/>
+     <Button Content="Clear assignment" Click="ClearClicked" Margin="0,4" Padding="8,5"/>
+     <Button Content="Undo assignment / Restore" Click="UndoClicked" Margin="0,4" Padding="8,5"/>
+     <Button Content="Reset label to DCS default" Click="ResetClicked" Margin="0,4" Padding="8,5"/>
+     <TextBlock Text="Drag an assigned callout onto another compatible callout to move its command." TextWrapping="Wrap" Margin="0,16,0,0"/>
+    </StackPanel>
+   </GroupBox>
+  </Grid>
+ </DockPanel>
+</Window>

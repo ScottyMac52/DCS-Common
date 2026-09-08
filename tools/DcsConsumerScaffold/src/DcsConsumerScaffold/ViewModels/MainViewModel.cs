@@ -52,6 +52,16 @@ public sealed class MainViewModel : INotifyPropertyChanged
     private string _selectedTargetChord = "All chords";
     private DcsCommandCatalogEntry? _selectedCatalogCommand;
     private PreviewRow? _selectedPreviewRow;
+    private readonly Dictionary<PreviewRow, PreviewRow> _assignmentOriginals = [];
+    private readonly HashSet<PreviewRow> _emptyControls = [];
+    private readonly Dictionary<PreviewRow, List<PreviewRow>> _displacedRows = [];
+    private string _selectedCommandAvailability = "All";
+    public string SelectedCommandAvailability
+    {
+        get => _selectedCommandAvailability;
+        set { if (Set(ref _selectedCommandAvailability, value)) RefreshCommandFilter(); }
+    }
+    public IReadOnlyList<string> CommandAvailabilities { get; } = ["All", "Assignable", "Search only"];
 
     public MainViewModel(
         ScaffoldEngineService? engine = null,
@@ -120,6 +130,7 @@ public sealed class MainViewModel : INotifyPropertyChanged
     }
 
     public bool CanAssignSelectedCommand =>
+        !IsUiLayerImport &&
         SelectedCatalogCommand is { IsAssignable: true } command &&
         SelectedPreviewRow is { } row &&
         !string.Equals(command.BindingKey, row.Command, StringComparison.Ordinal) &&
@@ -491,6 +502,9 @@ public sealed class MainViewModel : INotifyPropertyChanged
         RebuildTargetChords();
         RefreshTargetFilter();
         PendingAssignments.Clear();
+        _assignmentOriginals.Clear();
+        _emptyControls.Clear();
+        _displacedRows.Clear();
         SelectedPreviewRow = null;
         SelectedCatalogCommand = null;
         RaiseAssignmentState();
@@ -662,6 +676,8 @@ public sealed class MainViewModel : INotifyPropertyChanged
 
         var command = SelectedCatalogCommand!;
         var row = SelectedPreviewRow!;
+        RememberOriginal(row);
+        DisplaceConflicts(row);
         var assignment = new DcsCommandAssignment
         {
             ProfileFile = row.ProfileFile!,
@@ -670,7 +686,7 @@ public sealed class MainViewModel : INotifyPropertyChanged
             Reformers = [.. row.Reformers.OrderBy(value => value, StringComparer.Ordinal)],
             Command = command.BindingKey,
             Name = command.Name,
-            AllowCreate = row.IsUnboundCandidate,
+            AllowCreate = _emptyControls.Contains(row) || row.IsUnboundCandidate || PendingFor(row)?.AllowCreate == true,
         };
         var existing = PendingAssignments.FirstOrDefault(item =>
             item.ProfileFile.Equals(assignment.ProfileFile, StringComparison.OrdinalIgnoreCase) &&
@@ -701,6 +717,113 @@ public sealed class MainViewModel : INotifyPropertyChanged
         PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(SelectedCommandSummary)));
         PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(SelectedControlSummary)));
         PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(AssignmentGuidance)));
+    }
+
+    public Task<InteractiveDevice> LoadInteractiveDeviceAsync(PreviewDevice device) =>
+        _engine.LoadInteractiveDeviceAsync(CommonRoot, device.DeviceId!);
+
+    public PreviewRow GetInteractiveRow(PreviewDevice device, InteractiveControl control, IReadOnlyList<string> reformers)
+    {
+        var section = control.Type == "axis" ? "axisDiffs" : "keyDiffs";
+        var chord = string.Join('+', reformers.OrderBy(value => value, StringComparer.Ordinal));
+        var existing = AssignmentTargets.FirstOrDefault(row => string.Equals(row.ProfileFile, device.ProfileFile, StringComparison.OrdinalIgnoreCase) &&
+            (row.Key == control.Key || row.CalloutId == control.Id) && row.Section == section && string.Join('+', row.Reformers.OrderBy(value => value, StringComparer.Ordinal)) == chord);
+        if (existing is not null)
+        {
+            if (existing.IsUnboundCandidate) _emptyControls.Add(existing);
+            return existing;
+        }
+        var row = new PreviewRow
+        {
+            ProfileFile = device.ProfileFile, Stem = device.Stem, DeviceId = device.DeviceId,
+            ProfileKey = device.ProfileKey, PhysicalInstance = device.PhysicalInstance,
+            Key = control.Key, Section = section, Reformers = [.. reformers], Chord = chord,
+            SemanticChord = string.Join('+', reformers.Select(name => Modifiers.FirstOrDefault(modifier => modifier.Name == name)?.SemanticModifier ?? name).OrderBy(value => value, StringComparer.Ordinal)),
+            CalloutId = control.Id, DeviceLabel = control.HardwareLabel, Command = "", Name = "", DefaultLabel = "", Label = "", Status = "Unbound", IsUnboundCandidate = true,
+        };
+        _emptyControls.Add(row);
+        AssignmentTargets.Add(row);
+        RebuildTargetChords();
+        RefreshTargetFilter();
+        return row;
+    }
+
+    public string[] CreateInteractiveChord(IEnumerable<string> names)
+    {
+        var chord = names.Distinct(StringComparer.Ordinal).OrderBy(name => name, StringComparer.Ordinal).ToArray();
+        if (chord.Length == 0) throw new InvalidOperationException("Select at least one modifier for the chord.");
+        if (chord.Any(name => !Modifiers.Any(modifier => !modifier.IsRepositoryOnly && modifier.Name == name)))
+            throw new InvalidOperationException("Choose modifiers from the imported modifiers.lua file.");
+        return chord;
+    }
+
+    private void RememberOriginal(PreviewRow row)
+    {
+        if (!_assignmentOriginals.ContainsKey(row))
+        {
+            var original = System.Text.Json.JsonSerializer.Deserialize<PreviewRow>(System.Text.Json.JsonSerializer.Serialize(row))!;
+            original.ChangeState = row.ChangeState;
+            original.ChangeReason = row.ChangeReason;
+            _assignmentOriginals[row] = original;
+        }
+    }
+
+    private void DisplaceConflicts(PreviewRow row)
+    {
+        var duplicates = Rows.Where(item => item != row && item.ProfileFile == row.ProfileFile && item.Section == row.Section && item.Key == row.Key &&
+            item.Reformers.OrderBy(value => value, StringComparer.Ordinal).SequenceEqual(row.Reformers.OrderBy(value => value, StringComparer.Ordinal))).ToList();
+        if (duplicates.Count == 0) return;
+        if (!_displacedRows.TryGetValue(row, out var displaced)) _displacedRows[row] = displaced = [];
+        foreach (var duplicate in duplicates) { Rows.Remove(duplicate); AssignmentTargets.Remove(duplicate); displaced.Add(duplicate); }
+    }
+
+    public DcsCommandAssignment? PendingFor(PreviewRow row) => PendingAssignments.FirstOrDefault(item =>
+        string.Equals(item.ProfileFile, row.ProfileFile, StringComparison.OrdinalIgnoreCase) && item.Section == row.Section && item.Key == row.Key &&
+        item.Reformers.OrderBy(value => value, StringComparer.Ordinal).SequenceEqual(row.Reformers.OrderBy(value => value, StringComparer.Ordinal)));
+
+    public string OriginalCommandName(PreviewRow row) => _assignmentOriginals.TryGetValue(row, out var original) ? original.Name ?? "" : row.Name ?? "";
+
+    public bool HasConflict(PreviewRow row) => Rows.Count(item => item.ProfileFile == row.ProfileFile && item.Section == row.Section && item.Key == row.Key &&
+        item.Reformers.OrderBy(value => value, StringComparer.Ordinal).SequenceEqual(row.Reformers.OrderBy(value => value, StringComparer.Ordinal)) && !string.IsNullOrEmpty(item.Command)) > 1;
+
+    public void ClearAssignment(PreviewRow row)
+    {
+        if (_emptyControls.Contains(row) || PendingFor(row)?.AllowCreate == true) { UndoAssignment(row); return; }
+        RememberOriginal(row);
+        DisplaceConflicts(row);
+        var pending = PendingFor(row);
+        if (pending is not null) PendingAssignments.Remove(pending);
+        PendingAssignments.Add(new DcsCommandAssignment { ProfileFile = row.ProfileFile!, Section = row.Section!, Key = row.Key!, Reformers = [.. row.Reformers], Clear = true });
+        row.ApplyCommandAssignment("", "");
+        AssignmentChanged();
+    }
+
+    public void UndoAssignment(PreviewRow row)
+    {
+        if (_displacedRows.Remove(row, out var displaced)) foreach (var originalRow in displaced) { Rows.Add(originalRow); AssignmentTargets.Add(originalRow); }
+        var pending = PendingFor(row);
+        if (pending is not null) PendingAssignments.Remove(pending);
+        if (_assignmentOriginals.Remove(row, out var original))
+        {
+            row.ApplyCommandAssignment(original.Command ?? "", original.Name ?? "");
+            row.DefaultLabel = original.DefaultLabel;
+            row.BindingId = original.BindingId;
+            row.IsUnboundCandidate = original.IsUnboundCandidate;
+            row.ApplyLabel(original.Label, original.LabelSource ?? "dcs");
+            row.ChangeState = original.ChangeState;
+            row.ChangeReason = original.ChangeReason;
+            if (original.IsUnboundCandidate) { Rows.Remove(row); row.PropertyChanged -= PreviewRow_PropertyChanged; }
+        }
+        AssignmentChanged();
+    }
+
+    private void AssignmentChanged()
+    {
+        RebuildCommandLabels();
+        RefreshCommandBindingState();
+        RefreshTargetFilter();
+        MarkSolutionDirty();
+        RaiseAssignmentState();
     }
 
     public void LoadCommandCatalog(string path)
@@ -769,7 +892,8 @@ public sealed class MainViewModel : INotifyPropertyChanged
     {
         FilteredCommands.Clear();
         foreach (var command in _commandCatalogService.Filter(
-                     CommandCatalog, CommandSearch, SelectedCommandCategory, SelectedCommandType, SelectedCommandBindingState))
+                     CommandCatalog, CommandSearch, SelectedCommandCategory, SelectedCommandType, SelectedCommandBindingState)
+                     .Where(command => SelectedCommandAvailability == "All" || command.Availability == SelectedCommandAvailability))
             FilteredCommands.Add(command);
         PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(CommandResultSummary)));
     }
@@ -980,7 +1104,7 @@ public sealed class MainViewModel : INotifyPropertyChanged
             device.ProfileKey,
             MfdCategoryOverrides(),
             PagePresentationOverrides(),
-            includeUiLayer: !IsUiLayerImport);
+            includeUiLayer: !IsUiLayerImport, assignments: PendingAssignments.ToArray());
     }
 
 

@@ -289,9 +289,13 @@ public partial class MainWindow : Window
         try
         {
             _viewModel.StatusText = $"Rendering preview for {device.Stem}…";
-            var pages = await _viewModel.RenderDevicePreviewAsync(device);
-            if (pages.Count == 0) throw new InvalidOperationException("No generated kneeboard page contains this device instance.");
-            ShowPreview(device, pages);
+            if (_viewModel.IsUiLayerImport)
+            {
+                ShowPreview(device, await _viewModel.RenderDevicePreviewAsync(device));
+                return;
+            }
+            var layout = await _viewModel.LoadInteractiveDeviceAsync(device);
+            new InteractivePreviewWindow(_viewModel, device, layout) { Owner = this }.ShowDialog();
             _viewModel.StatusText = $"Preview rendered for {device.Stem}.";
         }
         catch (Exception ex)

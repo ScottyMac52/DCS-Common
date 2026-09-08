@@ -123,6 +123,14 @@ Use this mode after changing the simulator-wide bindings under DCS Saved Games.
 
 UI Layer mode does not use **Output directory**, **Display name**, **Input module ID**, or **Kneeboard ID**, and it never scaffolds consumer files into the DCS-Common root. Existing overlay instance restrictions and exemptions are retained.
 
+## Interactive controls preview
+
+In consumer import mode, the device **Preview** button opens a command catalog, interactive hardware diagram, and selected-control editor. Search and filter by category, input type, availability, and bound/unbound state. Drag an assignable command onto an empty or occupied callout, confirm replacements, and edit the displayed label in the editor. Button and axis targets remain separate; search-only commands cannot be dragged.
+
+Select a modifier layer or choose **New chord…** to combine one or more modifiers from the imported `modifiers.lua`. **Choose assignment chord…** keeps the selected physical input when switching to that chord. Assigning on a chord preserves the base binding. MFD base and shifted callouts are separate targets. The editor supports moving an existing assignment to another callout and right-click Assign, Clear, Restore, Edit label, and Reset label.
+
+Colors distinguish unchanged, new, replaced, conflicting, and unassigned controls. **Rendered kneeboard…** includes pending assignments and label overrides. **Back** keeps edits staged; **Proceed** writes destination profiles and kneeboard configuration. UI Layer import retains its existing rendered preview. Pending command and label edits are session state and are not saved by the scaffolding solution file.
+
 ## Dev run
 
 ```powershell

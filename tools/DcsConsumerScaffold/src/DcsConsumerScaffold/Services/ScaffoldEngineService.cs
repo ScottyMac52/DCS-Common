@@ -153,6 +153,23 @@ public sealed class ScaffoldEngineService
         }
     }
 
+    public async Task<InteractiveDevice> LoadInteractiveDeviceAsync(string? commonRoot, string deviceId)
+    {
+        var root = ResolveCommonRoot(commonRoot) ?? throw new InvalidOperationException("Could not find DCS-Common root.");
+        var png = Path.Combine(Path.GetTempPath(), $"dcs-device-{Guid.NewGuid():N}.png");
+        try
+        {
+            var (exit, stdout, stderr) = await RunNodeAsync(root,
+                [Path.Combine(root, "scripts", "render-interactive-device.mjs"), deviceId, png], default);
+            if (exit != 0) throw new InvalidOperationException(stderr);
+            var device = JsonSerializer.Deserialize<InteractiveDevice>(stdout.Trim(), JsonOptions)
+                ?? throw new InvalidOperationException("No interactive device returned.");
+            device.Background = await File.ReadAllBytesAsync(png);
+            return device;
+        }
+        finally { DeleteTemporary(png); }
+    }
+
     public async Task<IReadOnlyList<RenderedPreviewPage>> RenderDevicePreviewAsync(
         string profilesDir,
         string? modifiersPath,
@@ -168,6 +185,7 @@ public sealed class ScaffoldEngineService
         IReadOnlyDictionary<string, IReadOnlyDictionary<string, string>>? mfdCategories = null,
         IReadOnlyDictionary<string, IReadOnlyDictionary<string, string>>? pagePresentations = null,
         bool includeUiLayer = true,
+        IReadOnlyCollection<DcsCommandAssignment>? assignments = null,
         CancellationToken cancellationToken = default)
     {
         var root = ResolveCommonRoot(commonRoot)
@@ -181,7 +199,7 @@ public sealed class ScaffoldEngineService
                 profilesDir, modifiersPath, mozaGrip, instanceRoles, semanticModifiers, labels, root,
                 temporaryRoot, displayName, inputModuleId, kneeboardId,
                 mfdCategories: mfdCategories, pagePresentations: pagePresentations,
-                includeUiLayer: includeUiLayer, cancellationToken: cancellationToken);
+                includeUiLayer: includeUiLayer, assignments: assignments, cancellationToken: cancellationToken);
             if (exitCode is not (0 or 2)) throw new InvalidOperationException($"Temporary scaffold failed: {stderr}");
 
             var script = Path.Combine(root, "scripts", "render-scaffold-preview.mjs");
