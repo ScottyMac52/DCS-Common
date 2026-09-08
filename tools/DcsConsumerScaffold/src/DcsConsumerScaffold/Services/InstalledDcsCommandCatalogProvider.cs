@@ -401,9 +401,9 @@ internal static partial class DcsCommandIdentityResolver
     private static string LuaUnescape(string value) => value.Replace("\\\"", "\"").Replace("\\\\", "\\");
     private static int? Part(string value) => value == "nil" ? null : int.Parse(value, CultureInfo.InvariantCulture);
 
-    [GeneratedRegex("""\["(?<key>(?:a-?\d+cd(?:-?\d+|nil)|d(?:-?\d+|nil)p(?:-?\d+|nil)u(?:-?\d+|nil)cd(?:-?\d+|nil)vd[^"]+vp[^"]+vu[^"]+))"\]\s*=""")]
+    [GeneratedRegex(@"\[""(?<key>(?:a-?\d+cd(?:-?\d+|nil)|d(?:-?\d+|nil)p(?:-?\d+|nil)u(?:-?\d+|nil)cd(?:-?\d+|nil)vd[^""]+vp[^""]+vu[^""]+))""\]\s*=")]
     private static partial Regex ProfileBindingKey();
-    [GeneratedRegex("""\["name"\]\s*=\s*"(?<name>(?:\\.|[^"])*)"""")]
+    [GeneratedRegex(@"\[""name""\]\s*=\s*""(?<name>(?:\\.|[^""])*)""")]
     private static partial Regex ProfileName();
     [GeneratedRegex(@"^d(?<down>-?\d+|nil)p(?<pressed>-?\d+|nil)u(?<up>-?\d+|nil)cd(?<device>-?\d+|nil)")]
     private static partial Regex BindingIdentity();
