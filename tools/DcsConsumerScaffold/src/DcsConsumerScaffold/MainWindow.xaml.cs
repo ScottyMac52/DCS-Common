@@ -225,6 +225,31 @@ public partial class MainWindow : Window
         }
     }
 
+    private void AssignCommand_Click(object sender, RoutedEventArgs e)
+    {
+        var command = _viewModel.SelectedCatalogCommand;
+        var row = _viewModel.SelectedPreviewRow;
+        if (command is null || row is null) return;
+        if (!string.Equals(row.Command, command.BindingKey, StringComparison.Ordinal))
+        {
+            var answer = MessageBox.Show(this,
+                $"Replace the current assignment on {row.Stem} {row.Key}" +
+                $"{(string.IsNullOrWhiteSpace(row.Chord) ? string.Empty : $" + {row.Chord}")}?{Environment.NewLine}{Environment.NewLine}" +
+                $"Current: {row.Name ?? row.Command}{Environment.NewLine}New: {command.Name}",
+                "Confirm command assignment", MessageBoxButton.YesNo, MessageBoxImage.Warning);
+            if (answer != MessageBoxResult.Yes) return;
+        }
+        try
+        {
+            _viewModel.AssignSelectedCommand();
+        }
+        catch (Exception ex)
+        {
+            _viewModel.StatusText = ex.Message;
+            MessageBox.Show(this, ex.Message, "Unable to assign command", MessageBoxButton.OK, MessageBoxImage.Error);
+        }
+    }
+
     private void PreviewGrid_BeginningEdit(object sender, DataGridBeginningEditEventArgs e)
     {
         if (e.Row.Item is PreviewDevice { IsRepositoryOnly: true } or

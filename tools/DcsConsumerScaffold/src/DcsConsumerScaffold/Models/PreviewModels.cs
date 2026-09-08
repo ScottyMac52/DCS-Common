@@ -204,6 +204,12 @@ public sealed class PreviewRow : INotifyPropertyChanged
     [JsonPropertyName("key")]
     public string? Key { get; set; }
 
+    [JsonPropertyName("section")]
+    public string? Section { get; set; }
+
+    [JsonPropertyName("reformers")]
+    public List<string> Reformers { get; set; } = [];
+
     [JsonPropertyName("chord")]
     public string? Chord { get; set; }
 
@@ -279,6 +285,31 @@ public sealed class PreviewRow : INotifyPropertyChanged
     public void ResetLabel() => ApplyLabel(DeviceLabel, "device");
 
     public void ResetToDefaultLabel() => ApplyLabel(DefaultLabel, "dcs");
+
+    public void ApplyCommandAssignment(string command, string name)
+    {
+        Command = command;
+        Name = name;
+        DefaultLabel = name;
+        ApplyLabel(name, "dcs");
+        BindingId = string.Join('\0', ProfileFile, Section, Command, Key, Chord);
+        ChangeState = PreviewChangeState.Changed;
+        ChangeReason = $"Pending assignment to {name}.";
+        PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(Command)));
+        PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(Name)));
+        PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(DefaultLabel)));
+        PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(BindingId)));
+    }
+}
+
+public sealed class DcsCommandAssignment
+{
+    [JsonPropertyName("profileFile")] public string ProfileFile { get; init; } = string.Empty;
+    [JsonPropertyName("section")] public string Section { get; init; } = string.Empty;
+    [JsonPropertyName("key")] public string Key { get; init; } = string.Empty;
+    [JsonPropertyName("reformers")] public List<string> Reformers { get; init; } = [];
+    [JsonPropertyName("command")] public string Command { get; init; } = string.Empty;
+    [JsonPropertyName("name")] public string Name { get; init; } = string.Empty;
 }
 
 public sealed class PreviewModifier : INotifyPropertyChanged

@@ -69,7 +69,8 @@ public class ScaffoldEngineServiceTests
             kneeboardId: "F-16C_50",
             repoName: "DCS-F-16C-Components",
             removedProfilesPath: "removed.json",
-            mfdCategoriesPath: "mfd-categories.json");
+            mfdCategoriesPath: "mfd-categories.json",
+            assignmentsPath: "assignments.json");
 
         Assert.Contains("--output-dir", args);
         Assert.Contains("out", args);
@@ -89,6 +90,8 @@ public class ScaffoldEngineServiceTests
         Assert.Contains("removed.json", args);
         Assert.Contains("--mfd-categories", args);
         Assert.Contains("mfd-categories.json", args);
+        Assert.Contains("--assignments", args);
+        Assert.Contains("assignments.json", args);
     }
 
     [Fact]

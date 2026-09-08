@@ -53,6 +53,7 @@ Optional:
   --roles <path>              consumer-owned profile filename/GUID to semantic instance roles (JSON)
   --semantic-modifiers <path> modifier name or device+key to semantic modifier ID (JSON)
   --labels <path>             stable binding identity to editable label override (JSON)
+  --assignments <path>        pending physical-control command assignments (JSON)
   --mfd-categories <path>     profile key/file to top/right/bottom/left category labels (JSON)
   --page-presentation <path>   profile key/file to page title and kicker (JSON)
   --remove-profiles <path>    explicit repository profile keys to remove (JSON array)
@@ -77,6 +78,7 @@ export function parseArgs(argv = process.argv.slice(2)) {
     rolesPath: null,
     semanticModifiersPath: null,
     labelsPath: null,
+    assignmentsPath: null,
     mfdCategoriesPath: null,
     pagePresentationPath: null,
     removeProfilesPath: null,
@@ -106,6 +108,7 @@ export function parseArgs(argv = process.argv.slice(2)) {
     else if (arg === '--roles') options.rolesPath = next();
     else if (arg === '--semantic-modifiers') options.semanticModifiersPath = next();
     else if (arg === '--labels') options.labelsPath = next();
+    else if (arg === '--assignments') options.assignmentsPath = next();
     else if (arg === '--mfd-categories') options.mfdCategoriesPath = next();
     else if (arg === '--page-presentation') options.pagePresentationPath = next();
     else if (arg === '--remove-profiles') options.removeProfilesPath = next();
@@ -243,6 +246,86 @@ export function loadCalloutCatalog(commonRoot, deviceId) {
 
 export function stableBindingId(row) {
   return [row.profileFile, row.section, row.command, row.key, row.chord].join('\0');
+}
+
+function luaString(value) {
+  return JSON.stringify(String(value)).replace(/\u2028/gu, '\\u2028').replace(/\u2029/gu, '\\u2029');
+}
+
+function serializeInputs(name, inputs) {
+  if (!inputs?.length) return '';
+  const entries = inputs.map((input, index) => {
+    const reformers = input.reformers?.length
+      ? `, ["reformers"] = { ${input.reformers.map((value, i) => `[${i + 1}] = ${luaString(value)}`).join(', ')} }`
+      : '';
+    return `        [${index + 1}] = { ["key"] = ${luaString(input.key)}${reformers} },`;
+  });
+  return `      ["${name}"] = {\n${entries.join('\n')}\n      },\n`;
+}
+
+export function applyDcsCommandAssignments(source, assignments, { filename = 'profile.diff.lua' } = {}) {
+  if (!assignments?.length) return source;
+  const parsed = parseDcsDiffLua(source, { filename });
+  for (const assignment of assignments) {
+    if (!['keyDiffs', 'axisDiffs'].includes(assignment.section)) {
+      throw new Error(`${filename}: assignment section must be keyDiffs or axisDiffs`);
+    }
+    if (!assignment.command || !assignment.name || !assignment.key) {
+      throw new Error(`${filename}: assignment requires command, name, and key`);
+    }
+    const reformers = [...new Set(assignment.reformers ?? [])].sort((a, b) => a.localeCompare(b));
+    let foundControl = false;
+    for (const binding of parsed.bindings.filter((item) => item.section === assignment.section)) {
+      const retained = binding.added.filter((input) => {
+        const matches = input.key === assignment.key && chordKey(input.reformers) === chordKey(reformers);
+        if (matches) foundControl = true;
+        return !matches;
+      });
+      binding.added = retained;
+    }
+    if (!foundControl) {
+      throw new Error(`${filename}: ${assignment.key} (${reformers.join(' + ') || 'base'}) is no longer present in ${assignment.section}`);
+    }
+    let target = parsed.bindings.find((item) => item.section === assignment.section && item.command === assignment.command);
+    if (!target) {
+      target = { section: assignment.section, command: assignment.command, name: assignment.name, added: [], removed: [] };
+      parsed.bindings.push(target);
+    }
+    target.name = assignment.name;
+    target.added.push({ key: assignment.key, reformers });
+  }
+
+  const sections = ['keyDiffs', 'axisDiffs'].map((section) => {
+    const entries = parsed.bindings
+      .filter((binding) => binding.section === section && (binding.added.length > 0 || binding.removed.length > 0))
+      .map((binding) => `    [${luaString(binding.command)}] = {\n${serializeInputs('added', binding.added)}${serializeInputs('removed', binding.removed)}      ["name"] = ${luaString(binding.name)},\n    },`);
+    return entries.length ? `  ["${section}"] = {\n${entries.join('\n')}\n  },` : '';
+  }).filter(Boolean);
+  return `local diff = {\n${sections.join('\n')}\n}\nreturn diff\n`;
+}
+
+function previewWithAssignments(preview, assignments) {
+  if (!assignments?.length) return preview;
+  let rows = preview.rows.map((row) => ({ ...row }));
+  for (const assignment of assignments) {
+    const matches = (row) => row.profileFile === assignment.profileFile && row.section === assignment.section &&
+      row.key === assignment.key && chordKey(row.reformers) === chordKey(assignment.reformers);
+    const index = rows.findIndex(matches);
+    if (index < 0) continue;
+    const row = rows[index];
+    const updated = {
+      ...row,
+      command: assignment.command,
+      name: assignment.name,
+      defaultLabel: assignment.name,
+      label: assignment.name,
+      labelSource: 'dcs',
+    };
+    updated.bindingId = stableBindingId(updated);
+    rows = rows.filter((candidate, candidateIndex) => candidateIndex === index || !matches(candidate));
+    rows[rows.indexOf(row)] = updated;
+  }
+  return { ...preview, rows };
 }
 
 function chordKey(reformers = []) {
@@ -844,7 +927,8 @@ export function mergeConsumerConfig(draft, existing, removedProfiles = []) {
   return { config, preservedProfiles, removedProfiles: [...removed].filter((profile) => existing.profiles?.[profile]) };
 }
 
-export function writeConsumer({ preview, outputDir, displayName, inputModuleId, kneeboardId, repoName, removedProfiles = [], includeUiLayer = true, dryRun = false, commonRoot = defaultCommonRoot }) {
+export function writeConsumer({ preview, outputDir, displayName, inputModuleId, kneeboardId, repoName, removedProfiles = [], assignments = [], includeUiLayer = true, dryRun = false, commonRoot = defaultCommonRoot }) {
+  const effectivePreview = previewWithAssignments(preview, assignments);
   const out = resolve(outputDir);
   const name = repoName ?? `DCS-${slugifyId(displayName)}-Components`;
   const tokens = {
@@ -874,7 +958,11 @@ export function writeConsumer({ preview, outputDir, displayName, inputModuleId, 
   const joystickRel = `src/Config/Input/${inputModuleId}/joystick`;
   for (const device of preview.devices) {
     const source = join(preview.profilesDir, device.profileFile);
-    copy(source, `${joystickRel}/${device.profileFile}`);
+    const pending = assignments.filter((assignment) => assignment.profileFile === device.profileFile);
+    if (pending.length === 0) copy(source, `${joystickRel}/${device.profileFile}`);
+    else write(`${joystickRel}/${device.profileFile}`, applyDcsCommandAssignments(
+      readFileSync(source, 'utf8'), pending, { filename: device.profileFile },
+    ));
   }
   if (preview.modifiersPath && existsSync(preview.modifiersPath)) {
     const modifierRel = `src/Config/Input/${inputModuleId}/modifiers.lua`;
@@ -892,7 +980,7 @@ export function writeConsumer({ preview, outputDir, displayName, inputModuleId, 
     copy(preview.rolesPath, 'config/scaffold-instance-roles.json');
   }
 
-  const draftKneeboard = buildDraftKneeboardConfig(preview, { displayName, inputModuleId, includeUiLayer });
+  const draftKneeboard = buildDraftKneeboardConfig(effectivePreview, { displayName, inputModuleId, includeUiLayer });
   const existingConfigPath = join(out, 'config/kneeboard.json');
   const existingKneeboard = existsSync(existingConfigPath) ? JSON.parse(readFileSync(existingConfigPath, 'utf8')) : null;
   const merge = mergeConsumerConfig(draftKneeboard, existingKneeboard, removedProfiles);
@@ -1055,6 +1143,7 @@ export function main(argv = process.argv.slice(2)) {
       kneeboardId: options.kneeboardId,
       repoName: options.repoName,
       removedProfiles: options.removeProfilesPath ? JSON.parse(readFileSync(options.removeProfilesPath, 'utf8')) : [],
+      assignments: options.assignmentsPath ? JSON.parse(readFileSync(options.assignmentsPath, 'utf8')) : [],
       includeUiLayer: options.includeUiLayer,
       dryRun: options.dryRun,
       commonRoot: options.commonRoot,
