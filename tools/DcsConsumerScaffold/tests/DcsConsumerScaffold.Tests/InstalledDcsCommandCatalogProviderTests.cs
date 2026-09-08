@@ -49,16 +49,21 @@ public sealed class InstalledDcsCommandCatalogProviderTests
             dofile(cockpit.."devices.lua")
             dofile(cockpit.."command_defs.lua")
             local res = external_profile("Config/Input/Aircrafts/common_joystick_binding.lua")
+            local thrust_common, thrust_left, thrust_right = MultiEngineDefaultDeviceAssignmentForThrust()
             join(res.keyCommands, {
               { down = hotas_commands.WEAPON_RELEASE, up = hotas_commands.WEAPON_RELEASE,
                 cockpit_device_id = devices.HOTAS, value_down = 1, value_up = 0,
                 name = _('Weapon release'), category = {_('HOTAS'), _('Stick')} },
               { down = iCommandEnginesStart, name = _('Auto Start'), category = _('Cheat') }
             })
+            join(res.axisCommands, {
+              { combos = defaultDeviceAssignmentFor("roll"), action = hotas_commands.ROLL,
+                cockpit_device_id = devices.HOTAS, name = _('Roll'), category = _('Axis Commands') }
+            })
             return res
             """);
         install.AddFile("Mods/aircraft/FA-18C/Cockpit/Scripts/devices.lua", "devices = { HOTAS = 13 }");
-        install.AddFile("Mods/aircraft/FA-18C/Cockpit/Scripts/command_defs.lua", "hotas_commands = { WEAPON_RELEASE = 3001 }");
+        install.AddFile("Mods/aircraft/FA-18C/Cockpit/Scripts/command_defs.lua", "hotas_commands = { WEAPON_RELEASE = 3001, ROLL = 2001 }");
         install.AddFile("Config/Input/Aircrafts/common_joystick_binding.lua", """
             return { keyCommands = {
               { down = 1001, name = _('Common command'), category = _('General') }
@@ -67,7 +72,7 @@ public sealed class InstalledDcsCommandCatalogProviderTests
 
         var result = new InstalledDcsCommandCatalogProvider().Build(install.DefaultLuaPath, "FA-18C_hornet");
 
-        Assert.Equal(3, result.Document.Commands.Count);
+        Assert.Equal(4, result.Document.Commands.Count);
         var weaponRelease = Assert.Single(result.Document.Commands, command => command.Name == "Weapon release");
         Assert.True(weaponRelease.IsAssignable);
         Assert.Equal("d3001pnilu3001cd13vd1vpnilvu0", weaponRelease.BindingKey);
@@ -75,6 +80,7 @@ public sealed class InstalledDcsCommandCatalogProviderTests
         Assert.False(autoStart.IsAssignable);
         Assert.StartsWith("unresolved:", autoStart.BindingKey);
         Assert.Contains(result.Document.Commands, command => command.Name == "Common command" && command.IsAssignable);
+        Assert.Contains(result.Document.Commands, command => command.Name == "Roll" && command.BindingKey == "a2001cd13");
         Assert.Equal(1, result.UnresolvedEntryCount);
         Assert.Equal(4, result.SourceFiles.Count);
     }
@@ -99,6 +105,27 @@ public sealed class InstalledDcsCommandCatalogProviderTests
         Assert.Equal("Search only", unresolved.Availability);
         Assert.Equal(1, result.UnresolvedEntryCount);
         Assert.Contains("unavailable", result.Warnings[0], StringComparison.OrdinalIgnoreCase);
+    }
+
+    [Fact]
+    public void Build_ToleratesModuleSpecificHostAssignmentHelpers()
+    {
+        using var install = new TemporaryDcsInstall("ThirdPartyJet", "ThirdPartyJet", """
+            local primary, secondary, tertiary = ModuleSpecificAssignments()
+            local alternate = vendor.defaultAssignments()
+            return { keyCommands = {
+              { combos = primary, down = 3001, cockpit_device_id = 4,
+                name = _('Module command'), category = _('Systems') }
+            }, axisCommands = {
+              { combos = alternate, action = 2001, cockpit_device_id = 4,
+                name = _('Module axis'), category = _('Axis Commands') }
+            }}
+            """);
+
+        var result = new InstalledDcsCommandCatalogProvider().Build(install.DefaultLuaPath, "ThirdPartyJet");
+
+        Assert.Equal(2, result.Document.Commands.Count);
+        Assert.All(result.Document.Commands, command => Assert.True(command.IsAssignable));
     }
 
     [Fact]

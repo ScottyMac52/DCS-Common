@@ -172,6 +172,18 @@ internal sealed partial class DcsInputLuaExecutor
             table.MetaTable["__index"] = (Func<Table, string, string>)((_, key) => SymbolPrefix + root + "." + key);
             _script.Globals[root] = table;
         }
+        foreach (Match match in HostFunction().Matches(text))
+        {
+            var name = match.Groups["name"].Value;
+            if (_script.Globals.Get(name).IsNil()) _script.Globals[name] = (Func<DynValue>)EmptyHostResults;
+        }
+        foreach (Match match in QualifiedFunction().Matches(text))
+        {
+            var root = _script.Globals.Get(match.Groups["root"].Value);
+            if (root.Type != DataType.Table) continue;
+            var name = match.Groups["name"].Value;
+            if (root.Table.RawGet(name).IsNil()) root.Table[name] = (Func<DynValue>)EmptyHostResults;
+        }
     }
 
     private string ResolvePath(string path)
@@ -194,6 +206,11 @@ internal sealed partial class DcsInputLuaExecutor
         root["axisCommands"] = new Table(_script);
         return DynValue.NewTable(root);
     }
+
+    private DynValue EmptyHostResults() => DynValue.NewTuple(
+        DynValue.NewTable(new Table(_script)),
+        DynValue.NewTable(new Table(_script)),
+        DynValue.NewTable(new Table(_script)));
 
     private static void Join(Table target, Table additions)
     {
@@ -268,4 +285,6 @@ internal sealed partial class DcsInputLuaExecutor
 
     [GeneratedRegex(@"\biCommand[A-Za-z0-9_]+\b")] private static partial Regex HostCommand();
     [GeneratedRegex(@"\b(?<root>[A-Za-z_][A-Za-z0-9_]*)\.[A-Za-z_][A-Za-z0-9_]*")] private static partial Regex QualifiedSymbol();
+    [GeneratedRegex(@"(?<![.:])\b(?<name>[A-Za-z_][A-Za-z0-9_]*)\s*\(")] private static partial Regex HostFunction();
+    [GeneratedRegex(@"\b(?<root>[A-Za-z_][A-Za-z0-9_]*)\.(?<name>[A-Za-z_][A-Za-z0-9_]*)\s*\(")] private static partial Regex QualifiedFunction();
 }
