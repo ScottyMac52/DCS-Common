@@ -150,6 +150,30 @@ public sealed class CommandAssignmentTests
         Assert.Null(viewModel.SelectedPreviewRow);
     }
 
+    [Fact]
+    public void TargetFilter_IncludesCatalogBackedUnboundControlAndStagesCreation()
+    {
+        var bound = Row("keyDiffs", "JOY_BTN1", "d-old", "Old command");
+        var unbound = Row("keyDiffs", "JOY_BTN2", string.Empty, string.Empty);
+        unbound.IsUnboundCandidate = true;
+        unbound.Chord = "SHIFT";
+        unbound.Reformers = ["SHIFT"];
+        var viewModel = new MainViewModel { HasPreview = true };
+        viewModel.ReplacePreviewRows([bound], [unbound]);
+        viewModel.SelectedCatalogCommand = Command("button", "d-new", "New command");
+        viewModel.SelectedTargetBindingState = "Unbound";
+
+        Assert.Equal(unbound, Assert.Single(viewModel.FilteredPreviewRows));
+        viewModel.SelectedPreviewRow = unbound;
+        var assignment = viewModel.AssignSelectedCommand();
+
+        Assert.True(assignment.AllowCreate);
+        Assert.Equal(["SHIFT"], assignment.Reformers);
+        Assert.Contains(unbound, viewModel.Rows);
+        Assert.False(unbound.IsUnboundCandidate);
+        Assert.Equal("d-new", unbound.Command);
+    }
+
     private static PreviewRow Row(string section, string key, string command, string name) => new()
     {
         ProfileFile = "Stick.diff.lua", Stem = "Stick", Section = section, Key = key,

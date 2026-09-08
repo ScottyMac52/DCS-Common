@@ -71,6 +71,7 @@ public sealed class MainViewModel : INotifyPropertyChanged
         ProceedCommand = new RelayCommand(async () => await ProceedAsync(), CanProceed);
         Devices = new ObservableCollection<PreviewDevice>();
         Rows = new ObservableCollection<PreviewRow>();
+        AssignmentTargets = new ObservableCollection<PreviewRow>();
         Modifiers = new ObservableCollection<PreviewModifier>();
         CommandLabels = new ObservableCollection<CommandLabelGroup>();
         CommandCatalog = new ObservableCollection<DcsCommandCatalogEntry>();
@@ -88,6 +89,7 @@ public sealed class MainViewModel : INotifyPropertyChanged
 
     public ObservableCollection<PreviewDevice> Devices { get; }
     public ObservableCollection<PreviewRow> Rows { get; }
+    public ObservableCollection<PreviewRow> AssignmentTargets { get; }
     public ObservableCollection<PreviewModifier> Modifiers { get; }
     public ObservableCollection<CommandLabelGroup> CommandLabels { get; }
     public ObservableCollection<DcsCommandCatalogEntry> CommandCatalog { get; }
@@ -167,7 +169,7 @@ public sealed class MainViewModel : INotifyPropertyChanged
         set { if (Set(ref _selectedTargetChord, value)) RefreshTargetFilter(); }
     }
 
-    public string TargetResultSummary => $"Showing {FilteredPreviewRows.Count} of {Rows.Count}";
+    public string TargetResultSummary => $"Showing {FilteredPreviewRows.Count} of {AssignmentTargets.Count}";
 
     public string? CommandCatalogPath
     {
@@ -485,6 +487,7 @@ public sealed class MainViewModel : INotifyPropertyChanged
         Devices.Clear();
         UntrackRows();
         Rows.Clear();
+        AssignmentTargets.Clear();
         RebuildTargetChords();
         RefreshTargetFilter();
         PendingAssignments.Clear();
@@ -517,7 +520,7 @@ public sealed class MainViewModel : INotifyPropertyChanged
             }
 
             if (document?.Rows != null)
-                ReplacePreviewRows(document.Rows);
+                ReplacePreviewRows(document.Rows, document.AvailableControls);
 
             CurrentLabelImportResult? existingLabels = null;
             if (!IsUiLayerImport)
@@ -633,15 +636,18 @@ public sealed class MainViewModel : INotifyPropertyChanged
         }
     }
 
-    public void ReplacePreviewRows(IEnumerable<PreviewRow> rows)
+    public void ReplacePreviewRows(IEnumerable<PreviewRow> rows, IEnumerable<PreviewRow>? availableControls = null)
     {
         UntrackRows();
         Rows.Clear();
+        AssignmentTargets.Clear();
         foreach (var row in rows)
         {
             Rows.Add(row);
+            AssignmentTargets.Add(row);
             row.PropertyChanged += PreviewRow_PropertyChanged;
         }
+        foreach (var row in availableControls ?? []) AssignmentTargets.Add(row);
         RebuildCommandLabels();
         RebuildTargetChords();
         RefreshTargetFilter();
@@ -664,6 +670,7 @@ public sealed class MainViewModel : INotifyPropertyChanged
             Reformers = [.. row.Reformers.OrderBy(value => value, StringComparer.Ordinal)],
             Command = command.BindingKey,
             Name = command.Name,
+            AllowCreate = row.IsUnboundCandidate,
         };
         var existing = PendingAssignments.FirstOrDefault(item =>
             item.ProfileFile.Equals(assignment.ProfileFile, StringComparison.OrdinalIgnoreCase) &&
@@ -672,6 +679,11 @@ public sealed class MainViewModel : INotifyPropertyChanged
         if (existing is not null) PendingAssignments.Remove(existing);
         PendingAssignments.Add(assignment);
         row.ApplyCommandAssignment(command.BindingKey, command.Name);
+        if (!Rows.Contains(row))
+        {
+            Rows.Add(row);
+            row.PropertyChanged += PreviewRow_PropertyChanged;
+        }
         RebuildCommandLabels();
         RefreshCommandBindingState();
         RefreshTargetFilter();
@@ -766,7 +778,7 @@ public sealed class MainViewModel : INotifyPropertyChanged
         TargetChords.Clear();
         TargetChords.Add("All chords");
         TargetChords.Add("No chord");
-        foreach (var chord in Rows.Select(row => row.Chord)
+        foreach (var chord in AssignmentTargets.Select(row => row.Chord)
                      .Where(chord => !string.IsNullOrWhiteSpace(chord))
                      .Distinct(StringComparer.OrdinalIgnoreCase)
                      .OrderBy(chord => chord, StringComparer.OrdinalIgnoreCase))
@@ -778,7 +790,7 @@ public sealed class MainViewModel : INotifyPropertyChanged
     {
         var selectedType = SelectedCatalogCommand?.Type;
         FilteredPreviewRows.Clear();
-        foreach (var row in Rows.Where(row =>
+        foreach (var row in AssignmentTargets.Where(row =>
                      (selectedType is not ("button" or "axis") || row.InputType == selectedType) &&
                      (SelectedTargetBindingState == "All" ||
                       (SelectedTargetBindingState == "Bound") == !string.IsNullOrWhiteSpace(row.Command)) &&
@@ -1026,6 +1038,7 @@ public sealed class MainViewModel : INotifyPropertyChanged
             UntrackRows();
             Devices.Clear();
             Rows.Clear();
+            AssignmentTargets.Clear();
             RebuildTargetChords();
             RefreshTargetFilter();
             Modifiers.Clear();
