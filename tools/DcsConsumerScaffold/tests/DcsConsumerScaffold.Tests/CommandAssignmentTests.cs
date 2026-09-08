@@ -58,6 +58,28 @@ public sealed class CommandAssignmentTests
         Assert.Equal("d-second", row.Command);
     }
 
+    [Fact]
+    public void AssignmentGuidance_ExplainsEachRequiredSelectionAndMismatch()
+    {
+        var button = Row("keyDiffs", "JOY_BTN1", "d-old", "Old command");
+        var axis = Row("axisDiffs", "JOY_X", "a-old", "Old axis");
+        var viewModel = new MainViewModel { HasPreview = true };
+        viewModel.ReplacePreviewRows([button, axis]);
+
+        Assert.Equal("Load a command catalog to begin.", viewModel.AssignmentGuidance);
+
+        viewModel.SelectedCatalogCommand = Command("axis", "a-new", "Pitch");
+        Assert.Equal("Step 2: select a physical control on the right.", viewModel.AssignmentGuidance);
+
+        viewModel.SelectedPreviewRow = button;
+        Assert.Equal("Select an axis control to match this command.", viewModel.AssignmentGuidance);
+
+        viewModel.SelectedPreviewRow = axis;
+        Assert.True(viewModel.CanAssignSelectedCommand);
+        Assert.StartsWith("Ready.", viewModel.AssignmentGuidance);
+        Assert.Contains("JOY_X", viewModel.SelectedControlSummary);
+    }
+
     private static PreviewRow Row(string section, string key, string command, string name) => new()
     {
         ProfileFile = "Stick.diff.lua", Stem = "Stick", Section = section, Key = key,

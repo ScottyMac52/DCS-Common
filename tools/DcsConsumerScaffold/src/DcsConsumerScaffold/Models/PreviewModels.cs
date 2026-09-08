@@ -207,6 +207,9 @@ public sealed class PreviewRow : INotifyPropertyChanged
     [JsonPropertyName("section")]
     public string? Section { get; set; }
 
+    [JsonIgnore]
+    public string InputType => Section == "axisDiffs" ? "axis" : "button";
+
     [JsonPropertyName("reformers")]
     public List<string> Reformers { get; set; } = [];
 
