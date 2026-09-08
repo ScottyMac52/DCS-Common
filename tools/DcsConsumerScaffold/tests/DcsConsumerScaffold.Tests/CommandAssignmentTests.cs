@@ -84,11 +84,17 @@ public sealed class CommandAssignmentTests
     public void TargetFilter_FollowsSelectedCommandTypeBindingStateAndChord()
     {
         var boundButton = Row("keyDiffs", "JOY_BTN1", "d-old", "Old command");
+        boundButton.Chord = string.Empty;
+        boundButton.Reformers = [];
         var shiftedButton = Row("keyDiffs", "JOY_BTN2", "d-shifted", "Shifted command");
         shiftedButton.Chord = "SHIFT";
         shiftedButton.Reformers = ["SHIFT"];
         var unboundButton = Row("keyDiffs", "JOY_BTN3", string.Empty, string.Empty);
+        unboundButton.Chord = string.Empty;
+        unboundButton.Reformers = [];
         var axis = Row("axisDiffs", "JOY_X", "a-old", "Old axis");
+        axis.Chord = string.Empty;
+        axis.Reformers = [];
         var viewModel = new MainViewModel { HasPreview = true };
         viewModel.ReplacePreviewRows([boundButton, shiftedButton, unboundButton, axis]);
 
