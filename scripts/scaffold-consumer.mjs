@@ -216,7 +216,8 @@ export function loadCalloutCatalog(commonRoot, deviceId) {
     const id = field('id');
     const key = field('key');
     const hardwareLabel = field('hardwareLabel') ?? null;
-    if (id && key) controls.push({ id, key, hardwareLabel });
+    const type = field('type') ?? (/^JOY_[XYZRUV]/u.test(key ?? '') ? 'axis' : 'button');
+    if (id && key) controls.push({ id, key, type, hardwareLabel });
   }
   // Lightweight bindings fallback when no id+key pairs found
   if (controls.length === 0) {
@@ -283,7 +284,7 @@ export function applyDcsCommandAssignments(source, assignments, { filename = 'pr
       });
       binding.added = retained;
     }
-    if (!foundControl) {
+    if (!foundControl && !assignment.allowCreate) {
       throw new Error(`${filename}: ${assignment.key} (${reformers.join(' + ') || 'base'}) is no longer present in ${assignment.section}`);
     }
     let target = parsed.bindings.find((item) => item.section === assignment.section && item.command === assignment.command);
@@ -310,11 +311,19 @@ function previewWithAssignments(preview, assignments) {
   for (const assignment of assignments) {
     const matches = (row) => row.profileFile === assignment.profileFile && row.section === assignment.section &&
       row.key === assignment.key && chordKey(row.reformers) === chordKey(assignment.reformers);
-    const index = rows.findIndex(matches);
+    let index = rows.findIndex(matches);
+    let row = rows[index];
+    if (index < 0 && assignment.allowCreate) {
+      const candidate = preview.availableControls?.find(matches);
+      if (!candidate) continue;
+      row = { ...candidate };
+      rows.push(row);
+      index = rows.length - 1;
+    }
     if (index < 0) continue;
-    const row = rows[index];
     const updated = {
       ...row,
+      isUnboundCandidate: false,
       command: assignment.command,
       name: assignment.name,
       defaultLabel: assignment.name,
@@ -323,7 +332,7 @@ function previewWithAssignments(preview, assignments) {
     };
     updated.bindingId = stableBindingId(updated);
     rows = rows.filter((candidate, candidateIndex) => candidateIndex === index || !matches(candidate));
-    rows[rows.indexOf(row)] = updated;
+    rows[index] = updated;
   }
   return { ...preview, rows };
 }
@@ -448,6 +457,7 @@ export function buildPreview({ profilesDir, modifiersPath = null, mapPath = null
 
   const devices = [];
   const rows = [];
+  const availableControls = [];
   const errors = [...modifierErrors];
   const reportedUnknownModifiers = new Set();
   const catalogCache = new Map();
@@ -571,9 +581,49 @@ export function buildPreview({ profilesDir, modifiersPath = null, mapPath = null
         rows.push(row);
       }
     }
+
+    const chordChoices = [[], ...modifiers.map((modifier) => [modifier.name])];
+    const catalogControls = [...new Map(catalog.controls.map((control) =>
+      [`${control.type}\0${control.key}`, control])).values()];
+    for (const control of catalogControls) {
+      const section = control.type === 'axis' ? 'axisDiffs' : 'keyDiffs';
+      for (const reformers of chordChoices) {
+        if (rows.some((row) => row.profileFile === fileName && row.section === section &&
+            row.catalogKey === control.key && chordKey(row.reformers) === chordKey(reformers))) continue;
+        const row = {
+          profileFile: fileName,
+          stem: mapping.stem,
+          deviceId: mapping.deviceId,
+          mappingSource: mapping.source,
+          matchedPattern: mapping.matchedPattern,
+          instanceHint,
+          section,
+          command: null,
+          name: null,
+          key: control.key,
+          catalogKey: control.key,
+          reformers,
+          chord: chordKey(reformers),
+          modifierModes: reformers.map((name) => modifierByName.get(name)?.mode ?? null),
+          unknownModifiers: [],
+          calloutId: reformers.length > 0 && mapping.deviceId === 'tm-mfd' && control.id.startsWith('mfd-osb-')
+            ? `${control.id}-shifted` : control.id,
+          calloutIds: [control.id],
+          status: 'Unbound',
+          semanticChord: chordKey(reformers.map((name) => modifierByName.get(name)?.semanticModifier ?? name)),
+          defaultLabel: '',
+          deviceLabel: control.hardwareLabel ?? '',
+          label: control.hardwareLabel ?? '',
+          labelSource: 'device',
+          isUnboundCandidate: true,
+        };
+        row.bindingId = stableBindingId(row);
+        availableControls.push(row);
+      }
+    }
   }
 
-  assignDeviceInstances(devices, rows, roleOverrides, errors);
+  assignDeviceInstances(devices, [...rows, ...availableControls], roleOverrides, errors);
 
   for (const device of devices) {
     const configured = pagePresentationOverrides[device.profileKey] ?? pagePresentationOverrides[device.profileFile];
@@ -650,6 +700,7 @@ export function buildPreview({ profilesDir, modifiersPath = null, mapPath = null
     semanticModifiers: [...new Set(modifiers.map(({ semanticModifier }) => semanticModifier))].sort(),
     devices,
     rows,
+    availableControls,
     summary: {
       profileCount: profileFiles.length,
       rowCount: rows.length,
@@ -928,6 +979,12 @@ export function mergeConsumerConfig(draft, existing, removedProfiles = []) {
 }
 
 export function writeConsumer({ preview, outputDir, displayName, inputModuleId, kneeboardId, repoName, removedProfiles = [], assignments = [], includeUiLayer = true, dryRun = false, commonRoot = defaultCommonRoot }) {
+  for (const assignment of assignments.filter(({ allowCreate }) => allowCreate)) {
+    const validated = preview.availableControls?.some((control) =>
+      control.profileFile === assignment.profileFile && control.section === assignment.section &&
+      control.key === assignment.key && chordKey(control.reformers) === chordKey(assignment.reformers));
+    if (!validated) throw new Error(`${assignment.profileFile}: unbound control is not present in the hardware catalog preview`);
+  }
   const effectivePreview = previewWithAssignments(preview, assignments);
   const out = resolve(outputDir);
   const name = repoName ?? `DCS-${slugifyId(displayName)}-Components`;

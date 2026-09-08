@@ -113,6 +113,21 @@ test('command assignments reject stale physical controls instead of silently inv
   }], { filename: 'Stick.diff.lua' }), /no longer present/);
 });
 
+test('command assignments may create a catalog-validated unbound physical control', () => {
+  const source = `local diff = { ["keyDiffs"] = {
+    ["d-old"] = { ["added"] = { [1] = { ["key"] = "JOY_BTN1" } }, ["name"] = "Old" },
+  } } return diff`;
+  const rewritten = applyDcsCommandAssignments(source, [{
+    profileFile: 'MFD.diff.lua', section: 'keyDiffs', key: 'JOY_BTN2', reformers: ['SHIFT'],
+    command: 'd-new', name: 'New', allowCreate: true,
+  }], { filename: 'MFD.diff.lua' });
+  const bindings = parseDcsDiffLua(rewritten, { filename: 'MFD.diff.lua' }).bindings;
+  assert.deepEqual(bindings.find(({ command }) => command === 'd-new').added,
+    [{ key: 'JOY_BTN2', reformers: ['SHIFT'] }]);
+  assert.deepEqual(bindings.find(({ command }) => command === 'd-old').added,
+    [{ key: 'JOY_BTN1', reformers: [] }]);
+});
+
 test('writeConsumer applies pending assignments only to destination profile and generated config', () => {
   const root = mkdtempSync(join(tmpdir(), 'scaffold-assignment-'));
   const profilesDir = join(root, 'profiles');
@@ -430,6 +445,24 @@ test('overrides beat pattern matching and unknown devices stay null', () => {
 test('callout catalog maps JOY_BTN1 to mfd-osb-t1', () => {
   const catalog = loadCalloutCatalog(commonRoot, 'tm-mfd');
   assert.deepEqual(catalog.byKey.get('JOY_BTN1'), ['mfd-osb-t1']);
+  assert.equal(catalog.controls.find(({ key }) => key === 'JOY_BTN1').type, 'button');
+});
+
+test('preview publishes unbound hardware controls separately from assigned rows', () => {
+  const root = mkdtempSync(join(tmpdir(), 'scaffold-unbound-controls-'));
+  const profilesDir = join(root, 'joystick');
+  mkdirSync(profilesDir);
+  writeFileSync(join(profilesDir, 'F16 MFD 1.diff.lua'), `local diff = { ["keyDiffs"] = {
+    ["d1"] = { ["added"] = { [1] = { ["key"] = "JOY_BTN1" } }, ["name"] = "Assigned" },
+  } } return diff`);
+
+  const preview = buildPreview({ profilesDir, commonRoot });
+  assert.equal(preview.rows.length, 1);
+  assert.ok(!preview.availableControls.some(({ key, chord }) => key === 'JOY_BTN1' && chord === ''));
+  const unbound = preview.availableControls.find(({ key, chord }) => key === 'JOY_BTN2' && chord === '');
+  assert.equal(unbound.section, 'keyDiffs');
+  assert.equal(unbound.isUnboundCandidate, true);
+  assert.equal(unbound.status, 'Unbound');
 });
 
 test('Viper TQS MIC inputs remain renderable when DCS binds them directly', () => {

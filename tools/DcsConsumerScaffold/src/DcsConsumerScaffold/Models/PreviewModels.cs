@@ -29,6 +29,9 @@ public sealed class PreviewDocument
     [JsonPropertyName("rows")]
     public List<PreviewRow> Rows { get; set; } = [];
 
+    [JsonPropertyName("availableControls")]
+    public List<PreviewRow> AvailableControls { get; set; } = [];
+
     [JsonPropertyName("modifiers")]
     public List<PreviewModifier> Modifiers { get; set; } = [];
 
@@ -252,6 +255,9 @@ public sealed class PreviewRow : INotifyPropertyChanged
     [JsonPropertyName("status")]
     public string? Status { get; set; }
 
+    [JsonPropertyName("isUnboundCandidate")]
+    public bool IsUnboundCandidate { get; set; }
+
     [JsonPropertyName("modifierModes")]
     public List<string?> ModifierModes { get; set; } = [];
 
@@ -291,6 +297,7 @@ public sealed class PreviewRow : INotifyPropertyChanged
 
     public void ApplyCommandAssignment(string command, string name)
     {
+        IsUnboundCandidate = false;
         Command = command;
         Name = name;
         DefaultLabel = name;
@@ -311,6 +318,7 @@ public sealed class DcsCommandAssignment
     [JsonPropertyName("section")] public string Section { get; init; } = string.Empty;
     [JsonPropertyName("key")] public string Key { get; init; } = string.Empty;
     [JsonPropertyName("reformers")] public List<string> Reformers { get; init; } = [];
+    [JsonPropertyName("allowCreate")] public bool AllowCreate { get; init; }
     [JsonPropertyName("command")] public string Command { get; init; } = string.Empty;
     [JsonPropertyName("name")] public string Name { get; init; } = string.Empty;
 }
