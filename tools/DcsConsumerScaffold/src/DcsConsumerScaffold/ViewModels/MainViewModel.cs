@@ -682,6 +682,7 @@ public sealed class MainViewModel : INotifyPropertyChanged
         if (!Rows.Contains(row))
         {
             Rows.Add(row);
+            if (!AssignmentTargets.Contains(row)) AssignmentTargets.Add(row);
             row.PropertyChanged += PreviewRow_PropertyChanged;
         }
         RebuildCommandLabels();
