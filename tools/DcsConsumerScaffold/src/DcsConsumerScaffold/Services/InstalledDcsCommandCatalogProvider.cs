@@ -18,21 +18,24 @@ public sealed class InstalledDcsCommandCatalogResult
 
 public sealed partial class InstalledDcsCommandCatalogProvider
 {
-    public InstalledDcsCommandCatalogResult Build(string installRoot, string moduleId)
+    public InstalledDcsCommandCatalogResult Build(string defaultLuaPath, string moduleId)
     {
-        if (string.IsNullOrWhiteSpace(installRoot))
-            throw new ArgumentException("Select the root of an installed DCS World directory.", nameof(installRoot));
+        if (string.IsNullOrWhiteSpace(defaultLuaPath))
+            throw new ArgumentException("Select the module's joystick or keyboard default.lua file.", nameof(defaultLuaPath));
         if (string.IsNullOrWhiteSpace(moduleId))
             throw new ArgumentException("Load a preview with an input module ID before loading installed DCS commands.", nameof(moduleId));
 
-        var root = Path.GetFullPath(installRoot);
-        if (!Directory.Exists(root)) throw new DirectoryNotFoundException($"DCS installation was not found: {root}");
+        var source = Path.GetFullPath(defaultLuaPath);
+        if (!File.Exists(source)) throw new FileNotFoundException("The selected DCS input definition was not found.", source);
+        if (!Path.GetFileName(source).Equals("default.lua", StringComparison.OrdinalIgnoreCase))
+            throw new InvalidDataException("Select a DCS joystick or keyboard file named default.lua.");
+        var controller = Path.GetFileName(Path.GetDirectoryName(source));
+        if (!string.Equals(controller, "joystick", StringComparison.OrdinalIgnoreCase) &&
+            !string.Equals(controller, "keyboard", StringComparison.OrdinalIgnoreCase))
+            throw new InvalidDataException("Select default.lua from the module's joystick or keyboard directory.");
 
-        var sources = DiscoverSources(root, moduleId)
-            .OrderBy(path => path, StringComparer.OrdinalIgnoreCase)
-            .ToList();
-        if (sources.Count == 0)
-            throw new FileNotFoundException($"No joystick or keyboard default.lua input definitions were found for module '{moduleId}' under '{root}'.");
+        var root = FindDcsRoot(source);
+        var sources = new List<string> { source };
 
         var commands = new Dictionary<string, DcsCommandCatalogEntry>(StringComparer.Ordinal);
         var warnings = new List<string>();
@@ -82,7 +85,7 @@ public sealed partial class InstalledDcsCommandCatalogProvider
                     Source = new DcsCommandSource
                     {
                         Provider = "installed-dcs",
-                        File = Path.GetRelativePath(root, source),
+                        File = root is null ? source : Path.GetRelativePath(root, source),
                     },
                 });
             }
@@ -90,13 +93,13 @@ public sealed partial class InstalledDcsCommandCatalogProvider
 
         if (skipped > 0)
             warnings.Add($"Skipped {skipped} command definition(s) whose numeric action or cockpit device identity could not be resolved without executing Lua.");
-        var relativeSources = sources.Select(path => Path.GetRelativePath(root, path)).ToList();
+        var relativeSources = sources.Select(path => root is null ? path : Path.GetRelativePath(root, path)).ToList();
         return new InstalledDcsCommandCatalogResult
         {
             Document = new DcsCommandCatalogDocument
             {
                 SchemaVersion = 1,
-                DcsVersion = ReadDcsVersion(root),
+                DcsVersion = root is null ? null : ReadDcsVersion(root),
                 ModuleId = moduleId.Trim(),
                 Locale = "en",
                 GeneratedAt = DateTimeOffset.UtcNow,
@@ -110,21 +113,13 @@ public sealed partial class InstalledDcsCommandCatalogProvider
         };
     }
 
-    private static IEnumerable<string> DiscoverSources(string root, string moduleId)
+    private static string? FindDcsRoot(string source)
     {
-        var inputRoots = new List<string>();
-        var aircraftRoot = Path.Combine(root, "Mods", "aircraft");
-        if (Directory.Exists(aircraftRoot))
-            inputRoots.AddRange(Directory.EnumerateDirectories(aircraftRoot)
-                .Select(aircraft => Path.Combine(aircraft, "Input", moduleId)));
-        inputRoots.Add(Path.Combine(root, "Config", "Input", "Aircrafts", moduleId));
-
-        foreach (var inputRoot in inputRoots.Distinct(StringComparer.OrdinalIgnoreCase))
-        foreach (var controller in new[] { "joystick", "keyboard" })
+        for (var directory = Directory.GetParent(source); directory is not null; directory = directory.Parent)
         {
-            var candidate = Path.Combine(inputRoot, controller, "default.lua");
-            if (File.Exists(candidate)) yield return candidate;
+            if (File.Exists(Path.Combine(directory.FullName, "autoupdate.cfg"))) return directory.FullName;
         }
+        return null;
     }
 
     private static IEnumerable<string> ExtractTables(string text)
