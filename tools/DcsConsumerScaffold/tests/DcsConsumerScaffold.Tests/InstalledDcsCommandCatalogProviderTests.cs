@@ -108,6 +108,83 @@ public sealed class InstalledDcsCommandCatalogProviderTests
     }
 
     [Fact]
+    public void Build_ResolvesHostCommandFromAdditionalNumericLuaDefinition()
+    {
+        using var install = new TemporaryDcsInstall("GenericJet", "GenericJet", """
+            return { keyCommands = {
+              { down = iCommandPilotGestureSalute, name = _('Pilot Salute'), category = _('Communications') }
+            }}
+            """);
+        install.AddFile("Scripts/Input/CommandDefs.lua", "iCommandPilotGestureSalute = 1777");
+
+        var result = new InstalledDcsCommandCatalogProvider().Build(install.DefaultLuaPath, "GenericJet");
+
+        var salute = Assert.Single(result.Document.Commands);
+        Assert.True(salute.IsAssignable);
+        Assert.Equal("d1777pnilunilcdnilvdnilvpnilvunil", salute.BindingKey);
+        Assert.Contains(result.SourceFiles, file => file.Replace('\\', '/').EndsWith("Scripts/Input/CommandDefs.lua"));
+    }
+
+    [Fact]
+    public void Build_ResolvesHostCommandFromUniqueDcsGeneratedProfileBinding()
+    {
+        using var install = new TemporaryDcsInstall("GenericJet", "GenericJet", """
+            return { keyCommands = {
+              { down = iCommandPilotGestureSalute, name = _('Pilot Salute'), category = _('Communications') }
+            }}
+            """);
+        install.AddInputFile("joystick/Existing.diff.lua", """
+            local diff = { ["keyDiffs"] = {
+              ["d1777pnilunilcdnilvdnilvpnilvunil"] = { ["added"] = { [1] = { ["key"] = "JOY_BTN1" } }, ["name"] = "Pilot Salute" },
+            }}
+            return diff
+            """);
+
+        var result = new InstalledDcsCommandCatalogProvider().Build(install.DefaultLuaPath, "GenericJet");
+
+        var salute = Assert.Single(result.Document.Commands);
+        Assert.True(salute.IsAssignable);
+        Assert.Equal("d1777pnilunilcdnilvdnilvpnilvunil", salute.BindingKey);
+        Assert.Equal("dcs-generated-profile", salute.Source!.Provider);
+        Assert.Contains("iCommandPilotGestureSalute", salute.Aliases);
+    }
+
+    [Fact]
+    public void Build_DoesNotGuessWhenGeneratedProfilesDisagree()
+    {
+        using var install = new TemporaryDcsInstall("GenericJet", "GenericJet", """
+            return { keyCommands = {
+              { down = iCommandPilotGestureSalute, name = _('Pilot Salute'), category = _('Communications') }
+            }}
+            """);
+        install.AddInputFile("joystick/First.diff.lua", "[\"d100pnilunilcdnilvdnilvpnilvunil\"] = { [\"name\"] = \"Pilot Salute\" }");
+        install.AddInputFile("keyboard/Second.diff.lua", "[\"d200pnilunilcdnilvdnilvpnilvunil\"] = { [\"name\"] = \"Pilot Salute\" }");
+
+        var result = new InstalledDcsCommandCatalogProvider().Build(install.DefaultLuaPath, "GenericJet");
+
+        Assert.False(Assert.Single(result.Document.Commands).IsAssignable);
+        Assert.Equal(1, result.UnresolvedEntryCount);
+    }
+
+    [Theory]
+    [InlineData("iCommandPlanePitch", "Pitch", "a2001cdnil")]
+    [InlineData("iCommandPlaneRoll", "Roll", "a2002cdnil")]
+    public void Build_ResolvesVerifiedGlobalFlightAxes(string symbol, string name, string expectedKey)
+    {
+        using var install = new TemporaryDcsInstall("GenericJet", "GenericJet", $$"""
+            return { axisCommands = {
+              { action = {{symbol}}, name = _('{{name}}'), category = _('Axis Commands') }
+            }}
+            """);
+
+        var command = Assert.Single(new InstalledDcsCommandCatalogProvider().Build(install.DefaultLuaPath, "GenericJet").Document.Commands);
+
+        Assert.True(command.IsAssignable);
+        Assert.Equal(expectedKey, command.BindingKey);
+        Assert.Equal("verified-dcs-host-command", command.Source!.Provider);
+    }
+
+    [Fact]
     public void Build_ToleratesModuleSpecificHostAssignmentHelpers()
     {
         using var install = new TemporaryDcsInstall("ThirdPartyJet", "ThirdPartyJet", """
