@@ -59,6 +59,38 @@ public sealed class CommandAssignmentTests
     }
 
     [Fact]
+    public void AssignSelectedCommand_RejectsCommandAlreadyOnSelectedControl()
+    {
+        var row = Row("keyDiffs", "JOY_BTN1", "d-current", "Current command");
+        var viewModel = new MainViewModel { HasPreview = true };
+        viewModel.ReplacePreviewRows([row]);
+        viewModel.SelectedPreviewRow = row;
+        viewModel.SelectedCatalogCommand = Command("button", "d-current", "Current command");
+
+        Assert.False(viewModel.CanAssignSelectedCommand);
+        Assert.Equal("This command is already assigned to the selected control.", viewModel.AssignmentGuidance);
+        Assert.Throws<InvalidOperationException>(() => viewModel.AssignSelectedCommand());
+        Assert.Empty(viewModel.PendingAssignments);
+    }
+
+    [Fact]
+    public void RebuildCommandLabels_CollapsesDuplicateAndRepositoryOnlyGroups()
+    {
+        var row = Row("keyDiffs", "JOY_BTN1", "d-current", "Current command");
+        var viewModel = new MainViewModel { HasPreview = true };
+        viewModel.ReplacePreviewRows([row]);
+        viewModel.CommandLabels.Add(new CommandLabelGroup { Command = "d-current" });
+        viewModel.CommandLabels.Add(new CommandLabelGroup { Command = "d-current", IsRepositoryOnly = true });
+
+        viewModel.RebuildCommandLabels();
+
+        var group = Assert.Single(viewModel.CommandLabels);
+        Assert.Equal("d-current", group.Command);
+        Assert.False(group.IsRepositoryOnly);
+        Assert.Equal(1, group.BindingCount);
+    }
+
+    [Fact]
     public void AssignmentGuidance_ExplainsEachRequiredSelectionAndMismatch()
     {
         var button = Row("keyDiffs", "JOY_BTN1", "d-old", "Old command");

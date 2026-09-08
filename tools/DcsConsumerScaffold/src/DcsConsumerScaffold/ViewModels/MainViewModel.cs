@@ -120,6 +120,7 @@ public sealed class MainViewModel : INotifyPropertyChanged
     public bool CanAssignSelectedCommand =>
         SelectedCatalogCommand is { IsAssignable: true } command &&
         SelectedPreviewRow is { } row &&
+        !string.Equals(command.BindingKey, row.Command, StringComparison.Ordinal) &&
         !string.IsNullOrWhiteSpace(row.ProfileFile) &&
         !string.IsNullOrWhiteSpace(row.Section) &&
         !string.IsNullOrWhiteSpace(row.Key) &&
@@ -142,6 +143,8 @@ public sealed class MainViewModel : INotifyPropertyChanged
             if (SelectedCatalogCommand is null) return "Step 1: select a command on the left.";
             if (!SelectedCatalogCommand.IsAssignable) return "This command is search-only. Select an assignable command.";
             if (SelectedPreviewRow is null) return "Step 2: select a physical control on the right.";
+            if (string.Equals(SelectedCatalogCommand.BindingKey, SelectedPreviewRow.Command, StringComparison.Ordinal))
+                return "This command is already assigned to the selected control.";
             if (!CanAssignSelectedCommand)
                 return $"Select {(SelectedCatalogCommand.Type == "axis" ? "an" : "a")} {SelectedCatalogCommand.Type} control to match this command.";
             return "Ready. Stage the replacement, then choose Proceed to write it.";
@@ -813,6 +816,13 @@ public sealed class MainViewModel : INotifyPropertyChanged
 
     public void RebuildCommandLabels()
     {
+        // Repository comparison can add synthetic groups while a row is changing. Normalize
+        // those transient entries before rebuilding the authoritative groups from Rows.
+        foreach (var synthetic in CommandLabels.Where(group => group.IsRepositoryOnly).ToList())
+            CommandLabels.Remove(synthetic);
+        foreach (var duplicates in CommandLabels.GroupBy(group => group.Command, StringComparer.Ordinal))
+            foreach (var duplicate in duplicates.Skip(1).ToList())
+                CommandLabels.Remove(duplicate);
         var existing = CommandLabels.ToDictionary(group => group.Command, StringComparer.Ordinal);
         var commands = Rows
             .Select(row => row.Command)
@@ -833,6 +843,7 @@ public sealed class MainViewModel : INotifyPropertyChanged
             }
             group.Refresh(Rows);
         }
+        RecomparePreview();
     }
 
     public void ApplyCommandLabel(CommandLabelGroup group)
