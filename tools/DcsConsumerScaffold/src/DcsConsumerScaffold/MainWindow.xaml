@@ -258,86 +258,101 @@
       </DataGrid>
     </GroupBox>
 
-    <GroupBox DockPanel.Dock="Top" Header="DCS Commands (catalog preview)" Margin="0,0,0,8" Padding="4"
-              ToolTip="Select a catalog command and a physical binding row below, then stage the assignment for Proceed.">
-      <DockPanel>
-        <StackPanel DockPanel.Dock="Top">
-          <DockPanel>
-            <Button DockPanel.Dock="Right" Content="Import catalog…" Padding="10,3" Margin="8,0,0,0"
-                    Click="ImportCommandCatalog_Click" IsEnabled="{Binding HasPreview}" />
-            <Button DockPanel.Dock="Right" Content="Load from DCS…" Padding="10,3" Margin="8,0,0,0"
-                    Click="LoadInstalledDcsCommands_Click" IsEnabled="{Binding HasPreview}"
-                    ToolTip="Select this module's joystick or keyboard default.lua and evaluate its DCS command definitions" />
-            <TextBlock VerticalAlignment="Center" Foreground="#555" Text="{Binding CommandCatalogStatus}" TextTrimming="CharacterEllipsis"
-                       ToolTip="{Binding CommandCatalogPath}" />
-          </DockPanel>
-          <WrapPanel Margin="0,5,0,5">
-            <TextBox Width="260" Margin="0,0,8,0" ToolTip="Search name, category, canonical binding key, or alias"
-                     Text="{Binding CommandSearch, UpdateSourceTrigger=PropertyChanged}" />
-            <ComboBox Width="180" Margin="0,0,8,0" ItemsSource="{Binding CommandCategories}"
-                      SelectedItem="{Binding SelectedCommandCategory, UpdateSourceTrigger=PropertyChanged}" />
-            <ComboBox Width="100" Margin="0,0,8,0" ItemsSource="{Binding CommandTypes}"
-                      SelectedItem="{Binding SelectedCommandType, UpdateSourceTrigger=PropertyChanged}" />
-            <ComboBox Width="100" Margin="0,0,8,0" ItemsSource="{Binding CommandBindingStates}"
-                      SelectedItem="{Binding SelectedCommandBindingState, UpdateSourceTrigger=PropertyChanged}" />
-            <TextBlock VerticalAlignment="Center" Text="{Binding CommandResultSummary}" />
-          </WrapPanel>
-          <DockPanel Margin="0,0,0,5">
-            <Button DockPanel.Dock="Left" Content="Assign to selected control" Padding="10,3" Margin="0,0,8,0"
-                    Click="AssignCommand_Click" IsEnabled="{Binding CanAssignSelectedCommand}" />
-            <TextBlock VerticalAlignment="Center" Text="{Binding PendingAssignmentSummary}" FontWeight="SemiBold" />
-          </DockPanel>
-        </StackPanel>
-        <DataGrid ItemsSource="{Binding FilteredCommands}" SelectedItem="{Binding SelectedCatalogCommand}"
-                  Height="155" AutoGenerateColumns="False" IsReadOnly="True" SelectionMode="Single" SelectionUnit="FullRow"
-                  CanUserAddRows="False" HeadersVisibility="Column" AlternatingRowBackground="#F5F7FA">
-          <DataGrid.Columns>
-            <DataGridTextColumn Header="DCS name" Binding="{Binding Name}" Width="2*" />
-            <DataGridTextColumn Header="Category" Binding="{Binding Category}" Width="1.4*" />
-            <DataGridTextColumn Header="Binding key / control ID" Binding="{Binding BindingKey}" Width="2*" />
-            <DataGridTextColumn Header="Type" Binding="{Binding Type}" Width="70" />
-            <DataGridTextColumn Header="Availability" Binding="{Binding Availability}" Width="90" />
-            <DataGridTextColumn Header="State" Binding="{Binding BindingState}" Width="90" />
-            <DataGridTextColumn Header="Source" Binding="{Binding SourceDisplay}" Width="120" />
-          </DataGrid.Columns>
-        </DataGrid>
-      </DockPanel>
-    </GroupBox>
-
-    <TextBox DockPanel.Dock="Bottom" Height="90" Margin="0,8,0,0"
+    <TextBox DockPanel.Dock="Bottom" Height="70" Margin="0,8,0,0"
              IsReadOnly="True" TextWrapping="Wrap" VerticalScrollBarVisibility="Auto"
              Text="{Binding StatusText}" />
 
-    <DataGrid ItemsSource="{Binding Rows}" SelectedItem="{Binding SelectedPreviewRow}"
-              AutoGenerateColumns="False"
-              SelectionMode="Single" SelectionUnit="FullRow"
-              CanUserAddRows="False"
-              HeadersVisibility="Column"
-              AlternatingRowBackground="#F5F7FA"
-              RowStyle="{StaticResource PreviewChangeRowStyle}">
-      <DataGrid.Columns>
-        <DataGridTextColumn Header="Device / stem" Binding="{Binding Stem}" Width="1.2*" IsReadOnly="True" />
-        <DataGridTextColumn Header="Physical profile" Binding="{Binding ProfileKey}" Width="1.8*" IsReadOnly="True" />
-        <DataGridTextColumn Header="Role" Binding="{Binding Role}" Width="1.1*" IsReadOnly="True" />
-        <DataGridTextColumn Header="deviceId" Binding="{Binding DeviceId}" Width="*" IsReadOnly="True" />
-        <DataGridTextColumn Header="Mapping" Binding="{Binding MappingSource}" Width="110" IsReadOnly="True" />
-        <DataGridTextColumn Header="Inst" Binding="{Binding InstanceHint}" Width="50" IsReadOnly="True" />
-        <DataGridTextColumn Header="Key" Binding="{Binding Key}" Width="90" IsReadOnly="True" />
-        <DataGridTextColumn Header="Chord" Binding="{Binding Chord}" Width="100" IsReadOnly="True" />
-        <DataGridTextColumn Header="Modes" Binding="{Binding ModifierModesDisplay}" Width="80" IsReadOnly="True" />
-        <DataGridTextColumn Header="Command" Binding="{Binding Command}" Width="*" IsReadOnly="True" />
-        <DataGridTextColumn Header="DCS label (default)" Binding="{Binding DefaultLabel}" Width="1.2*" IsReadOnly="True" />
-        <DataGridTextColumn Header="Label" Binding="{Binding Label, UpdateSourceTrigger=PropertyChanged}" Width="1.2*" />
-        <DataGridTextColumn Header="Device label" Binding="{Binding DeviceLabel}" Width="1.2*" IsReadOnly="True" />
-        <DataGridTemplateColumn Header="" Width="90">
-          <DataGridTemplateColumn.CellTemplate>
-            <DataTemplate><Button Content="Use device" ToolTip="Replace Label with Device Label" Tag="{Binding}" Click="ResetLabel_Click" /></DataTemplate>
-          </DataGridTemplateColumn.CellTemplate>
-        </DataGridTemplateColumn>
-        <DataGridTextColumn Header="Callout" Binding="{Binding CalloutId}" Width="110" IsReadOnly="True" />
-        <DataGridTextColumn Header="Status" Binding="{Binding Status}" Width="110" IsReadOnly="True" />
-        <DataGridTextColumn Header="Change" Binding="{Binding ChangeState}" Width="95" IsReadOnly="True" />
-      </DataGrid.Columns>
-    </DataGrid>
+    <Grid MinHeight="220">
+      <Grid.RowDefinitions>
+        <RowDefinition Height="Auto" />
+        <RowDefinition Height="*" />
+      </Grid.RowDefinitions>
+      <Grid.ColumnDefinitions>
+        <ColumnDefinition Width="1.1*" MinWidth="360" />
+        <ColumnDefinition Width="6" />
+        <ColumnDefinition Width="*" MinWidth="360" />
+      </Grid.ColumnDefinitions>
+
+      <Border Grid.Row="0" Grid.ColumnSpan="3" Background="#EEF4FA" BorderBrush="#B8CDE1" BorderThickness="1"
+              CornerRadius="2" Padding="8" Margin="0,0,0,6">
+        <Grid>
+          <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="*" />
+            <ColumnDefinition Width="Auto" />
+          </Grid.ColumnDefinitions>
+          <StackPanel>
+            <TextBlock Text="Assign a DCS command to a physical control" FontWeight="SemiBold" />
+            <TextBlock Text="{Binding AssignmentGuidance}" Foreground="#444" Margin="0,2,0,0" />
+            <WrapPanel Margin="0,4,0,0">
+              <TextBlock Text="Command: " FontWeight="SemiBold" />
+              <TextBlock Text="{Binding SelectedCommandSummary}" Margin="0,0,18,0" />
+              <TextBlock Text="Control: " FontWeight="SemiBold" />
+              <TextBlock Text="{Binding SelectedControlSummary}" />
+            </WrapPanel>
+          </StackPanel>
+          <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
+            <TextBlock Text="{Binding PendingAssignmentSummary}" FontWeight="SemiBold" VerticalAlignment="Center" Margin="0,0,10,0" />
+            <Button Content="3. Stage selected replacement" Padding="12,5" Click="AssignCommand_Click"
+                    IsEnabled="{Binding CanAssignSelectedCommand}" />
+          </StackPanel>
+        </Grid>
+      </Border>
+
+      <GroupBox Grid.Row="1" Grid.Column="0" Header="1. Select an assignable DCS command" Padding="4" Margin="0,0,3,0">
+        <DockPanel>
+          <StackPanel DockPanel.Dock="Top">
+            <DockPanel>
+              <Button DockPanel.Dock="Right" Content="Import catalog…" Padding="8,3" Margin="6,0,0,0"
+                      Click="ImportCommandCatalog_Click" IsEnabled="{Binding HasPreview}" />
+              <Button DockPanel.Dock="Right" Content="Load from DCS…" Padding="8,3" Margin="6,0,0,0"
+                      Click="LoadInstalledDcsCommands_Click" IsEnabled="{Binding HasPreview}" />
+              <TextBlock VerticalAlignment="Center" Foreground="#555" Text="{Binding CommandCatalogStatus}"
+                         TextTrimming="CharacterEllipsis" ToolTip="{Binding CommandCatalogPath}" />
+            </DockPanel>
+            <WrapPanel Margin="0,5">
+              <TextBox Width="220" Margin="0,0,6,0" ToolTip="Search name, category, binding key, or alias"
+                       Text="{Binding CommandSearch, UpdateSourceTrigger=PropertyChanged}" />
+              <ComboBox Width="150" Margin="0,0,6,0" ItemsSource="{Binding CommandCategories}"
+                        SelectedItem="{Binding SelectedCommandCategory, UpdateSourceTrigger=PropertyChanged}" />
+              <ComboBox Width="85" Margin="0,0,6,0" ItemsSource="{Binding CommandTypes}"
+                        SelectedItem="{Binding SelectedCommandType, UpdateSourceTrigger=PropertyChanged}" />
+              <ComboBox Width="90" ItemsSource="{Binding CommandBindingStates}"
+                        SelectedItem="{Binding SelectedCommandBindingState, UpdateSourceTrigger=PropertyChanged}" />
+              <TextBlock VerticalAlignment="Center" Margin="8,0,0,0" Text="{Binding CommandResultSummary}" />
+            </WrapPanel>
+          </StackPanel>
+          <DataGrid ItemsSource="{Binding FilteredCommands}" SelectedItem="{Binding SelectedCatalogCommand}"
+                    AutoGenerateColumns="False" IsReadOnly="True" SelectionMode="Single" SelectionUnit="FullRow"
+                    CanUserAddRows="False" HeadersVisibility="Column" AlternatingRowBackground="#F5F7FA">
+            <DataGrid.Columns>
+              <DataGridTextColumn Header="DCS name" Binding="{Binding Name}" Width="2*" />
+              <DataGridTextColumn Header="Category" Binding="{Binding Category}" Width="1.3*" />
+              <DataGridTextColumn Header="Type" Binding="{Binding Type}" Width="60" />
+              <DataGridTextColumn Header="Availability" Binding="{Binding Availability}" Width="85" />
+              <DataGridTextColumn Header="State" Binding="{Binding BindingState}" Width="75" />
+            </DataGrid.Columns>
+          </DataGrid>
+        </DockPanel>
+      </GroupBox>
+
+      <GridSplitter Grid.Row="1" Grid.Column="1" Width="6" HorizontalAlignment="Stretch" Background="#D0D0D0"
+                    ResizeDirection="Columns" ResizeBehavior="PreviousAndNext" />
+
+      <GroupBox Grid.Row="1" Grid.Column="2" Header="2. Select the physical control to replace" Padding="4" Margin="3,0,0,0">
+        <DataGrid ItemsSource="{Binding Rows}" SelectedItem="{Binding SelectedPreviewRow}" AutoGenerateColumns="False"
+                  SelectionMode="Single" SelectionUnit="FullRow" CanUserAddRows="False" HeadersVisibility="Column"
+                  AlternatingRowBackground="#F5F7FA" RowStyle="{StaticResource PreviewChangeRowStyle}">
+          <DataGrid.Columns>
+            <DataGridTextColumn Header="Device" Binding="{Binding Stem}" Width="1.1*" IsReadOnly="True" />
+            <DataGridTextColumn Header="Control" Binding="{Binding Key}" Width="90" IsReadOnly="True" />
+            <DataGridTextColumn Header="Chord" Binding="{Binding Chord}" Width="90" IsReadOnly="True" />
+            <DataGridTextColumn Header="Type" Binding="{Binding InputType}" Width="60" IsReadOnly="True" />
+            <DataGridTextColumn Header="Current DCS command" Binding="{Binding Name}" Width="1.5*" IsReadOnly="True" />
+            <DataGridTextColumn Header="Label" Binding="{Binding Label, UpdateSourceTrigger=PropertyChanged}" Width="1.1*" />
+            <DataGridTextColumn Header="Change" Binding="{Binding ChangeState}" Width="80" IsReadOnly="True" />
+          </DataGrid.Columns>
+        </DataGrid>
+      </GroupBox>
+    </Grid>
   </DockPanel>
 </Window>

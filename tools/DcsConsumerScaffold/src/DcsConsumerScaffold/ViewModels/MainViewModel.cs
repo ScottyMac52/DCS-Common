@@ -113,6 +113,28 @@ public sealed class MainViewModel : INotifyPropertyChanged
         ((command.Type == "axis" && row.Section == "axisDiffs") ||
          (command.Type == "button" && row.Section == "keyDiffs"));
 
+    public string SelectedCommandSummary => SelectedCatalogCommand is null
+        ? "No command selected"
+        : $"{SelectedCatalogCommand.Name} ({SelectedCatalogCommand.Type}, {SelectedCatalogCommand.Availability})";
+
+    public string SelectedControlSummary => SelectedPreviewRow is null
+        ? "No physical control selected"
+        : $"{SelectedPreviewRow.Stem} • {SelectedPreviewRow.Key}{(string.IsNullOrWhiteSpace(SelectedPreviewRow.Chord) ? string.Empty : $" + {SelectedPreviewRow.Chord}")}";
+
+    public string AssignmentGuidance
+    {
+        get
+        {
+            if (_commandCatalog is null && SelectedCatalogCommand is null) return "Load a command catalog to begin.";
+            if (SelectedCatalogCommand is null) return "Step 1: select a command on the left.";
+            if (!SelectedCatalogCommand.IsAssignable) return "This command is search-only. Select an assignable command.";
+            if (SelectedPreviewRow is null) return "Step 2: select a physical control on the right.";
+            if (!CanAssignSelectedCommand)
+                return $"Select {(SelectedCatalogCommand.Type == "axis" ? "an" : "a")} {SelectedCatalogCommand.Type} control to match this command.";
+            return "Ready. Stage the replacement, then choose Proceed to write it.";
+        }
+    }
+
     public string PendingAssignmentSummary => PendingAssignments.Count == 0
         ? "No pending command assignments"
         : $"{PendingAssignments.Count} pending command assignment(s)";
@@ -628,6 +650,9 @@ public sealed class MainViewModel : INotifyPropertyChanged
     {
         PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(CanAssignSelectedCommand)));
         PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(PendingAssignmentSummary)));
+        PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(SelectedCommandSummary)));
+        PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(SelectedControlSummary)));
+        PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(AssignmentGuidance)));
     }
 
     public void LoadCommandCatalog(string path)
