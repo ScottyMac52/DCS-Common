@@ -182,7 +182,8 @@ internal sealed partial class DcsInputLuaExecutor
             var root = _script.Globals.Get(match.Groups["root"].Value);
             if (root.Type != DataType.Table) continue;
             var name = match.Groups["name"].Value;
-            if (root.Table.RawGet(name).IsNil()) root.Table[name] = (Func<DynValue>)EmptyHostResults;
+            var existing = root.Table.RawGet(name);
+            if (existing is null || existing.IsNil()) root.Table[name] = (Func<DynValue>)EmptyHostResults;
         }
     }
 
