@@ -575,8 +575,9 @@ public sealed class MainViewModel : INotifyPropertyChanged
 
         var result = _installedCommandCatalogProvider.Build(defaultLuaPath, InputModuleId);
         ApplyCommandCatalog(result.Document, Path.GetFullPath(defaultLuaPath));
-        var skipped = result.SkippedEntryCount == 0 ? string.Empty : $" Skipped {result.SkippedEntryCount} unresolved definition(s).";
-        StatusText = $"Loaded {CommandCatalog.Count} commands for {result.Document.ModuleId} from {Path.GetFileName(defaultLuaPath)}.{skipped}";
+        var assignable = CommandCatalog.Count - result.UnresolvedEntryCount;
+        StatusText = $"Loaded {CommandCatalog.Count} commands for {result.Document.ModuleId} from {Path.GetFileName(defaultLuaPath)}. " +
+                     $"{assignable} assignable; {result.UnresolvedEntryCount} search-only.";
     }
 
     private void ApplyCommandCatalog(DcsCommandCatalogDocument document, string sourcePath)

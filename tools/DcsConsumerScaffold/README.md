@@ -62,9 +62,9 @@ Grouping is a preview/editor feature only. Proceed still persists the existing r
 
 After **Load Preview**, use **Load from DCS…** under **DCS Commands** and browse directly to the module's `joystick/default.lua` (or `keyboard/default.lua`). For example, the Hornet file is under `FA-18C/joystick/default.lua` even though its preview identity may be `FA-18C_hornet`. The selected file is authoritative, so no installation-root discovery or module-folder-name guessing is required.
 
-The importer extracts numeric cockpit button and axis definitions and immediately loads the resulting searchable catalog. When the selected file is inside a normal DCS installation, the DCS version comes from the nearest ancestor `autoupdate.cfg`; a SHA-256 source fingerprint records exactly which definition produced the catalog.
+The importer evaluates the selected file and its normal DCS `dofile` and `external_profile` dependencies, then immediately loads the resulting searchable catalog. This resolves command and device tables defined by module scripts instead of requiring numeric literals directly in `default.lua`. When the selected file is inside a normal DCS installation, the DCS version comes from the nearest ancestor `autoupdate.cfg`; a SHA-256 source fingerprint records every definition file used to produce the catalog.
 
-The provider is deliberately a static reader. It does not execute Lua, call `dofile`/`require`, or load module DLLs. Commands whose action or cockpit-device identity is symbolic and cannot be resolved from a numeric literal are skipped and reported in the status line. This keeps importing safe while still supporting the numeric definitions from which DCS canonical binding keys can be reproduced exactly.
+Lua runs in an embedded soft sandbox: OS, process, network, and native-module APIs are unavailable, and dependency paths cannot escape the detected DCS installation. Host-defined symbols that DCS itself normally injects but does not expose as numeric values are retained for searching and clearly marked **Search only**; commands with a complete numeric identity are marked **Assignable**.
 
 **Import catalog…** remains available for catalogs produced by other trusted tooling. The importer rejects a mismatched module ID, unsupported schema, duplicate canonical keys, missing identities, and unknown command types before replacing the current browser contents.
 
@@ -104,7 +104,7 @@ Minimal schemaVersion 1 example:
 }
 ```
 
-Catalog loading remains intentionally read-only. It establishes validated command identity and discovery without modifying live Saved Games profiles or executing module Lua. Assigning catalog commands to physical controls requires a subsequent safe profile-rewrite slice that preserves every unrelated `.diff.lua` entry.
+Catalog loading remains intentionally read-only. It establishes validated command identity and discovery without modifying live Saved Games profiles. Assigning catalog commands to physical controls requires a subsequent safe profile-rewrite slice that preserves every unrelated `.diff.lua` entry.
 
 ## Import the authoritative UI Layer
 

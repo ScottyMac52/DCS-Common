@@ -33,7 +33,7 @@ public sealed class InstalledDcsCommandCatalogProviderTests
         Assert.Equal("d3001pnilu3001cd13vd1vpnilvu0", masterArm.BindingKey);
         Assert.Equal(["Armament", "Master Arm"], masterArm.CategoryPath);
         Assert.Equal(3001, masterArm.Actions!.Down);
-        Assert.Equal("installed-dcs", masterArm.Source!.Provider);
+        Assert.Equal("installed-dcs-lua", masterArm.Source!.Provider);
         Assert.EndsWith("/Input/FA-18C/joystick/default.lua", masterArm.Source.File!.Replace('\\', '/'));
         Assert.Contains(result.Document.Commands, command => command.BindingKey == "dnilp3042unilcd7vd-1vpnilvunil");
         Assert.Contains(result.Document.Commands, command => command.BindingKey == "a2001cd2" && command.Type == "axis");
@@ -42,35 +42,45 @@ public sealed class InstalledDcsCommandCatalogProviderTests
     }
 
     [Fact]
-    public void Build_ReadsOnlyTheSelectedDefaultLuaWithoutExecutingIt()
+    public void Build_ExecutesSelectedDefaultLuaAndItsDcsDependencies()
     {
-        using var install = new TemporaryDcsInstall("CommunityHornet", "FA-18C_hornet", """
-            local marker = io.open('provider-must-not-execute.txt', 'w')
-            if marker then marker:write('bad'); marker:close() end
-            return { keyCommands = {
-              { down = 3010, cockpit_device_id = 4, name = _('Safe command'), category = _('Systems') }
-            }}
+        using var install = new TemporaryDcsInstall("FA-18C", "FA-18C", """
+            local cockpit = folder.."../../../Cockpit/Scripts/"
+            dofile(cockpit.."devices.lua")
+            dofile(cockpit.."command_defs.lua")
+            local res = external_profile("Config/Input/Aircrafts/common_joystick_binding.lua")
+            join(res.keyCommands, {
+              { down = hotas_commands.WEAPON_RELEASE, up = hotas_commands.WEAPON_RELEASE,
+                cockpit_device_id = devices.HOTAS, value_down = 1, value_up = 0,
+                name = _('Weapon release'), category = {_('HOTAS'), _('Stick')} },
+              { down = iCommandEnginesStart, name = _('Auto Start'), category = _('Cheat') }
+            })
+            return res
             """);
-        var keyboard = install.AddInputFile("keyboard/default.lua", """
+        install.AddFile("Mods/aircraft/FA-18C/Cockpit/Scripts/devices.lua", "devices = { HOTAS = 13 }");
+        install.AddFile("Mods/aircraft/FA-18C/Cockpit/Scripts/command_defs.lua", "hotas_commands = { WEAPON_RELEASE = 3001 }");
+        install.AddFile("Config/Input/Aircrafts/common_joystick_binding.lua", """
             return { keyCommands = {
-              { down = 3011, cockpit_device_id = 4, name = _('Keyboard source command'), category = _('Systems') }
-            }}
+              { down = 1001, name = _('Common command'), category = _('General') }
+            }, axisCommands = {} }
             """);
 
-        var joystickResult = new InstalledDcsCommandCatalogProvider().Build(install.DefaultLuaPath, "FA-18C_hornet");
-        var keyboardResult = new InstalledDcsCommandCatalogProvider().Build(keyboard, "FA-18C_hornet");
+        var result = new InstalledDcsCommandCatalogProvider().Build(install.DefaultLuaPath, "FA-18C_hornet");
 
-        Assert.Single(joystickResult.Document.Commands);
-        Assert.Equal("Safe command", joystickResult.Document.Commands[0].Name);
-        Assert.Single(keyboardResult.Document.Commands);
-        Assert.Equal("Keyboard source command", keyboardResult.Document.Commands[0].Name);
-        Assert.False(File.Exists(Path.Combine(Environment.CurrentDirectory, "provider-must-not-execute.txt")));
-        Assert.Single(joystickResult.SourceFiles);
-        Assert.Single(keyboardResult.SourceFiles);
+        Assert.Equal(3, result.Document.Commands.Count);
+        var weaponRelease = Assert.Single(result.Document.Commands, command => command.Name == "Weapon release");
+        Assert.True(weaponRelease.IsAssignable);
+        Assert.Equal("d3001pnilu3001cd13vd1vpnilvu0", weaponRelease.BindingKey);
+        var autoStart = Assert.Single(result.Document.Commands, command => command.Name == "Auto Start");
+        Assert.False(autoStart.IsAssignable);
+        Assert.StartsWith("unresolved:", autoStart.BindingKey);
+        Assert.Contains(result.Document.Commands, command => command.Name == "Common command" && command.IsAssignable);
+        Assert.Equal(1, result.UnresolvedEntryCount);
+        Assert.Equal(4, result.SourceFiles.Count);
     }
 
     [Fact]
-    public void Build_SkipsEntriesWhoseCanonicalNumericIdentityCannotBeResolved()
+    public void Build_KeepsUnresolvedEntriesSearchableButUnavailableForAssignment()
     {
         using var install = new TemporaryDcsInstall("F-16C", "F-16C_50", """
             return { keyCommands = {
@@ -82,10 +92,27 @@ public sealed class InstalledDcsCommandCatalogProviderTests
 
         var result = new InstalledDcsCommandCatalogProvider().Build(install.DefaultLuaPath, "F-16C_50");
 
-        Assert.Single(result.Document.Commands);
-        Assert.Equal("Resolved", result.Document.Commands[0].Name);
-        Assert.Equal(1, result.SkippedEntryCount);
-        Assert.Contains("numeric", result.Warnings[0], StringComparison.OrdinalIgnoreCase);
+        Assert.Equal(2, result.Document.Commands.Count);
+        Assert.Contains(result.Document.Commands, command => command.Name == "Resolved" && command.IsAssignable);
+        var unresolved = Assert.Single(result.Document.Commands, command => command.Name == "Unresolved");
+        Assert.False(unresolved.IsAssignable);
+        Assert.Equal("Search only", unresolved.Availability);
+        Assert.Equal(1, result.UnresolvedEntryCount);
+        Assert.Contains("unavailable", result.Warnings[0], StringComparison.OrdinalIgnoreCase);
+    }
+
+    [Fact]
+    public void Build_RejectsLuaDependenciesOutsideTheDcsInstallation()
+    {
+        using var install = new TemporaryDcsInstall("F-16C", "F-16C_50", """
+            dofile(folder.."../../../../../../../../outside.lua")
+            return { keyCommands = {} }
+            """);
+
+        var error = Assert.Throws<InvalidDataException>(() =>
+            new InstalledDcsCommandCatalogProvider().Build(install.DefaultLuaPath, "F-16C_50"));
+
+        Assert.Contains("outside", error.Message, StringComparison.OrdinalIgnoreCase);
     }
 
     [Fact]
@@ -120,6 +147,14 @@ public sealed class InstalledDcsCommandCatalogProviderTests
             Directory.CreateDirectory(Path.GetDirectoryName(path)!);
             File.WriteAllText(path, content);
             if (relativePath.Equals("joystick/default.lua", StringComparison.OrdinalIgnoreCase)) DefaultLuaPath = path;
+            return path;
+        }
+
+        public string AddFile(string relativePath, string content)
+        {
+            var path = Path.Combine(Root, relativePath.Replace('/', Path.DirectorySeparatorChar));
+            Directory.CreateDirectory(Path.GetDirectoryName(path)!);
+            File.WriteAllText(path, content);
             return path;
         }
 

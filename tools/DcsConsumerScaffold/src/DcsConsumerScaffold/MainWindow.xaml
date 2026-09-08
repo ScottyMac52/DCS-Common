@@ -267,7 +267,7 @@
                     Click="ImportCommandCatalog_Click" IsEnabled="{Binding HasPreview}" />
             <Button DockPanel.Dock="Right" Content="Load from DCS…" Padding="10,3" Margin="8,0,0,0"
                     Click="LoadInstalledDcsCommands_Click" IsEnabled="{Binding HasPreview}"
-                    ToolTip="Select this module's joystick or keyboard default.lua and statically read its command definitions" />
+                    ToolTip="Select this module's joystick or keyboard default.lua and evaluate its DCS command definitions" />
             <TextBlock VerticalAlignment="Center" Foreground="#555" Text="{Binding CommandCatalogStatus}" TextTrimming="CharacterEllipsis"
                        ToolTip="{Binding CommandCatalogPath}" />
           </DockPanel>
@@ -290,6 +290,7 @@
             <DataGridTextColumn Header="Category" Binding="{Binding Category}" Width="1.4*" />
             <DataGridTextColumn Header="Binding key / control ID" Binding="{Binding BindingKey}" Width="2*" />
             <DataGridTextColumn Header="Type" Binding="{Binding Type}" Width="70" />
+            <DataGridTextColumn Header="Availability" Binding="{Binding Availability}" Width="90" />
             <DataGridTextColumn Header="State" Binding="{Binding BindingState}" Width="90" />
             <DataGridTextColumn Header="Source" Binding="{Binding SourceDisplay}" Width="120" />
           </DataGrid.Columns>

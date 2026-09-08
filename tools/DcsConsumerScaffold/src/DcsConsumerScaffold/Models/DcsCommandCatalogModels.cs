@@ -28,10 +28,13 @@ public sealed class DcsCommandCatalogEntry : INotifyPropertyChanged
     [JsonPropertyName("aliases")] public List<string> Aliases { get; set; } = [];
     [JsonPropertyName("actions")] public DcsCommandActions? Actions { get; set; }
     [JsonPropertyName("source")] public DcsCommandSource? Source { get; set; }
+    [JsonPropertyName("isAssignable")] public bool IsAssignable { get; set; } = true;
+    [JsonPropertyName("unavailableReason")] public string? UnavailableReason { get; set; }
 
     [JsonIgnore] public string Category => CategoryPath.Count == 0 ? "Uncategorized" : string.Join(" / ", CategoryPath);
     [JsonIgnore] public string SourceDisplay => Source?.Provider ?? "imported-catalog";
     [JsonIgnore] public string BindingState => IsBound ? $"Bound ({BindingCount})" : "Unbound";
+    [JsonIgnore] public string Availability => IsAssignable ? "Assignable" : "Search only";
 
     [JsonIgnore]
     public bool IsBound
@@ -71,6 +74,7 @@ public sealed class DcsCommandActions
     [JsonPropertyName("pressed")] public int? Pressed { get; set; }
     [JsonPropertyName("cockpitDeviceId")] public int? CockpitDeviceId { get; set; }
     [JsonPropertyName("valueDown")] public double? ValueDown { get; set; }
+    [JsonPropertyName("valuePressed")] public double? ValuePressed { get; set; }
     [JsonPropertyName("valueUp")] public double? ValueUp { get; set; }
 }
 
