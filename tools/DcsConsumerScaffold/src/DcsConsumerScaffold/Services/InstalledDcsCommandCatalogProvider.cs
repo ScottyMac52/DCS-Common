@@ -40,9 +40,9 @@ public sealed partial class InstalledDcsCommandCatalogProvider
         var commands = new Dictionary<string, DcsCommandCatalogEntry>(StringComparer.Ordinal);
         var warnings = new List<string>();
         var skipped = 0;
-        foreach (var source in sources)
+        foreach (var sourcePath in sources)
         {
-            var text = File.ReadAllText(source);
+            var text = File.ReadAllText(sourcePath);
             foreach (var table in ExtractTables(StripComments(text)))
             {
                 if (!HasTopLevelField(table, "name")) continue;
@@ -85,7 +85,7 @@ public sealed partial class InstalledDcsCommandCatalogProvider
                     Source = new DcsCommandSource
                     {
                         Provider = "installed-dcs",
-                        File = root is null ? source : Path.GetRelativePath(root, source),
+                        File = root is null ? sourcePath : Path.GetRelativePath(root, sourcePath),
                     },
                 });
             }
