@@ -48,6 +48,8 @@ public sealed class MainViewModel : INotifyPropertyChanged
     private string _selectedCommandCategory = "All";
     private string _selectedCommandType = "All";
     private string _selectedCommandBindingState = "All";
+    private DcsCommandCatalogEntry? _selectedCatalogCommand;
+    private PreviewRow? _selectedPreviewRow;
 
     public MainViewModel(
         ScaffoldEngineService? engine = null,
@@ -74,6 +76,7 @@ public sealed class MainViewModel : INotifyPropertyChanged
         CommandCategories = new ObservableCollection<string> { "All" };
         CommandTypes = new ObservableCollection<string> { "All", "button", "axis" };
         CommandBindingStates = new ObservableCollection<string> { "All", "Bound", "Unbound" };
+        PendingAssignments = new ObservableCollection<DcsCommandAssignment>();
     }
 
     public event PropertyChangedEventHandler? PropertyChanged;
@@ -87,6 +90,32 @@ public sealed class MainViewModel : INotifyPropertyChanged
     public ObservableCollection<string> CommandCategories { get; }
     public ObservableCollection<string> CommandTypes { get; }
     public ObservableCollection<string> CommandBindingStates { get; }
+    public ObservableCollection<DcsCommandAssignment> PendingAssignments { get; }
+
+    public DcsCommandCatalogEntry? SelectedCatalogCommand
+    {
+        get => _selectedCatalogCommand;
+        set { if (Set(ref _selectedCatalogCommand, value)) RaiseAssignmentState(); }
+    }
+
+    public PreviewRow? SelectedPreviewRow
+    {
+        get => _selectedPreviewRow;
+        set { if (Set(ref _selectedPreviewRow, value)) RaiseAssignmentState(); }
+    }
+
+    public bool CanAssignSelectedCommand =>
+        SelectedCatalogCommand is { IsAssignable: true } command &&
+        SelectedPreviewRow is { } row &&
+        !string.IsNullOrWhiteSpace(row.ProfileFile) &&
+        !string.IsNullOrWhiteSpace(row.Section) &&
+        !string.IsNullOrWhiteSpace(row.Key) &&
+        ((command.Type == "axis" && row.Section == "axisDiffs") ||
+         (command.Type == "button" && row.Section == "keyDiffs"));
+
+    public string PendingAssignmentSummary => PendingAssignments.Count == 0
+        ? "No pending command assignments"
+        : $"{PendingAssignments.Count} pending command assignment(s)";
 
     public string? CommandCatalogPath
     {
@@ -404,6 +433,10 @@ public sealed class MainViewModel : INotifyPropertyChanged
         Devices.Clear();
         UntrackRows();
         Rows.Clear();
+        PendingAssignments.Clear();
+        SelectedPreviewRow = null;
+        SelectedCatalogCommand = null;
+        RaiseAssignmentState();
         CommandLabels.Clear();
         ClearCommandCatalog();
         Modifiers.Clear();
@@ -529,7 +562,8 @@ public sealed class MainViewModel : INotifyPropertyChanged
                     .Select(device => device.ProfileKey!)
                     .ToArray(),
                 mfdCategories: MfdCategoryOverrides(),
-                pagePresentations: PagePresentationOverrides());
+                pagePresentations: PagePresentationOverrides(),
+                assignments: PendingAssignments.ToArray());
 
             StatusText = exitCode is 0 or 2
                 ? $"Proceed finished (exit {exitCode}). See SCAFFOLD-REPORT.md under the output folder.{Environment.NewLine}{stdout}{Environment.NewLine}{stderr}".Trim()
@@ -556,6 +590,44 @@ public sealed class MainViewModel : INotifyPropertyChanged
         }
         RebuildCommandLabels();
         RefreshCommandBindingState();
+        RaiseAssignmentState();
+    }
+
+    public DcsCommandAssignment AssignSelectedCommand()
+    {
+        if (!CanAssignSelectedCommand)
+            throw new InvalidOperationException("Select an assignable command and a compatible button or axis row.");
+
+        var command = SelectedCatalogCommand!;
+        var row = SelectedPreviewRow!;
+        var assignment = new DcsCommandAssignment
+        {
+            ProfileFile = row.ProfileFile!,
+            Section = row.Section!,
+            Key = row.Key!,
+            Reformers = [.. row.Reformers.OrderBy(value => value, StringComparer.Ordinal)],
+            Command = command.BindingKey,
+            Name = command.Name,
+        };
+        var existing = PendingAssignments.FirstOrDefault(item =>
+            item.ProfileFile.Equals(assignment.ProfileFile, StringComparison.OrdinalIgnoreCase) &&
+            item.Section == assignment.Section && item.Key == assignment.Key &&
+            item.Reformers.SequenceEqual(assignment.Reformers, StringComparer.Ordinal));
+        if (existing is not null) PendingAssignments.Remove(existing);
+        PendingAssignments.Add(assignment);
+        row.ApplyCommandAssignment(command.BindingKey, command.Name);
+        RebuildCommandLabels();
+        RefreshCommandBindingState();
+        MarkSolutionDirty();
+        RaiseAssignmentState();
+        StatusText = $"Pending: {row.Stem} {row.Key}{(string.IsNullOrWhiteSpace(row.Chord) ? string.Empty : $" + {row.Chord}")} → {command.Name}. Proceed will write the assignment.";
+        return assignment;
+    }
+
+    private void RaiseAssignmentState()
+    {
+        PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(CanAssignSelectedCommand)));
+        PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(PendingAssignmentSummary)));
     }
 
     public void LoadCommandCatalog(string path)

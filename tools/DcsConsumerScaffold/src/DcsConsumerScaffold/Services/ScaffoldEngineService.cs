@@ -103,6 +103,7 @@ public sealed class ScaffoldEngineService
         IReadOnlyDictionary<string, IReadOnlyDictionary<string, string>>? mfdCategories = null,
         IReadOnlyDictionary<string, IReadOnlyDictionary<string, string>>? pagePresentations = null,
         bool includeUiLayer = true,
+        IReadOnlyCollection<DcsCommandAssignment>? assignments = null,
         CancellationToken cancellationToken = default)
     {
         var root = ResolveCommonRoot(commonRoot)
@@ -116,6 +117,7 @@ public sealed class ScaffoldEngineService
         string? removedProfilesPath = null;
         string? mfdCategoriesPath = null;
         string? pagePresentationsPath = null;
+        string? assignmentsPath = null;
         try
         {
             if (instanceRoles is { Count: > 0 })
@@ -129,9 +131,10 @@ public sealed class ScaffoldEngineService
             removedProfilesPath = await WriteTemporaryJsonArrayAsync("removed-profiles", removedProfiles, cancellationToken);
             mfdCategoriesPath = await WriteTemporaryObjectAsync("mfd-categories", mfdCategories, cancellationToken);
             pagePresentationsPath = await WriteTemporaryObjectAsync("page-presentation", pagePresentations, cancellationToken);
+            assignmentsPath = await WriteTemporaryJsonArrayAsync("assignments", assignments, cancellationToken);
 
             var args = BuildWriteArguments(
-                script, profilesDir, modifiersPath, mozaGrip, rolesPath, root, outputDir, displayName, inputModuleId, kneeboardId, repoName, semanticPath, labelsPath, removedProfilesPath, mfdCategoriesPath, pagePresentationsPath, includeUiLayer);
+                script, profilesDir, modifiersPath, mozaGrip, rolesPath, root, outputDir, displayName, inputModuleId, kneeboardId, repoName, semanticPath, labelsPath, removedProfilesPath, mfdCategoriesPath, pagePresentationsPath, includeUiLayer, assignmentsPath);
             var (exitCode, stdout, stderr) = await RunNodeAsync(root, args, cancellationToken).ConfigureAwait(false);
             return (stdout, stderr, exitCode);
         }
@@ -146,6 +149,7 @@ public sealed class ScaffoldEngineService
             DeleteTemporary(removedProfilesPath);
             DeleteTemporary(mfdCategoriesPath);
             DeleteTemporary(pagePresentationsPath);
+            DeleteTemporary(assignmentsPath);
         }
     }
 
@@ -215,9 +219,9 @@ public sealed class ScaffoldEngineService
         return path;
     }
 
-    private static async Task<string?> WriteTemporaryJsonArrayAsync(
+    private static async Task<string?> WriteTemporaryJsonArrayAsync<T>(
         string stem,
-        IReadOnlyCollection<string>? values,
+        IReadOnlyCollection<T>? values,
         CancellationToken cancellationToken)
     {
         if (values is not { Count: > 0 }) return null;
@@ -340,7 +344,8 @@ public sealed class ScaffoldEngineService
         string? removedProfilesPath = null,
         string? mfdCategoriesPath = null,
         string? pagePresentationsPath = null,
-        bool includeUiLayer = true)
+        bool includeUiLayer = true,
+        string? assignmentsPath = null)
     {
         var list = new List<string>
         {
@@ -380,6 +385,7 @@ public sealed class ScaffoldEngineService
         AddOptionalFile(list, "--remove-profiles", removedProfilesPath);
         AddOptionalFile(list, "--mfd-categories", mfdCategoriesPath);
         AddOptionalFile(list, "--page-presentation", pagePresentationsPath);
+        AddOptionalFile(list, "--assignments", assignmentsPath);
         if (!includeUiLayer) list.Add("--exclude-ui-layer");
 
         if (!string.IsNullOrWhiteSpace(repoName))

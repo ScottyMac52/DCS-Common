@@ -259,7 +259,7 @@
     </GroupBox>
 
     <GroupBox DockPanel.Dock="Top" Header="DCS Commands (catalog preview)" Margin="0,0,0,8" Padding="4"
-              ToolTip="Search the complete module catalog by DCS name, category, binding key, or alias. Assignment will be added after safe profile rewriting is available.">
+              ToolTip="Select a catalog command and a physical binding row below, then stage the assignment for Proceed.">
       <DockPanel>
         <StackPanel DockPanel.Dock="Top">
           <DockPanel>
@@ -282,8 +282,14 @@
                       SelectedItem="{Binding SelectedCommandBindingState, UpdateSourceTrigger=PropertyChanged}" />
             <TextBlock VerticalAlignment="Center" Text="{Binding CommandResultSummary}" />
           </WrapPanel>
+          <DockPanel Margin="0,0,0,5">
+            <Button DockPanel.Dock="Left" Content="Assign to selected control" Padding="10,3" Margin="0,0,8,0"
+                    Click="AssignCommand_Click" IsEnabled="{Binding CanAssignSelectedCommand}" />
+            <TextBlock VerticalAlignment="Center" Text="{Binding PendingAssignmentSummary}" FontWeight="SemiBold" />
+          </DockPanel>
         </StackPanel>
-        <DataGrid ItemsSource="{Binding FilteredCommands}" Height="155" AutoGenerateColumns="False" IsReadOnly="True"
+        <DataGrid ItemsSource="{Binding FilteredCommands}" SelectedItem="{Binding SelectedCatalogCommand}"
+                  Height="155" AutoGenerateColumns="False" IsReadOnly="True" SelectionMode="Single" SelectionUnit="FullRow"
                   CanUserAddRows="False" HeadersVisibility="Column" AlternatingRowBackground="#F5F7FA">
           <DataGrid.Columns>
             <DataGridTextColumn Header="DCS name" Binding="{Binding Name}" Width="2*" />
@@ -302,8 +308,9 @@
              IsReadOnly="True" TextWrapping="Wrap" VerticalScrollBarVisibility="Auto"
              Text="{Binding StatusText}" />
 
-    <DataGrid ItemsSource="{Binding Rows}"
+    <DataGrid ItemsSource="{Binding Rows}" SelectedItem="{Binding SelectedPreviewRow}"
               AutoGenerateColumns="False"
+              SelectionMode="Single" SelectionUnit="FullRow"
               CanUserAddRows="False"
               HeadersVisibility="Column"
               AlternatingRowBackground="#F5F7FA"

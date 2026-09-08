@@ -16,8 +16,9 @@ import {
   mergeConsumerConfig,
   mergeModifierSources,
   writeConsumer,
+  applyDcsCommandAssignments,
 } from '../scripts/scaffold-consumer.mjs';
-import { loadProfileDrivenConfig } from '../scripts/profile-driven-kneeboard.mjs';
+import { loadProfileDrivenConfig, parseDcsDiffLua } from '../scripts/profile-driven-kneeboard.mjs';
 
 const commonRoot = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 
@@ -59,6 +60,81 @@ test('parseArgs accepts physical instance roles', () => {
     '--roles', 'config/scaffold-instance-roles.json',
   ]);
   assert.equal(options.rolesPath, 'config/scaffold-instance-roles.json');
+});
+
+test('parseArgs accepts pending command assignments', () => {
+  const options = parseArgs([
+    '--output-dir', 'out', '--profiles-dir', 'profiles', '--assignments', 'pending.json',
+  ]);
+  assert.equal(options.assignmentsPath, 'pending.json');
+});
+
+test('command assignments replace one physical control and preserve unrelated bindings', () => {
+  const source = `local diff = {
+    ["keyDiffs"] = {
+      ["d-old"] = {
+        ["added"] = {
+          [1] = { ["key"] = "JOY_BTN1" },
+          [2] = { ["key"] = "JOY_BTN2", ["reformers"] = { [1] = "SHIFT" } },
+        },
+        ["removed"] = { [1] = { ["key"] = "JOY_BTN9" } },
+        ["name"] = "Old command",
+      },
+      ["d-untouched"] = {
+        ["added"] = { [1] = { ["key"] = "JOY_BTN3" } },
+        ["name"] = "Untouched",
+      },
+    },
+  }
+  return diff`;
+
+  const rewritten = applyDcsCommandAssignments(source, [{
+    profileFile: 'Stick.diff.lua', section: 'keyDiffs', key: 'JOY_BTN1', reformers: [],
+    command: 'd-new', name: 'New command',
+  }], { filename: 'Stick.diff.lua' });
+  const bindings = parseDcsDiffLua(rewritten, { filename: 'Stick.diff.lua' }).bindings;
+
+  assert.deepEqual(bindings.find(({ command }) => command === 'd-new').added, [{ key: 'JOY_BTN1', reformers: [] }]);
+  assert.deepEqual(bindings.find(({ command }) => command === 'd-old').added,
+    [{ key: 'JOY_BTN2', reformers: ['SHIFT'] }]);
+  assert.deepEqual(bindings.find(({ command }) => command === 'd-old').removed,
+    [{ key: 'JOY_BTN9', reformers: [] }]);
+  assert.deepEqual(bindings.find(({ command }) => command === 'd-untouched').added,
+    [{ key: 'JOY_BTN3', reformers: [] }]);
+});
+
+test('command assignments reject stale physical controls instead of silently inventing input', () => {
+  const source = `local diff = { ["axisDiffs"] = {
+    ["a-old"] = { ["added"] = { [1] = { ["key"] = "JOY_X" } }, ["name"] = "Old axis" },
+  } } return diff`;
+  assert.throws(() => applyDcsCommandAssignments(source, [{
+    profileFile: 'Stick.diff.lua', section: 'axisDiffs', key: 'JOY_Y', reformers: [],
+    command: 'a-new', name: 'New axis',
+  }], { filename: 'Stick.diff.lua' }), /no longer present/);
+});
+
+test('writeConsumer applies pending assignments only to destination profile and generated config', () => {
+  const root = mkdtempSync(join(tmpdir(), 'scaffold-assignment-'));
+  const profilesDir = join(root, 'profiles');
+  const outputDir = join(root, 'out');
+  mkdirSync(profilesDir);
+  const profileFile = 'F16 MFD 1.diff.lua';
+  const source = `local diff = { ["keyDiffs"] = {
+    ["d-old"] = { ["added"] = { [1] = { ["key"] = "JOY_BTN1" } }, ["name"] = "Old" },
+    ["d-other"] = { ["added"] = { [1] = { ["key"] = "JOY_BTN2" } }, ["name"] = "Other" },
+  } } return diff`;
+  writeFileSync(join(profilesDir, profileFile), source);
+  const preview = buildPreview({ profilesDir, commonRoot });
+
+  writeConsumer({ preview, outputDir, displayName: 'Test', inputModuleId: 'Test', kneeboardId: 'Test', commonRoot,
+    assignments: [{ profileFile, section: 'keyDiffs', key: 'JOY_BTN1', reformers: [], command: 'd-new', name: 'New' }] });
+
+  assert.equal(readFileSync(join(profilesDir, profileFile), 'utf8'), source);
+  const written = parseDcsDiffLua(readFileSync(join(outputDir, 'src/Config/Input/Test/joystick', profileFile), 'utf8')).bindings;
+  assert.ok(written.some(({ command }) => command === 'd-new'));
+  assert.ok(written.some(({ command }) => command === 'd-other'));
+  const config = JSON.parse(readFileSync(join(outputDir, 'config/kneeboard.json'), 'utf8'));
+  assert.ok(config.pages.some((page) => Object.values(page.controls ?? {}).some((control) => control.command === 'd-new')));
 });
 
 test('device map resolves conservative base and grip combinations', () => {
