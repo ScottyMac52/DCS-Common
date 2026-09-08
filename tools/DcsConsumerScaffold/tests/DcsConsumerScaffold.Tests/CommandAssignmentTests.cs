@@ -80,6 +80,38 @@ public sealed class CommandAssignmentTests
         Assert.Contains("JOY_X", viewModel.SelectedControlSummary);
     }
 
+    [Fact]
+    public void TargetFilter_FollowsSelectedCommandTypeBindingStateAndChord()
+    {
+        var boundButton = Row("keyDiffs", "JOY_BTN1", "d-old", "Old command");
+        var shiftedButton = Row("keyDiffs", "JOY_BTN2", "d-shifted", "Shifted command");
+        shiftedButton.Chord = "SHIFT";
+        shiftedButton.Reformers = ["SHIFT"];
+        var unboundButton = Row("keyDiffs", "JOY_BTN3", string.Empty, string.Empty);
+        var axis = Row("axisDiffs", "JOY_X", "a-old", "Old axis");
+        var viewModel = new MainViewModel { HasPreview = true };
+        viewModel.ReplacePreviewRows([boundButton, shiftedButton, unboundButton, axis]);
+
+        viewModel.SelectedCatalogCommand = Command("button", "d-new", "New command");
+        Assert.Equal(3, viewModel.FilteredPreviewRows.Count);
+        Assert.DoesNotContain(axis, viewModel.FilteredPreviewRows);
+
+        viewModel.SelectedTargetBindingState = "Unbound";
+        Assert.Equal(unboundButton, Assert.Single(viewModel.FilteredPreviewRows));
+
+        viewModel.SelectedTargetBindingState = "Bound";
+        viewModel.SelectedTargetChord = "SHIFT";
+        Assert.Equal(shiftedButton, Assert.Single(viewModel.FilteredPreviewRows));
+
+        viewModel.SelectedPreviewRow = shiftedButton;
+        var assignment = viewModel.AssignSelectedCommand();
+        Assert.Equal(["SHIFT"], assignment.Reformers);
+
+        viewModel.SelectedCatalogCommand = Command("axis", "a-new", "New axis");
+        Assert.Empty(viewModel.FilteredPreviewRows);
+        Assert.Null(viewModel.SelectedPreviewRow);
+    }
+
     private static PreviewRow Row(string section, string key, string command, string name) => new()
     {
         ProfileFile = "Stick.diff.lua", Stem = "Stick", Section = section, Key = key,

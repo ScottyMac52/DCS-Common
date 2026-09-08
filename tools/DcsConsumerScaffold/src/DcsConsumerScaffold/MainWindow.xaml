@@ -339,7 +339,17 @@
                     ResizeDirection="Columns" ResizeBehavior="PreviousAndNext" />
 
       <GroupBox Grid.Row="1" Grid.Column="2" Header="2. Select the physical control to replace" Padding="4" Margin="3,0,0,0">
-        <DataGrid ItemsSource="{Binding Rows}" SelectedItem="{Binding SelectedPreviewRow}" AutoGenerateColumns="False"
+        <DockPanel>
+        <WrapPanel DockPanel.Dock="Top" Margin="0,0,0,5">
+          <TextBlock Text="State:" VerticalAlignment="Center" Margin="0,0,4,0" />
+          <ComboBox Width="90" Margin="0,0,10,0" ItemsSource="{Binding TargetBindingStates}"
+                    SelectedItem="{Binding SelectedTargetBindingState, UpdateSourceTrigger=PropertyChanged}" />
+          <TextBlock Text="Chord:" VerticalAlignment="Center" Margin="0,0,4,0" />
+          <ComboBox Width="150" Margin="0,0,10,0" ItemsSource="{Binding TargetChords}"
+                    SelectedItem="{Binding SelectedTargetChord, UpdateSourceTrigger=PropertyChanged}" />
+          <TextBlock Text="{Binding TargetResultSummary}" VerticalAlignment="Center" />
+        </WrapPanel>
+        <DataGrid ItemsSource="{Binding FilteredPreviewRows}" SelectedItem="{Binding SelectedPreviewRow}" AutoGenerateColumns="False"
                   SelectionMode="Single" SelectionUnit="FullRow" CanUserAddRows="False" HeadersVisibility="Column"
                   AlternatingRowBackground="#F5F7FA" RowStyle="{StaticResource PreviewChangeRowStyle}">
           <DataGrid.Columns>
@@ -352,6 +362,7 @@
             <DataGridTextColumn Header="Change" Binding="{Binding ChangeState}" Width="80" IsReadOnly="True" />
           </DataGrid.Columns>
         </DataGrid>
+        </DockPanel>
       </GroupBox>
     </Grid>
   </DockPanel>
