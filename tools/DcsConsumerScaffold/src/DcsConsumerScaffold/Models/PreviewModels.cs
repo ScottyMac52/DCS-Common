@@ -114,7 +114,7 @@ public sealed class PreviewDevice : INotifyPropertyChanged
     }
 
     [JsonIgnore]
-    public bool CanPreview => !IsRepositoryOnly && !string.IsNullOrWhiteSpace(DeviceId) && !string.IsNullOrWhiteSpace(ProfileKey) && BindingCount > 0;
+    public bool CanPreview => !IsRepositoryOnly && !string.IsNullOrWhiteSpace(DeviceId) && !string.IsNullOrWhiteSpace(ProfileKey);
 
     [JsonIgnore]
     public bool CanEdit => !IsRepositoryOnly;
@@ -307,6 +307,8 @@ public sealed class PreviewRow : INotifyPropertyChanged
 
 public sealed class DcsCommandAssignment
 {
+    [JsonPropertyName("allowCreate")] public bool AllowCreate { get; init; }
+    [JsonPropertyName("clear")] public bool Clear { get; init; }
     [JsonPropertyName("profileFile")] public string ProfileFile { get; init; } = string.Empty;
     [JsonPropertyName("section")] public string Section { get; init; } = string.Empty;
     [JsonPropertyName("key")] public string Key { get; init; } = string.Empty;

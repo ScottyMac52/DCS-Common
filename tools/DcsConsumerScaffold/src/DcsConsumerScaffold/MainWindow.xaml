@@ -318,6 +318,8 @@
                         SelectedItem="{Binding SelectedCommandType, UpdateSourceTrigger=PropertyChanged}" />
               <ComboBox Width="90" ItemsSource="{Binding CommandBindingStates}"
                         SelectedItem="{Binding SelectedCommandBindingState, UpdateSourceTrigger=PropertyChanged}" />
+              <ComboBox Width="105" Margin="6,0,0,0" ItemsSource="{Binding CommandAvailabilities}"
+                        SelectedItem="{Binding SelectedCommandAvailability, UpdateSourceTrigger=PropertyChanged}" />
               <TextBlock VerticalAlignment="Center" Margin="8,0,0,0" Text="{Binding CommandResultSummary}" />
             </WrapPanel>
           </StackPanel>

@@ -216,7 +216,7 @@ export function loadCalloutCatalog(commonRoot, deviceId) {
     const id = field('id');
     const key = field('key');
     const hardwareLabel = field('hardwareLabel') ?? null;
-    if (id && key) controls.push({ id, key, hardwareLabel });
+    if (id && key) controls.push({ id, key, hardwareLabel, type: field('type') === 'axis' ? 'axis' : 'button' });
   }
   // Lightweight bindings fallback when no id+key pairs found
   if (controls.length === 0) {
@@ -263,14 +263,14 @@ function serializeInputs(name, inputs) {
   return `      ["${name}"] = {\n${entries.join('\n')}\n      },\n`;
 }
 
-export function applyDcsCommandAssignments(source, assignments, { filename = 'profile.diff.lua' } = {}) {
+export function applyDcsCommandAssignments(source, assignments, { filename = 'profile.diff.lua', allowedInputs = [] } = {}) {
   if (!assignments?.length) return source;
   const parsed = parseDcsDiffLua(source, { filename });
   for (const assignment of assignments) {
     if (!['keyDiffs', 'axisDiffs'].includes(assignment.section)) {
       throw new Error(`${filename}: assignment section must be keyDiffs or axisDiffs`);
     }
-    if (!assignment.command || !assignment.name || !assignment.key) {
+    if ((!assignment.clear && (!assignment.command || !assignment.name)) || !assignment.key) {
       throw new Error(`${filename}: assignment requires command, name, and key`);
     }
     const reformers = [...new Set(assignment.reformers ?? [])].sort((a, b) => a.localeCompare(b));
@@ -278,20 +278,26 @@ export function applyDcsCommandAssignments(source, assignments, { filename = 'pr
     for (const binding of parsed.bindings.filter((item) => item.section === assignment.section)) {
       const retained = binding.added.filter((input) => {
         const matches = input.key === assignment.key && chordKey(input.reformers) === chordKey(reformers);
-        if (matches) foundControl = true;
+        if (matches) {
+          foundControl = true;
+          if (assignment.clear && !binding.removed.some((removed) => removed.key === input.key && chordKey(removed.reformers) === chordKey(input.reformers)))
+            binding.removed.push(input);
+        }
         return !matches;
       });
       binding.added = retained;
     }
-    if (!foundControl) {
+    if (!foundControl && !(assignment.allowCreate && allowedInputs.some((input) => input.key === assignment.key && input.section === assignment.section))) {
       throw new Error(`${filename}: ${assignment.key} (${reformers.join(' + ') || 'base'}) is no longer present in ${assignment.section}`);
     }
+    if (assignment.clear) continue;
     let target = parsed.bindings.find((item) => item.section === assignment.section && item.command === assignment.command);
     if (!target) {
       target = { section: assignment.section, command: assignment.command, name: assignment.name, added: [], removed: [] };
       parsed.bindings.push(target);
     }
     target.name = assignment.name;
+    target.removed = target.removed.filter((input) => input.key !== assignment.key || chordKey(input.reformers) !== chordKey(reformers));
     target.added.push({ key: assignment.key, reformers });
   }
 
@@ -304,14 +310,31 @@ export function applyDcsCommandAssignments(source, assignments, { filename = 'pr
   return `local diff = {\n${sections.join('\n')}\n}\nreturn diff\n`;
 }
 
-function previewWithAssignments(preview, assignments) {
+function previewWithAssignments(preview, assignments, commonRoot) {
   if (!assignments?.length) return preview;
   let rows = preview.rows.map((row) => ({ ...row }));
   for (const assignment of assignments) {
     const matches = (row) => row.profileFile === assignment.profileFile && row.section === assignment.section &&
       row.key === assignment.key && chordKey(row.reformers) === chordKey(assignment.reformers);
-    const index = rows.findIndex(matches);
-    if (index < 0) continue;
+    let index = rows.findIndex(matches);
+    if (assignment.clear) { rows = rows.filter((row) => !matches(row)); continue; }
+    if (index < 0 && assignment.allowCreate) {
+      const device = preview.devices.find((item) => item.profileFile === assignment.profileFile);
+      if (!device) throw new Error('Assignment device is not in the preview');
+      const catalog = loadCalloutCatalog(commonRoot, device.deviceId);
+      const catalogKey = resolveCatalogInputKey(device.deviceId, assignment.key, loadDeviceMap(commonRoot));
+      const control = catalog.controls.find((item) => item.key === catalogKey && (item.type === 'axis' ? 'axisDiffs' : 'keyDiffs') === assignment.section);
+      if (!control) throw new Error('Assignment target is not in the hardware catalog');
+      const reformers = assignment.reformers ?? [];
+      if (reformers.some((name) => !preview.modifiers.some((modifier) => modifier.name === name)))
+        throw new Error('Assignment uses an unknown modifier');
+      const semantic = reformers.map((name) => preview.modifiers.find((modifier) => modifier.name === name)?.semanticModifier ?? name);
+      rows.push({ ...device, key: assignment.key, section: assignment.section, reformers, chord: chordKey(reformers),
+        semanticChord: chordKey(semantic), calloutId: device.deviceId === 'tm-mfd' && reformers.length && control.id.startsWith('mfd-osb-') ? `${control.id}-shifted` : control.id,
+        deviceLabel: control.hardwareLabel, status: 'OK' });
+      index = rows.length - 1;
+    }
+    if (index < 0) throw new Error('Assignment target is no longer in the preview');
     const row = rows[index];
     const updated = {
       ...row,
@@ -322,6 +345,8 @@ function previewWithAssignments(preview, assignments) {
       labelSource: 'dcs',
     };
     updated.bindingId = stableBindingId(updated);
+    const overrides = preview.labelsPath ? JSON.parse(readFileSync(preview.labelsPath, 'utf8')) : {};
+    if (Object.hasOwn(overrides, updated.bindingId)) { updated.label = String(overrides[updated.bindingId]); updated.labelSource = 'user'; }
     rows = rows.filter((candidate, candidateIndex) => candidateIndex === index || !matches(candidate));
     rows[rows.indexOf(row)] = updated;
   }
@@ -928,7 +953,18 @@ export function mergeConsumerConfig(draft, existing, removedProfiles = []) {
 }
 
 export function writeConsumer({ preview, outputDir, displayName, inputModuleId, kneeboardId, repoName, removedProfiles = [], assignments = [], includeUiLayer = true, dryRun = false, commonRoot = defaultCommonRoot }) {
-  const effectivePreview = previewWithAssignments(preview, assignments);
+  const effectivePreview = previewWithAssignments(preview, assignments, commonRoot);
+  if (assignments.some((assignment) => !preview.devices.some((device) => device.profileFile === assignment.profileFile)))
+    throw new Error('Assignment profile is not in the preview');
+  // Validate and materialize every changed profile before writing any destination files.
+  const assignedProfiles = new Map();
+  for (const device of preview.devices) {
+    const pending = assignments.filter((assignment) => assignment.profileFile === device.profileFile);
+    if (!pending.length) continue;
+    assignedProfiles.set(device.profileFile, applyDcsCommandAssignments(
+      readFileSync(join(preview.profilesDir, device.profileFile), 'utf8'), pending, { filename: device.profileFile,
+        allowedInputs: pending.filter((item) => item.allowCreate && effectivePreview.rows.some((row) => row.profileFile === item.profileFile && row.key === item.key && row.section === item.section)) }));
+  }
   const out = resolve(outputDir);
   const name = repoName ?? `DCS-${slugifyId(displayName)}-Components`;
   const tokens = {
@@ -960,9 +996,7 @@ export function writeConsumer({ preview, outputDir, displayName, inputModuleId, 
     const source = join(preview.profilesDir, device.profileFile);
     const pending = assignments.filter((assignment) => assignment.profileFile === device.profileFile);
     if (pending.length === 0) copy(source, `${joystickRel}/${device.profileFile}`);
-    else write(`${joystickRel}/${device.profileFile}`, applyDcsCommandAssignments(
-      readFileSync(source, 'utf8'), pending, { filename: device.profileFile },
-    ));
+    else write(`${joystickRel}/${device.profileFile}`, assignedProfiles.get(device.profileFile));
   }
   if (preview.modifiersPath && existsSync(preview.modifiersPath)) {
     const modifierRel = `src/Config/Input/${inputModuleId}/modifiers.lua`;
