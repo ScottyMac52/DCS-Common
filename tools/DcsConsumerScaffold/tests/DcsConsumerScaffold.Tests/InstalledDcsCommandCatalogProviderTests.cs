@@ -7,9 +7,9 @@ namespace DcsConsumerScaffold.Tests;
 public sealed class InstalledDcsCommandCatalogProviderTests
 {
     [Fact]
-    public void Build_DiscoversModuleInputAndBuildsCanonicalButtonAndAxisEntries()
+    public void Build_ReadsSelectedHornetDefaultLuaDespiteDifferentPreviewModuleId()
     {
-        using var install = new TemporaryDcsInstall("FA-18C", "FA-18C_hornet", """
+        using var install = new TemporaryDcsInstall("FA-18C", "FA-18C", """
             local res = { keyCommands = {}, axisCommands = {} }
             res.keyCommands = {
               { down = 3001, up = 3001, cockpit_device_id = 13, value_down = 1.0, value_up = 0.0,
@@ -23,7 +23,7 @@ public sealed class InstalledDcsCommandCatalogProviderTests
             return res
             """);
 
-        var result = new InstalledDcsCommandCatalogProvider().Build(install.Root, "FA-18C_hornet");
+        var result = new InstalledDcsCommandCatalogProvider().Build(install.DefaultLuaPath, "FA-18C_hornet");
 
         Assert.Equal(1, result.Document.SchemaVersion);
         Assert.Equal("FA-18C_hornet", result.Document.ModuleId);
@@ -34,7 +34,7 @@ public sealed class InstalledDcsCommandCatalogProviderTests
         Assert.Equal(["Armament", "Master Arm"], masterArm.CategoryPath);
         Assert.Equal(3001, masterArm.Actions!.Down);
         Assert.Equal("installed-dcs", masterArm.Source!.Provider);
-        Assert.EndsWith("/Input/FA-18C_hornet/joystick/default.lua", masterArm.Source.File!.Replace('\\', '/'));
+        Assert.EndsWith("/Input/FA-18C/joystick/default.lua", masterArm.Source.File!.Replace('\\', '/'));
         Assert.Contains(result.Document.Commands, command => command.BindingKey == "dnilp3042unilcd7vd-1vpnilvunil");
         Assert.Contains(result.Document.Commands, command => command.BindingKey == "a2001cd2" && command.Type == "axis");
         Assert.NotEmpty(result.Document.SourceFingerprint!);
@@ -42,7 +42,7 @@ public sealed class InstalledDcsCommandCatalogProviderTests
     }
 
     [Fact]
-    public void Build_SearchesAircraftFoldersAndCombinesDefaultLuaFilesWithoutExecutingThem()
+    public void Build_ReadsOnlyTheSelectedDefaultLuaWithoutExecutingIt()
     {
         using var install = new TemporaryDcsInstall("CommunityHornet", "FA-18C_hornet", """
             local marker = io.open('provider-must-not-execute.txt', 'w')
@@ -51,17 +51,22 @@ public sealed class InstalledDcsCommandCatalogProviderTests
               { down = 3010, cockpit_device_id = 4, name = _('Safe command'), category = _('Systems') }
             }}
             """);
-        install.AddInputFile("keyboard/default.lua", """
+        var keyboard = install.AddInputFile("keyboard/default.lua", """
             return { keyCommands = {
               { down = 3011, cockpit_device_id = 4, name = _('Keyboard source command'), category = _('Systems') }
             }}
             """);
 
-        var result = new InstalledDcsCommandCatalogProvider().Build(install.Root, "FA-18C_hornet");
+        var joystickResult = new InstalledDcsCommandCatalogProvider().Build(install.DefaultLuaPath, "FA-18C_hornet");
+        var keyboardResult = new InstalledDcsCommandCatalogProvider().Build(keyboard, "FA-18C_hornet");
 
-        Assert.Equal(2, result.Document.Commands.Count);
+        Assert.Single(joystickResult.Document.Commands);
+        Assert.Equal("Safe command", joystickResult.Document.Commands[0].Name);
+        Assert.Single(keyboardResult.Document.Commands);
+        Assert.Equal("Keyboard source command", keyboardResult.Document.Commands[0].Name);
         Assert.False(File.Exists(Path.Combine(Environment.CurrentDirectory, "provider-must-not-execute.txt")));
-        Assert.Equal(2, result.SourceFiles.Count);
+        Assert.Single(joystickResult.SourceFiles);
+        Assert.Single(keyboardResult.SourceFiles);
     }
 
     [Fact]
@@ -75,7 +80,7 @@ public sealed class InstalledDcsCommandCatalogProviderTests
             }}
             """);
 
-        var result = new InstalledDcsCommandCatalogProvider().Build(install.Root, "F-16C_50");
+        var result = new InstalledDcsCommandCatalogProvider().Build(install.DefaultLuaPath, "F-16C_50");
 
         Assert.Single(result.Document.Commands);
         Assert.Equal("Resolved", result.Document.Commands[0].Name);
@@ -84,12 +89,14 @@ public sealed class InstalledDcsCommandCatalogProviderTests
     }
 
     [Fact]
-    public void Build_RejectsMissingInstallAndUnknownInputModule()
+    public void Build_RejectsMissingOrNonDefaultLuaSelection()
     {
         var provider = new InstalledDcsCommandCatalogProvider();
-        Assert.Throws<DirectoryNotFoundException>(() => provider.Build(Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString("N")), "F-14B"));
+        Assert.Throws<FileNotFoundException>(() => provider.Build(Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString("N"), "default.lua"), "F-14B"));
         using var install = new TemporaryDcsInstall("F-14", "F-14B", "return {}");
-        Assert.Throws<FileNotFoundException>(() => provider.Build(install.Root, "A-10C_2"));
+        var wrongName = Path.Combine(Path.GetDirectoryName(install.DefaultLuaPath)!, "commands.lua");
+        File.WriteAllText(wrongName, "return {}");
+        Assert.Throws<InvalidDataException>(() => provider.Build(wrongName, "F-14B"));
     }
 
     private sealed class TemporaryDcsInstall : IDisposable
@@ -105,12 +112,15 @@ public sealed class InstalledDcsCommandCatalogProviderTests
         }
 
         public string Root { get; }
+        public string DefaultLuaPath { get; private set; } = string.Empty;
 
-        public void AddInputFile(string relativePath, string content)
+        public string AddInputFile(string relativePath, string content)
         {
             var path = Path.Combine(_inputRoot, relativePath.Replace('/', Path.DirectorySeparatorChar));
             Directory.CreateDirectory(Path.GetDirectoryName(path)!);
             File.WriteAllText(path, content);
+            if (relativePath.Equals("joystick/default.lua", StringComparison.OrdinalIgnoreCase)) DefaultLuaPath = path;
+            return path;
         }
 
         public void Dispose() => Directory.Delete(Root, true);

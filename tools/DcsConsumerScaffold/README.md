@@ -60,7 +60,9 @@ Grouping is a preview/editor feature only. Proceed still persists the existing r
 
 ## Browse a module command catalog
 
-After **Load Preview**, use **Load from DCS…** under **DCS Commands** and select the root of the installed DCS World directory. The importer discovers the selected module's joystick and keyboard `default.lua` files below `Mods/aircraft/*/Input/<module-id>`, extracts numeric cockpit button and axis definitions, and immediately loads the resulting searchable catalog. The DCS version comes from `autoupdate.cfg`; a SHA-256 source fingerprint records exactly which definitions produced the catalog.
+After **Load Preview**, use **Load from DCS…** under **DCS Commands** and browse directly to the module's `joystick/default.lua` (or `keyboard/default.lua`). For example, the Hornet file is under `FA-18C/joystick/default.lua` even though its preview identity may be `FA-18C_hornet`. The selected file is authoritative, so no installation-root discovery or module-folder-name guessing is required.
+
+The importer extracts numeric cockpit button and axis definitions and immediately loads the resulting searchable catalog. When the selected file is inside a normal DCS installation, the DCS version comes from the nearest ancestor `autoupdate.cfg`; a SHA-256 source fingerprint records exactly which definition produced the catalog.
 
 The provider is deliberately a static reader. It does not execute Lua, call `dofile`/`require`, or load module DLLs. Commands whose action or cockpit-device identity is symbolic and cannot be resolved from a numeric literal are skipped and reported in the status line. This keeps importing safe while still supporting the numeric definitions from which DCS canonical binding keys can be reproduced exactly.
 

@@ -207,15 +207,16 @@ public partial class MainWindow : Window
 
     private void LoadInstalledDcsCommands_Click(object sender, RoutedEventArgs e)
     {
-        var dialog = new OpenFolderDialog
+        var dialog = new OpenFileDialog
         {
-            Title = "Select the DCS World installation folder",
-            Multiselect = false,
+            Title = "Select the module's joystick or keyboard default.lua",
+            Filter = "DCS input definition (default.lua)|default.lua|Lua files (*.lua)|*.lua",
+            CheckFileExists = true,
         };
         if (dialog.ShowDialog(this) != true) return;
         try
         {
-            _viewModel.LoadInstalledDcsCommandCatalog(dialog.FolderName);
+            _viewModel.LoadInstalledDcsCommandCatalog(dialog.FileName);
         }
         catch (Exception ex)
         {

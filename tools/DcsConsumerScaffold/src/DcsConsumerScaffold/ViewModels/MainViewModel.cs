@@ -568,15 +568,15 @@ public sealed class MainViewModel : INotifyPropertyChanged
         StatusText = $"Loaded {CommandCatalog.Count} commands for {document.ModuleId} from {Path.GetFileName(path)}.";
     }
 
-    public void LoadInstalledDcsCommandCatalog(string installRoot)
+    public void LoadInstalledDcsCommandCatalog(string defaultLuaPath)
     {
         if (!HasPreview)
             throw new InvalidOperationException("Load a module preview before loading commands from DCS.");
 
-        var result = _installedCommandCatalogProvider.Build(installRoot, InputModuleId);
-        ApplyCommandCatalog(result.Document, Path.GetFullPath(installRoot));
+        var result = _installedCommandCatalogProvider.Build(defaultLuaPath, InputModuleId);
+        ApplyCommandCatalog(result.Document, Path.GetFullPath(defaultLuaPath));
         var skipped = result.SkippedEntryCount == 0 ? string.Empty : $" Skipped {result.SkippedEntryCount} unresolved definition(s).";
-        StatusText = $"Loaded {CommandCatalog.Count} commands for {result.Document.ModuleId} from {result.SourceFiles.Count} installed DCS input file(s).{skipped}";
+        StatusText = $"Loaded {CommandCatalog.Count} commands for {result.Document.ModuleId} from {Path.GetFileName(defaultLuaPath)}.{skipped}";
     }
 
     private void ApplyCommandCatalog(DcsCommandCatalogDocument document, string sourcePath)
