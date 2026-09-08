@@ -171,11 +171,9 @@ public sealed class InstalledDcsCommandCatalogProviderTests
     [InlineData("iCommandPlaneRoll", "Roll", "a2002cdnil")]
     public void Build_ResolvesVerifiedGlobalFlightAxes(string symbol, string name, string expectedKey)
     {
-        using var install = new TemporaryDcsInstall("GenericJet", "GenericJet", $$"""
-            return { axisCommands = {
-              { action = {{symbol}}, name = _('{{name}}'), category = _('Axis Commands') }
-            }}
-            """);
+        var lua = "return { axisCommands = { { action = " + symbol + ", name = _('" + name +
+                  "'), category = _('Axis Commands') } } }";
+        using var install = new TemporaryDcsInstall("GenericJet", "GenericJet", lua);
 
         var command = Assert.Single(new InstalledDcsCommandCatalogProvider().Build(install.DefaultLuaPath, "GenericJet").Document.Commands);
 
