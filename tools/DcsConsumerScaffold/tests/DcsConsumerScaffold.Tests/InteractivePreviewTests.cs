@@ -6,6 +6,31 @@ namespace DcsConsumerScaffold.Tests;
 
 public sealed class InteractivePreviewTests
 {
+    [Fact]
+    public void NewChordCombinesKnownModifiersAndStagesASeparateAssignment()
+    {
+        var model = new MainViewModel { HasPreview = true };
+        model.Modifiers.Add(new PreviewModifier { Name = "SHIFT", Mode = "hold" });
+        model.Modifiers.Add(new PreviewModifier { Name = "CTRL", Mode = "hold" });
+        var chord = model.CreateInteractiveChord(["SHIFT", "CTRL", "SHIFT"]);
+        Assert.Equal(new[] { "CTRL", "SHIFT" }, chord);
+        Assert.Throws<InvalidOperationException>(() => model.CreateInteractiveChord([]));
+        Assert.Throws<InvalidOperationException>(() => model.CreateInteractiveChord(["UNKNOWN"]));
+        var baseRow = model.GetInteractiveRow(Device(), Control(), []);
+        var chordRow = model.GetInteractiveRow(Device(), Control(), chord);
+        Assert.Empty(model.Rows);
+        model.SelectedCatalogCommand = Command(); model.SelectedPreviewRow = chordRow;
+        var pending = model.AssignSelectedCommand();
+        Assert.Equal(chord, pending.Reformers);
+        Assert.True(pending.AllowCreate);
+        Assert.Empty(baseRow.Command!);
+        model.SelectedCatalogCommand = Command("d-second"); model.SelectedPreviewRow = chordRow;
+        Assert.True(model.AssignSelectedCommand().AllowCreate);
+        model.UndoAssignment(chordRow);
+        Assert.Empty(model.Rows);
+        Assert.Contains(chordRow, model.AssignmentTargets);
+        Assert.True(chordRow.IsUnboundCandidate);
+    }
     private static PreviewDevice Device(string profile = "Stick.diff.lua") => new() { ProfileFile = profile, ProfileKey = profile, DeviceId = "tm-warthog-grip", Stem = "Stick" };
     private static InteractiveControl Control(string key = "JOY_BTN1", string type = "button") => new() { Id = "trigger", Key = key, Type = type, HardwareLabel = "Trigger" };
     private static DcsCommandCatalogEntry Command(string key = "d-new") => new() { BindingKey = key, Name = "New command", Type = "button" };

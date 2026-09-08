@@ -92,6 +92,50 @@ public partial class InteractivePreviewWindow : Window
         Refresh();
     }
 
+    private void ChooseChordClicked(object sender, RoutedEventArgs e)
+    {
+        var modifiers = _model.Modifiers.Where(item => !item.IsRepositoryOnly && !string.IsNullOrEmpty(item.Name))
+            .GroupBy(item => item.Name!, StringComparer.Ordinal).Select(group => group.First()).ToList();
+        if (modifiers.Count == 0)
+        {
+            Message.Text = "Load modifiers.lua on the main screen to enable chord assignment.";
+            return;
+        }
+        var selectedInput = _selected?.Key;
+        var current = Layers.SelectedItem is string layer ? _layers[layer] : [];
+        var panel = new StackPanel { Margin = new Thickness(12) };
+        panel.Children.Add(new TextBlock { Text = "Select one or more modifiers for the assignment chord.", TextWrapping = TextWrapping.Wrap, Margin = new Thickness(0, 0, 0, 10) });
+        var choices = modifiers.Select(modifier => new CheckBox
+        {
+            Content = $"{modifier.Name} ({modifier.Mode ?? "modifier"})", Tag = modifier.Name,
+            IsChecked = current.Contains(modifier.Name), Margin = new Thickness(0, 5, 0, 5),
+        }).ToList();
+        foreach (var choice in choices) panel.Children.Add(choice);
+        var error = new TextBlock { Foreground = Brushes.DarkRed, TextWrapping = TextWrapping.Wrap };
+        panel.Children.Add(error);
+        var apply = new Button { Content = "Use chord", Padding = new Thickness(12, 6, 12, 6), Margin = new Thickness(0, 10, 0, 0), IsDefault = true };
+        panel.Children.Add(apply);
+        var dialog = new Window { Owner = this, Title = "Assignment chord", Width = 420, Height = 380,
+            Content = new ScrollViewer { Content = panel }, WindowStartupLocation = WindowStartupLocation.CenterOwner };
+        apply.Click += (_, _) =>
+        {
+            try
+            {
+                var chord = _model.CreateInteractiveChord(choices.Where(choice => choice.IsChecked == true).Select(choice => (string)choice.Tag));
+                var name = string.Join(" + ", chord);
+                _layers[name] = chord;
+                Layers.ItemsSource = _layers.Keys.ToArray();
+                Layers.SelectedItem = name;
+                var matching = _targets.Values.FirstOrDefault(row => row.Key == selectedInput && row.Reformers.OrderBy(value => value, StringComparer.Ordinal).SequenceEqual(chord));
+                if (matching is not null) Select(matching);
+                Message.Text = $"Assignment chord: {name}. Drop or assign a command on this layer. Base bindings stay separate.";
+                dialog.Close();
+            }
+            catch (InvalidOperationException ex) { error.Text = ex.Message; }
+        };
+        dialog.ShowDialog();
+    }
+
     private static DcsCommandCatalogEntry? DropCommand(IDataObject data) =>
         data.GetData(typeof(DcsCommandCatalogEntry)) as DcsCommandCatalogEntry ?? (data.GetData(typeof(ControlDrag)) as ControlDrag)?.Command;
     private bool Compatible(DcsCommandCatalogEntry? command, PreviewRow row) => command is { IsAssignable: true } && command.Type == row.InputType;

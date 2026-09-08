@@ -81,3 +81,23 @@ test('replacement retains its edited label after the command changes', () => {
   const config = JSON.parse(readFileSync(join(f.outputDir, 'config/kneeboard.json')));
   assert.equal(config.labels[config.pages[0].controls['mfd-osb-t1'].labelId], 'CUSTOM');
 });
+
+test('a new multi-modifier chord writes its native reformers and shifted callout without replacing base', () => {
+  const f = fixture('local diff = { ["keyDiffs"] = { ["d-base"] = { ["name"]="Base", ["added"] = { [1] = { ["key"]="JOY_BTN1" } } } } } return diff');
+  const modifiersPath = join(f.root, 'modifiers.lua');
+  writeFileSync(modifiersPath, `local modifiers = {
+    ["CTRL"] = { ["device"] = "F16 MFD 1", ["key"] = "JOY_BTN27", ["switch"] = false },
+    ["SHIFT"] = { ["device"] = "F16 MFD 1", ["key"] = "JOY_BTN28", ["switch"] = false }
+  } return modifiers`);
+  const preview = buildPreview({ ...f, modifiersPath });
+  const assignment = { profileFile: f.profileFile, section: 'keyDiffs', key: 'JOY_BTN1', reformers: ['CTRL', 'SHIFT'], command: 'd-chord', name: 'Chord command', allowCreate: true };
+  assert.equal(preview.availableControls.some(row => row.chord === 'CTRL+SHIFT'), false);
+  writeConsumer({ ...f, preview, assignments: [assignment] });
+  const written = parseDcsDiffLua(readFileSync(join(f.outputDir, 'src/Config/Input/Test/joystick', f.profileFile), 'utf8')).bindings;
+  assert.deepEqual(written.find(binding => binding.command === 'd-base').added[0].reformers, []);
+  assert.deepEqual(written.find(binding => binding.command === 'd-chord').added[0].reformers, ['CTRL', 'SHIFT']);
+  const config = JSON.parse(readFileSync(join(f.outputDir, 'config/kneeboard.json')));
+  assert.equal(config.pages[0].layers.find(layer => layer.id === 'base').controls['mfd-osb-t1'].command, 'd-base');
+  assert.ok(config.pages[0].layers.some(layer => layer.controls['mfd-osb-t1-shifted']?.command === 'd-chord'));
+  assert.doesNotThrow(() => loadProfileDrivenConfig('config/kneeboard.json', { consumerRoot: f.outputDir, commonRoot }));
+});

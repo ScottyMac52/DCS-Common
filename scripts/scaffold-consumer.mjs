@@ -216,7 +216,8 @@ export function loadCalloutCatalog(commonRoot, deviceId) {
     const id = field('id');
     const key = field('key');
     const hardwareLabel = field('hardwareLabel') ?? null;
-    if (id && key) controls.push({ id, key, hardwareLabel, type: field('type') === 'axis' ? 'axis' : 'button' });
+    const type = field('type') ?? (/^JOY_[XYZRUV]/u.test(key ?? '') ? 'axis' : 'button');
+    if (id && key) controls.push({ id, key, type, hardwareLabel });
   }
   // Lightweight bindings fallback when no id+key pairs found
   if (controls.length === 0) {
@@ -263,7 +264,7 @@ function serializeInputs(name, inputs) {
   return `      ["${name}"] = {\n${entries.join('\n')}\n      },\n`;
 }
 
-export function applyDcsCommandAssignments(source, assignments, { filename = 'profile.diff.lua', allowedInputs = [] } = {}) {
+export function applyDcsCommandAssignments(source, assignments, { filename = 'profile.diff.lua', allowedInputs = null } = {}) {
   if (!assignments?.length) return source;
   const parsed = parseDcsDiffLua(source, { filename });
   for (const assignment of assignments) {
@@ -287,7 +288,7 @@ export function applyDcsCommandAssignments(source, assignments, { filename = 'pr
       });
       binding.added = retained;
     }
-    if (!foundControl && !(assignment.allowCreate && allowedInputs.some((input) => input.key === assignment.key && input.section === assignment.section))) {
+    if (!foundControl && !(assignment.allowCreate && (allowedInputs === null || allowedInputs.some((input) => input.key === assignment.key && input.section === assignment.section)))) {
       throw new Error(`${filename}: ${assignment.key} (${reformers.join(' + ') || 'base'}) is no longer present in ${assignment.section}`);
     }
     if (assignment.clear) continue;
@@ -338,6 +339,7 @@ function previewWithAssignments(preview, assignments, commonRoot) {
     const row = rows[index];
     const updated = {
       ...row,
+      isUnboundCandidate: false,
       command: assignment.command,
       name: assignment.name,
       defaultLabel: assignment.name,
@@ -348,7 +350,7 @@ function previewWithAssignments(preview, assignments, commonRoot) {
     const overrides = preview.labelsPath ? JSON.parse(readFileSync(preview.labelsPath, 'utf8')) : {};
     if (Object.hasOwn(overrides, updated.bindingId)) { updated.label = String(overrides[updated.bindingId]); updated.labelSource = 'user'; }
     rows = rows.filter((candidate, candidateIndex) => candidateIndex === index || !matches(candidate));
-    rows[rows.indexOf(row)] = updated;
+    rows[index] = updated;
   }
   return { ...preview, rows };
 }
@@ -473,6 +475,7 @@ export function buildPreview({ profilesDir, modifiersPath = null, mapPath = null
 
   const devices = [];
   const rows = [];
+  const availableControls = [];
   const errors = [...modifierErrors];
   const reportedUnknownModifiers = new Set();
   const catalogCache = new Map();
@@ -596,9 +599,49 @@ export function buildPreview({ profilesDir, modifiersPath = null, mapPath = null
         rows.push(row);
       }
     }
+
+    const chordChoices = [[], ...modifiers.map((modifier) => [modifier.name])];
+    const catalogControls = [...new Map(catalog.controls.map((control) =>
+      [`${control.type}\0${control.key}`, control])).values()];
+    for (const control of catalogControls) {
+      const section = control.type === 'axis' ? 'axisDiffs' : 'keyDiffs';
+      for (const reformers of chordChoices) {
+        if (rows.some((row) => row.profileFile === fileName && row.section === section &&
+            row.catalogKey === control.key && chordKey(row.reformers) === chordKey(reformers))) continue;
+        const row = {
+          profileFile: fileName,
+          stem: mapping.stem,
+          deviceId: mapping.deviceId,
+          mappingSource: mapping.source,
+          matchedPattern: mapping.matchedPattern,
+          instanceHint,
+          section,
+          command: null,
+          name: null,
+          key: control.key,
+          catalogKey: control.key,
+          reformers,
+          chord: chordKey(reformers),
+          modifierModes: reformers.map((name) => modifierByName.get(name)?.mode ?? null),
+          unknownModifiers: [],
+          calloutId: reformers.length > 0 && mapping.deviceId === 'tm-mfd' && control.id.startsWith('mfd-osb-')
+            ? `${control.id}-shifted` : control.id,
+          calloutIds: [control.id],
+          status: 'Unbound',
+          semanticChord: chordKey(reformers.map((name) => modifierByName.get(name)?.semanticModifier ?? name)),
+          defaultLabel: '',
+          deviceLabel: control.hardwareLabel ?? '',
+          label: control.hardwareLabel ?? '',
+          labelSource: 'device',
+          isUnboundCandidate: true,
+        };
+        row.bindingId = stableBindingId(row);
+        availableControls.push(row);
+      }
+    }
   }
 
-  assignDeviceInstances(devices, rows, roleOverrides, errors);
+  assignDeviceInstances(devices, [...rows, ...availableControls], roleOverrides, errors);
 
   for (const device of devices) {
     const configured = pagePresentationOverrides[device.profileKey] ?? pagePresentationOverrides[device.profileFile];
@@ -675,6 +718,7 @@ export function buildPreview({ profilesDir, modifiersPath = null, mapPath = null
     semanticModifiers: [...new Set(modifiers.map(({ semanticModifier }) => semanticModifier))].sort(),
     devices,
     rows,
+    availableControls,
     summary: {
       profileCount: profileFiles.length,
       rowCount: rows.length,

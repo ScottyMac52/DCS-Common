@@ -68,7 +68,7 @@ Lua runs in an embedded soft sandbox: OS, process, network, and native-module AP
 
 **Import catalog…** remains available for catalogs produced by other trusted tooling. The importer rejects a mismatched module ID, unsupported schema, duplicate canonical keys, missing identities, and unknown command types before replacing the current browser contents.
 
-To change a physical binding, use the side-by-side assignment workspace: select an **Assignable** catalog command on the left, select a compatible button or axis control on the right, and choose **Stage selected replacement**. Step 2 automatically shows only controls matching the selected command type and can be filtered by **Bound/Unbound** state and by an existing chord (including no chord). The selected row's chord is preserved in the staged assignment. The selection summaries and guidance above the grids show what is still required. The importer asks before replacing the control's current command and stages the change in the preview. **Proceed** applies pending assignments only to the profiles copied into the destination repository; the selected Saved Games source files are not modified. Unrelated added and removed bindings are retained, and a stale or missing physical control stops the write instead of silently creating a binding.
+To change a physical binding, use the side-by-side assignment workspace: select an **Assignable** catalog command on the left, select a compatible button or axis control on the right, and choose **Stage selected replacement**. Step 2 automatically shows only controls matching the selected command type and can be filtered by **Bound/Unbound** state and chord (including no chord). Bound controls come from the selected `.diff.lua` profiles; unbound controls are derived from each resolved DCS-Common hardware catalog for the base layer and every loaded modifier. The selected row's chord is preserved in the staged assignment. **Proceed** may create a new binding only when that exact device, input, and chord was present in the validated hardware-catalog preview; stale or invented controls are rejected. The selected Saved Games source files are never modified.
 
 Search includes the localized name, raw name, DCS category path, canonical binding key/control ID, and aliases. The category, button/axis, and bound/unbound filters can be combined. Bound state uses an exact, case-sensitive comparison with command identities in the loaded profile; display names are never used as identities.
 
@@ -122,6 +122,14 @@ Use this mode after changing the simulator-wide bindings under DCS Saved Games.
 6. Click **Proceed** to synchronize the profiles and modifier file, preserve known function IDs and curated labels, add newly discovered functions, and update applicable hardware-overlay callouts.
 
 UI Layer mode does not use **Output directory**, **Display name**, **Input module ID**, or **Kneeboard ID**, and it never scaffolds consumer files into the DCS-Common root. Existing overlay instance restrictions and exemptions are retained.
+
+## Interactive controls preview
+
+In consumer import mode, the device **Preview** button opens a command catalog, interactive hardware diagram, and selected-control editor. Search and filter by category, input type, availability, and bound/unbound state. Drag an assignable command onto an empty or occupied callout, confirm replacements, and edit the displayed label in the editor. Button and axis targets remain separate; search-only commands cannot be dragged.
+
+Select a modifier layer or choose **New chord…** to combine one or more modifiers from the imported `modifiers.lua`. **Choose assignment chord…** keeps the selected physical input when switching to that chord. Assigning on a chord preserves the base binding. MFD base and shifted callouts are separate targets. The editor supports moving an existing assignment to another callout and right-click Assign, Clear, Restore, Edit label, and Reset label.
+
+Colors distinguish unchanged, new, replaced, conflicting, and unassigned controls. **Rendered kneeboard…** includes pending assignments and label overrides. **Back** keeps edits staged; **Proceed** writes destination profiles and kneeboard configuration. UI Layer import retains its existing rendered preview. Pending command and label edits are session state and are not saved by the scaffolding solution file.
 
 ## Dev run
 

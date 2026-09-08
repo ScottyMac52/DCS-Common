@@ -9,6 +9,7 @@
    <WrapPanel>
     <TextBlock Text="Modifier layer:" VerticalAlignment="Center" Margin="0,0,8,0"/>
     <ComboBox x:Name="Layers" MinWidth="180" SelectionChanged="LayerChanged"/>
+    <Button Content="New chord…" Click="ChooseChordClicked" Margin="8,0,0,0" Padding="10,4" ToolTip="Combine imported modifiers to assign commands on a new chord"/>
     <TextBlock Text="Zoom:" VerticalAlignment="Center" Margin="16,0,6,0"/>
     <Slider x:Name="Zoom" Minimum="0.5" Maximum="3" Value="1" Width="140" ValueChanged="ZoomChanged"/>
     <Button Content="Rendered kneeboard…" Click="RenderClicked" Margin="16,0,0,0" Padding="10,4"/>
@@ -53,6 +54,7 @@
     <StackPanel>
      <TextBlock x:Name="PhysicalInput" FontSize="18" FontWeight="SemiBold" TextWrapping="Wrap"/>
      <TextBlock x:Name="Chord" Margin="0,6" TextWrapping="Wrap"/>
+     <Button Content="Choose assignment chord…" Click="ChooseChordClicked" Margin="0,0,0,10" Padding="8,5"/>
      <TextBlock Text="Current command" FontWeight="SemiBold"/><TextBlock x:Name="CurrentCommand" TextWrapping="Wrap" Margin="0,2,0,10"/>
      <TextBlock Text="Pending command" FontWeight="SemiBold"/><TextBlock x:Name="PendingCommand" TextWrapping="Wrap" Margin="0,2,0,10"/>
      <TextBlock Text="DCS default label" FontWeight="SemiBold"/><TextBlock x:Name="DefaultLabel" TextWrapping="Wrap" Margin="0,2,0,10"/>
