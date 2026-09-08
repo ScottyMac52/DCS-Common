@@ -785,7 +785,7 @@ public sealed class MainViewModel : INotifyPropertyChanged
                           : string.Equals(row.Chord, SelectedTargetChord, StringComparison.OrdinalIgnoreCase)))))
             FilteredPreviewRows.Add(row);
 
-        if (SelectedPreviewRow is not null && !FilteredPreviewRows.Contains(SelectedPreviewRow))
+        if (SelectedPreviewRow is not null && Rows.Contains(SelectedPreviewRow) && !FilteredPreviewRows.Contains(SelectedPreviewRow))
             SelectedPreviewRow = null;
         PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(TargetResultSummary)));
     }
