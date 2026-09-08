@@ -48,6 +48,8 @@ public sealed class MainViewModel : INotifyPropertyChanged
     private string _selectedCommandCategory = "All";
     private string _selectedCommandType = "All";
     private string _selectedCommandBindingState = "All";
+    private string _selectedTargetBindingState = "All";
+    private string _selectedTargetChord = "All chords";
     private DcsCommandCatalogEntry? _selectedCatalogCommand;
     private PreviewRow? _selectedPreviewRow;
 
@@ -73,9 +75,12 @@ public sealed class MainViewModel : INotifyPropertyChanged
         CommandLabels = new ObservableCollection<CommandLabelGroup>();
         CommandCatalog = new ObservableCollection<DcsCommandCatalogEntry>();
         FilteredCommands = new ObservableCollection<DcsCommandCatalogEntry>();
+        FilteredPreviewRows = new ObservableCollection<PreviewRow>();
         CommandCategories = new ObservableCollection<string> { "All" };
         CommandTypes = new ObservableCollection<string> { "All", "button", "axis" };
         CommandBindingStates = new ObservableCollection<string> { "All", "Bound", "Unbound" };
+        TargetBindingStates = new ObservableCollection<string> { "All", "Bound", "Unbound" };
+        TargetChords = new ObservableCollection<string> { "All chords", "No chord" };
         PendingAssignments = new ObservableCollection<DcsCommandAssignment>();
     }
 
@@ -87,15 +92,23 @@ public sealed class MainViewModel : INotifyPropertyChanged
     public ObservableCollection<CommandLabelGroup> CommandLabels { get; }
     public ObservableCollection<DcsCommandCatalogEntry> CommandCatalog { get; }
     public ObservableCollection<DcsCommandCatalogEntry> FilteredCommands { get; }
+    public ObservableCollection<PreviewRow> FilteredPreviewRows { get; }
     public ObservableCollection<string> CommandCategories { get; }
     public ObservableCollection<string> CommandTypes { get; }
     public ObservableCollection<string> CommandBindingStates { get; }
+    public ObservableCollection<string> TargetBindingStates { get; }
+    public ObservableCollection<string> TargetChords { get; }
     public ObservableCollection<DcsCommandAssignment> PendingAssignments { get; }
 
     public DcsCommandCatalogEntry? SelectedCatalogCommand
     {
         get => _selectedCatalogCommand;
-        set { if (Set(ref _selectedCatalogCommand, value)) RaiseAssignmentState(); }
+        set
+        {
+            if (!Set(ref _selectedCatalogCommand, value)) return;
+            RefreshTargetFilter();
+            RaiseAssignmentState();
+        }
     }
 
     public PreviewRow? SelectedPreviewRow
@@ -138,6 +151,20 @@ public sealed class MainViewModel : INotifyPropertyChanged
     public string PendingAssignmentSummary => PendingAssignments.Count == 0
         ? "No pending command assignments"
         : $"{PendingAssignments.Count} pending command assignment(s)";
+
+    public string SelectedTargetBindingState
+    {
+        get => _selectedTargetBindingState;
+        set { if (Set(ref _selectedTargetBindingState, value)) RefreshTargetFilter(); }
+    }
+
+    public string SelectedTargetChord
+    {
+        get => _selectedTargetChord;
+        set { if (Set(ref _selectedTargetChord, value)) RefreshTargetFilter(); }
+    }
+
+    public string TargetResultSummary => $"Showing {FilteredPreviewRows.Count} of {Rows.Count}";
 
     public string? CommandCatalogPath
     {
@@ -455,6 +482,8 @@ public sealed class MainViewModel : INotifyPropertyChanged
         Devices.Clear();
         UntrackRows();
         Rows.Clear();
+        RebuildTargetChords();
+        RefreshTargetFilter();
         PendingAssignments.Clear();
         SelectedPreviewRow = null;
         SelectedCatalogCommand = null;
@@ -611,6 +640,8 @@ public sealed class MainViewModel : INotifyPropertyChanged
             row.PropertyChanged += PreviewRow_PropertyChanged;
         }
         RebuildCommandLabels();
+        RebuildTargetChords();
+        RefreshTargetFilter();
         RefreshCommandBindingState();
         RaiseAssignmentState();
     }
@@ -640,6 +671,7 @@ public sealed class MainViewModel : INotifyPropertyChanged
         row.ApplyCommandAssignment(command.BindingKey, command.Name);
         RebuildCommandLabels();
         RefreshCommandBindingState();
+        RefreshTargetFilter();
         MarkSolutionDirty();
         RaiseAssignmentState();
         StatusText = $"Pending: {row.Stem} {row.Key}{(string.IsNullOrWhiteSpace(row.Chord) ? string.Empty : $" + {row.Chord}")} → {command.Name}. Proceed will write the assignment.";
@@ -724,6 +756,38 @@ public sealed class MainViewModel : INotifyPropertyChanged
                      CommandCatalog, CommandSearch, SelectedCommandCategory, SelectedCommandType, SelectedCommandBindingState))
             FilteredCommands.Add(command);
         PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(CommandResultSummary)));
+    }
+
+    private void RebuildTargetChords()
+    {
+        TargetChords.Clear();
+        TargetChords.Add("All chords");
+        TargetChords.Add("No chord");
+        foreach (var chord in Rows.Select(row => row.Chord)
+                     .Where(chord => !string.IsNullOrWhiteSpace(chord))
+                     .Distinct(StringComparer.OrdinalIgnoreCase)
+                     .OrderBy(chord => chord, StringComparer.OrdinalIgnoreCase))
+            TargetChords.Add(chord!);
+        if (!TargetChords.Contains(SelectedTargetChord)) SelectedTargetChord = "All chords";
+    }
+
+    private void RefreshTargetFilter()
+    {
+        var selectedType = SelectedCatalogCommand?.Type;
+        FilteredPreviewRows.Clear();
+        foreach (var row in Rows.Where(row =>
+                     (selectedType is not ("button" or "axis") || row.InputType == selectedType) &&
+                     (SelectedTargetBindingState == "All" ||
+                      (SelectedTargetBindingState == "Bound") == !string.IsNullOrWhiteSpace(row.Command)) &&
+                     (SelectedTargetChord == "All chords" ||
+                      (SelectedTargetChord == "No chord"
+                          ? string.IsNullOrWhiteSpace(row.Chord)
+                          : string.Equals(row.Chord, SelectedTargetChord, StringComparison.OrdinalIgnoreCase)))))
+            FilteredPreviewRows.Add(row);
+
+        if (SelectedPreviewRow is not null && Rows.Contains(SelectedPreviewRow) && !FilteredPreviewRows.Contains(SelectedPreviewRow))
+            SelectedPreviewRow = null;
+        PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(TargetResultSummary)));
     }
 
     private void RecomparePreview()
@@ -951,6 +1015,8 @@ public sealed class MainViewModel : INotifyPropertyChanged
             UntrackRows();
             Devices.Clear();
             Rows.Clear();
+            RebuildTargetChords();
+            RefreshTargetFilter();
             Modifiers.Clear();
             CommandLabels.Clear();
             HasPreview = false;
