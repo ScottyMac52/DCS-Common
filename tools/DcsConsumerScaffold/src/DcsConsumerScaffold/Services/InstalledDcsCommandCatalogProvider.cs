@@ -32,6 +32,7 @@ public sealed class InstalledDcsCommandCatalogProvider
         var dcsRoot = FindDcsRoot(source);
         var executor = new DcsInputLuaExecutor(dcsRoot ?? FindAircraftRoot(source), source);
         var commands = executor.Execute();
+        var resolutionFiles = DcsCommandIdentityResolver.Resolve(commands, source);
         var unresolved = commands.Count(command => !command.IsAssignable);
         var warnings = unresolved == 0 ? [] : new List<string>
         {
@@ -47,11 +48,12 @@ public sealed class InstalledDcsCommandCatalogProvider
                 ModuleId = moduleId.Trim(),
                 Locale = "en",
                 GeneratedAt = DateTimeOffset.UtcNow,
-                SourceFingerprint = Fingerprint(executor.SourceFiles),
+                SourceFingerprint = Fingerprint(executor.SourceFiles.Concat(resolutionFiles)),
                 Commands = commands.OrderBy(command => command.Category, StringComparer.OrdinalIgnoreCase)
                     .ThenBy(command => command.Name, StringComparer.OrdinalIgnoreCase).ToList(),
             },
-            SourceFiles = executor.SourceFiles.Select(path => dcsRoot is null ? path : Path.GetRelativePath(dcsRoot, path)).ToList(),
+            SourceFiles = executor.SourceFiles.Concat(resolutionFiles).Distinct(StringComparer.OrdinalIgnoreCase)
+                .Select(path => dcsRoot is null ? path : Path.GetRelativePath(dcsRoot, path)).ToList(),
             Warnings = warnings,
             UnresolvedEntryCount = unresolved,
         };
@@ -123,6 +125,7 @@ internal sealed partial class DcsInputLuaExecutor
 
     public List<DcsCommandCatalogEntry> Execute()
     {
+        SeedInstalledCommandDefinitions();
         SeedHostSymbols(File.ReadAllText(_defaultLua));
         var result = ExecuteFile(_defaultLua);
         if (result.Type != DataType.Table)
@@ -131,6 +134,28 @@ internal sealed partial class DcsInputLuaExecutor
         AddCommands(result.Table.Get("keyCommands"), "button", commands);
         AddCommands(result.Table.Get("axisCommands"), "axis", commands);
         return commands.GroupBy(command => command.BindingKey, StringComparer.Ordinal).Select(group => group.First()).ToList();
+    }
+
+    private void SeedInstalledCommandDefinitions()
+    {
+        var moduleRoot = Directory.GetParent(Path.GetDirectoryName(_defaultLua)!)?.Parent?.Parent?.FullName;
+        var roots = new[] { moduleRoot, Path.Combine(_allowedRoot, "Scripts", "Input"), Path.Combine(_allowedRoot, "Config", "Input") }
+            .Where(path => path is not null && Directory.Exists(path)).Cast<string>().Distinct(StringComparer.OrdinalIgnoreCase);
+        var candidates = roots.SelectMany(path => Directory.EnumerateFiles(path, "*.lua", SearchOption.AllDirectories))
+            .Where(path => Path.GetFileName(path).Contains("command", StringComparison.OrdinalIgnoreCase) &&
+                           Path.GetFileName(path).Contains("def", StringComparison.OrdinalIgnoreCase))
+            .Distinct(StringComparer.OrdinalIgnoreCase);
+        foreach (var path in candidates)
+        {
+            var text = File.ReadAllText(path);
+            var used = false;
+            foreach (Match match in NumericHostCommandDefinition().Matches(text))
+            {
+                _script.Globals[match.Groups["name"].Value] = double.Parse(match.Groups["value"].Value, CultureInfo.InvariantCulture);
+                used = true;
+            }
+            if (used) _sourceFiles.Add(path);
+        }
     }
 
     private void ConfigureRuntime()
@@ -240,6 +265,7 @@ internal sealed partial class DcsInputLuaExecutor
                   IsNumberOrNil(down) && IsNumberOrNil(pressed) && IsNumberOrNil(up)) &&
                 IsNumberOrNil(device);
             var key = numeric ? BindingKey(type, action, down, pressed, up, device, table) : UnresolvedKey(type, name, action, down, pressed, up, device);
+            var symbols = new[] { action, down, pressed, up, device }.Select(Symbol).Where(value => value is not null).Cast<string>().Distinct().ToList();
             destination.Add(new DcsCommandCatalogEntry
             {
                 BindingKey = key,
@@ -247,6 +273,7 @@ internal sealed partial class DcsInputLuaExecutor
                 RawName = name,
                 CategoryPath = Category(table.Get("category")),
                 Type = type,
+                Aliases = symbols,
                 IsAssignable = numeric,
                 UnavailableReason = numeric ? null : "DCS host symbol did not resolve to a numeric command identity.",
                 Actions = new DcsCommandActions
@@ -283,9 +310,101 @@ internal sealed partial class DcsInputLuaExecutor
     private static double? Number(DynValue value) => IsNumber(value) ? value.Number : null;
     private static string Text(DynValue value) => value.Type switch { DataType.String => value.String, DataType.Number => value.Number.ToString(CultureInfo.InvariantCulture), _ => string.Empty };
     private static string Part(DynValue value) => IsNumber(value) ? value.Number.ToString("0.################", CultureInfo.InvariantCulture) : "nil";
+    private static string? Symbol(DynValue value) => value.Type == DataType.String && value.String.StartsWith(SymbolPrefix, StringComparison.Ordinal)
+        ? value.String[SymbolPrefix.Length..] : null;
 
     [GeneratedRegex(@"\biCommand[A-Za-z0-9_]+\b")] private static partial Regex HostCommand();
+    [GeneratedRegex(@"(?m)^\s*(?<name>iCommand[A-Za-z0-9_]+)\s*=\s*(?<value>-?\d+(?:\.\d+)?)\s*(?:--.*)?$")] private static partial Regex NumericHostCommandDefinition();
     [GeneratedRegex(@"\b(?<root>[A-Za-z_][A-Za-z0-9_]*)\.[A-Za-z_][A-Za-z0-9_]*")] private static partial Regex QualifiedSymbol();
     [GeneratedRegex(@"(?<![.:])\b(?<name>[A-Za-z_][A-Za-z0-9_]*)\s*\(")] private static partial Regex HostFunction();
     [GeneratedRegex(@"\b(?<root>[A-Za-z_][A-Za-z0-9_]*)\.(?<name>[A-Za-z_][A-Za-z0-9_]*)\s*\(")] private static partial Regex QualifiedFunction();
+}
+
+internal static partial class DcsCommandIdentityResolver
+{
+    private static readonly IReadOnlyDictionary<string, int> VerifiedHostCommands = new Dictionary<string, int>(StringComparer.Ordinal)
+    {
+        // Corroborated by DCS-generated FA-18C joystick profiles. These are global DCS input commands, not module commands.
+        ["iCommandPlanePitch"] = 2001,
+        ["iCommandPlaneRoll"] = 2002,
+    };
+
+    public static IReadOnlyList<string> Resolve(ICollection<DcsCommandCatalogEntry> commands, string defaultLua)
+    {
+        var evidence = ReadProfileEvidence(defaultLua, out var files);
+        foreach (var command in commands.Where(command => !command.IsAssignable))
+        {
+            var symbol = command.Aliases.FirstOrDefault(alias => alias.StartsWith("iCommand", StringComparison.Ordinal));
+            string? key = null;
+            string? provider = null;
+            var matches = evidence.Where(item => item.Type == command.Type && NamesEqual(item.Name, command.Name))
+                .Select(item => item.Key).Distinct(StringComparer.Ordinal).ToList();
+            if (matches.Count == 1)
+            {
+                key = matches[0];
+                provider = "dcs-generated-profile";
+            }
+            else if (matches.Count == 0 && symbol is not null && VerifiedHostCommands.TryGetValue(symbol, out var id))
+            {
+                key = command.Type == "axis" ? $"a{id}cdnil" : $"d{id}pnilunilcdnilvdnilvpnilvunil";
+                provider = "verified-dcs-host-command";
+            }
+            if (key is null) continue;
+            command.BindingKey = key;
+            command.IsAssignable = true;
+            command.UnavailableReason = null;
+            command.Source = new DcsCommandSource { Provider = provider, File = provider == "dcs-generated-profile" ? files.FirstOrDefault() : defaultLua };
+            ApplyActions(command, key);
+        }
+        return files;
+    }
+
+    private static void ApplyActions(DcsCommandCatalogEntry command, string key)
+    {
+        command.Actions ??= new DcsCommandActions();
+        var match = BindingIdentity().Match(key);
+        if (!match.Success) return;
+        if (command.Type == "axis") return;
+        command.Actions.Down = Part(match.Groups["down"].Value);
+        command.Actions.Pressed = Part(match.Groups["pressed"].Value);
+        command.Actions.Up = Part(match.Groups["up"].Value);
+        command.Actions.CockpitDeviceId = Part(match.Groups["device"].Value);
+    }
+
+    private static List<(string Key, string Name, string Type)> ReadProfileEvidence(string defaultLua, out List<string> files)
+    {
+        files = [];
+        var result = new List<(string, string, string)>();
+        var moduleRoot = Directory.GetParent(Path.GetDirectoryName(defaultLua)!)?.FullName;
+        if (moduleRoot is null) return result;
+        foreach (var file in Directory.EnumerateFiles(moduleRoot, "*.diff.lua", SearchOption.AllDirectories))
+        {
+            var text = File.ReadAllText(file);
+            var found = false;
+            var keys = ProfileBindingKey().Matches(text).Cast<Match>().ToList();
+            for (var index = 0; index < keys.Count; index++)
+            {
+                var start = keys[index].Index;
+                var length = (index + 1 < keys.Count ? keys[index + 1].Index : text.Length) - start;
+                var name = ProfileName().Match(text.Substring(start, length));
+                if (!name.Success) continue;
+                var key = keys[index].Groups["key"].Value;
+                result.Add((key, LuaUnescape(name.Groups["name"].Value), key.StartsWith('a') ? "axis" : "button"));
+                found = true;
+            }
+            if (found) files.Add(file);
+        }
+        return result;
+    }
+
+    private static bool NamesEqual(string left, string right) => string.Equals(left.Trim(), right.Trim(), StringComparison.OrdinalIgnoreCase);
+    private static string LuaUnescape(string value) => value.Replace("\\\"", "\"").Replace("\\\\", "\\");
+    private static int? Part(string value) => value == "nil" ? null : int.Parse(value, CultureInfo.InvariantCulture);
+
+    [GeneratedRegex("""\["(?<key>(?:a-?\d+cd(?:-?\d+|nil)|d(?:-?\d+|nil)p(?:-?\d+|nil)u(?:-?\d+|nil)cd(?:-?\d+|nil)vd[^"]+vp[^"]+vu[^"]+))"\]\s*=""")]
+    private static partial Regex ProfileBindingKey();
+    [GeneratedRegex("""\["name"\]\s*=\s*"(?<name>(?:\\.|[^"])*)"""")]
+    private static partial Regex ProfileName();
+    [GeneratedRegex(@"^d(?<down>-?\d+|nil)p(?<pressed>-?\d+|nil)u(?<up>-?\d+|nil)cd(?<device>-?\d+|nil)")]
+    private static partial Regex BindingIdentity();
 }
