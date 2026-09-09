@@ -522,7 +522,8 @@ public sealed class MainViewModel : INotifyPropertyChanged
                 MozaGrip,
                 string.IsNullOrWhiteSpace(CommonRoot) ? null : CommonRoot,
                 semanticModifiers,
-                labels: null);
+                labels: null,
+                repositoryProfilesDir: ExistingRepositoryProfilesDirectory());
 
             if (document?.Devices != null)
             {
@@ -586,6 +587,13 @@ public sealed class MainViewModel : INotifyPropertyChanged
             _isLoadingPreview = false;
             IsBusy = false;
         }
+    }
+
+    private string? ExistingRepositoryProfilesDirectory()
+    {
+        if (IsUiLayerImport || string.IsNullOrWhiteSpace(OutputDir) || string.IsNullOrWhiteSpace(InputModuleId)) return null;
+        var path = Path.Combine(OutputDir, "src", "Config", "Input", InputModuleId.Trim(), "joystick");
+        return Directory.Exists(path) ? path : null;
     }
 
     public async Task ProceedAsync()
@@ -1104,7 +1112,8 @@ public sealed class MainViewModel : INotifyPropertyChanged
             device.ProfileKey,
             MfdCategoryOverrides(),
             PagePresentationOverrides(),
-            includeUiLayer: !IsUiLayerImport, assignments: PendingAssignments.ToArray());
+            includeUiLayer: !IsUiLayerImport, assignments: PendingAssignments.ToArray(),
+            repositoryProfilesDir: ExistingRepositoryProfilesDirectory());
     }
 
 
