@@ -30,7 +30,7 @@ public sealed class PreviewComparisonServiceTests
                 new() { Name = "RAW_SHIFT", Device = "Stick", Key = "JOY_BTN3", Mode = "hold", SemanticModifier = "SHIFT" },
             };
             row.SemanticChord = "SHIFT";
-            var group = new CommandLabelGroup { Command = "command-one" };
+            var group = new CommandLabelGroup { Command = "command-one", SemanticChord = "SHIFT" };
             group.Refresh([row]);
             var devices = new List<PreviewDevice> { device };
             var commands = new List<CommandLabelGroup> { group };

@@ -989,25 +989,26 @@ public sealed class MainViewModel : INotifyPropertyChanged
         // those transient entries before rebuilding the authoritative groups from Rows.
         foreach (var synthetic in CommandLabels.Where(group => group.IsRepositoryOnly).ToList())
             CommandLabels.Remove(synthetic);
-        foreach (var duplicates in CommandLabels.GroupBy(group => group.Command, StringComparer.Ordinal))
+        foreach (var duplicates in CommandLabels.GroupBy(group => (group.Command, group.SemanticChord)))
             foreach (var duplicate in duplicates.Skip(1).ToList())
                 CommandLabels.Remove(duplicate);
-        var existing = CommandLabels.ToDictionary(group => group.Command, StringComparer.Ordinal);
+        var existing = CommandLabels.ToDictionary(group => (group.Command, group.SemanticChord));
         var commands = Rows
-            .Select(row => row.Command)
-            .Where(command => !string.IsNullOrWhiteSpace(command))
-            .Distinct(StringComparer.Ordinal)
-            .OrderBy(command => command, StringComparer.Ordinal)
+            .Where(row => !string.IsNullOrWhiteSpace(row.Command))
+            .Select(row => (Command: row.Command!, SemanticChord: CommandLabelGroup.NormalizeChord(row.SemanticChord)))
+            .Distinct()
+            .OrderBy(item => item.Command, StringComparer.Ordinal)
+            .ThenBy(item => item.SemanticChord, StringComparer.OrdinalIgnoreCase)
             .ToList();
 
-        foreach (var removed in CommandLabels.Where(group => !commands.Contains(group.Command, StringComparer.Ordinal)).ToList())
+        foreach (var removed in CommandLabels.Where(group => !commands.Contains((group.Command, group.SemanticChord))).ToList())
             CommandLabels.Remove(removed);
 
-        foreach (var command in commands)
+        foreach (var item in commands)
         {
-            if (!existing.TryGetValue(command!, out var group))
+            if (!existing.TryGetValue(item, out var group))
             {
-                group = new CommandLabelGroup { Command = command! };
+                group = new CommandLabelGroup { Command = item.Command, SemanticChord = item.SemanticChord };
                 CommandLabels.Add(group);
             }
             group.Refresh(Rows);
@@ -1018,7 +1019,7 @@ public sealed class MainViewModel : INotifyPropertyChanged
     public void ApplyCommandLabel(CommandLabelGroup group)
     {
         var matchingRows = Rows
-            .Where(row => string.Equals(row.Command, group.Command, StringComparison.Ordinal))
+            .Where(group.Matches)
             .ToList();
         var appliedLabel = group.Label;
         foreach (var row in matchingRows)
@@ -1036,7 +1037,7 @@ public sealed class MainViewModel : INotifyPropertyChanged
             string.IsNullOrWhiteSpace(row.Command)) return;
 
         var group = CommandLabels.FirstOrDefault(item =>
-            string.Equals(item.Command, row.Command, StringComparison.Ordinal));
+            item.Matches(row));
         group?.Refresh(Rows);
         RecomparePreview();
     }

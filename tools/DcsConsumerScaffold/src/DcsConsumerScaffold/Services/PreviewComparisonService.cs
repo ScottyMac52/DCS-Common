@@ -215,7 +215,7 @@ public sealed class PreviewComparisonService
         var matched = new HashSet<string>(StringComparer.Ordinal);
         foreach (var group in commands)
         {
-            var groupRows = rows.Where(row => string.Equals(row.Command, group.Command, StringComparison.Ordinal)).ToList();
+            var groupRows = rows.Where(group.Matches).ToList();
             if (groupRows.Count == 0)
             {
                 Set(group, PreviewChangeState.Unused, "Command has no loaded bindings.");
