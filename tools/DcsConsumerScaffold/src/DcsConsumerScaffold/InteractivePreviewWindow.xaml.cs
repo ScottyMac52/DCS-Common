@@ -17,6 +17,7 @@ public partial class InteractivePreviewWindow : Window
     private readonly InteractiveDevice _layout;
     private readonly Dictionary<Border, PreviewRow> _targets = [];
     private readonly Dictionary<string, string[]> _layers = new(StringComparer.Ordinal);
+    private readonly IReadOnlyList<UiLayerProjection> _uiLayer;
     private PreviewRow? _selected;
     private Point _dragStart;
     private bool _updating;
@@ -29,6 +30,7 @@ public partial class InteractivePreviewWindow : Window
         DataContext = model;
         Title = $"Controls preview — {device.Stem}";
         DeviceTitle.Text = device.Stem;
+        _uiLayer = model.UiLayerProjectionsFor(device);
         _layers["Base"] = [];
         foreach (var modifier in model.Modifiers.Where(item => !item.IsRepositoryOnly && !string.IsNullOrEmpty(item.Name)))
             _layers.TryAdd(modifier.Name!, [modifier.Name!]);
@@ -172,12 +174,15 @@ public partial class InteractivePreviewWindow : Window
     {
         foreach (var (target, row) in _targets)
         {
+            var ui = _uiLayer.Where(item => item.ControlId == row.CalloutId ||
+                item.ControlId == row.CalloutId + "-shifted" || item.ControlId + "-shifted" == row.CalloutId).ToArray();
+            var uiText = ui.Length == 0 ? string.Empty : "\n" + string.Join("\n", ui.Select(item => $"UI: {item.Label} ({item.Modifier})"));
             var pending = _model.PendingFor(row);
             target.Background = _model.HasConflict(row) ? Brushes.LightCoral : string.IsNullOrEmpty(row.Command) ? Brushes.Gainsboro :
                 pending is null ? Brushes.White : pending.AllowCreate ? Brushes.LightGreen : Brushes.Khaki;
-            target.BorderBrush = row == _selected ? Brushes.RoyalBlue : Brushes.SlateGray;
-            ((TextBlock)target.Child).Text = string.IsNullOrEmpty(row.Command) ? "Unassigned" : row.Label;
-            target.ToolTip = $"{row.Key} • {(string.IsNullOrEmpty(row.Chord) ? "Base" : row.Chord)}\n{row.Name}\n{row.Label}";
+            target.BorderBrush = row == _selected ? Brushes.RoyalBlue : ui.Length > 0 ? new SolidColorBrush(Color.FromRgb(8, 145, 178)) : Brushes.SlateGray;
+            ((TextBlock)target.Child).Text = (string.IsNullOrEmpty(row.Command) ? "Unassigned" : row.Label) + uiText;
+            target.ToolTip = $"{row.Key} • {(string.IsNullOrEmpty(row.Chord) ? "Base" : row.Chord)}\n{row.Name}\n{row.Label}{uiText}";
         }
         _updating = true;
         PhysicalInput.Text = _selected?.Key ?? "Select a callout";
@@ -193,7 +198,7 @@ public partial class InteractivePreviewWindow : Window
     {
         if (_updating || _selected is null) return;
         _selected.Label = LabelEditor.Text;
-        foreach (var (target, row) in _targets.Where(item => item.Value == _selected)) ((TextBlock)target.Child).Text = row.Label;
+        Refresh();
     }
     private void ZoomChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
     { if (Diagram is not null) Diagram.LayoutTransform = new ScaleTransform(e.NewValue, e.NewValue); }
