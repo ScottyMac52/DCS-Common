@@ -21,6 +21,13 @@ function canonicalDevice(deviceId, devices) {
   return devices.find((device) => device.id === deviceId || device.aliases?.includes(deviceId));
 }
 
+export function resolveUiLayerModifier(deviceId, hardwareOrCatalog) {
+  const hardware = Array.isArray(hardwareOrCatalog) ? hardwareOrCatalog : hardwareOrCatalog.hardware;
+  const device = canonicalDevice(deviceId, hardware);
+  if (!device) return null;
+  return device.uiLayerModifiers?.[deviceId] ?? (device.id === deviceId ? device.uiLayerModifier ?? null : null);
+}
+
 export function buildUiLayerHardwareTemplate(deviceId, catalog, { deviceInstance = null } = {}) {
   const device = canonicalDevice(deviceId, catalog.hardware);
   if (!device) throw new Error(`Unknown shared hardware device: ${deviceId}`);
@@ -60,7 +67,7 @@ export function buildUiLayerHardwareTemplate(deviceId, catalog, { deviceInstance
     deviceId: device.id,
     deviceInstance,
     status: missing.length ? 'template' : 'complete',
-    modifier: configured.modifier ?? null,
+    modifier: resolveUiLayerModifier(deviceId, catalog) ?? configured.modifier ?? null,
     functions,
     missing,
   };
