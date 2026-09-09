@@ -108,21 +108,43 @@ public sealed class InstalledDcsCommandCatalogProviderTests
     }
 
     [Fact]
-    public void Build_ResolvesHostCommandFromAdditionalNumericLuaDefinition()
+    public void Build_ResolvesHostCommandFromAnyRelevantInputLuaDefinitionShape()
     {
         using var install = new TemporaryDcsInstall("GenericJet", "GenericJet", """
             return { keyCommands = {
               { down = iCommandPilotGestureSalute, name = _('Pilot Salute'), category = _('Communications') }
             }}
             """);
-        install.AddFile("Scripts/Input/CommandDefs.lua", "iCommandPilotGestureSalute = 1777");
+        install.AddFile("Scripts/Input/InputEvents.lua", """
+            local commands = {
+              iCommandPilotGestureSalute = 1777,
+              iCommandAnotherEvent = 1778;
+            }
+            """);
 
         var result = new InstalledDcsCommandCatalogProvider().Build(install.DefaultLuaPath, "GenericJet");
 
         var salute = Assert.Single(result.Document.Commands);
         Assert.True(salute.IsAssignable);
         Assert.Equal("d1777pnilunilcdnilvdnilvpnilvunil", salute.BindingKey);
-        Assert.Contains(result.SourceFiles, file => file.Replace('\\', '/').EndsWith("Scripts/Input/CommandDefs.lua"));
+        Assert.Contains(result.SourceFiles, file => file.Replace('\\', '/').EndsWith("Scripts/Input/InputEvents.lua"));
+    }
+
+    [Fact]
+    public void Build_DoesNotUseConflictingNumericDefinitions()
+    {
+        using var install = new TemporaryDcsInstall("GenericJet", "GenericJet", """
+            return { keyCommands = {
+              { down = iCommandModuleAction, name = _('Module action'), category = _('General') }
+            }}
+            """);
+        install.AddFile("Scripts/Input/InputEvents.lua", "iCommandModuleAction = 1777,");
+        install.AddFile("Config/Input/CommandValues.lua", "iCommandModuleAction = 1888;");
+
+        var command = Assert.Single(new InstalledDcsCommandCatalogProvider().Build(install.DefaultLuaPath, "GenericJet").Document.Commands);
+
+        Assert.False(command.IsAssignable);
+        Assert.Contains("iCommandModuleAction", command.Aliases);
     }
 
     [Fact]
@@ -169,6 +191,10 @@ public sealed class InstalledDcsCommandCatalogProviderTests
     [Theory]
     [InlineData("iCommandPlanePitch", "Pitch", "a2001cdnil")]
     [InlineData("iCommandPlaneRoll", "Roll", "a2002cdnil")]
+    [InlineData("iCommandPlaneRudder", "Rudder", "a2003cdnil")]
+    [InlineData("iCommandPlaneThrustCommon", "Thrust", "a2004cdnil")]
+    [InlineData("iCommandPlaneThrustLeft", "Thrust Left", "a2005cdnil")]
+    [InlineData("iCommandPlaneThrustRight", "Thrust Right", "a2006cdnil")]
     public void Build_ResolvesVerifiedGlobalFlightAxes(string symbol, string name, string expectedKey)
     {
         var lua = "return { axisCommands = { { action = " + symbol + ", name = _('" + name +
@@ -179,6 +205,25 @@ public sealed class InstalledDcsCommandCatalogProviderTests
 
         Assert.True(command.IsAssignable);
         Assert.Equal(expectedKey, command.BindingKey);
+        Assert.Equal("verified-dcs-host-command", command.Source!.Provider);
+    }
+
+    [Fact]
+    public void Build_ResolvesVerifiedGlobalAxisByCanonicalIdentityWhenRuntimeSymbolShapeDiffers()
+    {
+        using var install = new TemporaryDcsInstall("GenericJet", "GenericJet", """
+            local res = { keyCommands = {}, axisCommands = {} }
+            join(res.axisCommands, {
+              { combos = defaultDeviceAssignmentFor('pitch'), action = hostCommands.PITCH,
+                name = _('Pitch'), category = {_('Flight Control')} }
+            })
+            return res
+            """);
+
+        var command = Assert.Single(new InstalledDcsCommandCatalogProvider().Build(install.DefaultLuaPath, "GenericJet").Document.Commands);
+
+        Assert.True(command.IsAssignable);
+        Assert.Equal("a2001cdnil", command.BindingKey);
         Assert.Equal("verified-dcs-host-command", command.Source!.Provider);
     }
 

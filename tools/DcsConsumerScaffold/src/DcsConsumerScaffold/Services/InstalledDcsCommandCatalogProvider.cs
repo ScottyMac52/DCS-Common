@@ -141,21 +141,33 @@ internal sealed partial class DcsInputLuaExecutor
         var moduleRoot = Directory.GetParent(Path.GetDirectoryName(_defaultLua)!)?.Parent?.Parent?.FullName;
         var roots = new[] { moduleRoot, Path.Combine(_allowedRoot, "Scripts", "Input"), Path.Combine(_allowedRoot, "Config", "Input") }
             .Where(path => path is not null && Directory.Exists(path)).Cast<string>().Distinct(StringComparer.OrdinalIgnoreCase);
-        var candidates = roots.SelectMany(path => Directory.EnumerateFiles(path, "*.lua", SearchOption.AllDirectories))
-            .Where(path => Path.GetFileName(path).Contains("command", StringComparison.OrdinalIgnoreCase) &&
-                           Path.GetFileName(path).Contains("def", StringComparison.OrdinalIgnoreCase))
-            .Distinct(StringComparer.OrdinalIgnoreCase);
+        var candidates = roots.SelectMany(SafeLuaFiles).Distinct(StringComparer.OrdinalIgnoreCase);
+        var definitions = new Dictionary<string, Dictionary<double, HashSet<string>>>(StringComparer.Ordinal);
         foreach (var path in candidates)
         {
             var text = File.ReadAllText(path);
-            var used = false;
             foreach (Match match in NumericHostCommandDefinition().Matches(text))
             {
-                _script.Globals[match.Groups["name"].Value] = double.Parse(match.Groups["value"].Value, CultureInfo.InvariantCulture);
-                used = true;
+                var name = match.Groups["name"].Value;
+                var value = double.Parse(match.Groups["value"].Value, CultureInfo.InvariantCulture);
+                if (!definitions.TryGetValue(name, out var values)) definitions[name] = values = [];
+                if (!values.TryGetValue(value, out var sources)) values[value] = sources = new(StringComparer.OrdinalIgnoreCase);
+                sources.Add(path);
             }
-            if (used) _sourceFiles.Add(path);
         }
+        foreach (var (name, values) in definitions.Where(item => item.Value.Count == 1))
+        {
+            var definition = values.Single();
+            _script.Globals[name] = definition.Key;
+            foreach (var source in definition.Value) _sourceFiles.Add(source);
+        }
+    }
+
+    private static IEnumerable<string> SafeLuaFiles(string root)
+    {
+        try { return Directory.EnumerateFiles(root, "*.lua", SearchOption.AllDirectories).ToList(); }
+        catch (UnauthorizedAccessException) { return []; }
+        catch (IOException) { return []; }
     }
 
     private void ConfigureRuntime()
@@ -314,7 +326,7 @@ internal sealed partial class DcsInputLuaExecutor
         ? value.String[SymbolPrefix.Length..] : null;
 
     [GeneratedRegex(@"\biCommand[A-Za-z0-9_]+\b")] private static partial Regex HostCommand();
-    [GeneratedRegex(@"(?m)^\s*(?<name>iCommand[A-Za-z0-9_]+)\s*=\s*(?<value>-?\d+(?:\.\d+)?)\s*(?:--.*)?$")] private static partial Regex NumericHostCommandDefinition();
+    [GeneratedRegex(@"\b(?<name>iCommand[A-Za-z0-9_]+)\s*=\s*(?<value>-?\d+(?:\.\d+)?)\b")] private static partial Regex NumericHostCommandDefinition();
     [GeneratedRegex(@"\b(?<root>[A-Za-z_][A-Za-z0-9_]*)\.[A-Za-z_][A-Za-z0-9_]*")] private static partial Regex QualifiedSymbol();
     [GeneratedRegex(@"(?<![.:])\b(?<name>[A-Za-z_][A-Za-z0-9_]*)\s*\(")] private static partial Regex HostFunction();
     [GeneratedRegex(@"\b(?<root>[A-Za-z_][A-Za-z0-9_]*)\.(?<name>[A-Za-z_][A-Za-z0-9_]*)\s*\(")] private static partial Regex QualifiedFunction();
@@ -322,11 +334,17 @@ internal sealed partial class DcsInputLuaExecutor
 
 internal static partial class DcsCommandIdentityResolver
 {
-    private static readonly IReadOnlyDictionary<string, int> VerifiedHostCommands = new Dictionary<string, int>(StringComparer.Ordinal)
+    private sealed record VerifiedHostCommand(string Symbol, string Type, int Id, string[] CanonicalNames);
+
+    private static readonly VerifiedHostCommand[] VerifiedHostCommands =
     {
-        // Corroborated by DCS-generated FA-18C joystick profiles. These are global DCS input commands, not module commands.
-        ["iCommandPlanePitch"] = 2001,
-        ["iCommandPlaneRoll"] = 2002,
+        // Corroborated by DCS-generated joystick profiles. These are global DCS input commands, not module commands.
+        new("iCommandPlanePitch", "axis", 2001, ["Pitch"]),
+        new("iCommandPlaneRoll", "axis", 2002, ["Roll"]),
+        new("iCommandPlaneRudder", "axis", 2003, ["Rudder"]),
+        new("iCommandPlaneThrustCommon", "axis", 2004, ["Thrust"]),
+        new("iCommandPlaneThrustLeft", "axis", 2005, ["Thrust Left"]),
+        new("iCommandPlaneThrustRight", "axis", 2006, ["Thrust Right"]),
     };
 
     public static IReadOnlyList<string> Resolve(ICollection<DcsCommandCatalogEntry> commands, string defaultLua)
@@ -344,9 +362,9 @@ internal static partial class DcsCommandIdentityResolver
                 key = matches[0];
                 provider = "dcs-generated-profile";
             }
-            else if (matches.Count == 0 && symbol is not null && VerifiedHostCommands.TryGetValue(symbol, out var id))
+            else if (matches.Count == 0 && VerifiedIdentity(command, symbol) is { } verified)
             {
-                key = command.Type == "axis" ? $"a{id}cdnil" : $"d{id}pnilunilcdnilvdnilvpnilvunil";
+                key = command.Type == "axis" ? $"a{verified.Id}cdnil" : $"d{verified.Id}pnilunilcdnilvdnilvpnilvunil";
                 provider = "verified-dcs-host-command";
             }
             if (key is null) continue;
@@ -358,6 +376,11 @@ internal static partial class DcsCommandIdentityResolver
         }
         return files;
     }
+
+    private static VerifiedHostCommand? VerifiedIdentity(DcsCommandCatalogEntry command, string? symbol) =>
+        VerifiedHostCommands.FirstOrDefault(candidate =>
+            candidate.Type == command.Type &&
+            (candidate.Symbol == symbol || candidate.CanonicalNames.Any(name => NamesEqual(name, command.Name))));
 
     private static void ApplyActions(DcsCommandCatalogEntry command, string key)
     {
