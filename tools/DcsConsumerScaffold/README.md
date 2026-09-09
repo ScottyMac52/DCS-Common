@@ -68,6 +68,20 @@ Lua runs in an embedded soft sandbox: OS, process, network, and native-module AP
 
 **Import catalog…** remains available for catalogs produced by other trusted tooling. The importer rejects a mismatched module ID, unsupported schema, duplicate canonical keys, missing identities, and unknown command types before replacing the current browser contents.
 
+### Capture DCS global command IDs
+
+DCS injects hundreds of numeric `iCommand*` values only while its input environment is running. To resolve those commands without guessing or maintaining aircraft-specific tables:
+
+1. Choose **Create capture script…** and save `DcsCommandIdCapture.lua` somewhere permanent.
+2. Temporarily add the exact `dofile(...)` line shown by the importer to the beginning of `DCS World\\Config\\Input\\Aircrafts\\Default\\keyboard\\default.lua`.
+3. Start DCS and open Controls once. The script writes `DcsGlobalCommandIds.json` under the active Saved Games DCS `Logs` directory.
+4. Remove the temporary `dofile(...)` line from the DCS installation.
+5. Load the module's `default.lua`, then choose **Load ID capture…** and select the generated JSON file.
+
+The importer executes the selected module definition again with the captured DCS symbol/ID map. This happens before canonical binding keys are constructed, so separate `down`, `pressed`, and `up` actions are preserved. Installed numeric definitions still take precedence. Captured global commands are identified by the `dcs-environment-capture` source provider; module cockpit commands with a `cockpit_device_id` are not reclassified as globals.
+
+Choose **Save catalog…** from either assignment screen to save the complete loaded module catalog as schemaVersion 1 JSON. The saved file retains assignability, aliases, action fields, source provenance, DCS version, and search-only entries, and can later be loaded directly with **Import catalog…** without rerunning DCS or the capture script.
+
 To change a physical binding, use the side-by-side assignment workspace: select an **Assignable** catalog command on the left, select a compatible button or axis control on the right, and choose **Stage selected replacement**. Step 2 automatically shows only controls matching the selected command type and can be filtered by **Bound/Unbound** state and chord (including no chord). Bound controls come from the selected `.diff.lua` profiles; unbound controls are derived from each resolved DCS-Common hardware catalog for the base layer and every loaded modifier. The selected row's chord is preserved in the staged assignment. **Proceed** may create a new binding only when that exact device, input, and chord was present in the validated hardware-catalog preview; stale or invented controls are rejected. The selected Saved Games source files are never modified.
 
 Search includes the localized name, raw name, DCS category path, canonical binding key/control ID, and aliases. The category, button/axis, and bound/unbound filters can be combined. Bound state uses an exact, case-sensitive comparison with command identities in the loaded profile; display names are never used as identities.
