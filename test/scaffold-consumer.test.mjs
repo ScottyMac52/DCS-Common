@@ -17,6 +17,7 @@ import {
   mergeModifierSources,
   writeConsumer,
   applyDcsCommandAssignments,
+  canonicalizeLegacyChordCommandIds,
   mergeRepositoryAssignments,
 } from '../scripts/scaffold-consumer.mjs';
 import { loadProfileDrivenConfig, parseDcsDiffLua } from '../scripts/profile-driven-kneeboard.mjs';
@@ -136,6 +137,36 @@ test('command assignments may create a catalog-validated unbound physical contro
     [{ key: 'JOY_BTN1', reformers: [] }]);
 });
 
+test('legacy chord-suffixed command IDs merge into an existing canonical command', () => {
+  const source = `local diff = { ["keyDiffs"] = {
+    ["d3011pnilu3011cd35vd1vpnilvu0"] = {
+      ["added"] = { [1] = { ["key"] = "JOY_BTN1" } }, ["name"] = "Left DDI PB 1" },
+    ["d3011pnilu3011cd35vd1vpnilvu0ANY_MODULE_SHIFT"] = {
+      ["added"] = { [1] = { ["key"] = "JOY_BTN1", ["reformers"] = { [1] = "ANY_MODULE_SHIFT" } } },
+      ["name"] = "Shifted label" },
+  } } return diff`;
+
+  const bindings = parseDcsDiffLua(canonicalizeLegacyChordCommandIds(source)).bindings;
+  assert.equal(bindings.length, 1);
+  const [binding] = bindings;
+  assert.equal(binding.command, 'd3011pnilu3011cd35vd1vpnilvu0');
+  assert.deepEqual(binding.added, [
+    { key: 'JOY_BTN1', reformers: [] },
+    { key: 'JOY_BTN1', reformers: ['ANY_MODULE_SHIFT'] },
+  ]);
+  assert.equal(binding.name, 'Left DDI PB 1');
+});
+
+test('command IDs are not guessed from a suffix unless the canonical command exists', () => {
+  const source = `local diff = { ["keyDiffs"] = {
+    ["valid-command-SHIFT"] = {
+      ["added"] = { [1] = { ["key"] = "JOY_BTN1", ["reformers"] = { [1] = "SHIFT" } } },
+      ["name"] = "Valid command" },
+  } } return diff`;
+
+  assert.equal(canonicalizeLegacyChordCommandIds(source), source);
+});
+
 test('repository assignments override the same physical controls while retaining newly observed controls', () => {
   const observed = `local diff = { ["keyDiffs"] = {
     ["d-old"] = { ["added"] = { [1] = { ["key"] = "JOY_BTN1" } }, ["name"] = "Old" },
@@ -190,6 +221,31 @@ test('preview and proceed preserve uncommitted repository assignments', () => {
   const written = parseDcsDiffLua(readFileSync(join(repositoryProfilesDir, profileFile), 'utf8')).bindings;
   assert.ok(written.some(({ command, added }) => command === 'd-local' && added.some(({ key }) => key === 'JOY_BTN1')));
   assert.ok(written.some(({ command, added }) => command === 'd-observed' && added.some(({ key }) => key === 'JOY_BTN2')));
+});
+
+test('proceed repairs legacy chord-suffixed command IDs without a pending assignment', () => {
+  const root = mkdtempSync(join(tmpdir(), 'scaffold-legacy-chord-command-'));
+  const profilesDir = join(root, 'profiles');
+  const outputDir = join(root, 'consumer');
+  mkdirSync(profilesDir, { recursive: true });
+  const profileFile = 'Generic MFD.diff.lua';
+  writeFileSync(join(profilesDir, profileFile), `local diff = { ["keyDiffs"] = {
+    ["d1"] = { ["added"] = { [1] = { ["key"] = "JOY_BTN1" } }, ["name"] = "PB 1" },
+    ["d1GENERIC_SHIFT"] = { ["added"] = { [1] = { ["key"] = "JOY_BTN1",
+      ["reformers"] = { [1] = "GENERIC_SHIFT" } } }, ["name"] = "Shifted PB 1" },
+  } } return diff`);
+
+  const preview = buildPreview({ profilesDir, commonRoot });
+  writeConsumer({ preview, outputDir, displayName: 'Test', inputModuleId: 'Test', kneeboardId: 'Test', commonRoot });
+
+  const written = parseDcsDiffLua(readFileSync(
+    join(outputDir, 'src/Config/Input/Test/joystick', profileFile), 'utf8')).bindings;
+  assert.equal(written.length, 1);
+  assert.equal(written[0].command, 'd1');
+  assert.deepEqual(written[0].added, [
+    { key: 'JOY_BTN1', reformers: [] },
+    { key: 'JOY_BTN1', reformers: ['GENERIC_SHIFT'] },
+  ]);
 });
 
 test('writeConsumer applies pending assignments only to destination profile and generated config', () => {

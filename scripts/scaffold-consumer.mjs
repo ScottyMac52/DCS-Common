@@ -270,6 +270,7 @@ function serializeInputs(name, inputs) {
 export function applyDcsCommandAssignments(source, assignments, { filename = 'profile.diff.lua', allowedInputs = null } = {}) {
   if (!assignments?.length) return source;
   const parsed = parseDcsDiffLua(source, { filename });
+  normalizeLegacyChordCommandBindings(parsed);
   for (const assignment of assignments) {
     if (!['keyDiffs', 'axisDiffs'].includes(assignment.section)) {
       throw new Error(`${filename}: assignment section must be keyDiffs or axisDiffs`);
@@ -318,9 +319,42 @@ function serializeDcsProfile(parsed) {
   return `local diff = {\n${sections.join('\n')}\n}\nreturn diff\n`;
 }
 
+function normalizeLegacyChordCommandBindings(parsed) {
+  let changed = false;
+  for (const binding of [...parsed.bindings]) {
+    const inputs = [...binding.added, ...binding.removed];
+    if (inputs.length === 0) continue;
+    const suffixes = [...new Set(inputs.flatMap((input) => input.reformers ?? []))]
+      .filter((reformer) => reformer && binding.command.endsWith(reformer))
+      .sort((left, right) => right.length - left.length);
+    const reformer = suffixes.find((candidate) => inputs.every((input) => input.reformers?.includes(candidate)));
+    if (!reformer) continue;
+    const canonicalCommand = binding.command.slice(0, -reformer.length);
+    const target = parsed.bindings.find((candidate) => candidate !== binding &&
+      candidate.section === binding.section && candidate.command === canonicalCommand);
+    if (!target) continue;
+
+    const location = (input) => `${input.key}\0${chordKey(input.reformers)}`;
+    for (const input of binding.added)
+      if (!target.added.some((candidate) => location(candidate) === location(input))) target.added.push(input);
+    for (const input of binding.removed)
+      if (!target.removed.some((candidate) => location(candidate) === location(input))) target.removed.push(input);
+    parsed.bindings.splice(parsed.bindings.indexOf(binding), 1);
+    changed = true;
+  }
+  return changed;
+}
+
+export function canonicalizeLegacyChordCommandIds(source, { filename = 'profile.diff.lua' } = {}) {
+  const parsed = parseDcsDiffLua(source, { filename });
+  return normalizeLegacyChordCommandBindings(parsed) ? serializeDcsProfile(parsed) : source;
+}
+
 export function mergeRepositoryAssignments(observedSource, repositorySource, { filename = 'profile.diff.lua' } = {}) {
   const observed = parseDcsDiffLua(observedSource, { filename });
   const repository = parseDcsDiffLua(repositorySource, { filename });
+  normalizeLegacyChordCommandBindings(observed);
+  normalizeLegacyChordCommandBindings(repository);
   const location = (input) => `${input.key}\0${chordKey(input.reformers)}`;
   const repositoryLocations = new Set(repository.bindings.flatMap((binding) => [...binding.added, ...binding.removed].map(location)));
   for (const binding of observed.bindings)
@@ -345,7 +379,7 @@ function effectiveProfileSource(profilesDir, repositoryProfilesDir, fileName) {
   const repository = repositoryProfilesDir ? join(repositoryProfilesDir, fileName) : null;
   return repository && existsSync(repository)
     ? mergeRepositoryAssignments(observed, readFileSync(repository, 'utf8'), { filename: fileName })
-    : observed;
+    : canonicalizeLegacyChordCommandIds(observed, { filename: fileName });
 }
 
 function previewWithAssignments(preview, assignments, commonRoot) {
@@ -1076,8 +1110,11 @@ export function writeConsumer({ preview, outputDir, displayName, inputModuleId, 
   for (const device of preview.devices) {
     const source = join(preview.profilesDir, device.profileFile);
     const pending = assignments.filter((assignment) => assignment.profileFile === device.profileFile);
-    if (pending.length === 0 && !preview.repositoryProfilesDir) copy(source, `${joystickRel}/${device.profileFile}`);
-    else if (pending.length === 0) write(`${joystickRel}/${device.profileFile}`, effectiveProfileSource(preview.profilesDir, preview.repositoryProfilesDir, device.profileFile));
+    if (pending.length === 0) {
+      const effective = effectiveProfileSource(preview.profilesDir, preview.repositoryProfilesDir, device.profileFile);
+      if (!preview.repositoryProfilesDir && effective === readFileSync(source, 'utf8')) copy(source, `${joystickRel}/${device.profileFile}`);
+      else write(`${joystickRel}/${device.profileFile}`, effective);
+    }
     else write(`${joystickRel}/${device.profileFile}`, assignedProfiles.get(device.profileFile));
   }
   if (preview.modifiersPath && existsSync(preview.modifiersPath)) {
