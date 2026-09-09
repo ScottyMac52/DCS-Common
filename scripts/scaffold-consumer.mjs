@@ -54,6 +54,7 @@ Optional:
   --semantic-modifiers <path> modifier name or device+key to semantic modifier ID (JSON)
   --labels <path>             stable binding identity to editable label override (JSON)
   --assignments <path>        pending physical-control command assignments (JSON)
+  --repository-profiles <dir> existing consumer profiles whose assignments take precedence
   --mfd-categories <path>     profile key/file to top/right/bottom/left category labels (JSON)
   --page-presentation <path>   profile key/file to page title and kicker (JSON)
   --remove-profiles <path>    explicit repository profile keys to remove (JSON array)
@@ -79,6 +80,7 @@ export function parseArgs(argv = process.argv.slice(2)) {
     semanticModifiersPath: null,
     labelsPath: null,
     assignmentsPath: null,
+    repositoryProfilesDir: null,
     mfdCategoriesPath: null,
     pagePresentationPath: null,
     removeProfilesPath: null,
@@ -109,6 +111,7 @@ export function parseArgs(argv = process.argv.slice(2)) {
     else if (arg === '--semantic-modifiers') options.semanticModifiersPath = next();
     else if (arg === '--labels') options.labelsPath = next();
     else if (arg === '--assignments') options.assignmentsPath = next();
+    else if (arg === '--repository-profiles') options.repositoryProfilesDir = resolve(next());
     else if (arg === '--mfd-categories') options.mfdCategoriesPath = next();
     else if (arg === '--page-presentation') options.pagePresentationPath = next();
     else if (arg === '--remove-profiles') options.removeProfilesPath = next();
@@ -302,6 +305,10 @@ export function applyDcsCommandAssignments(source, assignments, { filename = 'pr
     target.added.push({ key: assignment.key, reformers });
   }
 
+  return serializeDcsProfile(parsed);
+}
+
+function serializeDcsProfile(parsed) {
   const sections = ['keyDiffs', 'axisDiffs'].map((section) => {
     const entries = parsed.bindings
       .filter((binding) => binding.section === section && (binding.added.length > 0 || binding.removed.length > 0))
@@ -309,6 +316,36 @@ export function applyDcsCommandAssignments(source, assignments, { filename = 'pr
     return entries.length ? `  ["${section}"] = {\n${entries.join('\n')}\n  },` : '';
   }).filter(Boolean);
   return `local diff = {\n${sections.join('\n')}\n}\nreturn diff\n`;
+}
+
+export function mergeRepositoryAssignments(observedSource, repositorySource, { filename = 'profile.diff.lua' } = {}) {
+  const observed = parseDcsDiffLua(observedSource, { filename });
+  const repository = parseDcsDiffLua(repositorySource, { filename });
+  const location = (input) => `${input.key}\0${chordKey(input.reformers)}`;
+  const repositoryLocations = new Set(repository.bindings.flatMap((binding) => [...binding.added, ...binding.removed].map(location)));
+  for (const binding of observed.bindings)
+    binding.added = binding.added.filter((input) => !repositoryLocations.has(location(input)));
+  for (const saved of repository.bindings) {
+    let target = observed.bindings.find((binding) => binding.section === saved.section && binding.command === saved.command);
+    if (!target) {
+      target = { section: saved.section, command: saved.command, name: saved.name, added: [], removed: [] };
+      observed.bindings.push(target);
+    }
+    target.name = saved.name;
+    for (const input of saved.added)
+      if (!target.added.some((candidate) => location(candidate) === location(input))) target.added.push(input);
+    for (const input of saved.removed)
+      if (!target.removed.some((candidate) => location(candidate) === location(input))) target.removed.push(input);
+  }
+  return serializeDcsProfile(observed);
+}
+
+function effectiveProfileSource(profilesDir, repositoryProfilesDir, fileName) {
+  const observed = readFileSync(join(profilesDir, fileName), 'utf8');
+  const repository = repositoryProfilesDir ? join(repositoryProfilesDir, fileName) : null;
+  return repository && existsSync(repository)
+    ? mergeRepositoryAssignments(observed, readFileSync(repository, 'utf8'), { filename: fileName })
+    : observed;
 }
 
 function previewWithAssignments(preview, assignments, commonRoot) {
@@ -439,7 +476,7 @@ export function assignDeviceInstances(devices, rows, roleOverrides = {}, errors 
   }
 }
 
-export function buildPreview({ profilesDir, modifiersPath = null, mapPath = null, rolesPath = null, semanticModifiersPath = null, labelsPath = null, mfdCategoriesPath = null, pagePresentationPath = null, mozaGrip = null, commonRoot = defaultCommonRoot }) {
+export function buildPreview({ profilesDir, repositoryProfilesDir = null, modifiersPath = null, mapPath = null, rolesPath = null, semanticModifiersPath = null, labelsPath = null, mfdCategoriesPath = null, pagePresentationPath = null, mozaGrip = null, commonRoot = defaultCommonRoot }) {
   if (!profilesDir || !existsSync(profilesDir) || !statSync(profilesDir).isDirectory()) {
     throw new Error(`profiles directory not found: ${profilesDir}`);
   }
@@ -481,7 +518,6 @@ export function buildPreview({ profilesDir, modifiersPath = null, mapPath = null
   const catalogCache = new Map();
 
   for (const fileName of profileFiles) {
-    const absolute = join(profilesDir, fileName);
     const mapping = resolveDeviceMapping(fileName, deviceMap, overrides);
     if (mapping.deviceId === 'moza-ab9' && mapping.source === 'standalone-fallback' && mozaGrip) {
       const selectedDeviceId = {
@@ -506,7 +542,7 @@ export function buildPreview({ profilesDir, modifiersPath = null, mapPath = null
 
     let bindings = [];
     try {
-      bindings = parseDcsDiffLua(readFileSync(absolute, 'utf8'), { filename: fileName }).bindings;
+      bindings = parseDcsDiffLua(effectiveProfileSource(profilesDir, repositoryProfilesDir, fileName), { filename: fileName }).bindings;
     } catch (error) {
       errors.push(`${fileName}: ${error.message ?? error}`);
       devices.push({
@@ -705,6 +741,7 @@ export function buildPreview({ profilesDir, modifiersPath = null, mapPath = null
     mode: 'preview',
     commonRoot,
     profilesDir: resolve(profilesDir),
+    repositoryProfilesDir: repositoryProfilesDir ? resolve(repositoryProfilesDir) : null,
     modifiersPath: modifiersPath ? resolve(modifiersPath) : null,
     mapPath: mapPath ? resolve(mapPath) : null,
     rolesPath: rolesPath ? resolve(rolesPath) : null,
@@ -1006,7 +1043,7 @@ export function writeConsumer({ preview, outputDir, displayName, inputModuleId, 
     const pending = assignments.filter((assignment) => assignment.profileFile === device.profileFile);
     if (!pending.length) continue;
     assignedProfiles.set(device.profileFile, applyDcsCommandAssignments(
-      readFileSync(join(preview.profilesDir, device.profileFile), 'utf8'), pending, { filename: device.profileFile,
+      effectiveProfileSource(preview.profilesDir, preview.repositoryProfilesDir, device.profileFile), pending, { filename: device.profileFile,
         allowedInputs: pending.filter((item) => item.allowCreate && effectivePreview.rows.some((row) => row.profileFile === item.profileFile && row.key === item.key && row.section === item.section)) }));
   }
   const out = resolve(outputDir);
@@ -1039,7 +1076,8 @@ export function writeConsumer({ preview, outputDir, displayName, inputModuleId, 
   for (const device of preview.devices) {
     const source = join(preview.profilesDir, device.profileFile);
     const pending = assignments.filter((assignment) => assignment.profileFile === device.profileFile);
-    if (pending.length === 0) copy(source, `${joystickRel}/${device.profileFile}`);
+    if (pending.length === 0 && !preview.repositoryProfilesDir) copy(source, `${joystickRel}/${device.profileFile}`);
+    else if (pending.length === 0) write(`${joystickRel}/${device.profileFile}`, effectiveProfileSource(preview.profilesDir, preview.repositoryProfilesDir, device.profileFile));
     else write(`${joystickRel}/${device.profileFile}`, assignedProfiles.get(device.profileFile));
   }
   if (preview.modifiersPath && existsSync(preview.modifiersPath)) {
@@ -1192,6 +1230,8 @@ export function main(argv = process.argv.slice(2)) {
 
   const preview = buildPreview({
     profilesDir: options.profilesDir,
+    repositoryProfilesDir: options.repositoryProfilesDir ?? (options.outputDir && options.inputModuleId
+      ? join(options.outputDir, 'src', 'Config', 'Input', options.inputModuleId, 'joystick') : null),
     modifiersPath: options.modifiersPath,
     mapPath: options.mapPath,
     rolesPath: options.rolesPath,
