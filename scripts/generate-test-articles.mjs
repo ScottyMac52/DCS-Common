@@ -5,7 +5,7 @@ import sharp from 'sharp';
 
 import { writeCompleteMock } from './generate-complete-build-mock.mjs';
 import { renderSharedHardwarePages } from './shared-hardware-consumer.mjs';
-import { loadProfileDrivenConfig } from './profile-driven-kneeboard.mjs';
+import { aircraftFolderName, loadProfileDrivenConfig } from './profile-driven-kneeboard.mjs';
 import { renderKneeboard } from './kneeboard-renderer.mjs';
 
 export async function generateTestArticles({ consumerRoot, commonRoot }) {
@@ -13,7 +13,7 @@ export async function generateTestArticles({ consumerRoot, commonRoot }) {
 
   const rawConfig = JSON.parse(readFileSync(join(consumerRoot, 'config', 'kneeboard.json'), 'utf8'));
   const config = loadProfileDrivenConfig('config/kneeboard.json', { consumerRoot, commonRoot });
-  const aircraftFolder = config.aircraft.replace(/[^a-zA-Z0-9-]/g, '');
+  const aircraftFolder = aircraftFolderName(config.aircraft);
   const svgDir = join(consumerRoot, 'kneeboard', 'source');
   const pngDir = join(consumerRoot, 'kneeboard', aircraftFolder);
 

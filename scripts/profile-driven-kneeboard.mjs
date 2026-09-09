@@ -4,6 +4,10 @@ import { loadSharedHardware, resolveDcsCommonRoot, modifierColorAt, MODIFIER_COL
 import { composeUiLayerLabels } from './ui-layer-overlays.mjs';
 import { pageProfileIds, resolveConfiguredProfileApplicability } from './effective-profile-applicability.mjs';
 
+export function aircraftFolderName(aircraft) {
+  return String(aircraft).replace(/[^a-zA-Z0-9_-]/g, '');
+}
+
 function unescapeLuaString(value) {
   return value.replace(/\\([\\"nrt])/g, (_, code) => ({ '\\': '\\', '"': '"', n: '\n', r: '\r', t: '\t' })[code]);
 }

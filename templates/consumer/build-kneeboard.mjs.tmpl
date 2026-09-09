@@ -10,7 +10,7 @@ const commonRoot = resolve(process.env.DCS_COMMON_ROOT ?? join(root, '.dcs-commo
 const { renderSharedHardwarePages } = await import(
   pathToFileURL(join(commonRoot, 'scripts/shared-hardware-consumer.mjs'))
 );
-const { loadProfileDrivenConfig } = await import(
+const { aircraftFolderName, loadProfileDrivenConfig } = await import(
   pathToFileURL(join(commonRoot, 'scripts/profile-driven-kneeboard.mjs'))
 );
 const { renderKneeboard } = await import(
@@ -20,7 +20,7 @@ const { renderKneeboard } = await import(
 const rawConfig = JSON.parse(readFileSync(join(root, 'config/kneeboard.json'), 'utf8'));
 const config = loadProfileDrivenConfig('config/kneeboard.json', { consumerRoot: root, commonRoot });
 
-const aircraftFolder = config.aircraft.replace(/[^a-zA-Z0-9-]/g, '');
+const aircraftFolder = aircraftFolderName(config.aircraft);
 const svgDir = join(root, 'kneeboard', 'source');
 const pngDir = join(root, 'kneeboard', aircraftFolder);
 

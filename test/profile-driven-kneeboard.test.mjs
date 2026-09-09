@@ -4,9 +4,15 @@ import { mkdtempSync, mkdirSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { loadProfileDrivenConfig, parseDcsDiffLua, parseDcsModifiersLua } from '../scripts/profile-driven-kneeboard.mjs';
+import { aircraftFolderName, loadProfileDrivenConfig, parseDcsDiffLua, parseDcsModifiersLua } from '../scripts/profile-driven-kneeboard.mjs';
 
 const commonRoot = resolve(dirname(fileURLToPath(import.meta.url)), '..');
+
+test('aircraft output folder preserves DCS module underscores and hyphens', () => {
+  assert.equal(aircraftFolderName('FA-18C_hornet'), 'FA-18C_hornet');
+  assert.equal(aircraftFolderName('F-16C_50'), 'F-16C_50');
+  assert.equal(aircraftFolderName('Unsafe / Module'), 'UnsafeModule');
+});
 
 const source = `local diff = {
   ["axisDiffs"] = {
