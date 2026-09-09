@@ -148,14 +148,14 @@ public sealed class InstalledDcsCommandCatalogProviderTests
     }
 
     [Fact]
-    public void Build_ResolvesHostCommandFromUniqueDcsGeneratedProfileBinding()
+    public void Build_ResolvesHostCommandFromSiblingStockControllerProfile()
     {
         using var install = new TemporaryDcsInstall("GenericJet", "GenericJet", """
             return { keyCommands = {
               { down = iCommandPilotGestureSalute, name = _('Pilot Salute'), category = _('Communications') }
             }}
             """);
-        install.AddInputFile("joystick/Existing.diff.lua", """
+        install.AddInputFile("joystick/Stock Controller.lua", """
             local diff = { ["keyDiffs"] = {
               ["d1777pnilunilcdnilvdnilvpnilvunil"] = { ["added"] = { [1] = { ["key"] = "JOY_BTN1" } }, ["name"] = "Pilot Salute" },
             }}
@@ -167,8 +167,31 @@ public sealed class InstalledDcsCommandCatalogProviderTests
         var salute = Assert.Single(result.Document.Commands);
         Assert.True(salute.IsAssignable);
         Assert.Equal("d1777pnilunilcdnilvdnilvpnilvunil", salute.BindingKey);
-        Assert.Equal("dcs-generated-profile", salute.Source!.Provider);
+        Assert.Equal("dcs-controller-profile", salute.Source!.Provider);
         Assert.Contains("iCommandPilotGestureSalute", salute.Aliases);
+    }
+
+    [Fact]
+    public void Build_ResolvesHostCommandFromSharedDcsControllerProfile()
+    {
+        using var install = new TemporaryDcsInstall("GenericJet", "GenericJet", """
+            return { keyCommands = {
+              { down = iCommandGlobalAction, name = _('Global action'), category = _('General') }
+            }}
+            """);
+        install.AddFile("Config/Input/Aircrafts/Common/joystick/Stock Device.lua", """
+            local diff = { ["keyDiffs"] = {
+              ["d1666pnilunilcdnilvdnilvpnilvunil"] = { ["name"] = "Global action" },
+            }}
+            return diff
+            """);
+
+        var command = Assert.Single(new InstalledDcsCommandCatalogProvider().Build(install.DefaultLuaPath, "GenericJet").Document.Commands);
+
+        Assert.True(command.IsAssignable);
+        Assert.Equal("d1666pnilunilcdnilvdnilvpnilvunil", command.BindingKey);
+        Assert.Equal("dcs-controller-profile", command.Source!.Provider);
+        Assert.EndsWith("Stock Device.lua", command.Source.File);
     }
 
     [Fact]
@@ -184,8 +207,25 @@ public sealed class InstalledDcsCommandCatalogProviderTests
 
         var result = new InstalledDcsCommandCatalogProvider().Build(install.DefaultLuaPath, "GenericJet");
 
-        Assert.False(Assert.Single(result.Document.Commands).IsAssignable);
+        var command = Assert.Single(result.Document.Commands);
+        Assert.False(command.IsAssignable);
+        Assert.Contains("Conflicting", command.UnavailableReason, StringComparison.OrdinalIgnoreCase);
         Assert.Equal(1, result.UnresolvedEntryCount);
+    }
+
+    [Fact]
+    public void Build_ExplainsWhenNoNumericEvidenceExists()
+    {
+        using var install = new TemporaryDcsInstall("GenericJet", "GenericJet", """
+            return { keyCommands = {
+              { down = iCommandUnknownGlobal, name = _('Unknown global'), category = _('General') }
+            }}
+            """);
+
+        var command = Assert.Single(new InstalledDcsCommandCatalogProvider().Build(install.DefaultLuaPath, "GenericJet").Document.Commands);
+
+        Assert.False(command.IsAssignable);
+        Assert.Contains("No numeric identity", command.UnavailableReason, StringComparison.OrdinalIgnoreCase);
     }
 
     [Theory]
