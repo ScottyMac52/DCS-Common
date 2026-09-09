@@ -8,6 +8,7 @@ import {
   composeUiLayerLabels,
   loadUiLayerCatalog,
   validateUiLayerCatalog,
+  resolveUiLayerModifier,
 } from '../scripts/ui-layer-overlays.mjs';
 
 const root = dirname(dirname(fileURLToPath(import.meta.url)));
@@ -79,6 +80,15 @@ test('aliases resolve to their one canonical shared Draw.io hardware definition'
   const catalog = loadUiLayerCatalog();
   const template = buildUiLayerHardwareTemplate('ava-base-f16c', catalog);
   assert.equal(template.deviceId, 'tm-warthog-grip');
+});
+
+test('composite device aliases resolve the module-specific UI Layer modifier family', () => {
+  const catalog = loadUiLayerCatalog();
+  assert.equal(resolveUiLayerModifier('moza-ab9-hornet-grip', catalog), 'MOZA_MODIFIER_BTN3');
+  assert.equal(resolveUiLayerModifier('moza-ab9-warthog-grip', catalog), 'MOZA_MODIFIER_BTN3');
+  assert.equal(resolveUiLayerModifier('ava-base-f16c', catalog), 'AVA_BASE_MODIFIER_BTN3');
+  assert.equal(resolveUiLayerModifier('vkb-f14-gunfighter', catalog), 'VKB_F14_BTN7');
+  assert.equal(resolveUiLayerModifier('tm-mfd', catalog), null);
 });
 
 

@@ -17,6 +17,7 @@ public sealed class MainViewModel : INotifyPropertyChanged
     private readonly DcsCommandCatalogService _commandCatalogService;
     private readonly InstalledDcsCommandCatalogProvider _installedCommandCatalogProvider;
     private readonly DcsCommandIdCaptureService _commandIdCaptureService;
+    private readonly UiLayerProjectionService _uiLayerProjection;
     private RepositoryPreviewSnapshot? _comparisonSnapshot;
     private string _profilesDir = string.Empty;
     private string _modifiersPath = string.Empty;
@@ -80,6 +81,7 @@ public sealed class MainViewModel : INotifyPropertyChanged
         _commandCatalogService = commandCatalogService ?? new DcsCommandCatalogService();
         _installedCommandCatalogProvider = installedCommandCatalogProvider ?? new InstalledDcsCommandCatalogProvider();
         _commandIdCaptureService = commandIdCaptureService ?? new DcsCommandIdCaptureService();
+        _uiLayerProjection = new UiLayerProjectionService();
         LoadPreviewCommand = new RelayCommand(async () => await LoadPreviewAsync(), CanLoadPreview);
         ProceedCommand = new RelayCommand(async () => await ProceedAsync(), CanProceed);
         Devices = new ObservableCollection<PreviewDevice>();
@@ -734,6 +736,11 @@ public sealed class MainViewModel : INotifyPropertyChanged
 
     public Task<InteractiveDevice> LoadInteractiveDeviceAsync(PreviewDevice device) =>
         _engine.LoadInteractiveDeviceAsync(CommonRoot, device.DeviceId!);
+
+    public IReadOnlyList<UiLayerProjection> UiLayerProjectionsFor(PreviewDevice device) =>
+        IsUiLayerImport || string.IsNullOrWhiteSpace(CommonRoot)
+            ? []
+            : _uiLayerProjection.Load(CommonRoot, device, Devices);
 
     public PreviewRow GetInteractiveRow(PreviewDevice device, InteractiveControl control, IReadOnlyList<string> reformers)
     {
