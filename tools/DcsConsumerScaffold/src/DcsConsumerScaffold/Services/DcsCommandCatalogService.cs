@@ -13,6 +13,15 @@ public sealed class DcsCommandCatalogService
         AllowTrailingCommas = true,
     };
 
+    public void Save(string path, DcsCommandCatalogDocument document)
+    {
+        if (string.IsNullOrWhiteSpace(path)) throw new ArgumentException("Choose where to save the DCS command catalog.", nameof(path));
+        if (document is null) throw new ArgumentNullException(nameof(document));
+        document.GeneratedAt = DateTimeOffset.UtcNow;
+        var options = new JsonSerializerOptions(JsonOptions) { WriteIndented = true };
+        File.WriteAllText(path, JsonSerializer.Serialize(document, options));
+    }
+
     public DcsCommandCatalogDocument Load(string path, string? expectedModuleId = null)
     {
         if (string.IsNullOrWhiteSpace(path)) throw new ArgumentException("Select a DCS command catalog JSON file.", nameof(path));
