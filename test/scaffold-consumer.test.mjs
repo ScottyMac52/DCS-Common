@@ -217,9 +217,11 @@ test('preview and proceed preserve uncommitted repository assignments', () => {
   assert.ok(preview.rows.some(({ command, key }) => command === 'd-local' && key === 'JOY_BTN1'));
   assert.ok(preview.rows.some(({ command, key }) => command === 'd-observed' && key === 'JOY_BTN2'));
 
-  writeConsumer({ preview, outputDir, displayName: 'Test', inputModuleId: 'Test', kneeboardId: 'Test', commonRoot });
+  writeConsumer({ preview, outputDir, displayName: 'Test', inputModuleId: 'Test', kneeboardId: 'Test', commonRoot,
+    assignments: [{ profileFile, section: 'keyDiffs', key: 'JOY_BTN1', reformers: [], command: 'd-reassigned', name: 'Reassigned' }] });
   const written = parseDcsDiffLua(readFileSync(join(repositoryProfilesDir, profileFile), 'utf8')).bindings;
-  assert.ok(written.some(({ command, added }) => command === 'd-local' && added.some(({ key }) => key === 'JOY_BTN1')));
+  assert.ok(written.some(({ command, added }) => command === 'd-reassigned' && added.some(({ key }) => key === 'JOY_BTN1')));
+  assert.equal(written.some(({ command }) => command === 'd-local'), false);
   assert.ok(written.some(({ command, added }) => command === 'd-observed' && added.some(({ key }) => key === 'JOY_BTN2')));
 });
 

@@ -646,7 +646,8 @@ public sealed class MainViewModel : INotifyPropertyChanged
                     .ToArray(),
                 mfdCategories: MfdCategoryOverrides(),
                 pagePresentations: PagePresentationOverrides(),
-                assignments: PendingAssignments.ToArray());
+                assignments: PendingAssignments.ToArray(),
+                repositoryProfilesDir: ExistingRepositoryProfilesDirectory());
 
             StatusText = exitCode is 0 or 2
                 ? $"Proceed finished (exit {exitCode}). See SCAFFOLD-REPORT.md under the output folder.{Environment.NewLine}{stdout}{Environment.NewLine}{stderr}".Trim()
