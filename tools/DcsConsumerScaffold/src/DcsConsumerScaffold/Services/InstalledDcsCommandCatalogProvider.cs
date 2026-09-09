@@ -32,7 +32,7 @@ public sealed class InstalledDcsCommandCatalogProvider
         var dcsRoot = FindDcsRoot(source);
         var executor = new DcsInputLuaExecutor(dcsRoot ?? FindAircraftRoot(source), source);
         var commands = executor.Execute();
-        var resolutionFiles = DcsCommandIdentityResolver.Resolve(commands, source);
+        var resolutionFiles = DcsCommandIdentityResolver.Resolve(commands, source, dcsRoot);
         var unresolved = commands.Count(command => !command.IsAssignable);
         var warnings = unresolved == 0 ? [] : new List<string>
         {
@@ -347,9 +347,11 @@ internal static partial class DcsCommandIdentityResolver
         new("iCommandPlaneThrustRight", "axis", 2006, ["Thrust Right"]),
     };
 
-    public static IReadOnlyList<string> Resolve(ICollection<DcsCommandCatalogEntry> commands, string defaultLua)
+    private sealed record ProfileEvidence(string Key, string Name, string Type, string File);
+
+    public static IReadOnlyList<string> Resolve(ICollection<DcsCommandCatalogEntry> commands, string defaultLua, string? dcsRoot)
     {
-        var evidence = ReadProfileEvidence(defaultLua, out var files);
+        var evidence = ReadProfileEvidence(defaultLua, dcsRoot, out var files);
         foreach (var command in commands.Where(command => !command.IsAssignable))
         {
             var symbol = command.Aliases.FirstOrDefault(alias => alias.StartsWith("iCommand", StringComparison.Ordinal));
@@ -360,18 +362,27 @@ internal static partial class DcsCommandIdentityResolver
             if (matches.Count == 1)
             {
                 key = matches[0];
-                provider = "dcs-generated-profile";
+                provider = "dcs-controller-profile";
             }
             else if (matches.Count == 0 && VerifiedIdentity(command, symbol) is { } verified)
             {
                 key = command.Type == "axis" ? $"a{verified.Id}cdnil" : $"d{verified.Id}pnilunilcdnilvdnilvpnilvunil";
                 provider = "verified-dcs-host-command";
             }
-            if (key is null) continue;
+            if (key is null)
+            {
+                command.UnavailableReason = matches.Count > 1
+                    ? $"Conflicting DCS controller profiles expose {matches.Count} numeric identities for this command."
+                    : command.Aliases.Any(alias => alias.Contains(".", StringComparison.Ordinal))
+                        ? "A cockpit command or device identity remained symbolic and no stock controller profile supplied a numeric binding key."
+                        : "No numeric identity was found in DCS input Lua or stock controller profiles.";
+                continue;
+            }
             command.BindingKey = key;
             command.IsAssignable = true;
             command.UnavailableReason = null;
-            command.Source = new DcsCommandSource { Provider = provider, File = provider == "dcs-generated-profile" ? files.FirstOrDefault() : defaultLua };
+            var evidenceFile = evidence.FirstOrDefault(item => item.Key == key && item.Type == command.Type && NamesEqual(item.Name, command.Name))?.File;
+            command.Source = new DcsCommandSource { Provider = provider, File = provider == "dcs-controller-profile" ? evidenceFile : defaultLua };
             ApplyActions(command, key);
         }
         return files;
@@ -394,13 +405,19 @@ internal static partial class DcsCommandIdentityResolver
         command.Actions.CockpitDeviceId = Part(match.Groups["device"].Value);
     }
 
-    private static List<(string Key, string Name, string Type)> ReadProfileEvidence(string defaultLua, out List<string> files)
+    private static List<ProfileEvidence> ReadProfileEvidence(string defaultLua, string? dcsRoot, out List<string> files)
     {
         files = [];
-        var result = new List<(string, string, string)>();
+        var result = new List<ProfileEvidence>();
         var moduleRoot = Directory.GetParent(Path.GetDirectoryName(defaultLua)!)?.FullName;
         if (moduleRoot is null) return result;
-        foreach (var file in Directory.EnumerateFiles(moduleRoot, "*.diff.lua", SearchOption.AllDirectories))
+        var roots = new[]
+        {
+            moduleRoot,
+            dcsRoot is null ? null : Path.Combine(dcsRoot, "Config", "Input", "Aircrafts"),
+            dcsRoot is null ? null : Path.Combine(dcsRoot, "Scripts", "Input"),
+        }.Where(path => path is not null && Directory.Exists(path)).Cast<string>().Distinct(StringComparer.OrdinalIgnoreCase);
+        foreach (var file in roots.SelectMany(SafeProfileFiles).Distinct(StringComparer.OrdinalIgnoreCase))
         {
             var text = File.ReadAllText(file);
             var found = false;
@@ -412,12 +429,19 @@ internal static partial class DcsCommandIdentityResolver
                 var name = ProfileName().Match(text.Substring(start, length));
                 if (!name.Success) continue;
                 var key = keys[index].Groups["key"].Value;
-                result.Add((key, LuaUnescape(name.Groups["name"].Value), key.StartsWith('a') ? "axis" : "button"));
+                result.Add(new ProfileEvidence(key, LuaUnescape(name.Groups["name"].Value), key.StartsWith('a') ? "axis" : "button", file));
                 found = true;
             }
             if (found) files.Add(file);
         }
         return result;
+    }
+
+    private static IEnumerable<string> SafeProfileFiles(string root)
+    {
+        try { return Directory.EnumerateFiles(root, "*.lua", SearchOption.AllDirectories).ToList(); }
+        catch (UnauthorizedAccessException) { return []; }
+        catch (IOException) { return []; }
     }
 
     private static bool NamesEqual(string left, string right) => string.Equals(left.Trim(), right.Trim(), StringComparison.OrdinalIgnoreCase);
