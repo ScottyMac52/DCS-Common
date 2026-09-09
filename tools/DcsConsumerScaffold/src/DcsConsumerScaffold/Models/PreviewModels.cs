@@ -422,6 +422,16 @@ public sealed class CommandLabelGroup : INotifyPropertyChanged
 
     public required string Command { get; init; }
 
+    public string SemanticChord { get; init; } = string.Empty;
+
+    public string ChordDisplay => string.IsNullOrWhiteSpace(SemanticChord) ? "None" : SemanticChord;
+
+    public string? Name { get; private set; }
+
+    public bool Matches(PreviewRow row) =>
+        string.Equals(row.Command, Command, StringComparison.Ordinal) &&
+        string.Equals(NormalizeChord(row.SemanticChord), SemanticChord, StringComparison.OrdinalIgnoreCase);
+
     public string? DefaultLabel
     {
         get => _defaultLabel;
@@ -456,8 +466,12 @@ public sealed class CommandLabelGroup : INotifyPropertyChanged
 
     public void Refresh(IEnumerable<PreviewRow> source)
     {
-        var rows = source.Where(row => string.Equals(row.Command, Command, StringComparison.Ordinal)).ToList();
+        var rows = source.Where(Matches).ToList();
         BindingCount = rows.Count;
+
+        var names = rows.Select(row => row.Name ?? string.Empty).Distinct(StringComparer.Ordinal).ToList();
+        Name = names.Count == 1 ? names[0] : names.Count == 0 ? string.Empty : "Mixed DCS names";
+        PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(Name)));
 
         var defaults = rows.Select(row => row.DefaultLabel ?? string.Empty).Distinct(StringComparer.Ordinal).ToList();
         DefaultLabel = defaults.Count == 1 ? defaults[0] : defaults.Count == 0 ? string.Empty : "Mixed DCS labels";
@@ -466,6 +480,8 @@ public sealed class CommandLabelGroup : INotifyPropertyChanged
         IsMixed = labels.Count > 1;
         Label = IsMixed || labels.Count == 0 ? null : labels[0];
     }
+
+    public static string NormalizeChord(string? semanticChord) => semanticChord?.Trim().ToUpperInvariant() ?? string.Empty;
 
     private bool Set<T>(ref T field, T value, [CallerMemberName] string? name = null)
     {
