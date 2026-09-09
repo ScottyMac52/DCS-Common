@@ -4,7 +4,7 @@ using DcsConsumerScaffold.Models;
 
 namespace DcsConsumerScaffold.Services;
 
-public sealed record CurrentLabelImportResult(int CurrentCount, int SharedHardwareCount);
+public sealed record CurrentLabelImportResult(int CurrentCount, int SharedHardwareCount, int DcsDefaultCount = 0);
 
 public sealed class CurrentLabelService
 {
@@ -27,6 +27,7 @@ public sealed class CurrentLabelService
         var allRows = rows.ToList();
         var currentCount = 0;
         var sharedCount = 0;
+        var dcsDefaultCount = 0;
         foreach (var device in devices.Where(device =>
                      !string.IsNullOrWhiteSpace(device.DeviceId) &&
                      !string.IsNullOrWhiteSpace(device.ProfileKey)))
@@ -48,8 +49,9 @@ public sealed class CurrentLabelService
             var result = ApplyPage(selectedPage, selectedRows, ReadCanonicalLabels(document.RootElement));
             currentCount += result.CurrentCount;
             sharedCount += result.SharedHardwareCount;
+            dcsDefaultCount += result.DcsDefaultCount;
         }
-        return new(currentCount, sharedCount);
+        return new(currentCount, sharedCount, dcsDefaultCount);
     }
 
     public CurrentLabelImportResult Apply(
@@ -224,7 +226,7 @@ public sealed class CurrentLabelService
         JsonElement scope,
         string? layerId,
         IDictionary<BindingKey, string?> exactLabels,
-        IDictionary<BindingLocationKey, List<string?>> locationLabels,
+        IDictionary<BindingLocationKey, List<LocationLabel>> locationLabels,
         IReadOnlyDictionary<string, string?> canonicalLabels)
     {
         var scopeLabels = new Dictionary<string, string?>(StringComparer.Ordinal);
@@ -270,7 +272,7 @@ public sealed class CurrentLabelService
                     candidates = [];
                     locationLabels[locationKey] = candidates;
                 }
-                candidates.Add(label);
+                candidates.Add(new(command, label));
             }
         }
     }
@@ -292,7 +294,7 @@ public sealed class CurrentLabelService
     private static CurrentLabelImportResult ApplyPage(JsonElement page, IReadOnlyList<PreviewRow> selectedRows, IReadOnlyDictionary<string, string?> canonicalLabels)
     {
         var exactLabels = new Dictionary<BindingKey, string?>();
-        var locationLabels = new Dictionary<BindingLocationKey, List<string?>>();
+        var locationLabels = new Dictionary<BindingLocationKey, List<LocationLabel>>();
         ReadScope(page, null, exactLabels, locationLabels, canonicalLabels);
         if (page.TryGetProperty("layers", out var layers) && layers.ValueKind == JsonValueKind.Array)
         {
@@ -310,6 +312,7 @@ public sealed class CurrentLabelService
 
         var currentCount = 0;
         var sharedCount = 0;
+        var dcsDefaultCount = 0;
         foreach (var row in selectedRows)
         {
             var exactKey = BindingKey.Create(row.CalloutId, row.Key, row.Command, row.SemanticChord);
@@ -318,11 +321,21 @@ public sealed class CurrentLabelService
             var found = exactLabels.TryGetValue(exactKey, out label);
             if (!found && locationLabels.TryGetValue(locationKey, out var candidates))
             {
-                var distinctLabels = candidates.Distinct(StringComparer.Ordinal).ToList();
+                var distinctLabels = candidates
+                    .Where(candidate => IsLegacyChordCommand(candidate.Command, row.Command, locationKey.LayerId))
+                    .Select(candidate => candidate.Label)
+                    .Distinct(StringComparer.Ordinal)
+                    .ToList();
                 if (distinctLabels.Count == 1)
                 {
                     label = distinctLabels[0];
                     found = true;
+                }
+                else
+                {
+                    row.ResetToDefaultLabel();
+                    dcsDefaultCount++;
+                    continue;
                 }
             }
 
@@ -337,7 +350,15 @@ public sealed class CurrentLabelService
                 sharedCount++;
             }
         }
-        return new(currentCount, sharedCount);
+        return new(currentCount, sharedCount, dcsDefaultCount);
+    }
+
+    private static bool IsLegacyChordCommand(string previousCommand, string? currentCommand, string layerId)
+    {
+        var previous = Normalize(previousCommand);
+        var current = Normalize(currentCommand);
+        var layer = Normalize(layerId);
+        return layer.Length > 0 && previous == current + layer;
     }
 
     private static List<PreviewRow> RowsForDevice(PreviewDevice device, IEnumerable<PreviewRow> rows) => rows
@@ -389,6 +410,8 @@ public sealed class CurrentLabelService
         public static BindingLocationKey Create(string? calloutId, string? key, string? layerId) =>
             new(Normalize(calloutId), Normalize(key), Normalize(layerId));
     }
+
+    private readonly record struct LocationLabel(string Command, string? Label);
 
     private static string Normalize(string? value) => (value ?? string.Empty).Trim().ToUpperInvariant();
 

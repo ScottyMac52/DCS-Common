@@ -225,7 +225,7 @@ public sealed class CurrentLabelServiceTests
     }
 
     [Fact]
-    public void Apply_UsesRepositoryLabelsWhenCommandsChangeButKeepsModifierLayersDistinct()
+    public void Apply_UsesDcsLabelsWhenCommandsAreReassignedAndKeepsModifierLayersDistinct()
     {
         var destination = Directory.CreateTempSubdirectory("dcs-current-command-change-");
         try
@@ -279,10 +279,63 @@ public sealed class CurrentLabelServiceTests
 
             var result = new CurrentLabelService().Apply(destination.FullName, device, [baseRow, shiftedRow]);
 
-            Assert.Equal(2, result.CurrentCount);
+            Assert.Equal(0, result.CurrentCount);
             Assert.Equal(0, result.SharedHardwareCount);
-            Assert.Equal("Repository base label", baseRow.Label);
-            Assert.Equal("Repository shifted label", shiftedRow.Label);
+            Assert.Equal(2, result.DcsDefaultCount);
+            Assert.Equal("new-base-command", baseRow.Label);
+            Assert.Equal("dcs", baseRow.LabelSource);
+            Assert.Equal("new-shift-command", shiftedRow.Label);
+            Assert.Equal("dcs", shiftedRow.LabelSource);
+        }
+        finally
+        {
+            destination.Delete(recursive: true);
+        }
+    }
+
+    [Fact]
+    public void Apply_PreservesLabelWhenOnlyLegacyChordSuffixWasRemoved()
+    {
+        var destination = Directory.CreateTempSubdirectory("dcs-current-canonical-command-");
+        try
+        {
+            var configDirectory = Directory.CreateDirectory(Path.Combine(destination.FullName, "config"));
+            File.WriteAllText(Path.Combine(configDirectory.FullName, "kneeboard.json"), """
+                {
+                  "pages": [{
+                    "deviceId": "tm-mfd",
+                    "deviceInstance": "MFD1",
+                    "layers": [{
+                      "id": "GENERIC_SHIFT",
+                      "controls": {
+                        "mfd-osb-t1-shifted": {
+                          "profile": "tm-mfd-1",
+                          "key": "JOY_BTN1",
+                          "command": "d3011pnilu3011cd35vd1vpnilvu0GENERIC_SHIFT",
+                          "label": "Navigation"
+                        }
+                      }
+                    }]
+                  }]
+                }
+                """);
+
+            var device = new PreviewDevice
+            {
+                DeviceId = "tm-mfd",
+                InstanceHint = "1",
+                ProfileFile = "MFD 1.diff.lua",
+                ProfileKey = "tm-mfd-1",
+            };
+            var row = Row(device, "mfd-osb-t1-shifted", "JOY_BTN1", "d3011pnilu3011cd35vd1vpnilvu0", "PB 1");
+            row.SemanticChord = "GENERIC_SHIFT";
+
+            var result = new CurrentLabelService().Apply(destination.FullName, device, [row]);
+
+            Assert.Equal(1, result.CurrentCount);
+            Assert.Equal(0, result.DcsDefaultCount);
+            Assert.Equal("Navigation", row.Label);
+            Assert.Equal("current", row.LabelSource);
         }
         finally
         {
@@ -326,8 +379,10 @@ public sealed class CurrentLabelServiceTests
             var result = new CurrentLabelService().Apply(destination.FullName, device, [row]);
 
             Assert.Equal(0, result.CurrentCount);
-            Assert.Equal(1, result.SharedHardwareCount);
-            Assert.Equal("Shared OSB01", row.Label);
+            Assert.Equal(0, result.SharedHardwareCount);
+            Assert.Equal(1, result.DcsDefaultCount);
+            Assert.Equal("new-command", row.Label);
+            Assert.Equal("dcs", row.LabelSource);
         }
         finally
         {
