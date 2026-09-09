@@ -15,6 +15,7 @@ public partial class MainWindow : Window
 {
     private readonly MainViewModel _viewModel = new();
     private readonly ScaffoldSolutionService _solutionService = new();
+    private readonly DcsCommandIdCaptureService _commandIdCaptureService = new();
 
     public MainWindow()
     {
@@ -223,6 +224,36 @@ public partial class MainWindow : Window
             _viewModel.StatusText = ex.Message;
             MessageBox.Show(this, ex.Message, "Unable to load installed DCS commands", MessageBoxButton.OK, MessageBoxImage.Error);
         }
+    }
+
+    private void CreateCommandIdCapture_Click(object sender, RoutedEventArgs e)
+    {
+        var dialog = new SaveFileDialog { Title = "Save DCS command-ID capture script", FileName = "DcsCommandIdCapture.lua", Filter = "Lua files (*.lua)|*.lua" };
+        if (dialog.ShowDialog(this) != true) return;
+        try
+        {
+            _commandIdCaptureService.SaveCaptureScript(dialog.FileName);
+            var instructions = _commandIdCaptureService.Instructions(dialog.FileName);
+            _viewModel.StatusText = instructions;
+            MessageBox.Show(this, instructions, "DCS command-ID capture", MessageBoxButton.OK, MessageBoxImage.Information);
+        }
+        catch (Exception ex) { MessageBox.Show(this, ex.Message, "Unable to create capture script", MessageBoxButton.OK, MessageBoxImage.Error); }
+    }
+
+    private void LoadCommandIdCapture_Click(object sender, RoutedEventArgs e)
+    {
+        var dialog = new OpenFileDialog { Title = "Load captured DCS command IDs", FileName = DcsCommandIdCaptureService.OutputFileName, Filter = "DCS command-ID captures (*.json)|*.json" };
+        if (dialog.ShowDialog(this) != true) return;
+        try { _viewModel.LoadCapturedDcsCommandIds(dialog.FileName); }
+        catch (Exception ex) { MessageBox.Show(this, ex.Message, "Unable to load command-ID capture", MessageBoxButton.OK, MessageBoxImage.Error); }
+    }
+
+    private void SaveCommandCatalog_Click(object sender, RoutedEventArgs e)
+    {
+        var dialog = new SaveFileDialog { Title = "Save reloadable DCS command catalog", FileName = $"{_viewModel.InputModuleId}-commands.json", Filter = "DCS command catalogs (*.json)|*.json" };
+        if (dialog.ShowDialog(this) != true) return;
+        try { _viewModel.SaveCommandCatalog(dialog.FileName); }
+        catch (Exception ex) { MessageBox.Show(this, ex.Message, "Unable to save command catalog", MessageBoxButton.OK, MessageBoxImage.Error); }
     }
 
     private void AssignCommand_Click(object sender, RoutedEventArgs e)

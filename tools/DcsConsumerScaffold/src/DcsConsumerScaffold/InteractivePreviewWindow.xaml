@@ -29,7 +29,12 @@
    <GroupBox Header="Command catalog" Padding="6">
     <DockPanel>
      <StackPanel DockPanel.Dock="Top">
-      <WrapPanel><Button Content="Import catalog…" Click="ImportClicked" Padding="8,4"/><Button Content="Load from DCS…" Click="DcsClicked" Padding="8,4" Margin="6,0,0,0"/></WrapPanel>
+      <WrapPanel>
+       <Button Content="Import catalog…" Click="ImportClicked" Padding="8,4"/>
+       <Button Content="Load from DCS…" Click="DcsClicked" Padding="8,4" Margin="6,0,0,0"/>
+       <Button Content="Load ID capture…" Click="CaptureClicked" Padding="8,4" Margin="6,0,0,0"/>
+       <Button Content="Save catalog…" Click="SaveCatalogClicked" Padding="8,4" Margin="6,0,0,0"/>
+      </WrapPanel>
       <TextBox Text="{Binding CommandSearch, UpdateSourceTrigger=PropertyChanged}" ToolTip="Search command, category, key or alias" Margin="0,8,0,4"/>
       <TextBlock Text="Category"/><ComboBox ItemsSource="{Binding CommandCategories}" SelectedItem="{Binding SelectedCommandCategory}"/>
       <TextBlock Text="Type" Margin="0,4,0,0"/><ComboBox ItemsSource="{Binding CommandTypes}" SelectedItem="{Binding SelectedCommandType}"/>

@@ -20,7 +20,8 @@ public sealed class InstalledDcsCommandCatalogResult
 
 public sealed class InstalledDcsCommandCatalogProvider
 {
-    public InstalledDcsCommandCatalogResult Build(string defaultLuaPath, string moduleId)
+    public InstalledDcsCommandCatalogResult Build(string defaultLuaPath, string moduleId,
+        IReadOnlyDictionary<string, int>? capturedGlobalCommands = null, string? capturedDcsVersion = null)
     {
         if (string.IsNullOrWhiteSpace(defaultLuaPath))
             throw new ArgumentException("Select the module's joystick or keyboard default.lua file.", nameof(defaultLuaPath));
@@ -30,7 +31,7 @@ public sealed class InstalledDcsCommandCatalogProvider
         var source = Path.GetFullPath(defaultLuaPath);
         ValidateSource(source);
         var dcsRoot = FindDcsRoot(source);
-        var executor = new DcsInputLuaExecutor(dcsRoot ?? FindAircraftRoot(source), source);
+        var executor = new DcsInputLuaExecutor(dcsRoot ?? FindAircraftRoot(source), source, capturedGlobalCommands);
         var commands = executor.Execute();
         var resolutionFiles = DcsCommandIdentityResolver.Resolve(commands, source, dcsRoot);
         var unresolved = commands.Count(command => !command.IsAssignable);
@@ -44,11 +45,11 @@ public sealed class InstalledDcsCommandCatalogProvider
             Document = new DcsCommandCatalogDocument
             {
                 SchemaVersion = 1,
-                DcsVersion = dcsRoot is null ? null : ReadDcsVersion(dcsRoot),
+                DcsVersion = capturedDcsVersion ?? (dcsRoot is null ? null : ReadDcsVersion(dcsRoot)),
                 ModuleId = moduleId.Trim(),
                 Locale = "en",
                 GeneratedAt = DateTimeOffset.UtcNow,
-                SourceFingerprint = Fingerprint(executor.SourceFiles.Concat(resolutionFiles)),
+                SourceFingerprint = Fingerprint(executor.SourceFiles.Concat(resolutionFiles), capturedGlobalCommands),
                 Commands = commands.OrderBy(command => command.Category, StringComparer.OrdinalIgnoreCase)
                     .ThenBy(command => command.Name, StringComparer.OrdinalIgnoreCase).ToList(),
             },
@@ -94,7 +95,7 @@ public sealed class InstalledDcsCommandCatalogProvider
         catch (JsonException) { return null; }
     }
 
-    private static string Fingerprint(IEnumerable<string> sources)
+    private static string Fingerprint(IEnumerable<string> sources, IReadOnlyDictionary<string, int>? capturedGlobalCommands)
     {
         using var hash = IncrementalHash.CreateHash(HashAlgorithmName.SHA256);
         foreach (var source in sources.OrderBy(path => path, StringComparer.OrdinalIgnoreCase))
@@ -102,6 +103,8 @@ public sealed class InstalledDcsCommandCatalogProvider
             hash.AppendData(Encoding.UTF8.GetBytes(source.Replace('\\', '/')));
             hash.AppendData(File.ReadAllBytes(source));
         }
+        foreach (var (symbol, id) in (capturedGlobalCommands ?? new Dictionary<string, int>()).OrderBy(item => item.Key, StringComparer.Ordinal))
+            hash.AppendData(Encoding.UTF8.GetBytes($"{symbol}={id};"));
         return Convert.ToHexString(hash.GetHashAndReset()).ToLowerInvariant();
     }
 }
@@ -114,10 +117,13 @@ internal sealed partial class DcsInputLuaExecutor
     private readonly Script _script = new(CoreModules.Preset_SoftSandbox);
     private readonly HashSet<string> _sourceFiles = new(StringComparer.OrdinalIgnoreCase);
 
-    public DcsInputLuaExecutor(string allowedRoot, string defaultLua)
+    private readonly IReadOnlyDictionary<string, int> _capturedGlobalCommands;
+
+    public DcsInputLuaExecutor(string allowedRoot, string defaultLua, IReadOnlyDictionary<string, int>? capturedGlobalCommands = null)
     {
         _allowedRoot = Path.GetFullPath(allowedRoot);
         _defaultLua = Path.GetFullPath(defaultLua);
+        _capturedGlobalCommands = capturedGlobalCommands ?? new Dictionary<string, int>();
         ConfigureRuntime();
     }
 
@@ -125,6 +131,7 @@ internal sealed partial class DcsInputLuaExecutor
 
     public List<DcsCommandCatalogEntry> Execute()
     {
+        foreach (var (symbol, id) in _capturedGlobalCommands) _script.Globals[symbol] = id;
         SeedInstalledCommandDefinitions();
         SeedHostSymbols(File.ReadAllText(_defaultLua));
         var result = ExecuteFile(_defaultLua);
@@ -271,8 +278,12 @@ internal sealed partial class DcsInputLuaExecutor
             var rawPressed = table.Get("pressed");
             var rawUp = table.Get("up");
             var device = table.Get("cockpit_device_id");
+            IEnumerable<string> capturedSymbols = device.IsNil()
+                ? new[] { rawAction, rawDown, rawPressed, rawUp }.Where(IsNumber)
+                    .SelectMany(value => _capturedGlobalCommands.Where(item => item.Value == Integer(value)).Select(item => item.Key))
+                : Enumerable.Empty<string>();
             var symbols = new[] { rawAction, rawDown, rawPressed, rawUp, device }.Select(Symbol)
-                .Where(value => value is not null).Cast<string>().Distinct().ToList();
+                .Where(value => value is not null).Cast<string>().Concat(capturedSymbols).Distinct().ToList();
             var action = ResolveGlobal(rawAction);
             var down = ResolveGlobal(rawDown);
             var pressed = ResolveGlobal(rawPressed);
@@ -283,6 +294,7 @@ internal sealed partial class DcsInputLuaExecutor
                   IsNumberOrNil(down) && IsNumberOrNil(pressed) && IsNumberOrNil(up)) &&
                 IsNumberOrNil(device);
             var key = numeric ? BindingKey(type, action, down, pressed, up, device, table) : UnresolvedKey(type, name, action, down, pressed, up, device);
+            var capturedResolved = symbols.Any(_capturedGlobalCommands.ContainsKey);
             var registryResolved = symbols.Any(symbol => DcsGlobalCommandRegistry.TryBySymbol(symbol, out _));
             destination.Add(new DcsCommandCatalogEntry
             {
@@ -299,7 +311,11 @@ internal sealed partial class DcsInputLuaExecutor
                     Down = Integer(down), Pressed = Integer(pressed), Up = Integer(up), CockpitDeviceId = Integer(device),
                     ValueDown = Number(table.Get("value_down")), ValuePressed = Number(table.Get("value_pressed")), ValueUp = Number(table.Get("value_up")),
                 },
-                Source = new DcsCommandSource { Provider = registryResolved ? "verified-dcs-global-registry" : "installed-dcs-lua", File = _defaultLua },
+                Source = new DcsCommandSource
+                {
+                    Provider = capturedResolved ? "dcs-environment-capture" : registryResolved ? "verified-dcs-global-registry" : "installed-dcs-lua",
+                    File = _defaultLua,
+                },
             });
         }
     }

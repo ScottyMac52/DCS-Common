@@ -209,6 +209,20 @@ public partial class InteractivePreviewWindow : Window
     }
     private void ImportClicked(object sender, RoutedEventArgs e) => LoadCatalog(false);
     private void DcsClicked(object sender, RoutedEventArgs e) => LoadCatalog(true);
+    private void CaptureClicked(object sender, RoutedEventArgs e)
+    {
+        var dialog = new OpenFileDialog { Title = "Load captured DCS command IDs", FileName = Services.DcsCommandIdCaptureService.OutputFileName, Filter = "DCS command-ID captures (*.json)|*.json" };
+        if (dialog.ShowDialog(this) != true) return;
+        try { _model.LoadCapturedDcsCommandIds(dialog.FileName); Message.Text = _model.StatusText; }
+        catch (Exception ex) { Message.Text = ex.Message; }
+    }
+    private void SaveCatalogClicked(object sender, RoutedEventArgs e)
+    {
+        var dialog = new SaveFileDialog { Title = "Save reloadable DCS command catalog", FileName = $"{_model.InputModuleId}-commands.json", Filter = "DCS command catalogs (*.json)|*.json" };
+        if (dialog.ShowDialog(this) != true) return;
+        try { _model.SaveCommandCatalog(dialog.FileName); Message.Text = _model.StatusText; }
+        catch (Exception ex) { Message.Text = ex.Message; }
+    }
     private void LoadCatalog(bool installed)
     {
         var dialog = new OpenFileDialog { Filter = installed ? "DCS default.lua|default.lua|Lua files|*.lua" : "Command catalog|*.json" };
