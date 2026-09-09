@@ -17,6 +17,7 @@ import {
   mergeModifierSources,
   writeConsumer,
   applyDcsCommandAssignments,
+  mergeRepositoryAssignments,
 } from '../scripts/scaffold-consumer.mjs';
 import { loadProfileDrivenConfig, parseDcsDiffLua } from '../scripts/profile-driven-kneeboard.mjs';
 
@@ -67,6 +68,13 @@ test('parseArgs accepts pending command assignments', () => {
     '--output-dir', 'out', '--profiles-dir', 'profiles', '--assignments', 'pending.json',
   ]);
   assert.equal(options.assignmentsPath, 'pending.json');
+});
+
+test('parseArgs accepts existing repository profiles', () => {
+  const options = parseArgs([
+    '--preview-json', 'out.json', '--profiles-dir', 'profiles', '--repository-profiles', 'repository',
+  ]);
+  assert.equal(options.repositoryProfilesDir, resolve('repository'));
 });
 
 test('command assignments replace one physical control and preserve unrelated bindings', () => {
@@ -126,6 +134,62 @@ test('command assignments may create a catalog-validated unbound physical contro
     [{ key: 'JOY_BTN2', reformers: ['SHIFT'] }]);
   assert.deepEqual(bindings.find(({ command }) => command === 'd-old').added,
     [{ key: 'JOY_BTN1', reformers: [] }]);
+});
+
+test('repository assignments override the same physical controls while retaining newly observed controls', () => {
+  const observed = `local diff = { ["keyDiffs"] = {
+    ["d-old"] = { ["added"] = { [1] = { ["key"] = "JOY_BTN1" } }, ["name"] = "Old" },
+    ["d-observed"] = { ["added"] = { [1] = { ["key"] = "JOY_BTN2" } }, ["name"] = "Observed" },
+  } } return diff`;
+  const repository = `local diff = { ["keyDiffs"] = {
+    ["d-local"] = { ["added"] = { [1] = { ["key"] = "JOY_BTN1" } }, ["name"] = "Local edit" },
+  } } return diff`;
+
+  const merged = parseDcsDiffLua(mergeRepositoryAssignments(observed, repository, { filename: 'MFD.diff.lua' })).bindings;
+
+  assert.deepEqual(merged.find(({ command }) => command === 'd-local').added, [{ key: 'JOY_BTN1', reformers: [] }]);
+  assert.deepEqual(merged.find(({ command }) => command === 'd-observed').added, [{ key: 'JOY_BTN2', reformers: [] }]);
+  assert.equal(merged.some(({ command }) => command === 'd-old'), false);
+});
+
+test('repository removals prevent an observed assignment from being resurrected', () => {
+  const observed = `local diff = { ["keyDiffs"] = {
+    ["d-old"] = { ["added"] = { [1] = { ["key"] = "JOY_BTN1" } }, ["name"] = "Old" },
+  } } return diff`;
+  const repository = `local diff = { ["keyDiffs"] = {
+    ["d-old"] = { ["removed"] = { [1] = { ["key"] = "JOY_BTN1" } }, ["name"] = "Old" },
+  } } return diff`;
+
+  const merged = parseDcsDiffLua(mergeRepositoryAssignments(observed, repository)).bindings;
+
+  assert.equal(merged.flatMap(({ added }) => added).some(({ key }) => key === 'JOY_BTN1'), false);
+  assert.ok(merged.find(({ command }) => command === 'd-old').removed.some(({ key }) => key === 'JOY_BTN1'));
+});
+
+test('preview and proceed preserve uncommitted repository assignments', () => {
+  const root = mkdtempSync(join(tmpdir(), 'scaffold-repository-assignments-'));
+  const profilesDir = join(root, 'profiles');
+  const outputDir = join(root, 'consumer');
+  const repositoryProfilesDir = join(outputDir, 'src/Config/Input/Test/joystick');
+  mkdirSync(profilesDir, { recursive: true });
+  mkdirSync(repositoryProfilesDir, { recursive: true });
+  const profileFile = 'F16 MFD 3.diff.lua';
+  writeFileSync(join(profilesDir, profileFile), `local diff = { ["keyDiffs"] = {
+    ["d-old"] = { ["added"] = { [1] = { ["key"] = "JOY_BTN1" } }, ["name"] = "Old" },
+    ["d-observed"] = { ["added"] = { [1] = { ["key"] = "JOY_BTN2" } }, ["name"] = "Observed" },
+  } } return diff`);
+  writeFileSync(join(repositoryProfilesDir, profileFile), `local diff = { ["keyDiffs"] = {
+    ["d-local"] = { ["added"] = { [1] = { ["key"] = "JOY_BTN1" } }, ["name"] = "Local edit" },
+  } } return diff`);
+
+  const preview = buildPreview({ profilesDir, repositoryProfilesDir, commonRoot });
+  assert.ok(preview.rows.some(({ command, key }) => command === 'd-local' && key === 'JOY_BTN1'));
+  assert.ok(preview.rows.some(({ command, key }) => command === 'd-observed' && key === 'JOY_BTN2'));
+
+  writeConsumer({ preview, outputDir, displayName: 'Test', inputModuleId: 'Test', kneeboardId: 'Test', commonRoot });
+  const written = parseDcsDiffLua(readFileSync(join(repositoryProfilesDir, profileFile), 'utf8')).bindings;
+  assert.ok(written.some(({ command, added }) => command === 'd-local' && added.some(({ key }) => key === 'JOY_BTN1')));
+  assert.ok(written.some(({ command, added }) => command === 'd-observed' && added.some(({ key }) => key === 'JOY_BTN2')));
 });
 
 test('writeConsumer applies pending assignments only to destination profile and generated config', () => {
