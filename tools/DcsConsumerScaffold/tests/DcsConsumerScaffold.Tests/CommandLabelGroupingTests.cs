@@ -33,6 +33,34 @@ public sealed class CommandLabelGroupingTests
     }
 
     [Fact]
+    public void SeparatesSameCommandBySemanticModifierAndDisplaysCommandName()
+    {
+        var unmodified = Row("binding-1", "command-a", "MPCD Pushbutton 01", "PB 1");
+        unmodified.Name = "MPCD Pushbutton 01";
+        var shifted = Row("binding-2", "command-a", "MPCD Pushbutton 01", "CHKLIST");
+        shifted.Name = "MPCD Pushbutton 01";
+        shifted.SemanticChord = "SHIFT";
+
+        var viewModel = new MainViewModel();
+        viewModel.ReplacePreviewRows([unmodified, shifted]);
+
+        Assert.Equal(2, viewModel.CommandLabels.Count);
+        var plain = Assert.Single(viewModel.CommandLabels, group => group.SemanticChord == string.Empty);
+        var shift = Assert.Single(viewModel.CommandLabels, group => group.SemanticChord == "SHIFT");
+        Assert.Equal("MPCD Pushbutton 01", plain.Name);
+        Assert.Equal("None", plain.ChordDisplay);
+        Assert.Equal("SHIFT", shift.ChordDisplay);
+        Assert.False(plain.IsMixed);
+        Assert.False(shift.IsMixed);
+
+        shift.Label = "Shifted PB 1";
+        viewModel.ApplyCommandLabel(shift);
+
+        Assert.Equal("PB 1", unmodified.Label);
+        Assert.Equal("Shifted PB 1", shifted.Label);
+    }
+
+    [Fact]
     public void IndividualOverrideCreatesMixedStateAndGroupCanApplyIntentionalBlank()
     {
         var first = Row("binding-1", "command-a", "Default A", "Shared");
