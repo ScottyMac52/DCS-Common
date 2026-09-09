@@ -89,6 +89,28 @@ public sealed class DcsCommandCatalogServiceTests
         Assert.False(differentCase.IsBound);
     }
 
+    [Fact]
+    public void Save_WritesCatalogThatCanBeReloaded()
+    {
+        var path = Path.Combine(Path.GetTempPath(), $"saved-command-catalog-{Guid.NewGuid():N}.json");
+        try
+        {
+            var document = new DcsCommandCatalogDocument
+            {
+                SchemaVersion = 1, ModuleId = "GenericJet", DcsVersion = "2.9.29",
+                Commands = [Command("d118pnilunilcdnilvdnilvpnilvunil", "Attack My Target", "Communications", "button", "iCommandPlaneAttackMyTarget")],
+            };
+
+            var service = new DcsCommandCatalogService();
+            service.Save(path, document);
+            var reloaded = service.Load(path, "GenericJet");
+
+            Assert.NotNull(reloaded.GeneratedAt);
+            Assert.Equal("iCommandPlaneAttackMyTarget", Assert.Single(reloaded.Commands).Aliases.Single());
+        }
+        finally { File.Delete(path); }
+    }
+
     private static DcsCommandCatalogEntry Command(string key, string name, string category, string type, params string[] aliases) => new()
     {
         BindingKey = key,
