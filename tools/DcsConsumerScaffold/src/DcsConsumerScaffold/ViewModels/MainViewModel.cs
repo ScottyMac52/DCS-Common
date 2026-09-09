@@ -574,9 +574,10 @@ public sealed class MainViewModel : INotifyPropertyChanged
                 ? $"Preview loaded (exit {exitCode}).{Environment.NewLine}{stdout}{Environment.NewLine}{errorBlock}".Trim()
                 : $"Engine exit {exitCode}.{Environment.NewLine}{stderr}{Environment.NewLine}{stdout}{Environment.NewLine}{errorBlock}".Trim();
             if (existingLabels is not null &&
-                existingLabels.CurrentCount + existingLabels.SharedHardwareCount > 0)
+                existingLabels.CurrentCount + existingLabels.SharedHardwareCount + existingLabels.DcsDefaultCount > 0)
                 StatusText = $"{StatusText}{Environment.NewLine}Loaded {existingLabels.CurrentCount} current repository labels; " +
-                    $"used {existingLabels.SharedHardwareCount} shared-hardware fallbacks.";
+                    $"used DCS command labels for {existingLabels.DcsDefaultCount} reassigned controls; " +
+                    $"used {existingLabels.SharedHardwareCount} shared-hardware fallbacks for new controls.";
             ApplyPendingSolutionDecisions();
         }
         catch (Exception ex)
@@ -1097,7 +1098,8 @@ public sealed class MainViewModel : INotifyPropertyChanged
             : _currentLabels.Apply(OutputDir, device, Rows);
         var source = IsUiLayerImport ? "authoritative UI Layer" : "destination";
         StatusText = $"Current labels loaded for {device.Stem}: {result.CurrentCount} from {source}, " +
-            $"{result.SharedHardwareCount} from DCS-Common shared hardware.";
+            $"{result.DcsDefaultCount} reassigned controls from DCS command labels, " +
+            $"{result.SharedHardwareCount} new controls from DCS-Common shared hardware.";
         return result;
     }
 
