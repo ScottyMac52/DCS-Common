@@ -4,6 +4,7 @@ import { basename, dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { parseDcsDiffLua, parseDcsModifiersLua } from './profile-driven-kneeboard.mjs';
 import { analyzeProfileSource, pageProfileIds, resolveConfiguredProfileApplicability } from './effective-profile-applicability.mjs';
+import { resolveUiLayerModifier } from './ui-layer-overlays.mjs';
 
 const GUID_SUFFIX = /\s*\{[0-9A-Fa-f-]{36}\}\s*$/u;
 
@@ -176,11 +177,7 @@ export function selectedUiLayerModifiers(commonRoot, config, applicableDeviceIds
   const manifestPath = join(commonRoot, 'assets', 'shared', 'hardware', 'manifest.json');
   const devices = JSON.parse(readFileSync(manifestPath, 'utf8')).devices ?? [];
   const selectedDevices = applicableDeviceIds ?? configuredDeviceIds(config);
-  return new Set([...selectedDevices].map((deviceId) => {
-    const device = devices.find((candidate) => candidate.id === deviceId || candidate.aliases?.includes(deviceId));
-    if (!device) return null;
-    return device.uiLayerModifiers?.[deviceId] ?? (device.id === deviceId ? device.uiLayerModifier : null);
-  }).filter(Boolean));
+  return new Set([...selectedDevices].map((deviceId) => resolveUiLayerModifier(deviceId, devices)).filter(Boolean));
 }
 
 function findModuleDestinationJoystick(destination) {
