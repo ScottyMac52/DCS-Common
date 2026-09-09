@@ -228,6 +228,27 @@ public sealed class InstalledDcsCommandCatalogProviderTests
         Assert.Contains("No numeric identity", command.UnavailableReason, StringComparison.OrdinalIgnoreCase);
     }
 
+    [Fact]
+    public void Build_UsesCapturedDcsEnvironmentForPreviouslyUnknownGlobalCommand()
+    {
+        using var install = new TemporaryDcsInstall("GenericJet", "GenericJet", """
+            return { keyCommands = {
+              { down = iCommandPlaneAttackMyTarget, name = _('Attack My Target'), category = _('Communications') }
+            }}
+            """);
+
+        var result = new InstalledDcsCommandCatalogProvider().Build(install.DefaultLuaPath, "GenericJet",
+            new Dictionary<string, int> { ["iCommandPlaneAttackMyTarget"] = 118 }, "2.9.30");
+
+        var command = Assert.Single(result.Document.Commands);
+        Assert.True(command.IsAssignable);
+        Assert.Equal("d118pnilunilcdnilvdnilvpnilvunil", command.BindingKey);
+        Assert.Contains("iCommandPlaneAttackMyTarget", command.Aliases);
+        Assert.Equal("dcs-environment-capture", command.Source!.Provider);
+        Assert.Equal("2.9.30", result.Document.DcsVersion);
+        Assert.Equal(0, result.UnresolvedEntryCount);
+    }
+
     [Theory]
     [InlineData("iCommandPilotGestureSalute", "Pilot Salute", 238)]
     [InlineData("iCommandPlaneShipTakeOff", "Catapult Hook-Up", 120)]
