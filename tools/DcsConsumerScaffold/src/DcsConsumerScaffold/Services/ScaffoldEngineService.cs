@@ -51,6 +51,7 @@ public sealed class ScaffoldEngineService
         string? commonRoot,
         IReadOnlyDictionary<string, string>? semanticModifiers = null,
         IReadOnlyDictionary<string, string>? labels = null,
+        string? repositoryProfilesDir = null,
         CancellationToken cancellationToken = default)
     {
         var root = ResolveCommonRoot(commonRoot)
@@ -66,7 +67,7 @@ public sealed class ScaffoldEngineService
         {
             semanticPath = await WriteTemporaryJsonAsync("semantic-modifiers", semanticModifiers, cancellationToken);
             labelsPath = await WriteTemporaryJsonAsync("labels", labels, cancellationToken);
-            var args = BuildPreviewArguments(script, previewPath, profilesDir, modifiersPath, mozaGrip, null, root, semanticPath, labelsPath);
+            var args = BuildPreviewArguments(script, previewPath, profilesDir, modifiersPath, mozaGrip, null, root, semanticPath, labelsPath, repositoryProfilesDir);
             var (exitCode, stdout, stderr) = await RunNodeAsync(root, args, cancellationToken).ConfigureAwait(false);
 
             PreviewDocument? document = null;
@@ -104,6 +105,7 @@ public sealed class ScaffoldEngineService
         IReadOnlyDictionary<string, IReadOnlyDictionary<string, string>>? pagePresentations = null,
         bool includeUiLayer = true,
         IReadOnlyCollection<DcsCommandAssignment>? assignments = null,
+        string? repositoryProfilesDir = null,
         CancellationToken cancellationToken = default)
     {
         var root = ResolveCommonRoot(commonRoot)
@@ -134,7 +136,7 @@ public sealed class ScaffoldEngineService
             assignmentsPath = await WriteTemporaryJsonArrayAsync("assignments", assignments, cancellationToken);
 
             var args = BuildWriteArguments(
-                script, profilesDir, modifiersPath, mozaGrip, rolesPath, root, outputDir, displayName, inputModuleId, kneeboardId, repoName, semanticPath, labelsPath, removedProfilesPath, mfdCategoriesPath, pagePresentationsPath, includeUiLayer, assignmentsPath);
+                script, profilesDir, modifiersPath, mozaGrip, rolesPath, root, outputDir, displayName, inputModuleId, kneeboardId, repoName, semanticPath, labelsPath, removedProfilesPath, mfdCategoriesPath, pagePresentationsPath, includeUiLayer, assignmentsPath, repositoryProfilesDir);
             var (exitCode, stdout, stderr) = await RunNodeAsync(root, args, cancellationToken).ConfigureAwait(false);
             return (stdout, stderr, exitCode);
         }
@@ -186,6 +188,7 @@ public sealed class ScaffoldEngineService
         IReadOnlyDictionary<string, IReadOnlyDictionary<string, string>>? pagePresentations = null,
         bool includeUiLayer = true,
         IReadOnlyCollection<DcsCommandAssignment>? assignments = null,
+        string? repositoryProfilesDir = null,
         CancellationToken cancellationToken = default)
     {
         var root = ResolveCommonRoot(commonRoot)
@@ -199,7 +202,7 @@ public sealed class ScaffoldEngineService
                 profilesDir, modifiersPath, mozaGrip, instanceRoles, semanticModifiers, labels, root,
                 temporaryRoot, displayName, inputModuleId, kneeboardId,
                 mfdCategories: mfdCategories, pagePresentations: pagePresentations,
-                includeUiLayer: includeUiLayer, assignments: assignments, cancellationToken: cancellationToken);
+                includeUiLayer: includeUiLayer, assignments: assignments, repositoryProfilesDir: repositoryProfilesDir, cancellationToken: cancellationToken);
             if (exitCode is not (0 or 2)) throw new InvalidOperationException($"Temporary scaffold failed: {stderr}");
 
             var script = Path.Combine(root, "scripts", "render-scaffold-preview.mjs");
@@ -310,7 +313,8 @@ public sealed class ScaffoldEngineService
         string? rolesPath,
         string commonRoot,
         string? semanticModifiersPath = null,
-        string? labelsPath = null)
+        string? labelsPath = null,
+        string? repositoryProfilesDir = null)
     {
         var list = new List<string>
         {
@@ -341,6 +345,11 @@ public sealed class ScaffoldEngineService
         }
         AddOptionalFile(list, "--semantic-modifiers", semanticModifiersPath);
         AddOptionalFile(list, "--labels", labelsPath);
+        if (!string.IsNullOrWhiteSpace(repositoryProfilesDir) && Directory.Exists(repositoryProfilesDir))
+        {
+            list.Add("--repository-profiles");
+            list.Add(repositoryProfilesDir);
+        }
 
         return list;
     }
@@ -363,7 +372,8 @@ public sealed class ScaffoldEngineService
         string? mfdCategoriesPath = null,
         string? pagePresentationsPath = null,
         bool includeUiLayer = true,
-        string? assignmentsPath = null)
+        string? assignmentsPath = null,
+        string? repositoryProfilesDir = null)
     {
         var list = new List<string>
         {
@@ -404,6 +414,11 @@ public sealed class ScaffoldEngineService
         AddOptionalFile(list, "--mfd-categories", mfdCategoriesPath);
         AddOptionalFile(list, "--page-presentation", pagePresentationsPath);
         AddOptionalFile(list, "--assignments", assignmentsPath);
+        if (!string.IsNullOrWhiteSpace(repositoryProfilesDir) && Directory.Exists(repositoryProfilesDir))
+        {
+            list.Add("--repository-profiles");
+            list.Add(repositoryProfilesDir);
+        }
         if (!includeUiLayer) list.Add("--exclude-ui-layer");
 
         if (!string.IsNullOrWhiteSpace(repoName))

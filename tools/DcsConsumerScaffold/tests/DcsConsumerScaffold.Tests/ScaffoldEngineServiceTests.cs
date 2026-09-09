@@ -1,3 +1,4 @@
+using System.IO;
 using System.Text.Json;
 using DcsConsumerScaffold.Models;
 using DcsConsumerScaffold.Services;
@@ -236,5 +237,31 @@ public class ScaffoldEngineServiceTests
         Assert.Contains("semantic.json", args);
         Assert.Contains("--labels", args);
         Assert.Contains("labels.json", args);
+    }
+
+    [Fact]
+    public void BuildPreviewArguments_IncludesExistingRepositoryProfilesWhenPresent()
+    {
+        var directory = Path.Combine(Path.GetTempPath(), $"repository-profiles-{Guid.NewGuid():N}");
+        Directory.CreateDirectory(directory);
+        try
+        {
+            var args = ScaffoldEngineService.BuildPreviewArguments(
+                "script.mjs", "out.json", "profiles", null, null, null, "root",
+                repositoryProfilesDir: directory);
+
+            Assert.Contains("--repository-profiles", args);
+            Assert.Contains(directory, args);
+
+            var writeArgs = ScaffoldEngineService.BuildWriteArguments(
+                "script.mjs", "profiles", null, null, null, "root", "output", "Test", "Test", "Test",
+                repositoryProfilesDir: directory);
+            Assert.Contains("--repository-profiles", writeArgs);
+            Assert.Contains(directory, writeArgs);
+        }
+        finally
+        {
+            Directory.Delete(directory);
+        }
     }
 }
