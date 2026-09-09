@@ -22,3 +22,5 @@ public sealed class InteractiveControl
     public string Anchor { get; set; } = "middle";
     public bool Shifted { get; set; }
 }
+
+public sealed record UiLayerProjection(string ControlId, string Label, string Category, string Modifier);
