@@ -234,12 +234,14 @@
     </GroupBox>
 
     <GroupBox DockPanel.Dock="Top" Header="Command labels" Margin="0,0,0,8" Padding="4"
-              ToolTip="One row per exact DCS command. Apply synchronizes every matching binding; individual labels remain editable below.">
+              ToolTip="One row per exact DCS command and semantic modifier chord. Apply synchronizes every matching binding; individual labels remain editable below.">
       <DataGrid ItemsSource="{Binding CommandLabels}" Height="145" AutoGenerateColumns="False"
                 CanUserAddRows="False" HeadersVisibility="Column" AlternatingRowBackground="#F5F7FA"
                 RowStyle="{StaticResource PreviewChangeRowStyle}" BeginningEdit="PreviewGrid_BeginningEdit">
         <DataGrid.Columns>
           <DataGridTextColumn Header="Command" Binding="{Binding Command}" Width="2.4*" IsReadOnly="True" />
+          <DataGridTextColumn Header="Command name" Binding="{Binding Name}" Width="1.5*" IsReadOnly="True" />
+          <DataGridTextColumn Header="Modifier" Binding="{Binding ChordDisplay}" Width="100" IsReadOnly="True" />
           <DataGridTextColumn Header="DCS label (default)" Binding="{Binding DefaultLabel}" Width="1.4*" IsReadOnly="True" />
           <DataGridTextColumn Header="Synchronized label"
                               Binding="{Binding Label, UpdateSourceTrigger=PropertyChanged}" Width="1.4*" />
@@ -250,7 +252,7 @@
             <DataGridTemplateColumn.CellTemplate>
               <DataTemplate>
                 <Button Content="Apply" Tag="{Binding}" Click="ApplyCommandLabel_Click" IsEnabled="{Binding CanEdit}"
-                        ToolTip="Apply this label, including an intentional blank, to every binding with this exact command" />
+                        ToolTip="Apply this label, including an intentional blank, to every binding with this exact command and modifier chord" />
               </DataTemplate>
             </DataGridTemplateColumn.CellTemplate>
           </DataGridTemplateColumn>
