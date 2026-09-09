@@ -48,10 +48,12 @@ The solution file never contains binding labels or MFD side-category labels. Tho
 
 After **Load Preview**, the **Command labels** grid contains one row per distinct, non-empty exact DCS command string.
 
-- **Bindings** shows how many physical rows use the command.
+- The command list shows the DCS command ID, its human-readable command name, and the semantic modifier chord.
+- Commands are synchronized independently per semantic modifier chord, so shifted and unshifted uses of the same DCS command can have different labels without becoming **Mixed**.
+- **Bindings** shows how many physical rows use the command and modifier chord.
 - **Synchronized** means every matching row currently has the same label.
 - **Mixed** means one or more individual rows have a different label.
-- Edit **Synchronized label** and press **Apply** to replace the label on every matching row across devices, instances, keys, and modifier chords.
+- Edit **Synchronized label** and press **Apply** to replace the label on every matching row across devices, instances, and keys for that command and semantic modifier chord.
 - An empty value is applied as an intentional blank.
 - The detailed binding grid remains editable. Changing one row affects only that row and changes its command group to **Mixed**.
 - **Current** and **Use device** changes are reflected in the command group automatically.
