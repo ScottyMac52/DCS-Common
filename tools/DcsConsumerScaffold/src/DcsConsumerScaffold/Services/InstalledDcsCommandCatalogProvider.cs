@@ -266,18 +266,24 @@ internal sealed partial class DcsInputLuaExecutor
             var table = pair.Value.Table;
             var name = Text(table.Get("name"));
             if (string.IsNullOrWhiteSpace(name)) continue;
-            var action = type == "axis" ? table.Get("action") : DynValue.Nil;
-            var down = table.Get("down");
-            var pressed = table.Get("pressed");
-            var up = table.Get("up");
+            var rawAction = type == "axis" ? table.Get("action") : DynValue.Nil;
+            var rawDown = table.Get("down");
+            var rawPressed = table.Get("pressed");
+            var rawUp = table.Get("up");
             var device = table.Get("cockpit_device_id");
+            var symbols = new[] { rawAction, rawDown, rawPressed, rawUp, device }.Select(Symbol)
+                .Where(value => value is not null).Cast<string>().Distinct().ToList();
+            var action = ResolveGlobal(rawAction);
+            var down = ResolveGlobal(rawDown);
+            var pressed = ResolveGlobal(rawPressed);
+            var up = ResolveGlobal(rawUp);
             var numeric = (type == "axis"
                 ? IsNumber(action)
                 : (IsNumber(down) || IsNumber(pressed) || IsNumber(up)) &&
                   IsNumberOrNil(down) && IsNumberOrNil(pressed) && IsNumberOrNil(up)) &&
                 IsNumberOrNil(device);
             var key = numeric ? BindingKey(type, action, down, pressed, up, device, table) : UnresolvedKey(type, name, action, down, pressed, up, device);
-            var symbols = new[] { action, down, pressed, up, device }.Select(Symbol).Where(value => value is not null).Cast<string>().Distinct().ToList();
+            var registryResolved = symbols.Any(symbol => DcsGlobalCommandRegistry.TryBySymbol(symbol, out _));
             destination.Add(new DcsCommandCatalogEntry
             {
                 BindingKey = key,
@@ -293,7 +299,7 @@ internal sealed partial class DcsInputLuaExecutor
                     Down = Integer(down), Pressed = Integer(pressed), Up = Integer(up), CockpitDeviceId = Integer(device),
                     ValueDown = Number(table.Get("value_down")), ValuePressed = Number(table.Get("value_pressed")), ValueUp = Number(table.Get("value_up")),
                 },
-                Source = new DcsCommandSource { Provider = "installed-dcs-lua", File = _defaultLua },
+                Source = new DcsCommandSource { Provider = registryResolved ? "verified-dcs-global-registry" : "installed-dcs-lua", File = _defaultLua },
             });
         }
     }
@@ -324,6 +330,10 @@ internal sealed partial class DcsInputLuaExecutor
     private static string Part(DynValue value) => IsNumber(value) ? value.Number.ToString("0.################", CultureInfo.InvariantCulture) : "nil";
     private static string? Symbol(DynValue value) => value.Type == DataType.String && value.String.StartsWith(SymbolPrefix, StringComparison.Ordinal)
         ? value.String[SymbolPrefix.Length..] : null;
+    private static DynValue ResolveGlobal(DynValue value) => Symbol(value) is { } symbol &&
+        DcsGlobalCommandRegistry.TryBySymbol(symbol, out var definition)
+            ? DynValue.NewNumber(definition.Id)
+            : value;
 
     [GeneratedRegex(@"\biCommand[A-Za-z0-9_]+\b")] private static partial Regex HostCommand();
     [GeneratedRegex(@"\b(?<name>iCommand[A-Za-z0-9_]+)\s*=\s*(?<value>-?\d+(?:\.\d+)?)\b")] private static partial Regex NumericHostCommandDefinition();
@@ -334,19 +344,6 @@ internal sealed partial class DcsInputLuaExecutor
 
 internal static partial class DcsCommandIdentityResolver
 {
-    private sealed record VerifiedHostCommand(string Symbol, string Type, int Id, string[] CanonicalNames);
-
-    private static readonly VerifiedHostCommand[] VerifiedHostCommands =
-    {
-        // Corroborated by DCS-generated joystick profiles. These are global DCS input commands, not module commands.
-        new("iCommandPlanePitch", "axis", 2001, ["Pitch"]),
-        new("iCommandPlaneRoll", "axis", 2002, ["Roll"]),
-        new("iCommandPlaneRudder", "axis", 2003, ["Rudder"]),
-        new("iCommandPlaneThrustCommon", "axis", 2004, ["Thrust"]),
-        new("iCommandPlaneThrustLeft", "axis", 2005, ["Thrust Left"]),
-        new("iCommandPlaneThrustRight", "axis", 2006, ["Thrust Right"]),
-    };
-
     private sealed record ProfileEvidence(string Key, string Name, string Type, string File);
 
     public static IReadOnlyList<string> Resolve(ICollection<DcsCommandCatalogEntry> commands, string defaultLua, string? dcsRoot)
@@ -367,7 +364,7 @@ internal static partial class DcsCommandIdentityResolver
             else if (matches.Count == 0 && VerifiedIdentity(command, symbol) is { } verified)
             {
                 key = command.Type == "axis" ? $"a{verified.Id}cdnil" : $"d{verified.Id}pnilunilcdnilvdnilvpnilvunil";
-                provider = "verified-dcs-host-command";
+                provider = "verified-dcs-global-registry";
             }
             if (key is null)
             {
@@ -388,10 +385,12 @@ internal static partial class DcsCommandIdentityResolver
         return files;
     }
 
-    private static VerifiedHostCommand? VerifiedIdentity(DcsCommandCatalogEntry command, string? symbol) =>
-        VerifiedHostCommands.FirstOrDefault(candidate =>
-            candidate.Type == command.Type &&
-            (candidate.Symbol == symbol || candidate.CanonicalNames.Any(name => NamesEqual(name, command.Name))));
+    private static DcsGlobalCommandDefinition? VerifiedIdentity(DcsCommandCatalogEntry command, string? symbol)
+    {
+        if (symbol is not null && DcsGlobalCommandRegistry.TryBySymbol(symbol, out var definition) && definition.Type == command.Type)
+            return definition;
+        return DcsGlobalCommandRegistry.ByCanonicalIdentity(command.Type, command.Name);
+    }
 
     private static void ApplyActions(DcsCommandCatalogEntry command, string key)
     {
