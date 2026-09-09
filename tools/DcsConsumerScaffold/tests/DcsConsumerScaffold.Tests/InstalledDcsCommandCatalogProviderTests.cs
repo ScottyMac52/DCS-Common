@@ -152,23 +152,23 @@ public sealed class InstalledDcsCommandCatalogProviderTests
     {
         using var install = new TemporaryDcsInstall("GenericJet", "GenericJet", """
             return { keyCommands = {
-              { down = iCommandPilotGestureSalute, name = _('Pilot Salute'), category = _('Communications') }
+              { down = iCommandProfileOnlyAction, name = _('Profile-only action'), category = _('Communications') }
             }}
             """);
         install.AddInputFile("joystick/Stock Controller.lua", """
             local diff = { ["keyDiffs"] = {
-              ["d1777pnilunilcdnilvdnilvpnilvunil"] = { ["added"] = { [1] = { ["key"] = "JOY_BTN1" } }, ["name"] = "Pilot Salute" },
+              ["d1777pnilunilcdnilvdnilvpnilvunil"] = { ["added"] = { [1] = { ["key"] = "JOY_BTN1" } }, ["name"] = "Profile-only action" },
             }}
             return diff
             """);
 
         var result = new InstalledDcsCommandCatalogProvider().Build(install.DefaultLuaPath, "GenericJet");
 
-        var salute = Assert.Single(result.Document.Commands);
-        Assert.True(salute.IsAssignable);
-        Assert.Equal("d1777pnilunilcdnilvdnilvpnilvunil", salute.BindingKey);
-        Assert.Equal("dcs-controller-profile", salute.Source!.Provider);
-        Assert.Contains("iCommandPilotGestureSalute", salute.Aliases);
+        var command = Assert.Single(result.Document.Commands);
+        Assert.True(command.IsAssignable);
+        Assert.Equal("d1777pnilunilcdnilvdnilvpnilvunil", command.BindingKey);
+        Assert.Equal("dcs-controller-profile", command.Source!.Provider);
+        Assert.Contains("iCommandProfileOnlyAction", command.Aliases);
     }
 
     [Fact]
@@ -199,11 +199,11 @@ public sealed class InstalledDcsCommandCatalogProviderTests
     {
         using var install = new TemporaryDcsInstall("GenericJet", "GenericJet", """
             return { keyCommands = {
-              { down = iCommandPilotGestureSalute, name = _('Pilot Salute'), category = _('Communications') }
+              { down = iCommandConflictingAction, name = _('Conflicting action'), category = _('Communications') }
             }}
             """);
-        install.AddInputFile("joystick/First.diff.lua", "[\"d100pnilunilcdnilvdnilvpnilvunil\"] = { [\"name\"] = \"Pilot Salute\" }");
-        install.AddInputFile("keyboard/Second.diff.lua", "[\"d200pnilunilcdnilvdnilvpnilvunil\"] = { [\"name\"] = \"Pilot Salute\" }");
+        install.AddInputFile("joystick/First.diff.lua", "[\"d100pnilunilcdnilvdnilvpnilvunil\"] = { [\"name\"] = \"Conflicting action\" }");
+        install.AddInputFile("keyboard/Second.diff.lua", "[\"d200pnilunilcdnilvdnilvpnilvunil\"] = { [\"name\"] = \"Conflicting action\" }");
 
         var result = new InstalledDcsCommandCatalogProvider().Build(install.DefaultLuaPath, "GenericJet");
 
@@ -229,6 +229,60 @@ public sealed class InstalledDcsCommandCatalogProviderTests
     }
 
     [Theory]
+    [InlineData("iCommandPilotGestureSalute", "Pilot Salute", 238)]
+    [InlineData("iCommandPlaneShipTakeOff", "Catapult Hook-Up", 120)]
+    [InlineData("iCommandScoresWindowToggle", "Score Window", 360)]
+    [InlineData("iCommandPlaneFonar", "Canopy - OPEN/CLOSE", 71)]
+    [InlineData("iCommandPlaneShowKneeboard", "Kneeboard ON/OFF", 1587)]
+    public void Build_ResolvesVerifiedGlobalButtonCommands(string symbol, string name, int id)
+    {
+        var lua = "return { keyCommands = { { down = " + symbol + ", name = _('" + name +
+                  "'), category = _('General') } } }";
+        using var install = new TemporaryDcsInstall("GenericJet", "GenericJet", lua);
+
+        var command = Assert.Single(new InstalledDcsCommandCatalogProvider().Build(install.DefaultLuaPath, "GenericJet").Document.Commands);
+
+        Assert.True(command.IsAssignable);
+        Assert.Equal($"d{id}pnilunilcdnilvdnilvpnilvunil", command.BindingKey);
+        Assert.Equal("verified-dcs-global-registry", command.Source!.Provider);
+        Assert.Contains(symbol, command.Aliases);
+    }
+
+    [Theory]
+    [InlineData("iCommandPlaneWheelBrakeOn", "iCommandPlaneWheelBrakeOff", 74, 75, "Wheel Brake - ON/OFF")]
+    [InlineData("iCommandPlaneWheelBrakeLeftOn", "iCommandPlaneWheelBrakeLeftOff", 961, 962, "Wheel Brake Left - ON/OFF")]
+    [InlineData("iCommandPlaneWheelBrakeRightOn", "iCommandPlaneWheelBrakeRightOff", 963, 964, "Wheel Brake Right - ON/OFF")]
+    public void Build_PreservesDownAndUpActionsWhenResolvingGlobalCommands(
+        string downSymbol, string upSymbol, int downId, int upId, string name)
+    {
+        var lua = "return { keyCommands = { { down = " + downSymbol + ", up = " + upSymbol +
+                  ", name = _('" + name + "'), category = _('Systems') } } }";
+        using var install = new TemporaryDcsInstall("GenericJet", "GenericJet", lua);
+
+        var command = Assert.Single(new InstalledDcsCommandCatalogProvider().Build(install.DefaultLuaPath, "GenericJet").Document.Commands);
+
+        Assert.True(command.IsAssignable);
+        Assert.Equal($"d{downId}pnilu{upId}cdnilvdnilvpnilvunil", command.BindingKey);
+        Assert.Equal(downId, command.Actions!.Down);
+        Assert.Equal(upId, command.Actions.Up);
+    }
+
+    [Fact]
+    public void GlobalRegistry_HasUniqueSymbolsAndCompleteVerificationMetadata()
+    {
+        Assert.Equal(DcsGlobalCommandRegistry.Commands.Count,
+            DcsGlobalCommandRegistry.Commands.Select(command => command.Symbol).Distinct(StringComparer.Ordinal).Count());
+        Assert.Equal(DcsGlobalCommandRegistry.Commands.Count,
+            DcsGlobalCommandRegistry.Commands.Select(command => (command.Type, command.Id)).Distinct().Count());
+        Assert.All(DcsGlobalCommandRegistry.Commands, command =>
+        {
+            Assert.False(string.IsNullOrWhiteSpace(command.VerifiedThroughDcsVersion));
+            Assert.False(string.IsNullOrWhiteSpace(command.Evidence));
+            Assert.NotEmpty(command.CanonicalNames);
+        });
+    }
+
+    [Theory]
     [InlineData("iCommandPlanePitch", "Pitch", "a2001cdnil")]
     [InlineData("iCommandPlaneRoll", "Roll", "a2002cdnil")]
     [InlineData("iCommandPlaneRudder", "Rudder", "a2003cdnil")]
@@ -245,7 +299,7 @@ public sealed class InstalledDcsCommandCatalogProviderTests
 
         Assert.True(command.IsAssignable);
         Assert.Equal(expectedKey, command.BindingKey);
-        Assert.Equal("verified-dcs-host-command", command.Source!.Provider);
+        Assert.Equal("verified-dcs-global-registry", command.Source!.Provider);
     }
 
     [Fact]
@@ -264,7 +318,7 @@ public sealed class InstalledDcsCommandCatalogProviderTests
 
         Assert.True(command.IsAssignable);
         Assert.Equal("a2001cdnil", command.BindingKey);
-        Assert.Equal("verified-dcs-host-command", command.Source!.Provider);
+        Assert.Equal("verified-dcs-global-registry", command.Source!.Provider);
     }
 
     [Fact]
