@@ -57,6 +57,9 @@ public sealed class MainViewModel : INotifyPropertyChanged
     private readonly Dictionary<PreviewRow, PreviewRow> _assignmentOriginals = [];
     private readonly HashSet<PreviewRow> _emptyControls = [];
     private readonly Dictionary<PreviewRow, List<PreviewRow>> _displacedRows = [];
+    private readonly Dictionary<string, IReadOnlyList<UiLayerProjection>> _uiLayerProjectionCache =
+        new(StringComparer.OrdinalIgnoreCase);
+    private readonly Dictionary<string, string?> _uiLayerModifierCache = new(StringComparer.Ordinal);
     private string _selectedCommandAvailability = "All";
     public string SelectedCommandAvailability
     {
@@ -138,6 +141,7 @@ public sealed class MainViewModel : INotifyPropertyChanged
         !IsUiLayerImport &&
         SelectedCatalogCommand is { IsAssignable: true } command &&
         SelectedPreviewRow is { } row &&
+        UiLayerConflictFor(row) is null &&
         !string.Equals(command.BindingKey, row.Command, StringComparison.Ordinal) &&
         !string.IsNullOrWhiteSpace(row.ProfileFile) &&
         !string.IsNullOrWhiteSpace(row.Section) &&
@@ -163,6 +167,8 @@ public sealed class MainViewModel : INotifyPropertyChanged
             if (SelectedPreviewRow is null) return "Step 2: select a physical control on the right.";
             if (string.Equals(SelectedCatalogCommand.BindingKey, SelectedPreviewRow.Command, StringComparison.Ordinal))
                 return "This command is already assigned to the selected control.";
+            if (UiLayerConflictFor(SelectedPreviewRow) is { } ui)
+                return $"Reserved by the applicable UI Layer: {ui.Label} ({ui.Modifier}). Choose another control or modifier chord.";
             if (!CanAssignSelectedCommand)
                 return $"Select {(SelectedCatalogCommand.Type == "axis" ? "an" : "a")} {SelectedCatalogCommand.Type} control to match this command.";
             return "Ready. Stage the replacement, then choose Proceed to write it.";
@@ -445,6 +451,7 @@ public sealed class MainViewModel : INotifyPropertyChanged
         !IsBusy &&
         HasPreview &&
         _previewErrorCount == 0 &&
+        !HasUiLayerConflicts &&
         !string.IsNullOrWhiteSpace(ProfilesDir) &&
         (IsUiLayerImport
             ? !string.IsNullOrWhiteSpace(CommonRoot) && !string.IsNullOrWhiteSpace(ModifiersPath)
@@ -452,6 +459,9 @@ public sealed class MainViewModel : INotifyPropertyChanged
               !string.IsNullOrWhiteSpace(DisplayName) &&
               !string.IsNullOrWhiteSpace(InputModuleId) &&
               !string.IsNullOrWhiteSpace(KneeboardId));
+
+    public bool HasUiLayerConflicts => !IsUiLayerImport && Rows.Any(row =>
+        !string.IsNullOrWhiteSpace(row.Command) && UiLayerConflictFor(row) is not null);
 
     private void RaiseCommands()
     {
@@ -510,6 +520,8 @@ public sealed class MainViewModel : INotifyPropertyChanged
         _assignmentOriginals.Clear();
         _emptyControls.Clear();
         _displacedRows.Clear();
+        _uiLayerProjectionCache.Clear();
+        _uiLayerModifierCache.Clear();
         SelectedPreviewRow = null;
         SelectedCatalogCommand = null;
         RaiseAssignmentState();
@@ -580,6 +592,11 @@ public sealed class MainViewModel : INotifyPropertyChanged
                 StatusText = $"{StatusText}{Environment.NewLine}Loaded {existingLabels.CurrentCount} current repository labels; " +
                     $"used DCS command labels for {existingLabels.DcsDefaultCount} reassigned controls; " +
                     $"used {existingLabels.SharedHardwareCount} shared-hardware fallbacks for new controls.";
+            var uiLayerConflictCount = Rows.Count(row =>
+                !string.IsNullOrWhiteSpace(row.Command) && UiLayerConflictFor(row) is not null);
+            if (uiLayerConflictCount > 0)
+                StatusText = $"{StatusText}{Environment.NewLine}{uiLayerConflictCount} module assignment(s) conflict with the applicable UI Layer. " +
+                    "Conflicting assignments are orange-red in the visual editor and must be cleared or moved before Proceed.";
             ApplyPendingSolutionDecisions();
         }
         catch (Exception ex)
@@ -687,7 +704,7 @@ public sealed class MainViewModel : INotifyPropertyChanged
     public DcsCommandAssignment AssignSelectedCommand()
     {
         if (!CanAssignSelectedCommand)
-            throw new InvalidOperationException("Select an assignable command and a compatible button or axis row.");
+            throw new InvalidOperationException(AssignmentGuidance);
 
         var command = SelectedCatalogCommand!;
         var row = SelectedPreviewRow!;
@@ -732,15 +749,48 @@ public sealed class MainViewModel : INotifyPropertyChanged
         PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(SelectedCommandSummary)));
         PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(SelectedControlSummary)));
         PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(AssignmentGuidance)));
+        PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(HasUiLayerConflicts)));
+        ProceedCommand.RaiseCanExecuteChanged();
     }
 
     public Task<InteractiveDevice> LoadInteractiveDeviceAsync(PreviewDevice device) =>
         _engine.LoadInteractiveDeviceAsync(CommonRoot, device.DeviceId!);
 
-    public IReadOnlyList<UiLayerProjection> UiLayerProjectionsFor(PreviewDevice device) =>
-        IsUiLayerImport || string.IsNullOrWhiteSpace(CommonRoot)
-            ? []
-            : _uiLayerProjection.Load(CommonRoot, device, Devices);
+    public IReadOnlyList<UiLayerProjection> UiLayerProjectionsFor(PreviewDevice device)
+    {
+        if (IsUiLayerImport || string.IsNullOrWhiteSpace(CommonRoot)) return [];
+        var key = device.ProfileFile ?? $"{device.DeviceId}\0{device.InstanceHint}";
+        if (!_uiLayerProjectionCache.TryGetValue(key, out var projections))
+        {
+            projections = _uiLayerProjection.Load(CommonRoot, device, Devices);
+            _uiLayerProjectionCache[key] = projections;
+        }
+        return projections;
+    }
+
+    public UiLayerProjection? UiLayerConflictFor(
+        PreviewRow row,
+        IReadOnlyList<UiLayerProjection>? projections = null)
+    {
+        if (IsUiLayerImport || string.IsNullOrWhiteSpace(CommonRoot)) return null;
+        var device = Devices.FirstOrDefault(item =>
+            string.Equals(item.ProfileFile, row.ProfileFile, StringComparison.OrdinalIgnoreCase));
+        if (device is null || row.Reformers.Count != 1) return null;
+        var modifier = Modifiers.FirstOrDefault(item =>
+            string.Equals(item.Name, row.Reformers[0], StringComparison.Ordinal));
+        var effectiveModifier = modifier?.Name;
+        var modifierDeviceId = modifier?.DeviceId;
+        if (!string.IsNullOrWhiteSpace(modifierDeviceId))
+        {
+            if (!_uiLayerModifierCache.TryGetValue(modifierDeviceId, out effectiveModifier))
+            {
+                effectiveModifier = _uiLayerProjection.ResolveModifier(CommonRoot, modifierDeviceId) ?? modifier?.Name;
+                _uiLayerModifierCache[modifierDeviceId] = effectiveModifier;
+            }
+        }
+        return _uiLayerProjection.FindConflict(
+            row, effectiveModifier, projections ?? UiLayerProjectionsFor(device));
+    }
 
     public PreviewRow GetInteractiveRow(PreviewDevice device, InteractiveControl control, IReadOnlyList<string> reformers)
     {

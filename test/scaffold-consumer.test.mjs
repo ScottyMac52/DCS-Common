@@ -274,6 +274,20 @@ test('writeConsumer applies pending assignments only to destination profile and 
   assert.ok(config.pages.some((page) => Object.values(page.controls ?? {}).some((control) => control.command === 'd-new')));
 });
 
+test('assignment can replace a DCS default represented only by a removed input', () => {
+  const source = `local diff = { ["keyDiffs"] = {
+    ["d-default"] = { ["removed"] = { [1] = { ["key"] = "JOY_BTN25" } }, ["name"] = "Default brightness" },
+  } } return diff`;
+
+  const written = parseDcsDiffLua(applyDcsCommandAssignments(source, [{
+    profileFile: 'F16 MFD 3.diff.lua', section: 'keyDiffs', key: 'JOY_BTN25', reformers: [],
+    command: 'd-reassigned', name: 'Reassigned brightness',
+  }], { filename: 'F16 MFD 3.diff.lua' })).bindings;
+
+  assert.ok(written.find(({ command }) => command === 'd-default').removed.some(({ key }) => key === 'JOY_BTN25'));
+  assert.ok(written.find(({ command }) => command === 'd-reassigned').added.some(({ key }) => key === 'JOY_BTN25'));
+});
+
 test('device map resolves conservative base and grip combinations', () => {
   const map = loadDeviceMap(commonRoot);
   const cases = [

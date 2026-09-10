@@ -341,6 +341,9 @@ public sealed class PreviewModifier : INotifyPropertyChanged
     [JsonPropertyName("mode")]
     public string? Mode { get; set; }
 
+    [JsonPropertyName("deviceId")]
+    public string? DeviceId { get; set; }
+
     [JsonPropertyName("semanticModifier")]
     public string? SemanticModifier
     {

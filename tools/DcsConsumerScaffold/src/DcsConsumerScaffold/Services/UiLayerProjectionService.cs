@@ -6,6 +6,27 @@ namespace DcsConsumerScaffold.Services;
 
 public sealed class UiLayerProjectionService
 {
+    public UiLayerProjection? FindConflict(
+        PreviewRow row,
+        string? effectiveModifier,
+        IReadOnlyList<UiLayerProjection> projections)
+    {
+        var callout = NormalizeCallout(row.CalloutId);
+        if (string.IsNullOrWhiteSpace(callout) || row.Reformers.Count != 1) return null;
+        if (string.IsNullOrWhiteSpace(effectiveModifier)) return null;
+
+        return projections.FirstOrDefault(item =>
+            string.Equals(NormalizeCallout(item.ControlId), callout, StringComparison.Ordinal) &&
+            string.Equals(item.Modifier, effectiveModifier, StringComparison.Ordinal));
+    }
+
+    public string? ResolveModifier(string commonRoot, string deviceId)
+    {
+        using var manifest = Read(commonRoot, "assets", "shared", "hardware", "manifest.json");
+        return ResolveManifestModifier(deviceId,
+            manifest.RootElement.GetProperty("devices").EnumerateArray().ToArray());
+    }
+
     public IReadOnlyList<UiLayerProjection> Load(
         string commonRoot,
         PreviewDevice target,
@@ -78,4 +99,9 @@ public sealed class UiLayerProjectionService
         return instances.EnumerateArray().Any(instance =>
             string.Equals(instance.GetString(), actual, StringComparison.OrdinalIgnoreCase));
     }
+
+    private static string NormalizeCallout(string? value) =>
+        (value ?? string.Empty).EndsWith("-shifted", StringComparison.Ordinal)
+            ? value![..^"-shifted".Length]
+            : value ?? string.Empty;
 }

@@ -154,6 +154,11 @@ public partial class InteractivePreviewWindow : Window
     private bool Assign(PreviewRow row, DcsCommandCatalogEntry? command)
     {
         if (!Compatible(command, row)) { Message.Text = "Choose an assignable command of the matching input type."; return false; }
+        if (_model.UiLayerConflictFor(row, _uiLayer) is { } uiConflict)
+        {
+            Message.Text = $"Assignment blocked: this control and modifier chord are reserved by UI Layer '{uiConflict.Label}' ({uiConflict.Modifier}).";
+            return false;
+        }
         if (command!.BindingKey == row.Command) return false;
         if (!string.IsNullOrEmpty(row.Command) && MessageBox.Show(this, $"Replace {(_model.HasConflict(row) ? "ALL conflicting commands" : row.Name)} on {row.Key} ({(string.IsNullOrEmpty(row.Chord) ? "base" : row.Chord)}) with {command.Name}?",
                 "Replace assignment", MessageBoxButton.YesNo, MessageBoxImage.Question) != MessageBoxResult.Yes) return false;
@@ -174,11 +179,12 @@ public partial class InteractivePreviewWindow : Window
     {
         foreach (var (target, row) in _targets)
         {
-            var ui = _uiLayer.Where(item => item.ControlId == row.CalloutId ||
-                item.ControlId == row.CalloutId + "-shifted" || item.ControlId + "-shifted" == row.CalloutId).ToArray();
+            var uiConflict = _model.UiLayerConflictFor(row, _uiLayer);
+            UiLayerProjection[] ui = uiConflict is null ? [] : [uiConflict];
             var uiText = ui.Length == 0 ? string.Empty : "\n" + string.Join("\n", ui.Select(item => $"UI: {item.Label} ({item.Modifier})"));
             var pending = _model.PendingFor(row);
-            target.Background = _model.HasConflict(row) ? Brushes.LightCoral : string.IsNullOrEmpty(row.Command) ? Brushes.Gainsboro :
+            target.Background = uiConflict is not null && !string.IsNullOrEmpty(row.Command) ? Brushes.OrangeRed :
+                _model.HasConflict(row) ? Brushes.LightCoral : string.IsNullOrEmpty(row.Command) ? Brushes.Gainsboro :
                 pending is null ? Brushes.White : pending.AllowCreate ? Brushes.LightGreen : Brushes.Khaki;
             target.BorderBrush = row == _selected ? Brushes.RoyalBlue : ui.Length > 0 ? new SolidColorBrush(Color.FromRgb(8, 145, 178)) : Brushes.SlateGray;
             ((TextBlock)target.Child).Text = (string.IsNullOrEmpty(row.Command) ? "Unassigned" : row.Label) + uiText;

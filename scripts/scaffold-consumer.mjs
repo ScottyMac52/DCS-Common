@@ -281,6 +281,12 @@ export function applyDcsCommandAssignments(source, assignments, { filename = 'pr
     const reformers = [...new Set(assignment.reformers ?? [])].sort((a, b) => a.localeCompare(b));
     let foundControl = false;
     for (const binding of parsed.bindings.filter((item) => item.section === assignment.section)) {
+      if (binding.removed.some((input) =>
+        input.key === assignment.key && chordKey(input.reformers) === chordKey(reformers))) {
+        // A removed DCS default still proves that this physical input exists. Keep
+        // the removal so the stock command remains suppressed when adding its replacement.
+        foundControl = true;
+      }
       const retained = binding.added.filter((input) => {
         const matches = input.key === assignment.key && chordKey(input.reformers) === chordKey(reformers);
         if (matches) {
