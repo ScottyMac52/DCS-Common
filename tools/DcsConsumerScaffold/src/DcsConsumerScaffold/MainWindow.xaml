@@ -310,8 +310,6 @@
                       Click="SaveCommandCatalog_Click" IsEnabled="{Binding HasPreview}" />
               <Button DockPanel.Dock="Right" Content="Load ID capture…" Padding="8,3" Margin="6,0,0,0"
                       Click="LoadCommandIdCapture_Click" IsEnabled="{Binding HasPreview}" />
-              <Button DockPanel.Dock="Right" Content="Create capture script…" Padding="8,3" Margin="6,0,0,0"
-                      Click="CreateCommandIdCapture_Click" IsEnabled="{Binding HasPreview}" />
               <Button DockPanel.Dock="Right" Content="Load from DCS…" Padding="8,3" Margin="6,0,0,0"
                       Click="LoadInstalledDcsCommands_Click" IsEnabled="{Binding HasPreview}" />
               <TextBlock VerticalAlignment="Center" Foreground="#555" Text="{Binding CommandCatalogStatus}"

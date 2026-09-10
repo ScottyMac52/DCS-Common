@@ -50,38 +50,4 @@ public sealed class DcsCommandIdCaptureService
             .ToDictionary(group => group.Key, group => group.First().Id, StringComparer.Ordinal);
     }
 
-    public void SaveCaptureScript(string path)
-    {
-        if (string.IsNullOrWhiteSpace(path)) throw new ArgumentException("Choose where to save the DCS capture script.", nameof(path));
-        File.WriteAllText(path, CaptureScript.Replace("\n", Environment.NewLine));
-    }
-
-    public string Instructions(string scriptPath) =>
-        $"Add this line temporarily to the beginning of DCS World\\Config\\Input\\Aircrafts\\Default\\keyboard\\default.lua:{Environment.NewLine}{Environment.NewLine}" +
-        "dofile([[" + Path.GetFullPath(scriptPath).Replace('\\', '/') + "]])" + Environment.NewLine + Environment.NewLine +
-        $"Open DCS Controls once. The capture will be written to Saved Games\\DCS...\\Logs\\{OutputFileName}. Remove the temporary dofile line afterward, then use Load ID capture… in the importer.";
-
-    private const string CaptureScript = """
-local lfs = require('lfs')
-local env = getfenv()
-local results = {}
-for name, value in pairs(env) do
-  if type(name) == 'string' and type(value) == 'number' and string.find(name, '^iCommand') then
-    table.insert(results, { symbol = name, id = value })
-  end
-end
-table.sort(results, function(left, right)
-  if left.id == right.id then return left.symbol < right.symbol end
-  return left.id < right.id
-end)
-local path = lfs.writedir() .. 'Logs/DcsGlobalCommandIds.json'
-local file = assert(io.open(path, 'w'))
-file:write('{"schemaVersion":1,"dcsVersion":"' .. tostring(_G.DCS_VERSION or 'unknown') .. '","commands":[')
-for index, command in ipairs(results) do
-  if index > 1 then file:write(',') end
-  file:write(string.format('{"symbol":"%s","id":%d}', command.symbol, command.id))
-end
-file:write(']}')
-file:close()
-""";
 }
