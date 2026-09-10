@@ -174,6 +174,44 @@ public sealed class CommandAssignmentTests
         Assert.Equal("d-new", unbound.Command);
     }
 
+    [Fact]
+    public void AssignmentGuidance_BlocksApplicableUiLayerConflict()
+    {
+        var row = Row("keyDiffs", "JOY_BTN1", "d-old", "Old command");
+        row.ProfileFile = "tm-mfd.diff.lua";
+        row.CalloutId = "mfd-osb-t1-shifted";
+        row.Reformers = ["MOZA_F16_F18_BTN3"];
+        var grip = new PreviewDevice { DeviceId = "moza-ab9-hornet-grip", BindingCount = 1, ProfileFile = "grip.diff.lua" };
+        var mfd = new PreviewDevice { DeviceId = "tm-mfd", InstanceHint = "3", BindingCount = 1, ProfileFile = row.ProfileFile };
+        var viewModel = new MainViewModel
+        {
+            HasPreview = true, CommonRoot = FindRoot(), ProfilesDir = "profiles", OutputDir = "output",
+            DisplayName = "Test", InputModuleId = "Test", KneeboardId = "Test",
+        };
+        viewModel.Devices.Add(grip);
+        viewModel.Devices.Add(mfd);
+        viewModel.Modifiers.Add(new PreviewModifier
+            { Name = "MOZA_F16_F18_BTN3", DeviceId = "moza-ab9-hornet-grip", Key = "JOY_BTN3" });
+        viewModel.ReplacePreviewRows([row]);
+        viewModel.SelectedPreviewRow = row;
+        viewModel.SelectedCatalogCommand = Command("button", "d-new", "New command");
+
+        Assert.False(viewModel.CanAssignSelectedCommand);
+        Assert.True(viewModel.HasUiLayerConflicts);
+        Assert.False(viewModel.ProceedCommand.CanExecute(null));
+        Assert.Contains("Reserved by the applicable UI Layer: VR Zoom", viewModel.AssignmentGuidance);
+        Assert.Throws<InvalidOperationException>(() => viewModel.AssignSelectedCommand());
+        Assert.Empty(viewModel.PendingAssignments);
+    }
+
+    private static string FindRoot()
+    {
+        var directory = new DirectoryInfo(AppContext.BaseDirectory);
+        while (directory is not null && !File.Exists(Path.Combine(directory.FullName, "assets", "shared", "ui-layer", "functions.json")))
+            directory = directory.Parent;
+        return directory?.FullName ?? throw new DirectoryNotFoundException("DCS-Common root not found.");
+    }
+
     private static PreviewRow Row(string section, string key, string command, string name) => new()
     {
         ProfileFile = "Stick.diff.lua", Stem = "Stick", Section = section, Key = key,

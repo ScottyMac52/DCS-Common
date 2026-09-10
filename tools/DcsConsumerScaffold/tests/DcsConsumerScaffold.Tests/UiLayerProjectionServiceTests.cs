@@ -35,6 +35,28 @@ public sealed class UiLayerProjectionServiceTests
         Assert.Empty(_service.Load(Root, mfd2, [grip, mfd3, mfd2]));
     }
 
+    [Fact]
+    public void ConflictMatchesPhysicalModifierAliasButNotBaseLayer()
+    {
+        var grip = Device("moza-ab9-hornet-grip");
+        var mfd3 = Device("tm-mfd", "3");
+        var modifier = new PreviewModifier
+            { Name = "MOZA_F16_F18_BTN3", DeviceId = "moza-ab9-hornet-grip", Key = "JOY_BTN3" };
+        var shifted = new PreviewRow
+        {
+            ProfileFile = mfd3.ProfileFile, CalloutId = "mfd-osb-t1-shifted",
+            Reformers = [modifier.Name!], Key = "JOY_BTN1", Section = "keyDiffs",
+        };
+
+        var projections = _service.Load(Root, mfd3, [grip, mfd3]);
+        var conflict = _service.FindConflict(shifted, _service.ResolveModifier(Root, modifier.DeviceId!), projections);
+
+        Assert.NotNull(conflict);
+        Assert.Equal("VR Zoom", conflict.Label);
+        shifted.Reformers = [];
+        Assert.Null(_service.FindConflict(shifted, _service.ResolveModifier(Root, modifier.DeviceId!), projections));
+    }
+
     private static PreviewDevice Device(string id, string? instance = null) => new()
         { DeviceId = id, InstanceHint = instance, BindingCount = 1, ProfileFile = id + ".diff.lua" };
 
