@@ -779,12 +779,13 @@ public sealed class MainViewModel : INotifyPropertyChanged
         var modifier = Modifiers.FirstOrDefault(item =>
             string.Equals(item.Name, row.Reformers[0], StringComparison.Ordinal));
         var effectiveModifier = modifier?.Name;
-        if (!string.IsNullOrWhiteSpace(modifier?.DeviceId))
+        var modifierDeviceId = modifier?.DeviceId;
+        if (!string.IsNullOrWhiteSpace(modifierDeviceId))
         {
-            if (!_uiLayerModifierCache.TryGetValue(modifier.DeviceId!, out effectiveModifier))
+            if (!_uiLayerModifierCache.TryGetValue(modifierDeviceId, out effectiveModifier))
             {
-                effectiveModifier = _uiLayerProjection.ResolveModifier(CommonRoot, modifier.DeviceId!) ?? modifier.Name;
-                _uiLayerModifierCache[modifier.DeviceId!] = effectiveModifier;
+                effectiveModifier = _uiLayerProjection.ResolveModifier(CommonRoot, modifierDeviceId) ?? modifier?.Name;
+                _uiLayerModifierCache[modifierDeviceId] = effectiveModifier;
             }
         }
         return _uiLayerProjection.FindConflict(
