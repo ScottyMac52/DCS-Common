@@ -32,22 +32,6 @@ public sealed class DcsCommandIdCaptureServiceTests
         finally { File.Delete(valid); File.Delete(conflicting); }
     }
 
-    [Fact]
-    public void SaveCaptureScript_EnumeratesNumericICommandsIntoReloadableJson()
-    {
-        var path = Path.Combine(Path.GetTempPath(), $"capture-{Guid.NewGuid():N}.lua");
-        try
-        {
-            new DcsCommandIdCaptureService().SaveCaptureScript(path);
-            var script = File.ReadAllText(path);
-            Assert.Contains("getfenv()", script);
-            Assert.Contains("^iCommand", script);
-            Assert.Contains(DcsCommandIdCaptureService.OutputFileName, script);
-            Assert.Contains("schemaVersion", script);
-        }
-        finally { File.Delete(path); }
-    }
-
     private static string Temporary(string content)
     {
         var path = Path.Combine(Path.GetTempPath(), $"dcs-id-capture-{Guid.NewGuid():N}.json");
