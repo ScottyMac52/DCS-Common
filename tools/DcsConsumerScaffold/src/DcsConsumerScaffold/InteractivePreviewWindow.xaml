@@ -63,6 +63,8 @@
      <TextBlock Text="Pending command" FontWeight="SemiBold"/><TextBlock x:Name="PendingCommand" TextWrapping="Wrap" Margin="0,2,0,10"/>
      <TextBlock Text="DCS default label" FontWeight="SemiBold"/><TextBlock x:Name="DefaultLabel" TextWrapping="Wrap" Margin="0,2,0,10"/>
      <TextBlock Text="Displayed label" FontWeight="SemiBold"/><TextBox x:Name="LabelEditor" TextChanged="LabelChanged" IsEnabled="False" Margin="0,4,0,8" TextWrapping="Wrap"/>
+     <TextBlock Text="Axis tuning" FontWeight="SemiBold"/><TextBlock x:Name="AxisTuningSummary" TextWrapping="Wrap" Margin="0,2,0,6"/>
+     <Button x:Name="TuneAxisButton" Content="Tune axis…" Click="TuneAxisClicked" Margin="0,4" Padding="8,5" IsEnabled="False"/>
      <Button Content="Assign selected command" Click="AssignClicked" Margin="0,4" Padding="8,5"/>
      <Button Content="Clear assignment" Click="ClearClicked" Margin="0,4" Padding="8,5"/>
      <Button Content="Undo assignment / Restore" Click="UndoClicked" Margin="0,4" Padding="8,5"/>

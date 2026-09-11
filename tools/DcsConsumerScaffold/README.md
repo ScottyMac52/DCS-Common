@@ -19,6 +19,7 @@ Publisher: **Vyper Industries** · TFM: `net10.0-windows` · Assembly: `DcsConsu
 11. **Proceed** — writes a consumer tree in consumer mode, or safely synchronizes only `assets/shared/ui-layer` in UI Layer mode
 12. **Definitive UI Layer Editor** — load the complete canonical catalog without connected devices, inspect profiles/bindings/modifiers, reconcile an imported UiLayer folder with explicit per-file actions, validate, and save atomically
 13. **DCS Command Browser (first slice)** — import a versioned module command catalog after Load Preview, then search and filter it by DCS name, category, canonical binding key, type, and bound/unbound state
+14. **Axis tuning** — select any assigned axis in the interactive device preview and choose **Tune axis…** to edit deadzone, X/Y saturation, curvature, inversion, and slider mode. Values are shown as DCS-style percentages and are written to the binding's native `filter` table when **Proceed** runs.
 
 The selected grip is applied only to generic MOZA AB9 profiles and is preserved as the generated page `deviceId`. No JSON override file is required in the WPF importer; the preview grids show how each mapping and physical instance was resolved. Repeated devices automatically receive stable GUID-backed profile keys. Entering a role gives that physical instance a readable, GUID-associated alias in the generated consumer.
 
@@ -27,6 +28,8 @@ In consumer mode, selecting or pasting a profiles directory below `Config/Input/
 When the output directory is an existing consumer, repository-only devices are preserved by default. Their red **Unused** state means “not observed in this scaffold session,” not “delete.” Check **Remove** on a repository-only device to request explicit deletion. This protects disconnected and axis-only controllers such as the TPR rudder. The definitive UI Layer is maintained separately; module packaging emits only devices whose referenced module profiles contain effective added keys/buttons/POVs or axes.
 
 Authoritative UI Layer previews render the selected Saved Games profiles directly and do not compose the shared UI Layer overlay back onto itself. Consumer previews continue to add the applicable shared overlay. In UI Layer mode, consumer-only identity/output fields are disabled, the source `modifiers.lua` and DCS-Common root are required, and **Proceed** remains disabled until all blocking preview errors (including unknown modifiers) are corrected.
+
+Axis filters are first-class profile data. IPI preserves existing tuning when it merges repository assignments or moves an axis to a different DCS command. Tuning can be staged independently of a command change, appears in the selected-control panel, participates in Undo/Restore, and is validated before any destination file is written. Valid ranges match DCS storage: deadzone and saturation are 0–100%, curvature entries are -100–100%, and invert/slider are Boolean. **DCS defaults** stages an explicit zero-deadzone, full-saturation, zero-curve, non-inverted, non-slider filter.
 
 Installer (tag `vX.X.X.X`): Inno Setup via shared-github-workflows. The installed EXE still expects **Node on PATH** and a DCS-Common checkout (`DCS_COMMON_ROOT` or browse).
 

@@ -261,6 +261,15 @@ public sealed class PreviewRow : INotifyPropertyChanged
     [JsonPropertyName("modifierModes")]
     public List<string?> ModifierModes { get; set; } = [];
 
+    [JsonPropertyName("axisFilter")]
+    public AxisFilter? AxisFilter { get; set; }
+
+    [JsonIgnore]
+    public bool IsAxis => Section == "axisDiffs";
+
+    [JsonIgnore]
+    public string AxisFilterSummary => !IsAxis ? string.Empty : (AxisFilter ?? AxisFilter.Default).Summary;
+
     [JsonIgnore]
     public PreviewChangeState ChangeState
     {
@@ -310,10 +319,42 @@ public sealed class PreviewRow : INotifyPropertyChanged
         PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(DefaultLabel)));
         PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(BindingId)));
     }
+
+    public void ApplyAxisFilter(AxisFilter? filter)
+    {
+        AxisFilter = filter?.Clone();
+        ChangeState = PreviewChangeState.Changed;
+        ChangeReason = "Pending axis tuning change.";
+        PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(AxisFilter)));
+        PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(AxisFilterSummary)));
+    }
+}
+
+public sealed class AxisFilter
+{
+    [JsonPropertyName("deadzone")] public double Deadzone { get; set; }
+    [JsonPropertyName("saturationX")] public double SaturationX { get; set; } = 1;
+    [JsonPropertyName("saturationY")] public double SaturationY { get; set; } = 1;
+    [JsonPropertyName("curvature")] public List<double> Curvature { get; set; } = [];
+    [JsonPropertyName("invert")] public bool Invert { get; set; }
+    [JsonPropertyName("slider")] public bool Slider { get; set; }
+
+    [JsonIgnore] public static AxisFilter Default => new();
+    [JsonIgnore] public string Summary =>
+        $"Deadzone {Deadzone * 100:0.#}% • Sat X {SaturationX * 100:0.#}% • Sat Y {SaturationY * 100:0.#}% • " +
+        $"Curve {(Curvature.Count == 0 ? "0" : string.Join(", ", Curvature.Select(value => $"{value * 100:0.#}")))}" +
+        (Invert ? " • Inverted" : string.Empty) + (Slider ? " • Slider" : string.Empty);
+
+    public AxisFilter Clone() => new()
+    {
+        Deadzone = Deadzone, SaturationX = SaturationX, SaturationY = SaturationY,
+        Curvature = [.. Curvature], Invert = Invert, Slider = Slider,
+    };
 }
 
 public sealed class DcsCommandAssignment
 {
+    [JsonPropertyName("tuneOnly")] public bool TuneOnly { get; init; }
     [JsonPropertyName("clear")] public bool Clear { get; init; }
     [JsonPropertyName("profileFile")] public string ProfileFile { get; init; } = string.Empty;
     [JsonPropertyName("section")] public string Section { get; init; } = string.Empty;
@@ -322,6 +363,7 @@ public sealed class DcsCommandAssignment
     [JsonPropertyName("allowCreate")] public bool AllowCreate { get; init; }
     [JsonPropertyName("command")] public string Command { get; init; } = string.Empty;
     [JsonPropertyName("name")] public string Name { get; init; } = string.Empty;
+    [JsonPropertyName("axisFilter")] public AxisFilter? AxisFilter { get; init; }
 }
 
 public sealed class PreviewModifier : INotifyPropertyChanged

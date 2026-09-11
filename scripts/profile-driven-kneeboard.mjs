@@ -76,10 +76,30 @@ function topLevelEntries(body) {
 function listInputs(entryBody, listName) {
   const actual = tableBody(entryBody, listName);
   if (!actual) return [];
-  return [...actual.matchAll(/\["key"\]\s*=\s*"((?:\\.|[^"])*)"([\s\S]*?)(?=\["key"\]|$)/g)].map((match) => ({
-    key: unescapeLuaString(match[1]),
-    reformers: [...match[2].matchAll(/\[\d+\]\s*=\s*"((?:\\.|[^"])*)"/g)].map((item) => unescapeLuaString(item[1])),
-  }));
+  return [...actual.matchAll(/\["key"\]\s*=\s*"((?:\\.|[^"])*)"([\s\S]*?)(?=\["key"\]|$)/g)].map((match) => {
+    const tail = match[2];
+    const filterBody = tableBody(tail, 'filter');
+    const number = (name) => {
+      const value = filterBody.match(new RegExp(`\\["${name}"\\]\\s*=\\s*(-?(?:\\d+(?:\\.\\d*)?|\\.\\d+)(?:[eE][+-]?\\d+)?)`))?.[1];
+      return value === undefined ? undefined : Number(value);
+    };
+    const bool = (name) => {
+      const value = filterBody.match(new RegExp(`\\["${name}"\\]\\s*=\\s*(true|false)`))?.[1];
+      return value === undefined ? undefined : value === 'true';
+    };
+    const curvatureBody = filterBody ? tableBody(filterBody, 'curvature') : '';
+    const curvature = [...curvatureBody.matchAll(/\[\d+\]\s*=\s*(-?(?:\d+(?:\.\d*)?|\.\d+)(?:[eE][+-]?\d+)?)/g)]
+      .map((item) => Number(item[1]));
+    const filter = filterBody ? {
+      deadzone: number('deadzone'), saturationX: number('saturationX'), saturationY: number('saturationY'),
+      curvature, invert: bool('invert'), slider: bool('slider'),
+    } : undefined;
+    return {
+      key: unescapeLuaString(match[1]),
+      reformers: [...tail.matchAll(/\[\d+\]\s*=\s*"((?:\\.|[^"])*)"/g)].map((item) => unescapeLuaString(item[1])),
+      ...(filter ? { filter } : {}),
+    };
+  });
 }
 
 export function parseDcsDiffLua(source, { filename = 'profile.diff.lua' } = {}) {

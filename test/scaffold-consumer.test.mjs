@@ -122,6 +122,43 @@ test('command assignments reject stale physical controls instead of silently inv
   }], { filename: 'Stick.diff.lua' }), /no longer present/);
 });
 
+test('axis filters round-trip and tune without changing the assigned command', () => {
+  const source = `local diff = { ["axisDiffs"] = {
+    ["a2001cdnil"] = { ["added"] = { [1] = {
+      ["key"] = "JOY_X", ["filter"] = { ["curvature"] = { [1] = 0.15 },
+        ["deadzone"] = 0.03, ["invert"] = false, ["saturationX"] = 1,
+        ["saturationY"] = 0.85, ["slider"] = false },
+    } }, ["name"] = "Pitch" },
+  } } return diff`;
+  const original = parseDcsDiffLua(source).bindings[0].added[0].filter;
+  assert.deepEqual(original, { deadzone: 0.03, saturationX: 1, saturationY: 0.85, curvature: [0.15], invert: false, slider: false });
+
+  const tuned = applyDcsCommandAssignments(source, [{
+    profileFile: 'Stick.diff.lua', section: 'axisDiffs', key: 'JOY_X', reformers: [], tuneOnly: true,
+    axisFilter: { deadzone: 0.05, saturationX: 0.9, saturationY: 0.8, curvature: [-0.1, 0, 0.1], invert: true, slider: true },
+  }]);
+  const parsed = parseDcsDiffLua(tuned).bindings;
+  assert.equal(parsed[0].command, 'a2001cdnil');
+  assert.equal(parsed[0].name, 'Pitch');
+  assert.deepEqual(parsed[0].added[0], {
+    key: 'JOY_X', reformers: [],
+    filter: { deadzone: 0.05, saturationX: 0.9, saturationY: 0.8, curvature: [-0.1, 0, 0.1], invert: true, slider: true },
+  });
+});
+
+test('axis command reassignment preserves tuning and rejects invalid ranges', () => {
+  const source = `local diff = { ["axisDiffs"] = {
+    ["a-old"] = { ["added"] = { [1] = { ["key"] = "JOY_Y", ["filter"] = {
+      ["curvature"] = {}, ["deadzone"] = 0.02, ["invert"] = true,
+      ["saturationX"] = 1, ["saturationY"] = 0.75, ["slider"] = false } } }, ["name"] = "Old" },
+  } } return diff`;
+  const reassigned = applyDcsCommandAssignments(source, [{ profileFile: 'Stick.diff.lua', section: 'axisDiffs', key: 'JOY_Y', reformers: [], command: 'a-new', name: 'New' }]);
+  assert.deepEqual(parseDcsDiffLua(reassigned).bindings.find(({ command }) => command === 'a-new').added[0].filter,
+    { deadzone: 0.02, saturationX: 1, saturationY: 0.75, curvature: [], invert: true, slider: false });
+  assert.throws(() => applyDcsCommandAssignments(source, [{ section: 'axisDiffs', key: 'JOY_Y', reformers: [], tuneOnly: true,
+    axisFilter: { deadzone: 1.1 } }]), /deadzone must be between 0 and 1/);
+});
+
 test('command assignments may create a catalog-validated unbound physical control', () => {
   const source = `local diff = { ["keyDiffs"] = {
     ["d-old"] = { ["added"] = { [1] = { ["key"] = "JOY_BTN1" } }, ["name"] = "Old" },
