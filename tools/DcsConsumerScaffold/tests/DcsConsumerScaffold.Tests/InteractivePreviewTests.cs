@@ -95,4 +95,35 @@ public sealed class InteractivePreviewTests
         Assert.False(model.CanAssignSelectedCommand);
         Assert.Throws<InvalidOperationException>(() => model.AssignSelectedCommand());
     }
+
+    [Fact]
+    public void AxisTuningStagesFilterAndUndoRestoresOriginalValues()
+    {
+        var original = new AxisFilter { Deadzone = .02, SaturationX = 1, SaturationY = .9, Curvature = [.1], Invert = false };
+        var row = new PreviewRow { ProfileFile = "Stick.diff.lua", Stem = "Stick", Key = "JOY_X", Section = "axisDiffs",
+            Command = "a2001", Name = "Pitch", AxisFilter = original.Clone() };
+        var model = new MainViewModel { HasPreview = true };
+        model.ReplacePreviewRows([row]);
+        var pending = model.StageAxisTuning(row, new AxisFilter
+        {
+            Deadzone = .05, SaturationX = .95, SaturationY = .8, Curvature = [-.1, 0, .1], Invert = true, Slider = true,
+        });
+        Assert.True(pending.TuneOnly);
+        Assert.Equal(.05, pending.AxisFilter!.Deadzone);
+        Assert.True(row.AxisFilter!.Invert);
+        model.UndoAssignment(row);
+        Assert.Equal(.02, row.AxisFilter!.Deadzone);
+        Assert.False(row.AxisFilter.Invert);
+        Assert.Empty(model.PendingAssignments);
+    }
+
+    [Fact]
+    public void AxisTuningValidatesDcsRangesAndRejectsButtons()
+    {
+        var model = new MainViewModel { HasPreview = true };
+        var axis = new PreviewRow { ProfileFile = "Stick.diff.lua", Key = "JOY_X", Section = "axisDiffs", Command = "a1", Name = "Pitch" };
+        Assert.Throws<InvalidOperationException>(() => model.StageAxisTuning(axis, new AxisFilter { Deadzone = 1.01 }));
+        var button = new PreviewRow { ProfileFile = "Stick.diff.lua", Key = "JOY_BTN1", Section = "keyDiffs", Command = "d1", Name = "Fire" };
+        Assert.Throws<InvalidOperationException>(() => model.StageAxisTuning(button, AxisFilter.Default));
+    }
 }

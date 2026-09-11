@@ -9,6 +9,10 @@ DCS-Common owns reusable workflows, shared hardware identities, draw.io sources,
 
 ## 0. Preferred path: DCS Input Profile Importer
 
+### Axis tuning
+
+The interactive IPI preview supports native DCS axis tuning. Select an assigned axis callout, choose **Tune axis…**, and edit deadzone, saturation X, saturation Y, curvature, invert, or slider. The editor presents numeric values as percentages while `.diff.lua` stores normalized values. Existing `filter` tables are preserved through repository-profile merges and command reassignment; **Proceed** writes a staged tuning-only change without requiring the axis command to be reassigned. Invalid values stop the write before consumer files are changed.
+
 For a **new** consumer, prefer scaffolding instead of hand-copying files.
 
 | Tool | Location |

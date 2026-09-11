@@ -256,13 +256,40 @@ function luaString(value) {
   return JSON.stringify(String(value)).replace(/\u2028/gu, '\\u2028').replace(/\u2029/gu, '\\u2029');
 }
 
+function normalizeAxisFilter(filter, context = 'axis filter') {
+  if (filter === undefined || filter === null) return undefined;
+  const number = (name, fallback, minimum, maximum) => {
+    const value = filter[name] ?? fallback;
+    if (typeof value !== 'number' || !Number.isFinite(value) || value < minimum || value > maximum)
+      throw new Error(`${context}: ${name} must be between ${minimum} and ${maximum}`);
+    return value;
+  };
+  const curvature = filter.curvature ?? [];
+  if (!Array.isArray(curvature) || curvature.some((value) => typeof value !== 'number' || !Number.isFinite(value) || value < -1 || value > 1))
+    throw new Error(`${context}: curvature must contain numbers between -1 and 1`);
+  if (filter.invert !== undefined && typeof filter.invert !== 'boolean') throw new Error(`${context}: invert must be true or false`);
+  if (filter.slider !== undefined && typeof filter.slider !== 'boolean') throw new Error(`${context}: slider must be true or false`);
+  return {
+    deadzone: number('deadzone', 0, 0, 1), saturationX: number('saturationX', 1, 0, 1),
+    saturationY: number('saturationY', 1, 0, 1), curvature: [...curvature],
+    invert: filter.invert ?? false, slider: filter.slider ?? false,
+  };
+}
+
+function serializeAxisFilter(filter) {
+  if (!filter) return '';
+  const value = normalizeAxisFilter(filter);
+  const curvature = value.curvature.map((entry, index) => `[${index + 1}] = ${entry}`).join(', ');
+  return `, ["filter"] = { ["curvature"] = { ${curvature} }, ["deadzone"] = ${value.deadzone}, ["invert"] = ${value.invert}, ["saturationX"] = ${value.saturationX}, ["saturationY"] = ${value.saturationY}, ["slider"] = ${value.slider} }`;
+}
+
 function serializeInputs(name, inputs) {
   if (!inputs?.length) return '';
   const entries = inputs.map((input, index) => {
     const reformers = input.reformers?.length
       ? `, ["reformers"] = { ${input.reformers.map((value, i) => `[${i + 1}] = ${luaString(value)}`).join(', ')} }`
       : '';
-    return `        [${index + 1}] = { ["key"] = ${luaString(input.key)}${reformers} },`;
+    return `        [${index + 1}] = { ["key"] = ${luaString(input.key)}${serializeAxisFilter(input.filter)}${reformers} },`;
   });
   return `      ["${name}"] = {\n${entries.join('\n')}\n      },\n`;
 }
@@ -275,11 +302,21 @@ export function applyDcsCommandAssignments(source, assignments, { filename = 'pr
     if (!['keyDiffs', 'axisDiffs'].includes(assignment.section)) {
       throw new Error(`${filename}: assignment section must be keyDiffs or axisDiffs`);
     }
-    if ((!assignment.clear && (!assignment.command || !assignment.name)) || !assignment.key) {
+    if (assignment.tuneOnly && assignment.section !== 'axisDiffs') throw new Error(`${filename}: only axisDiffs inputs can be tuned`);
+    if ((!assignment.clear && !assignment.tuneOnly && (!assignment.command || !assignment.name)) || !assignment.key) {
       throw new Error(`${filename}: assignment requires command, name, and key`);
     }
     const reformers = [...new Set(assignment.reformers ?? [])].sort((a, b) => a.localeCompare(b));
+    if (assignment.tuneOnly) {
+      const matches = parsed.bindings.flatMap((binding) => binding.section === 'axisDiffs'
+        ? binding.added.filter((input) => input.key === assignment.key && chordKey(input.reformers) === chordKey(reformers)) : []);
+      if (matches.length === 0) throw new Error(`${filename}: ${assignment.key} (${reformers.join(' + ') || 'base'}) is no longer present in axisDiffs`);
+      if (matches.length > 1) throw new Error(`${filename}: ${assignment.key} (${reformers.join(' + ') || 'base'}) has ambiguous axis assignments`);
+      matches[0].filter = normalizeAxisFilter(assignment.axisFilter, `${filename}: ${assignment.key}`);
+      continue;
+    }
     let foundControl = false;
+    let retainedFilter;
     for (const binding of parsed.bindings.filter((item) => item.section === assignment.section)) {
       if (binding.removed.some((input) =>
         input.key === assignment.key && chordKey(input.reformers) === chordKey(reformers))) {
@@ -291,6 +328,7 @@ export function applyDcsCommandAssignments(source, assignments, { filename = 'pr
         const matches = input.key === assignment.key && chordKey(input.reformers) === chordKey(reformers);
         if (matches) {
           foundControl = true;
+          if (binding.section === 'axisDiffs' && input.filter) retainedFilter = input.filter;
           if (assignment.clear && !binding.removed.some((removed) => removed.key === input.key && chordKey(removed.reformers) === chordKey(input.reformers)))
             binding.removed.push(input);
         }
@@ -309,7 +347,8 @@ export function applyDcsCommandAssignments(source, assignments, { filename = 'pr
     }
     target.name = assignment.name;
     target.removed = target.removed.filter((input) => input.key !== assignment.key || chordKey(input.reformers) !== chordKey(reformers));
-    target.added.push({ key: assignment.key, reformers });
+    target.added.push({ key: assignment.key, reformers,
+      ...((assignment.axisFilter ?? retainedFilter) ? { filter: normalizeAxisFilter(assignment.axisFilter ?? retainedFilter, `${filename}: ${assignment.key}`) } : {}) });
   }
 
   return serializeDcsProfile(parsed);
@@ -395,6 +434,11 @@ function previewWithAssignments(preview, assignments, commonRoot) {
     const matches = (row) => row.profileFile === assignment.profileFile && row.section === assignment.section &&
       row.key === assignment.key && chordKey(row.reformers) === chordKey(assignment.reformers);
     let index = rows.findIndex(matches);
+    if (assignment.tuneOnly) {
+      if (index < 0 || rows[index].section !== 'axisDiffs') throw new Error('Axis tuning target is no longer in the preview');
+      rows[index] = { ...rows[index], axisFilter: normalizeAxisFilter(assignment.axisFilter, `${assignment.profileFile}: ${assignment.key}`) };
+      continue;
+    }
     if (assignment.clear) { rows = rows.filter((row) => !matches(row)); continue; }
     if (index < 0 && assignment.allowCreate) {
       const device = preview.devices.find((item) => item.profileFile === assignment.profileFile);
@@ -422,6 +466,7 @@ function previewWithAssignments(preview, assignments, commonRoot) {
       defaultLabel: assignment.name,
       label: assignment.name,
       labelSource: 'dcs',
+      ...(assignment.axisFilter ? { axisFilter: normalizeAxisFilter(assignment.axisFilter, `${assignment.profileFile}: ${assignment.key}`) } : {}),
     };
     updated.bindingId = stableBindingId(updated);
     const overrides = preview.labelsPath ? JSON.parse(readFileSync(preview.labelsPath, 'utf8')) : {};
@@ -650,6 +695,7 @@ export function buildPreview({ profilesDir, repositoryProfilesDir = null, modifi
           command: binding.command,
           name: binding.name,
           key: input.key,
+          axisFilter: binding.section === 'axisDiffs' ? input.filter : undefined,
           catalogKey,
           reformers,
           chord: chordKey(reformers),

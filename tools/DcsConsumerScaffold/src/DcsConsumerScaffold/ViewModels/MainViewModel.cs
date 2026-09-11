@@ -173,8 +173,8 @@ public sealed class MainViewModel : INotifyPropertyChanged
     }
 
     public string PendingAssignmentSummary => PendingAssignments.Count == 0
-        ? "No pending command assignments"
-        : $"{PendingAssignments.Count} pending command assignment(s)";
+        ? "No pending profile changes"
+        : $"{PendingAssignments.Count} pending profile change(s)";
 
     public string SelectedTargetBindingState
     {
@@ -715,6 +715,7 @@ public sealed class MainViewModel : INotifyPropertyChanged
             Reformers = [.. row.Reformers.OrderBy(value => value, StringComparer.Ordinal)],
             Command = command.BindingKey,
             Name = command.Name,
+            AxisFilter = row.IsAxis ? row.AxisFilter?.Clone() : null,
             AllowCreate = _emptyControls.Contains(row) || row.IsUnboundCandidate || PendingFor(row)?.AllowCreate == true,
         };
         var existing = PendingAssignments.FirstOrDefault(item =>
@@ -848,6 +849,42 @@ public sealed class MainViewModel : INotifyPropertyChanged
         string.Equals(item.ProfileFile, row.ProfileFile, StringComparison.OrdinalIgnoreCase) && item.Section == row.Section && item.Key == row.Key &&
         item.Reformers.OrderBy(value => value, StringComparer.Ordinal).SequenceEqual(row.Reformers.OrderBy(value => value, StringComparer.Ordinal)));
 
+    public DcsCommandAssignment StageAxisTuning(PreviewRow row, AxisFilter filter)
+    {
+        if (!row.IsAxis || string.IsNullOrWhiteSpace(row.Command))
+            throw new InvalidOperationException("Select an assigned axis before tuning it.");
+        ValidateAxisFilter(filter);
+        RememberOriginal(row);
+        var previous = PendingFor(row);
+        if (previous is not null) PendingAssignments.Remove(previous);
+        var assignment = new DcsCommandAssignment
+        {
+            ProfileFile = row.ProfileFile!, Section = row.Section!, Key = row.Key!,
+            Reformers = [.. row.Reformers.OrderBy(value => value, StringComparer.Ordinal)],
+            TuneOnly = previous is null || previous.TuneOnly,
+            Clear = previous?.Clear ?? false,
+            AllowCreate = previous?.AllowCreate ?? false,
+            Command = previous is { TuneOnly: false } ? previous.Command : row.Command!,
+            Name = previous is { TuneOnly: false } ? previous.Name : row.Name ?? row.Command!,
+            AxisFilter = filter.Clone(),
+        };
+        PendingAssignments.Add(assignment);
+        row.ApplyAxisFilter(filter);
+        AssignmentChanged();
+        StatusText = $"Pending axis tuning: {row.Stem} {row.Key} — {filter.Summary}. Proceed will write the filter.";
+        return assignment;
+    }
+
+    private static void ValidateAxisFilter(AxisFilter filter)
+    {
+        static bool Range(double value, double min, double max) => !double.IsNaN(value) && !double.IsInfinity(value) && value >= min && value <= max;
+        if (!Range(filter.Deadzone, 0, 1)) throw new InvalidOperationException("Deadzone must be between 0 and 100 percent.");
+        if (!Range(filter.SaturationX, 0, 1) || !Range(filter.SaturationY, 0, 1))
+            throw new InvalidOperationException("Saturation X and Y must be between 0 and 100 percent.");
+        if (filter.Curvature.Any(value => !Range(value, -1, 1)))
+            throw new InvalidOperationException("Every curvature value must be between -100 and 100.");
+    }
+
     public string OriginalCommandName(PreviewRow row) => _assignmentOriginals.TryGetValue(row, out var original) ? original.Name ?? "" : row.Name ?? "";
 
     public bool HasConflict(PreviewRow row) => Rows.Count(item => item.ProfileFile == row.ProfileFile && item.Section == row.Section && item.Key == row.Key &&
@@ -875,6 +912,7 @@ public sealed class MainViewModel : INotifyPropertyChanged
             row.ApplyCommandAssignment(original.Command ?? "", original.Name ?? "");
             row.DefaultLabel = original.DefaultLabel;
             row.BindingId = original.BindingId;
+            row.AxisFilter = original.AxisFilter?.Clone();
             row.IsUnboundCandidate = original.IsUnboundCandidate;
             row.ApplyLabel(original.Label, original.LabelSource ?? "dcs");
             row.ChangeState = original.ChangeState;
