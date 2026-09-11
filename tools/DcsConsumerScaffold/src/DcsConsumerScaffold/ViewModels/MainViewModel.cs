@@ -15,8 +15,7 @@ public sealed class MainViewModel : INotifyPropertyChanged
     private readonly UiLayerImportService _uiLayerImport;
     private readonly PreviewComparisonService _comparison;
     private readonly DcsCommandCatalogService _commandCatalogService;
-    private readonly InstalledDcsCommandCatalogProvider _installedCommandCatalogProvider;
-    private readonly DcsCommandIdCaptureService _commandIdCaptureService;
+    private readonly DcsHtmlCommandCatalogProvider _htmlCommandCatalogProvider;
     private readonly UiLayerProjectionService _uiLayerProjection;
     private RepositoryPreviewSnapshot? _comparisonSnapshot;
     private string _profilesDir = string.Empty;
@@ -74,16 +73,14 @@ public sealed class MainViewModel : INotifyPropertyChanged
         UiLayerImportService? uiLayerImport = null,
         PreviewComparisonService? comparison = null,
         DcsCommandCatalogService? commandCatalogService = null,
-        InstalledDcsCommandCatalogProvider? installedCommandCatalogProvider = null,
-        DcsCommandIdCaptureService? commandIdCaptureService = null)
+        DcsHtmlCommandCatalogProvider? htmlCommandCatalogProvider = null)
     {
         _engine = engine ?? new ScaffoldEngineService();
         _currentLabels = currentLabels ?? new CurrentLabelService();
         _uiLayerImport = uiLayerImport ?? new UiLayerImportService();
         _comparison = comparison ?? new PreviewComparisonService();
         _commandCatalogService = commandCatalogService ?? new DcsCommandCatalogService();
-        _installedCommandCatalogProvider = installedCommandCatalogProvider ?? new InstalledDcsCommandCatalogProvider();
-        _commandIdCaptureService = commandIdCaptureService ?? new DcsCommandIdCaptureService();
+        _htmlCommandCatalogProvider = htmlCommandCatalogProvider ?? new DcsHtmlCommandCatalogProvider();
         _uiLayerProjection = new UiLayerProjectionService();
         LoadPreviewCommand = new RelayCommand(async () => await LoadPreviewAsync(), CanLoadPreview);
         ProceedCommand = new RelayCommand(async () => await ProceedAsync(), CanProceed);
@@ -906,29 +903,16 @@ public sealed class MainViewModel : INotifyPropertyChanged
         StatusText = $"Loaded {CommandCatalog.Count} commands for {document.ModuleId} from {Path.GetFileName(path)}.";
     }
 
-    public void LoadInstalledDcsCommandCatalog(string defaultLuaPath)
+    public void LoadDcsHtmlCommandCatalog(IEnumerable<string> htmlPaths)
     {
         if (!HasPreview)
-            throw new InvalidOperationException("Load a module preview before loading commands from DCS.");
+            throw new InvalidOperationException("Load a module preview before loading DCS Controls HTML exports.");
 
-        var result = _installedCommandCatalogProvider.Build(defaultLuaPath, InputModuleId);
-        ApplyCommandCatalog(result.Document, Path.GetFullPath(defaultLuaPath));
-        var assignable = CommandCatalog.Count - result.UnresolvedEntryCount;
-        StatusText = $"Loaded {CommandCatalog.Count} commands for {result.Document.ModuleId} from {Path.GetFileName(defaultLuaPath)}. " +
-                     $"{assignable} assignable; {result.UnresolvedEntryCount} search-only.";
-    }
-
-    public void LoadCapturedDcsCommandIds(string capturePath)
-    {
-        if (!HasPreview) throw new InvalidOperationException("Load a module preview before loading captured DCS command IDs.");
-        if (string.IsNullOrWhiteSpace(CommandCatalogPath) ||
-            !Path.GetFileName(CommandCatalogPath).Equals("default.lua", StringComparison.OrdinalIgnoreCase))
-            throw new InvalidOperationException("Load commands from the module's DCS default.lua before applying an ID capture.");
-        var ids = _commandIdCaptureService.Load(capturePath, out var dcsVersion);
-        var result = _installedCommandCatalogProvider.Build(CommandCatalogPath, InputModuleId, ids, dcsVersion);
-        ApplyCommandCatalog(result.Document, CommandCatalogPath);
-        var assignable = CommandCatalog.Count - result.UnresolvedEntryCount;
-        StatusText = $"Applied {ids.Count} captured global DCS command IDs. {assignable} of {CommandCatalog.Count} module commands are assignable; {result.UnresolvedEntryCount} remain search-only.";
+        var paths = htmlPaths.ToList();
+        var result = _htmlCommandCatalogProvider.Build(paths, InputModuleId);
+        ApplyCommandCatalog(result.Document, string.Join(";", paths.Select(Path.GetFullPath)));
+        StatusText = $"Loaded {CommandCatalog.Count} commands and {result.EffectiveAssignmentCount} effective assignments " +
+                     $"from {result.FileCount} DCS HTML exports; reconciled {result.DuplicateCommandCount} repeated command rows.";
     }
 
     public void SaveCommandCatalog(string path)

@@ -62,21 +62,15 @@ Grouping is a preview/editor feature only. Proceed still persists the existing r
 
 ## Browse a module command catalog
 
-After **Load Preview**, use **Load from DCS…** under **DCS Commands** and browse directly to the module's `joystick/default.lua` (or `keyboard/default.lua`). For example, the Hornet file is under `FA-18C/joystick/default.lua` even though its preview identity may be `FA-18C_hornet`. The selected file is authoritative, so no installation-root discovery or module-folder-name guessing is required.
+In DCS Controls, select the module and choose **Generate HTML**. DCS writes one HTML file per displayed input device. After **Load Preview**, choose **Load DCS HTML…** under **DCS Commands**, select every generated HTML file for that module, and open them together.
 
-The importer evaluates the selected file and its normal DCS `dofile` and `external_profile` dependencies, then immediately loads the resulting searchable catalog. This resolves command and device tables defined by module scripts instead of requiring numeric literals directly in `default.lua`. When the selected file is inside a normal DCS installation, the DCS version comes from the nearest ancestor `autoupdate.cfg`; a SHA-256 source fingerprint records every definition file used to produce the catalog.
+The importer joins the files into one authoritative catalog, deduplicated by the exact DCS command hash. Repeated hashes must have the same DCS name and category in every device export. Each effective base or modified combo is retained with its device as provenance and binding-state evidence. The source fingerprint covers every selected file and is independent of selection order.
 
-Lua runs in an embedded soft sandbox: OS, process, network, and native-module APIs are unavailable, and dependency paths cannot escape the detected DCS installation. Host-defined symbols that DCS itself normally injects but does not expose as numeric values are retained for searching and clearly marked **Search only**; commands with a complete numeric identity are marked **Assignable**.
+DCS-generated HTML is the only command-catalog extraction source. The importer does not inspect or execute installed `default.lua`, does not require an installation path, and does not use runtime `iCommand*` capture. The export does not include a DCS version, so the importer leaves that value unset instead of guessing it.
 
-**Import catalog…** remains available for catalogs produced by other trusted tooling. The importer rejects a mismatched module ID, unsupported schema, duplicate canonical keys, missing identities, and unknown command types before replacing the current browser contents.
+**Import catalog…** reloads a previously saved schemaVersion 1 catalog. The importer rejects a mismatched module ID, unsupported schema, duplicate canonical keys, missing identities, and unknown command types before replacing the current browser contents.
 
-### Load a verified DCS global command-ID catalog
-
-**Load ID capture…** accepts an existing trusted schemaVersion 1 `DcsGlobalCommandIds.json` file. The importer no longer generates or recommends an in-process DCS capture script: DCS input-definition environments do not reliably expose file output or the injected `iCommand*` table, and modifying an installed `default.lua` can disrupt Controls loading. Never add importer-generated `dofile(...)` hooks to DCS input files or Saved Games `Export.lua`.
-
-When a verified catalog is loaded, the importer executes the selected module definition again with the supplied DCS symbol/ID map. This happens before canonical binding keys are constructed, so separate `down`, `pressed`, and `up` actions are preserved. Installed numeric definitions still take precedence. Supplied global commands are identified by the `dcs-environment-capture` source provider; module cockpit commands with a `cockpit_device_id` are not reclassified as globals.
-
-Choose **Save catalog…** from either assignment screen to save the complete loaded module catalog as schemaVersion 1 JSON. The saved file retains assignability, aliases, action fields, source provenance, DCS version, and search-only entries, and can later be loaded directly with **Import catalog…**.
+Choose **Save catalog…** from either assignment screen to save the complete loaded module catalog as schemaVersion 1 JSON. The saved file retains action fields, source provenance, effective device/combo assignments, and the source fingerprint, and can later be loaded directly with **Import catalog…**.
 
 To change a physical binding, use the side-by-side assignment workspace: select an **Assignable** catalog command on the left, select a compatible button or axis control on the right, and choose **Stage selected replacement**. Step 2 automatically shows only controls matching the selected command type and can be filtered by **Bound/Unbound** state and chord (including no chord). Bound controls come from the selected `.diff.lua` profiles; unbound controls are derived from each resolved DCS-Common hardware catalog for the base layer and every loaded modifier. The selected row's chord is preserved in the staged assignment. **Proceed** may create a new binding only when that exact device, input, and chord was present in the validated hardware-catalog preview; stale or invented controls are rejected. The selected Saved Games source files are never modified.
 
@@ -108,8 +102,8 @@ Minimal schemaVersion 1 example:
         "valueUp": 0.0
       },
       "source": {
-        "provider": "installed-dcs",
-        "file": "Input/joystick/default.lua"
+        "provider": "dcs-controls-html-export",
+        "file": "DCS Generate HTML"
       }
     }
   ]
