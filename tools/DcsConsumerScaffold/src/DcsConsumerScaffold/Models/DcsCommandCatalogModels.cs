@@ -12,7 +12,15 @@ public sealed class DcsCommandCatalogDocument
     [JsonPropertyName("locale")] public string? Locale { get; set; }
     [JsonPropertyName("generatedAt")] public DateTimeOffset? GeneratedAt { get; set; }
     [JsonPropertyName("sourceFingerprint")] public string? SourceFingerprint { get; set; }
+    [JsonPropertyName("sourceFiles")] public List<DcsCommandCatalogSourceFile> SourceFiles { get; set; } = [];
     [JsonPropertyName("commands")] public List<DcsCommandCatalogEntry> Commands { get; set; } = [];
+}
+
+public sealed class DcsCommandCatalogSourceFile
+{
+    [JsonPropertyName("device")] public string Device { get; set; } = string.Empty;
+    [JsonPropertyName("file")] public string File { get; set; } = string.Empty;
+    [JsonPropertyName("sha256")] public string Sha256 { get; set; } = string.Empty;
 }
 
 public sealed class DcsCommandCatalogEntry : INotifyPropertyChanged
@@ -30,6 +38,7 @@ public sealed class DcsCommandCatalogEntry : INotifyPropertyChanged
     [JsonPropertyName("source")] public DcsCommandSource? Source { get; set; }
     [JsonPropertyName("isAssignable")] public bool IsAssignable { get; set; } = true;
     [JsonPropertyName("unavailableReason")] public string? UnavailableReason { get; set; }
+    [JsonPropertyName("currentAssignments")] public List<DcsCommandCurrentAssignment> CurrentAssignments { get; set; } = [];
 
     [JsonIgnore] public string Category => CategoryPath.Count == 0 ? "Uncategorized" : string.Join(" / ", CategoryPath);
     [JsonIgnore] public string SourceDisplay => Source?.Provider ?? "imported-catalog";
@@ -65,6 +74,12 @@ public sealed class DcsCommandCatalogEntry : INotifyPropertyChanged
         field = value;
         PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(name));
     }
+}
+
+public sealed class DcsCommandCurrentAssignment
+{
+    [JsonPropertyName("device")] public string Device { get; set; } = string.Empty;
+    [JsonPropertyName("combo")] public string Combo { get; set; } = string.Empty;
 }
 
 public sealed class DcsCommandActions
