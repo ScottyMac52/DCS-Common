@@ -118,6 +118,22 @@ public sealed class InteractivePreviewTests
     }
 
     [Fact]
+    public void AxisTuningPreservesSparseInvertOnlyFilter()
+    {
+        var row = new PreviewRow { ProfileFile = "Stick.diff.lua", Stem = "Stick", Key = "JOY_Y", Section = "axisDiffs",
+            Command = "a2002", Name = "Roll", AxisFilter = new AxisFilter { Invert = true } };
+        var model = new MainViewModel { HasPreview = true };
+        model.ReplacePreviewRows([row]);
+        var pending = model.StageAxisTuning(row, row.AxisFilter.Clone());
+        Assert.True(pending.AxisFilter!.Invert);
+        Assert.Null(pending.AxisFilter.Deadzone);
+        Assert.Null(pending.AxisFilter.SaturationX);
+        Assert.Null(pending.AxisFilter.SaturationY);
+        Assert.Null(pending.AxisFilter.Curvature);
+        Assert.Null(pending.AxisFilter.Slider);
+    }
+
+    [Fact]
     public void AxisTuningValidatesDcsRangesAndRejectsButtons()
     {
         var model = new MainViewModel { HasPreview = true };
