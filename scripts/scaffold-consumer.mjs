@@ -325,7 +325,7 @@ export function applyDcsCommandAssignments(source, assignments, { filename = 'pr
     const reformers = [...new Set(assignment.reformers ?? [])].sort((a, b) => a.localeCompare(b));
     if (assignment.tuneOnly) {
       const matches = parsed.bindings.flatMap((binding) => binding.section === 'axisDiffs'
-        ? [...binding.added, ...binding.changed].filter((input) => input.key === assignment.key && chordKey(input.reformers) === chordKey(reformers)) : []);
+        ? [...binding.added, ...(binding.changed ?? [])].filter((input) => input.key === assignment.key && chordKey(input.reformers) === chordKey(reformers)) : []);
       if (matches.length === 0) throw new Error(`${filename}: ${assignment.key} (${reformers.join(' + ') || 'base'}) is no longer present in axisDiffs`);
       if (matches.length > 1) throw new Error(`${filename}: ${assignment.key} (${reformers.join(' + ') || 'base'}) has ambiguous axis assignments`);
       matches[0].filter = normalizeAxisFilter(assignment.axisFilter, `${filename}: ${assignment.key}`);
@@ -351,7 +351,7 @@ export function applyDcsCommandAssignments(source, assignments, { filename = 'pr
         return !matches;
       };
       binding.added = binding.added.filter(retain);
-      binding.changed = binding.changed.filter(retain);
+      binding.changed = (binding.changed ?? []).filter(retain);
     }
     if (!foundControl && !(assignment.allowCreate && (allowedInputs === null || allowedInputs.some((input) => input.key === assignment.key && input.section === assignment.section)))) {
       throw new Error(`${filename}: ${assignment.key} (${reformers.join(' + ') || 'base'}) is no longer present in ${assignment.section}`);
@@ -374,8 +374,8 @@ export function applyDcsCommandAssignments(source, assignments, { filename = 'pr
 function serializeDcsProfile(parsed) {
   const sections = ['keyDiffs', 'axisDiffs'].map((section) => {
     const entries = parsed.bindings
-      .filter((binding) => binding.section === section && (binding.added.length > 0 || binding.changed.length > 0 || binding.removed.length > 0))
-      .map((binding) => `    [${luaString(binding.command)}] = {\n${serializeInputs('added', binding.added)}${serializeInputs('changed', binding.changed)}${serializeInputs('removed', binding.removed)}      ["name"] = ${luaString(binding.name)},\n    },`);
+      .filter((binding) => binding.section === section && (binding.added.length > 0 || (binding.changed?.length ?? 0) > 0 || binding.removed.length > 0))
+      .map((binding) => `    [${luaString(binding.command)}] = {\n${serializeInputs('added', binding.added)}${serializeInputs('changed', binding.changed ?? [])}${serializeInputs('removed', binding.removed)}      ["name"] = ${luaString(binding.name)},\n    },`);
     return entries.length ? `  ["${section}"] = {\n${entries.join('\n')}\n  },` : '';
   }).filter(Boolean);
   return `local diff = {\n${sections.join('\n')}\n}\nreturn diff\n`;
@@ -384,7 +384,7 @@ function serializeDcsProfile(parsed) {
 function normalizeLegacyChordCommandBindings(parsed) {
   let changed = false;
   for (const binding of [...parsed.bindings]) {
-    const inputs = [...binding.added, ...binding.changed, ...binding.removed];
+    const inputs = [...binding.added, ...(binding.changed ?? []), ...binding.removed];
     if (inputs.length === 0) continue;
     const suffixes = [...new Set(inputs.flatMap((input) => input.reformers ?? []))]
       .filter((reformer) => reformer && binding.command.endsWith(reformer))
@@ -399,7 +399,7 @@ function normalizeLegacyChordCommandBindings(parsed) {
     const location = (input) => `${input.key}\0${chordKey(input.reformers)}`;
     for (const input of binding.added)
       if (!target.added.some((candidate) => location(candidate) === location(input))) target.added.push(input);
-    for (const input of binding.changed)
+    for (const input of binding.changed ?? [])
       if (!target.changed.some((candidate) => location(candidate) === location(input))) target.changed.push(input);
     for (const input of binding.removed)
       if (!target.removed.some((candidate) => location(candidate) === location(input))) target.removed.push(input);
@@ -420,10 +420,10 @@ export function mergeRepositoryAssignments(observedSource, repositorySource, { f
   normalizeLegacyChordCommandBindings(observed);
   normalizeLegacyChordCommandBindings(repository);
   const location = (input) => `${input.key}\0${chordKey(input.reformers)}`;
-  const repositoryLocations = new Set(repository.bindings.flatMap((binding) => [...binding.added, ...binding.changed, ...binding.removed].map(location)));
+  const repositoryLocations = new Set(repository.bindings.flatMap((binding) => [...binding.added, ...(binding.changed ?? []), ...binding.removed].map(location)));
   for (const binding of observed.bindings) {
     binding.added = binding.added.filter((input) => !repositoryLocations.has(location(input)));
-    binding.changed = binding.changed.filter((input) => !repositoryLocations.has(location(input)));
+    binding.changed = (binding.changed ?? []).filter((input) => !repositoryLocations.has(location(input)));
   }
   for (const saved of repository.bindings) {
     let target = observed.bindings.find((binding) => binding.section === saved.section && binding.command === saved.command);
@@ -434,7 +434,7 @@ export function mergeRepositoryAssignments(observedSource, repositorySource, { f
     target.name = saved.name;
     for (const input of saved.added)
       if (!target.added.some((candidate) => location(candidate) === location(input))) target.added.push(input);
-    for (const input of saved.changed)
+    for (const input of saved.changed ?? [])
       if (!target.changed.some((candidate) => location(candidate) === location(input))) target.changed.push(input);
     for (const input of saved.removed)
       if (!target.removed.some((candidate) => location(candidate) === location(input))) target.removed.push(input);
@@ -673,12 +673,12 @@ export function buildPreview({ profilesDir, repositoryProfilesDir = null, modifi
       matchedPattern: mapping.matchedPattern,
       mappingSource: mapping.source,
       instanceHint,
-      bindingCount: bindings.reduce((count, binding) => count + binding.added.length + binding.changed.length, 0),
+      bindingCount: bindings.reduce((count, binding) => count + binding.added.length + (binding.changed?.length ?? 0), 0),
       parseError: null,
     });
 
     for (const binding of bindings) {
-      for (const input of [...binding.added, ...binding.changed]) {
+      for (const input of [...binding.added, ...(binding.changed ?? [])]) {
         const reformers = input.reformers ?? [];
         const unknownModifiers = reformers.filter((name) => !modifierByName.has(name));
         const modifierModes = reformers.map((name) => modifierByName.get(name)?.mode ?? null);
@@ -701,7 +701,7 @@ export function buildPreview({ profilesDir, repositoryProfilesDir = null, modifi
         }
 
         const sameChordCommands = bindings.filter((candidate) =>
-          [...candidate.added, ...candidate.changed].some(
+          [...candidate.added, ...(candidate.changed ?? [])].some(
             (entry) => entry.key === input.key && chordKey(entry.reformers) === chordKey(reformers),
           ),
         );
