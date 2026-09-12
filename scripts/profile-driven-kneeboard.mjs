@@ -87,13 +87,23 @@ function listInputs(entryBody, listName) {
       const value = filterBody.match(new RegExp(`\\["${name}"\\]\\s*=\\s*(true|false)`))?.[1];
       return value === undefined ? undefined : value === 'true';
     };
-    const curvatureBody = filterBody ? tableBody(filterBody, 'curvature') : '';
-    const curvature = [...curvatureBody.matchAll(/\[\d+\]\s*=\s*(-?(?:\d+(?:\.\d*)?|\.\d+)(?:[eE][+-]?\d+)?)/g)]
-      .map((item) => Number(item[1]));
-    const filter = filterBody ? {
-      deadzone: number('deadzone'), saturationX: number('saturationX'), saturationY: number('saturationY'),
-      curvature, invert: bool('invert'), slider: bool('slider'),
-    } : undefined;
+    const hasFilter = /\["filter"\]\s*=\s*\{/.test(tail);
+    const filter = hasFilter ? {} : undefined;
+    if (filter) {
+      for (const name of ['deadzone', 'saturationX', 'saturationY']) {
+        const value = number(name);
+        if (value !== undefined) filter[name] = value;
+      }
+      if (/\["curvature"\]\s*=\s*\{/.test(filterBody)) {
+        const curvatureBody = tableBody(filterBody, 'curvature');
+        filter.curvature = [...curvatureBody.matchAll(/\[\d+\]\s*=\s*(-?(?:\d+(?:\.\d*)?|\.\d+)(?:[eE][+-]?\d+)?)/g)]
+          .map((item) => Number(item[1]));
+      }
+      for (const name of ['invert', 'slider']) {
+        const value = bool(name);
+        if (value !== undefined) filter[name] = value;
+      }
+    }
     return {
       key: unescapeLuaString(match[1]),
       reformers: [...tail.matchAll(/\[\d+\]\s*=\s*"((?:\\.|[^"])*)"/g)].map((item) => unescapeLuaString(item[1])),

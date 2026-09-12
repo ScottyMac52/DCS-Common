@@ -332,23 +332,23 @@ public sealed class PreviewRow : INotifyPropertyChanged
 
 public sealed class AxisFilter
 {
-    [JsonPropertyName("deadzone")] public double Deadzone { get; set; }
-    [JsonPropertyName("saturationX")] public double SaturationX { get; set; } = 1;
-    [JsonPropertyName("saturationY")] public double SaturationY { get; set; } = 1;
-    [JsonPropertyName("curvature")] public List<double> Curvature { get; set; } = [];
-    [JsonPropertyName("invert")] public bool Invert { get; set; }
-    [JsonPropertyName("slider")] public bool Slider { get; set; }
+    [JsonPropertyName("deadzone"), JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] public double? Deadzone { get; set; }
+    [JsonPropertyName("saturationX"), JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] public double? SaturationX { get; set; }
+    [JsonPropertyName("saturationY"), JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] public double? SaturationY { get; set; }
+    [JsonPropertyName("curvature"), JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] public List<double>? Curvature { get; set; }
+    [JsonPropertyName("invert"), JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] public bool? Invert { get; set; }
+    [JsonPropertyName("slider"), JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] public bool? Slider { get; set; }
 
     [JsonIgnore] public static AxisFilter Default => new();
     [JsonIgnore] public string Summary =>
-        $"Deadzone {Deadzone * 100:0.#}% • Sat X {SaturationX * 100:0.#}% • Sat Y {SaturationY * 100:0.#}% • " +
-        $"Curve {(Curvature.Count == 0 ? "0" : string.Join(", ", Curvature.Select(value => $"{value * 100:0.#}")))}" +
-        (Invert ? " • Inverted" : string.Empty) + (Slider ? " • Slider" : string.Empty);
+        $"Deadzone {(Deadzone ?? 0) * 100:0.#}% • Sat X {(SaturationX ?? 1) * 100:0.#}% • Sat Y {(SaturationY ?? 1) * 100:0.#}% • " +
+        $"Curve {(Curvature is null or { Count: 0 } ? "0" : string.Join(", ", Curvature.Select(value => $"{value * 100:0.#}")))}" +
+        (Invert == true ? " • Inverted" : string.Empty) + (Slider == true ? " • Slider" : string.Empty);
 
     public AxisFilter Clone() => new()
     {
         Deadzone = Deadzone, SaturationX = SaturationX, SaturationY = SaturationY,
-        Curvature = [.. Curvature], Invert = Invert, Slider = Slider,
+        Curvature = Curvature is null ? null : [.. Curvature], Invert = Invert, Slider = Slider,
     };
 }
 

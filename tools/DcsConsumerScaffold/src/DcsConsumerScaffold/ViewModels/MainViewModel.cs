@@ -878,10 +878,11 @@ public sealed class MainViewModel : INotifyPropertyChanged
     private static void ValidateAxisFilter(AxisFilter filter)
     {
         static bool Range(double value, double min, double max) => !double.IsNaN(value) && !double.IsInfinity(value) && value >= min && value <= max;
-        if (!Range(filter.Deadzone, 0, 1)) throw new InvalidOperationException("Deadzone must be between 0 and 100 percent.");
-        if (!Range(filter.SaturationX, 0, 1) || !Range(filter.SaturationY, 0, 1))
+        if (filter.Deadzone is { } deadzone && !Range(deadzone, 0, 1)) throw new InvalidOperationException("Deadzone must be between 0 and 100 percent.");
+        if (filter.SaturationX is { } saturationX && !Range(saturationX, 0, 1) ||
+            filter.SaturationY is { } saturationY && !Range(saturationY, 0, 1))
             throw new InvalidOperationException("Saturation X and Y must be between 0 and 100 percent.");
-        if (filter.Curvature.Any(value => !Range(value, -1, 1)))
+        if (filter.Curvature?.Any(value => !Range(value, -1, 1)) == true)
             throw new InvalidOperationException("Every curvature value must be between -100 and 100.");
     }
 

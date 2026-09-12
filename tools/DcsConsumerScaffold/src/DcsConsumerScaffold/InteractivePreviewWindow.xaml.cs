@@ -232,12 +232,12 @@ public partial class InteractivePreviewWindow : Window
             Grid.SetRow(caption, rowIndex); Grid.SetColumn(caption, 0); Grid.SetRow(editor, rowIndex); Grid.SetColumn(editor, 1);
             grid.Children.Add(caption); grid.Children.Add(editor); return editor;
         }
-        var deadzone = Field(0, "Deadzone (%)", Percent(current.Deadzone), "0–100");
-        var saturationX = Field(1, "Saturation X (%)", Percent(current.SaturationX), "0–100");
-        var saturationY = Field(2, "Saturation Y (%)", Percent(current.SaturationY), "0–100");
-        var curvature = Field(3, "Curvature (%)", string.Join(", ", current.Curvature.Select(Percent)), "One value or a comma-separated DCS curve; each value -100–100");
-        var invert = new CheckBox { Content = "Invert axis", IsChecked = current.Invert, Margin = new Thickness(0, 6, 0, 6) };
-        var slider = new CheckBox { Content = "Slider", IsChecked = current.Slider, Margin = new Thickness(0, 6, 0, 6) };
+        var deadzone = Field(0, "Deadzone (%)", Percent(current.Deadzone ?? 0), "0–100");
+        var saturationX = Field(1, "Saturation X (%)", Percent(current.SaturationX ?? 1), "0–100");
+        var saturationY = Field(2, "Saturation Y (%)", Percent(current.SaturationY ?? 1), "0–100");
+        var curvature = Field(3, "Curvature (%)", string.Join(", ", (current.Curvature ?? []).Select(Percent)), "One value or a comma-separated DCS curve; each value -100–100");
+        var invert = new CheckBox { Content = "Invert axis", IsChecked = current.Invert == true, Margin = new Thickness(0, 6, 0, 6) };
+        var slider = new CheckBox { Content = "Slider", IsChecked = current.Slider == true, Margin = new Thickness(0, 6, 0, 6) };
         Grid.SetRow(invert, 4); Grid.SetColumn(invert, 1); Grid.SetRow(slider, 5); Grid.SetColumn(slider, 1); grid.Children.Add(invert); grid.Children.Add(slider);
         var error = new TextBlock { Foreground = Brushes.DarkRed, TextWrapping = TextWrapping.Wrap, Margin = new Thickness(0, 8, 0, 0) };
         Grid.SetRow(error, 6); Grid.SetColumnSpan(error, 2); grid.Children.Add(error);
@@ -252,14 +252,19 @@ public partial class InteractivePreviewWindow : Window
         {
             try
             {
+                var deadzoneValue = ParsePercent(deadzone.Text, "Deadzone", 0, 100);
+                var saturationXValue = ParsePercent(saturationX.Text, "Saturation X", 0, 100);
+                var saturationYValue = ParsePercent(saturationY.Text, "Saturation Y", 0, 100);
+                var curvatureValues = string.IsNullOrWhiteSpace(curvature.Text) ? [] : curvature.Text.Split([',', ';', ' '], StringSplitOptions.RemoveEmptyEntries)
+                    .Select(value => ParsePercent(value, "Curvature", -100, 100)).ToList();
                 var filter = new AxisFilter
                 {
-                    Deadzone = ParsePercent(deadzone.Text, "Deadzone", 0, 100),
-                    SaturationX = ParsePercent(saturationX.Text, "Saturation X", 0, 100),
-                    SaturationY = ParsePercent(saturationY.Text, "Saturation Y", 0, 100),
-                    Curvature = string.IsNullOrWhiteSpace(curvature.Text) ? [] : curvature.Text.Split([',', ';', ' '], StringSplitOptions.RemoveEmptyEntries)
-                        .Select(value => ParsePercent(value, "Curvature", -100, 100)).ToList(),
-                    Invert = invert.IsChecked == true, Slider = slider.IsChecked == true,
+                    Deadzone = deadzoneValue == 0 ? null : deadzoneValue,
+                    SaturationX = saturationXValue == 1 ? null : saturationXValue,
+                    SaturationY = saturationYValue == 1 ? null : saturationYValue,
+                    Curvature = curvatureValues.Count == 0 ? null : curvatureValues,
+                    Invert = invert.IsChecked == true ? true : null,
+                    Slider = slider.IsChecked == true ? true : null,
                 };
                 _model.StageAxisTuning(row, filter); dialog.Close(); Refresh(); Message.Text = "Axis tuning staged. Proceed writes it to the destination .diff.lua profile.";
             }

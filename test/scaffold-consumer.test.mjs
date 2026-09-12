@@ -146,6 +146,36 @@ test('axis filters round-trip and tune without changing the assigned command', (
   });
 });
 
+test('sparse axis filters preserve only explicitly configured DCS options', () => {
+  const source = `local diff = { ["axisDiffs"] = {
+    ["a2001cdnil"] = { ["added"] = {
+      [1] = { ["key"] = "JOY_X", ["filter"] = { ["curvature"] = { [1] = 0.15 },
+        ["deadzone"] = 0.03, ["invert"] = false, ["saturationX"] = 1,
+        ["saturationY"] = 0.85, ["slider"] = false } },
+      [2] = { ["key"] = "JOY_Y", ["filter"] = { ["invert"] = true } },
+    }, ["name"] = "Pitch and roll" },
+  } } return diff`;
+  const parsed = parseDcsDiffLua(source).bindings[0].added;
+  assert.deepEqual(parsed[0].filter,
+    { deadzone: 0.03, saturationX: 1, saturationY: 0.85, curvature: [0.15], invert: false, slider: false });
+  assert.deepEqual(parsed[1].filter, { invert: true });
+
+  const reassigned = applyDcsCommandAssignments(source, [{
+    profileFile: 'Stick.diff.lua', section: 'axisDiffs', key: 'JOY_Y', reformers: [],
+    command: 'a2002cdnil', name: 'Roll',
+  }]);
+  const joyY = parseDcsDiffLua(reassigned).bindings.find(({ command }) => command === 'a2002cdnil').added[0];
+  assert.deepEqual(joyY.filter, { invert: true });
+  assert.match(reassigned, /\["key"\] = "JOY_Y", \["filter"\] = \{ \["invert"\] = true \}/);
+
+  const defaults = applyDcsCommandAssignments(reassigned, [{
+    profileFile: 'Stick.diff.lua', section: 'axisDiffs', key: 'JOY_Y', reformers: [],
+    tuneOnly: true, axisFilter: {},
+  }]);
+  const defaultJoyY = parseDcsDiffLua(defaults).bindings.find(({ command }) => command === 'a2002cdnil').added[0];
+  assert.equal(defaultJoyY.filter, undefined);
+});
+
 test('axis command reassignment preserves tuning and rejects invalid ranges', () => {
   const source = `local diff = { ["axisDiffs"] = {
     ["a-old"] = { ["added"] = { [1] = { ["key"] = "JOY_Y", ["filter"] = {
