@@ -134,6 +134,24 @@ public sealed class InteractivePreviewTests
     }
 
     [Fact]
+    public void AxisTuningPreservesHardwareDetentFields()
+    {
+        var row = new PreviewRow { ProfileFile = "Throttle.diff.lua", Stem = "Throttle", Key = "JOY_Z", Section = "axisDiffs",
+            Command = "a2003", Name = "Throttle" };
+        var model = new MainViewModel { HasPreview = true };
+        model.ReplacePreviewRows([row]);
+        var pending = model.StageAxisTuning(row, new AxisFilter
+        {
+            HardwareDetent = true, HardwareDetentAB = .7, HardwareDetentMax = .95,
+        });
+        Assert.True(pending.AxisFilter!.HardwareDetent);
+        Assert.Equal(.7, pending.AxisFilter.HardwareDetentAB);
+        Assert.Equal(.95, pending.AxisFilter.HardwareDetentMax);
+        Assert.Null(pending.AxisFilter.Deadzone);
+        Assert.Null(pending.AxisFilter.SaturationX);
+    }
+
+    [Fact]
     public void AxisTuningValidatesDcsRangesAndRejectsButtons()
     {
         var model = new MainViewModel { HasPreview = true };

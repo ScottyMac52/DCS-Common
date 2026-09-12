@@ -73,12 +73,39 @@ function topLevelEntries(body) {
   return entries;
 }
 
+function indexedEntries(body) {
+  const entries = [];
+  const pattern = /\[\d+\]\s*=\s*\{/g;
+  for (let match; (match = pattern.exec(body));) {
+    const prefix = body.slice(0, match.index);
+    let depth = 0;
+    let quote = '';
+    let escaped = false;
+    for (const char of prefix) {
+      if (quote) {
+        if (escaped) escaped = false;
+        else if (char === '\\') escaped = true;
+        else if (char === quote) quote = '';
+      } else if (char === '"' || char === "'") quote = char;
+      else if (char === '{') depth += 1;
+      else if (char === '}') depth -= 1;
+    }
+    if (depth !== 0) continue;
+    const open = body.indexOf('{', match.index);
+    const close = matchingBrace(body, open);
+    entries.push(body.slice(open + 1, close));
+    pattern.lastIndex = close + 1;
+  }
+  return entries;
+}
+
 function listInputs(entryBody, listName) {
   const actual = tableBody(entryBody, listName);
   if (!actual) return [];
-  return [...actual.matchAll(/\["key"\]\s*=\s*"((?:\\.|[^"])*)"([\s\S]*?)(?=\["key"\]|$)/g)].map((match) => {
-    const tail = match[2];
-    const filterBody = tableBody(tail, 'filter');
+  return indexedEntries(actual).map((inputBody) => {
+    const key = inputBody.match(/\["key"\]\s*=\s*"((?:\\.|[^"])*)"/)?.[1];
+    if (!key) throw new Error(`${listName} input has no key.`);
+    const filterBody = tableBody(inputBody, 'filter');
     const number = (name) => {
       const value = filterBody.match(new RegExp(`\\["${name}"\\]\\s*=\\s*(-?(?:\\d+(?:\\.\\d*)?|\\.\\d+)(?:[eE][+-]?\\d+)?)`))?.[1];
       return value === undefined ? undefined : Number(value);
@@ -87,10 +114,10 @@ function listInputs(entryBody, listName) {
       const value = filterBody.match(new RegExp(`\\["${name}"\\]\\s*=\\s*(true|false)`))?.[1];
       return value === undefined ? undefined : value === 'true';
     };
-    const hasFilter = /\["filter"\]\s*=\s*\{/.test(tail);
+    const hasFilter = /\["filter"\]\s*=\s*\{/.test(inputBody);
     const filter = hasFilter ? {} : undefined;
     if (filter) {
-      for (const name of ['deadzone', 'saturationX', 'saturationY']) {
+      for (const name of ['deadzone', 'hardwareDetentAB', 'hardwareDetentMax', 'saturationX', 'saturationY']) {
         const value = number(name);
         if (value !== undefined) filter[name] = value;
       }
@@ -99,14 +126,15 @@ function listInputs(entryBody, listName) {
         filter.curvature = [...curvatureBody.matchAll(/\[\d+\]\s*=\s*(-?(?:\d+(?:\.\d*)?|\.\d+)(?:[eE][+-]?\d+)?)/g)]
           .map((item) => Number(item[1]));
       }
-      for (const name of ['invert', 'slider']) {
+      for (const name of ['hardwareDetent', 'invert', 'slider']) {
         const value = bool(name);
         if (value !== undefined) filter[name] = value;
       }
     }
+    const reformersBody = tableBody(inputBody, 'reformers');
     return {
-      key: unescapeLuaString(match[1]),
-      reformers: [...tail.matchAll(/\[\d+\]\s*=\s*"((?:\\.|[^"])*)"/g)].map((item) => unescapeLuaString(item[1])),
+      key: unescapeLuaString(key),
+      reformers: [...reformersBody.matchAll(/\[\d+\]\s*=\s*"((?:\\.|[^"])*)"/g)].map((item) => unescapeLuaString(item[1])),
       ...(filter ? { filter } : {}),
     };
   });
@@ -119,11 +147,13 @@ export function parseDcsDiffLua(source, { filename = 'profile.diff.lua' } = {}) 
     for (const entry of topLevelEntries(tableBody(source, section))) {
       const name = entry.body.match(/\["name"\]\s*=\s*"((?:\\.|[^"])*)"/)?.[1];
       if (!name) throw new Error(`${filename}: ${section}.${entry.command} has no name.`);
+      const changed = listInputs(entry.body, 'changed').map(normalizeInput);
       bindings.push({
         section,
         command: entry.command,
         name: unescapeLuaString(name),
         added: listInputs(entry.body, 'added').map(normalizeInput),
+        ...(changed.length ? { changed } : {}),
         removed: listInputs(entry.body, 'removed').map(normalizeInput),
       });
     }
@@ -350,7 +380,7 @@ export function loadProfileDrivenConfig(configPath, options = {}) {
       if (references.length === 0) throw new Error(`${page.file}:${controlId} must reference at least one profile binding.`);
       const resolvedVariants = references.map((reference) => {
         const expectedModifiers = resolveModifierSet(reference.modifiers ?? page.modifierIds, modifierCatalog, `${page.file}:${controlId}`);
-        const matches = profile(reference.profile).bindings.flatMap((binding) => binding.added
+        const matches = profile(reference.profile).bindings.flatMap((binding) => [...binding.added, ...(binding.changed ?? [])]
           .filter((input) => input.key === reference.key && sameChord(input.reformers, expectedModifiers))
           .map((input) => ({ binding, input })))
           .filter(({ binding }) => !reference.command || binding.command === reference.command);
