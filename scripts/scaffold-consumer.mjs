@@ -268,6 +268,8 @@ function normalizeAxisFilter(filter, context = 'axis filter') {
     result[name] = value;
   };
   number('deadzone', 0, 1);
+  number('hardwareDetentAB', 0, 1);
+  number('hardwareDetentMax', 0, 1);
   number('saturationX', 0, 1);
   number('saturationY', 0, 1);
   if (Object.hasOwn(filter, 'curvature')) {
@@ -275,7 +277,7 @@ function normalizeAxisFilter(filter, context = 'axis filter') {
       throw new Error(`${context}: curvature must contain numbers between -1 and 1`);
     result.curvature = [...filter.curvature];
   }
-  for (const name of ['invert', 'slider']) {
+  for (const name of ['hardwareDetent', 'invert', 'slider']) {
     if (!Object.hasOwn(filter, name)) continue;
     if (typeof filter[name] !== 'boolean') throw new Error(`${context}: ${name} must be true or false`);
     result[name] = filter[name];
@@ -291,7 +293,7 @@ function serializeAxisFilter(filter) {
     const curvature = value.curvature.map((entry, index) => `[${index + 1}] = ${entry}`).join(', ');
     entries.push(`["curvature"] = { ${curvature} }`);
   }
-  for (const name of ['deadzone', 'invert', 'saturationX', 'saturationY', 'slider']) {
+  for (const name of ['deadzone', 'hardwareDetent', 'hardwareDetentAB', 'hardwareDetentMax', 'invert', 'saturationX', 'saturationY', 'slider']) {
     if (Object.hasOwn(value, name)) entries.push(`["${name}"] = ${value[name]}`);
   }
   return entries.length ? `, ["filter"] = { ${entries.join(', ')} }` : '';
@@ -323,7 +325,7 @@ export function applyDcsCommandAssignments(source, assignments, { filename = 'pr
     const reformers = [...new Set(assignment.reformers ?? [])].sort((a, b) => a.localeCompare(b));
     if (assignment.tuneOnly) {
       const matches = parsed.bindings.flatMap((binding) => binding.section === 'axisDiffs'
-        ? binding.added.filter((input) => input.key === assignment.key && chordKey(input.reformers) === chordKey(reformers)) : []);
+        ? [...binding.added, ...binding.changed].filter((input) => input.key === assignment.key && chordKey(input.reformers) === chordKey(reformers)) : []);
       if (matches.length === 0) throw new Error(`${filename}: ${assignment.key} (${reformers.join(' + ') || 'base'}) is no longer present in axisDiffs`);
       if (matches.length > 1) throw new Error(`${filename}: ${assignment.key} (${reformers.join(' + ') || 'base'}) has ambiguous axis assignments`);
       matches[0].filter = normalizeAxisFilter(assignment.axisFilter, `${filename}: ${assignment.key}`);
@@ -338,17 +340,18 @@ export function applyDcsCommandAssignments(source, assignments, { filename = 'pr
         // the removal so the stock command remains suppressed when adding its replacement.
         foundControl = true;
       }
-      const retained = binding.added.filter((input) => {
+      const retain = (input) => {
         const matches = input.key === assignment.key && chordKey(input.reformers) === chordKey(reformers);
         if (matches) {
           foundControl = true;
           if (binding.section === 'axisDiffs' && input.filter) retainedFilter = input.filter;
           if (assignment.clear && !binding.removed.some((removed) => removed.key === input.key && chordKey(removed.reformers) === chordKey(input.reformers)))
-            binding.removed.push(input);
+            binding.removed.push({ key: input.key, reformers: input.reformers });
         }
         return !matches;
-      });
-      binding.added = retained;
+      };
+      binding.added = binding.added.filter(retain);
+      binding.changed = binding.changed.filter(retain);
     }
     if (!foundControl && !(assignment.allowCreate && (allowedInputs === null || allowedInputs.some((input) => input.key === assignment.key && input.section === assignment.section)))) {
       throw new Error(`${filename}: ${assignment.key} (${reformers.join(' + ') || 'base'}) is no longer present in ${assignment.section}`);
@@ -356,7 +359,7 @@ export function applyDcsCommandAssignments(source, assignments, { filename = 'pr
     if (assignment.clear) continue;
     let target = parsed.bindings.find((item) => item.section === assignment.section && item.command === assignment.command);
     if (!target) {
-      target = { section: assignment.section, command: assignment.command, name: assignment.name, added: [], removed: [] };
+      target = { section: assignment.section, command: assignment.command, name: assignment.name, added: [], changed: [], removed: [] };
       parsed.bindings.push(target);
     }
     target.name = assignment.name;
@@ -371,8 +374,8 @@ export function applyDcsCommandAssignments(source, assignments, { filename = 'pr
 function serializeDcsProfile(parsed) {
   const sections = ['keyDiffs', 'axisDiffs'].map((section) => {
     const entries = parsed.bindings
-      .filter((binding) => binding.section === section && (binding.added.length > 0 || binding.removed.length > 0))
-      .map((binding) => `    [${luaString(binding.command)}] = {\n${serializeInputs('added', binding.added)}${serializeInputs('removed', binding.removed)}      ["name"] = ${luaString(binding.name)},\n    },`);
+      .filter((binding) => binding.section === section && (binding.added.length > 0 || binding.changed.length > 0 || binding.removed.length > 0))
+      .map((binding) => `    [${luaString(binding.command)}] = {\n${serializeInputs('added', binding.added)}${serializeInputs('changed', binding.changed)}${serializeInputs('removed', binding.removed)}      ["name"] = ${luaString(binding.name)},\n    },`);
     return entries.length ? `  ["${section}"] = {\n${entries.join('\n')}\n  },` : '';
   }).filter(Boolean);
   return `local diff = {\n${sections.join('\n')}\n}\nreturn diff\n`;
@@ -381,7 +384,7 @@ function serializeDcsProfile(parsed) {
 function normalizeLegacyChordCommandBindings(parsed) {
   let changed = false;
   for (const binding of [...parsed.bindings]) {
-    const inputs = [...binding.added, ...binding.removed];
+    const inputs = [...binding.added, ...binding.changed, ...binding.removed];
     if (inputs.length === 0) continue;
     const suffixes = [...new Set(inputs.flatMap((input) => input.reformers ?? []))]
       .filter((reformer) => reformer && binding.command.endsWith(reformer))
@@ -396,6 +399,8 @@ function normalizeLegacyChordCommandBindings(parsed) {
     const location = (input) => `${input.key}\0${chordKey(input.reformers)}`;
     for (const input of binding.added)
       if (!target.added.some((candidate) => location(candidate) === location(input))) target.added.push(input);
+    for (const input of binding.changed)
+      if (!target.changed.some((candidate) => location(candidate) === location(input))) target.changed.push(input);
     for (const input of binding.removed)
       if (!target.removed.some((candidate) => location(candidate) === location(input))) target.removed.push(input);
     parsed.bindings.splice(parsed.bindings.indexOf(binding), 1);
@@ -415,18 +420,22 @@ export function mergeRepositoryAssignments(observedSource, repositorySource, { f
   normalizeLegacyChordCommandBindings(observed);
   normalizeLegacyChordCommandBindings(repository);
   const location = (input) => `${input.key}\0${chordKey(input.reformers)}`;
-  const repositoryLocations = new Set(repository.bindings.flatMap((binding) => [...binding.added, ...binding.removed].map(location)));
-  for (const binding of observed.bindings)
+  const repositoryLocations = new Set(repository.bindings.flatMap((binding) => [...binding.added, ...binding.changed, ...binding.removed].map(location)));
+  for (const binding of observed.bindings) {
     binding.added = binding.added.filter((input) => !repositoryLocations.has(location(input)));
+    binding.changed = binding.changed.filter((input) => !repositoryLocations.has(location(input)));
+  }
   for (const saved of repository.bindings) {
     let target = observed.bindings.find((binding) => binding.section === saved.section && binding.command === saved.command);
     if (!target) {
-      target = { section: saved.section, command: saved.command, name: saved.name, added: [], removed: [] };
+      target = { section: saved.section, command: saved.command, name: saved.name, added: [], changed: [], removed: [] };
       observed.bindings.push(target);
     }
     target.name = saved.name;
     for (const input of saved.added)
       if (!target.added.some((candidate) => location(candidate) === location(input))) target.added.push(input);
+    for (const input of saved.changed)
+      if (!target.changed.some((candidate) => location(candidate) === location(input))) target.changed.push(input);
     for (const input of saved.removed)
       if (!target.removed.some((candidate) => location(candidate) === location(input))) target.removed.push(input);
   }
@@ -664,12 +673,12 @@ export function buildPreview({ profilesDir, repositoryProfilesDir = null, modifi
       matchedPattern: mapping.matchedPattern,
       mappingSource: mapping.source,
       instanceHint,
-      bindingCount: bindings.reduce((count, binding) => count + binding.added.length, 0),
+      bindingCount: bindings.reduce((count, binding) => count + binding.added.length + binding.changed.length, 0),
       parseError: null,
     });
 
     for (const binding of bindings) {
-      for (const input of binding.added) {
+      for (const input of [...binding.added, ...binding.changed]) {
         const reformers = input.reformers ?? [];
         const unknownModifiers = reformers.filter((name) => !modifierByName.has(name));
         const modifierModes = reformers.map((name) => modifierByName.get(name)?.mode ?? null);
@@ -692,7 +701,7 @@ export function buildPreview({ profilesDir, repositoryProfilesDir = null, modifi
         }
 
         const sameChordCommands = bindings.filter((candidate) =>
-          candidate.added.some(
+          [...candidate.added, ...candidate.changed].some(
             (entry) => entry.key === input.key && chordKey(entry.reformers) === chordKey(reformers),
           ),
         );

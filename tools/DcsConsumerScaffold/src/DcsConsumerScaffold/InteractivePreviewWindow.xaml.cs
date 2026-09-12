@@ -224,7 +224,7 @@ public partial class InteractivePreviewWindow : Window
         var grid = new Grid { Margin = new Thickness(12) };
         grid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(145) });
         grid.ColumnDefinitions.Add(new ColumnDefinition());
-        for (var index = 0; index < 8; index++) grid.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
+        for (var index = 0; index < 11; index++) grid.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
         TextBox Field(int rowIndex, string label, string value, string tip)
         {
             var caption = new TextBlock { Text = label, Margin = new Thickness(0, 6, 8, 6), VerticalAlignment = VerticalAlignment.Center };
@@ -236,18 +236,22 @@ public partial class InteractivePreviewWindow : Window
         var saturationX = Field(1, "Saturation X (%)", Percent(current.SaturationX ?? 1), "0–100");
         var saturationY = Field(2, "Saturation Y (%)", Percent(current.SaturationY ?? 1), "0–100");
         var curvature = Field(3, "Curvature (%)", string.Join(", ", (current.Curvature ?? []).Select(Percent)), "One value or a comma-separated DCS curve; each value -100–100");
+        var hardwareDetent = new CheckBox { Content = "Hardware detent", IsChecked = current.HardwareDetent == true, Margin = new Thickness(0, 6, 0, 6) };
+        Grid.SetRow(hardwareDetent, 4); Grid.SetColumn(hardwareDetent, 1); grid.Children.Add(hardwareDetent);
+        var hardwareDetentAB = Field(5, "Detent AB (%)", Percent(current.HardwareDetentAB ?? 0), "0–100");
+        var hardwareDetentMax = Field(6, "Detent Max (%)", Percent(current.HardwareDetentMax ?? 0), "0–100");
         var invert = new CheckBox { Content = "Invert axis", IsChecked = current.Invert == true, Margin = new Thickness(0, 6, 0, 6) };
         var slider = new CheckBox { Content = "Slider", IsChecked = current.Slider == true, Margin = new Thickness(0, 6, 0, 6) };
-        Grid.SetRow(invert, 4); Grid.SetColumn(invert, 1); Grid.SetRow(slider, 5); Grid.SetColumn(slider, 1); grid.Children.Add(invert); grid.Children.Add(slider);
+        Grid.SetRow(invert, 7); Grid.SetColumn(invert, 1); Grid.SetRow(slider, 8); Grid.SetColumn(slider, 1); grid.Children.Add(invert); grid.Children.Add(slider);
         var error = new TextBlock { Foreground = Brushes.DarkRed, TextWrapping = TextWrapping.Wrap, Margin = new Thickness(0, 8, 0, 0) };
-        Grid.SetRow(error, 6); Grid.SetColumnSpan(error, 2); grid.Children.Add(error);
+        Grid.SetRow(error, 9); Grid.SetColumnSpan(error, 2); grid.Children.Add(error);
         var buttons = new StackPanel { Orientation = Orientation.Horizontal, HorizontalAlignment = HorizontalAlignment.Right, Margin = new Thickness(0, 10, 0, 0) };
         var defaults = new Button { Content = "DCS defaults", Padding = new Thickness(10, 5, 10, 5) };
         var apply = new Button { Content = "Apply", Padding = new Thickness(16, 5, 16, 5), Margin = new Thickness(8, 0, 0, 0), IsDefault = true };
-        buttons.Children.Add(defaults); buttons.Children.Add(apply); Grid.SetRow(buttons, 7); Grid.SetColumnSpan(buttons, 2); grid.Children.Add(buttons);
+        buttons.Children.Add(defaults); buttons.Children.Add(apply); Grid.SetRow(buttons, 10); Grid.SetColumnSpan(buttons, 2); grid.Children.Add(buttons);
         var dialog = new Window { Owner = this, Title = $"Axis tuning — {row.Key}", Width = 470, SizeToContent = SizeToContent.Height,
             Content = grid, WindowStartupLocation = WindowStartupLocation.CenterOwner, ResizeMode = ResizeMode.NoResize };
-        defaults.Click += (_, _) => { deadzone.Text = "0"; saturationX.Text = "100"; saturationY.Text = "100"; curvature.Text = ""; invert.IsChecked = false; slider.IsChecked = false; };
+        defaults.Click += (_, _) => { deadzone.Text = "0"; saturationX.Text = "100"; saturationY.Text = "100"; curvature.Text = ""; hardwareDetent.IsChecked = false; hardwareDetentAB.Text = "0"; hardwareDetentMax.Text = "0"; invert.IsChecked = false; slider.IsChecked = false; };
         apply.Click += (_, _) =>
         {
             try
@@ -255,11 +259,16 @@ public partial class InteractivePreviewWindow : Window
                 var deadzoneValue = ParsePercent(deadzone.Text, "Deadzone", 0, 100);
                 var saturationXValue = ParsePercent(saturationX.Text, "Saturation X", 0, 100);
                 var saturationYValue = ParsePercent(saturationY.Text, "Saturation Y", 0, 100);
+                var hardwareDetentABValue = ParsePercent(hardwareDetentAB.Text, "Detent AB", 0, 100);
+                var hardwareDetentMaxValue = ParsePercent(hardwareDetentMax.Text, "Detent Max", 0, 100);
                 var curvatureValues = string.IsNullOrWhiteSpace(curvature.Text) ? [] : curvature.Text.Split([',', ';', ' '], StringSplitOptions.RemoveEmptyEntries)
                     .Select(value => ParsePercent(value, "Curvature", -100, 100)).ToList();
                 var filter = new AxisFilter
                 {
                     Deadzone = deadzoneValue == 0 ? null : deadzoneValue,
+                    HardwareDetent = hardwareDetent.IsChecked == true ? true : null,
+                    HardwareDetentAB = hardwareDetentABValue == 0 ? null : hardwareDetentABValue,
+                    HardwareDetentMax = hardwareDetentMaxValue == 0 ? null : hardwareDetentMaxValue,
                     SaturationX = saturationXValue == 1 ? null : saturationXValue,
                     SaturationY = saturationYValue == 1 ? null : saturationYValue,
                     Curvature = curvatureValues.Count == 0 ? null : curvatureValues,

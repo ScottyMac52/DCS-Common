@@ -333,6 +333,9 @@ public sealed class PreviewRow : INotifyPropertyChanged
 public sealed class AxisFilter
 {
     [JsonPropertyName("deadzone"), JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] public double? Deadzone { get; set; }
+    [JsonPropertyName("hardwareDetent"), JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] public bool? HardwareDetent { get; set; }
+    [JsonPropertyName("hardwareDetentAB"), JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] public double? HardwareDetentAB { get; set; }
+    [JsonPropertyName("hardwareDetentMax"), JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] public double? HardwareDetentMax { get; set; }
     [JsonPropertyName("saturationX"), JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] public double? SaturationX { get; set; }
     [JsonPropertyName("saturationY"), JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] public double? SaturationY { get; set; }
     [JsonPropertyName("curvature"), JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] public List<double>? Curvature { get; set; }
@@ -343,12 +346,14 @@ public sealed class AxisFilter
     [JsonIgnore] public string Summary =>
         $"Deadzone {(Deadzone ?? 0) * 100:0.#}% • Sat X {(SaturationX ?? 1) * 100:0.#}% • Sat Y {(SaturationY ?? 1) * 100:0.#}% • " +
         $"Curve {(Curvature is null or { Count: 0 } ? "0" : string.Join(", ", Curvature.Select(value => $"{value * 100:0.#}")))}" +
+        (HardwareDetent == true ? $" • Detent {(HardwareDetentAB ?? 0) * 100:0.#}%/{(HardwareDetentMax ?? 0) * 100:0.#}%" : string.Empty) +
         (Invert == true ? " • Inverted" : string.Empty) + (Slider == true ? " • Slider" : string.Empty);
 
     public AxisFilter Clone() => new()
     {
-        Deadzone = Deadzone, SaturationX = SaturationX, SaturationY = SaturationY,
-        Curvature = Curvature is null ? null : [.. Curvature], Invert = Invert, Slider = Slider,
+        Deadzone = Deadzone, HardwareDetent = HardwareDetent, HardwareDetentAB = HardwareDetentAB, HardwareDetentMax = HardwareDetentMax,
+        SaturationX = SaturationX, SaturationY = SaturationY, Curvature = Curvature is null ? null : [.. Curvature],
+        Invert = Invert, Slider = Slider,
     };
 }
 

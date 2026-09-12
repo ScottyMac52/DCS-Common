@@ -176,6 +176,39 @@ test('sparse axis filters preserve only explicitly configured DCS options', () =
   assert.equal(defaultJoyY.filter, undefined);
 });
 
+test('DCS changed axis filters and hardware detents round-trip in place', () => {
+  const source = `local diff = { ["axisDiffs"] = {
+    ["a2112cdnil"] = { ["changed"] = { [1] = { ["filter"] = {
+      ["curvature"] = { [1] = 0 }, ["deadzone"] = 0,
+      ["hardwareDetent"] = false, ["hardwareDetentAB"] = 0, ["hardwareDetentMax"] = 0,
+      ["invert"] = true, ["saturationX"] = 1, ["saturationY"] = 1, ["slider"] = false },
+      ["key"] = "JOY_Y" } }, ["name"] = "Wheel Brake Left" },
+    ["a2113cdnil"] = { ["changed"] = { [1] = { ["filter"] = {
+      ["curvature"] = { [1] = 0 }, ["deadzone"] = 0,
+      ["hardwareDetent"] = false, ["hardwareDetentAB"] = 0, ["hardwareDetentMax"] = 0,
+      ["invert"] = true, ["saturationX"] = 1, ["saturationY"] = 1, ["slider"] = false },
+      ["key"] = "JOY_X" } }, ["name"] = "Wheel Brake Right" },
+  } } return diff`;
+  const parsed = parseDcsDiffLua(source).bindings;
+  assert.equal(parsed[0].added.length, 0);
+  assert.equal(parsed[0].changed[0].key, 'JOY_Y');
+  assert.deepEqual(parsed[0].changed[0].filter, {
+    deadzone: 0, hardwareDetentAB: 0, hardwareDetentMax: 0, saturationX: 1, saturationY: 1,
+    curvature: [0], hardwareDetent: false, invert: true, slider: false,
+  });
+
+  const tuned = applyDcsCommandAssignments(source, [{
+    profileFile: 'Pedals.diff.lua', section: 'axisDiffs', key: 'JOY_Y', reformers: [], tuneOnly: true,
+    axisFilter: { hardwareDetent: true, hardwareDetentAB: 0.7, hardwareDetentMax: 0.95, invert: true },
+  }]);
+  const binding = parseDcsDiffLua(tuned).bindings.find(({ command }) => command === 'a2112cdnil');
+  assert.equal(binding.added.length, 0);
+  assert.deepEqual(binding.changed[0].filter,
+    { hardwareDetentAB: 0.7, hardwareDetentMax: 0.95, hardwareDetent: true, invert: true });
+  assert.match(tuned, /\["changed"\]/);
+  assert.match(tuned, /\["hardwareDetent"\] = true, \["hardwareDetentAB"\] = 0.7, \["hardwareDetentMax"\] = 0.95/);
+});
+
 test('axis command reassignment preserves tuning and rejects invalid ranges', () => {
   const source = `local diff = { ["axisDiffs"] = {
     ["a-old"] = { ["added"] = { [1] = { ["key"] = "JOY_Y", ["filter"] = {

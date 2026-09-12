@@ -90,7 +90,7 @@ function listInputs(entryBody, listName) {
     const hasFilter = /\["filter"\]\s*=\s*\{/.test(tail);
     const filter = hasFilter ? {} : undefined;
     if (filter) {
-      for (const name of ['deadzone', 'saturationX', 'saturationY']) {
+      for (const name of ['deadzone', 'hardwareDetentAB', 'hardwareDetentMax', 'saturationX', 'saturationY']) {
         const value = number(name);
         if (value !== undefined) filter[name] = value;
       }
@@ -99,7 +99,7 @@ function listInputs(entryBody, listName) {
         filter.curvature = [...curvatureBody.matchAll(/\[\d+\]\s*=\s*(-?(?:\d+(?:\.\d*)?|\.\d+)(?:[eE][+-]?\d+)?)/g)]
           .map((item) => Number(item[1]));
       }
-      for (const name of ['invert', 'slider']) {
+      for (const name of ['hardwareDetent', 'invert', 'slider']) {
         const value = bool(name);
         if (value !== undefined) filter[name] = value;
       }
@@ -124,6 +124,7 @@ export function parseDcsDiffLua(source, { filename = 'profile.diff.lua' } = {}) 
         command: entry.command,
         name: unescapeLuaString(name),
         added: listInputs(entry.body, 'added').map(normalizeInput),
+        changed: listInputs(entry.body, 'changed').map(normalizeInput),
         removed: listInputs(entry.body, 'removed').map(normalizeInput),
       });
     }
@@ -350,7 +351,7 @@ export function loadProfileDrivenConfig(configPath, options = {}) {
       if (references.length === 0) throw new Error(`${page.file}:${controlId} must reference at least one profile binding.`);
       const resolvedVariants = references.map((reference) => {
         const expectedModifiers = resolveModifierSet(reference.modifiers ?? page.modifierIds, modifierCatalog, `${page.file}:${controlId}`);
-        const matches = profile(reference.profile).bindings.flatMap((binding) => binding.added
+        const matches = profile(reference.profile).bindings.flatMap((binding) => [...binding.added, ...binding.changed]
           .filter((input) => input.key === reference.key && sameChord(input.reformers, expectedModifiers))
           .map((input) => ({ binding, input })))
           .filter(({ binding }) => !reference.command || binding.command === reference.command);

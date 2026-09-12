@@ -882,6 +882,9 @@ public sealed class MainViewModel : INotifyPropertyChanged
         if (filter.SaturationX is { } saturationX && !Range(saturationX, 0, 1) ||
             filter.SaturationY is { } saturationY && !Range(saturationY, 0, 1))
             throw new InvalidOperationException("Saturation X and Y must be between 0 and 100 percent.");
+        if (filter.HardwareDetentAB is { } hardwareDetentAB && !Range(hardwareDetentAB, 0, 1) ||
+            filter.HardwareDetentMax is { } hardwareDetentMax && !Range(hardwareDetentMax, 0, 1))
+            throw new InvalidOperationException("Hardware detent AB and Max must be between 0 and 100 percent.");
         if (filter.Curvature?.Any(value => !Range(value, -1, 1)) == true)
             throw new InvalidOperationException("Every curvature value must be between -100 and 100.");
     }
