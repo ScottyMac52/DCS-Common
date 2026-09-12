@@ -258,29 +258,43 @@ function luaString(value) {
 
 function normalizeAxisFilter(filter, context = 'axis filter') {
   if (filter === undefined || filter === null) return undefined;
-  const number = (name, fallback, minimum, maximum) => {
-    const value = filter[name] ?? fallback;
+  if (Array.isArray(filter) || typeof filter !== 'object') throw new Error(`${context} must be an object`);
+  const result = {};
+  const number = (name, minimum, maximum) => {
+    if (!Object.hasOwn(filter, name)) return;
+    const value = filter[name];
     if (typeof value !== 'number' || !Number.isFinite(value) || value < minimum || value > maximum)
       throw new Error(`${context}: ${name} must be between ${minimum} and ${maximum}`);
-    return value;
+    result[name] = value;
   };
-  const curvature = filter.curvature ?? [];
-  if (!Array.isArray(curvature) || curvature.some((value) => typeof value !== 'number' || !Number.isFinite(value) || value < -1 || value > 1))
-    throw new Error(`${context}: curvature must contain numbers between -1 and 1`);
-  if (filter.invert !== undefined && typeof filter.invert !== 'boolean') throw new Error(`${context}: invert must be true or false`);
-  if (filter.slider !== undefined && typeof filter.slider !== 'boolean') throw new Error(`${context}: slider must be true or false`);
-  return {
-    deadzone: number('deadzone', 0, 0, 1), saturationX: number('saturationX', 1, 0, 1),
-    saturationY: number('saturationY', 1, 0, 1), curvature: [...curvature],
-    invert: filter.invert ?? false, slider: filter.slider ?? false,
-  };
+  number('deadzone', 0, 1);
+  number('saturationX', 0, 1);
+  number('saturationY', 0, 1);
+  if (Object.hasOwn(filter, 'curvature')) {
+    if (!Array.isArray(filter.curvature) || filter.curvature.some((value) => typeof value !== 'number' || !Number.isFinite(value) || value < -1 || value > 1))
+      throw new Error(`${context}: curvature must contain numbers between -1 and 1`);
+    result.curvature = [...filter.curvature];
+  }
+  for (const name of ['invert', 'slider']) {
+    if (!Object.hasOwn(filter, name)) continue;
+    if (typeof filter[name] !== 'boolean') throw new Error(`${context}: ${name} must be true or false`);
+    result[name] = filter[name];
+  }
+  return result;
 }
 
 function serializeAxisFilter(filter) {
   if (!filter) return '';
   const value = normalizeAxisFilter(filter);
-  const curvature = value.curvature.map((entry, index) => `[${index + 1}] = ${entry}`).join(', ');
-  return `, ["filter"] = { ["curvature"] = { ${curvature} }, ["deadzone"] = ${value.deadzone}, ["invert"] = ${value.invert}, ["saturationX"] = ${value.saturationX}, ["saturationY"] = ${value.saturationY}, ["slider"] = ${value.slider} }`;
+  const entries = [];
+  if (Object.hasOwn(value, 'curvature')) {
+    const curvature = value.curvature.map((entry, index) => `[${index + 1}] = ${entry}`).join(', ');
+    entries.push(`["curvature"] = { ${curvature} }`);
+  }
+  for (const name of ['deadzone', 'invert', 'saturationX', 'saturationY', 'slider']) {
+    if (Object.hasOwn(value, name)) entries.push(`["${name}"] = ${value[name]}`);
+  }
+  return entries.length ? `, ["filter"] = { ${entries.join(', ')} }` : '';
 }
 
 function serializeInputs(name, inputs) {
