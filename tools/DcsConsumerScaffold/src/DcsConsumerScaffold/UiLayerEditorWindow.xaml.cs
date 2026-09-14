@@ -65,8 +65,9 @@ public partial class UiLayerEditorWindow : Window
         ProfilesGrid.ItemsSource = document.Profiles;
         BindingsGrid.ItemsSource = document.Bindings;
         ModifiersGrid.ItemsSource = document.Modifiers;
+        PossibilitiesGrid.ItemsSource = document.Possibilities;
         ErrorsList.ItemsSource = document.Errors;
-        SummaryText.Text = $"Profiles={document.Summary.Profiles}  Bindings={document.Summary.Bindings}  " +
+        SummaryText.Text = $"{document.Scope}: Possibilities={document.Summary.Possibilities}  Profiles={document.Summary.Profiles}  Bindings={document.Summary.Bindings}  " +
             $"Keys={document.Summary.Keys}  Axes={document.Summary.Axes}  Modifiers={document.Summary.Modifiers}  Errors={document.Summary.Errors}";
         StatusText.Text = document.Valid ? $"Catalog valid. Fingerprint: {document.Fingerprint}" : "Catalog validation failed.";
     }

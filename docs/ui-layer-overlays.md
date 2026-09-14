@@ -2,12 +2,13 @@
 
 DCS-Common owns the authoritative UI Layer function catalog and the per-device overlay definitions used to combine simulator-wide functions with aircraft bindings on the same canonical hardware page.
 
-The authoritative catalog is one definitive, manually maintained global inventory, not a snapshot of whichever controllers happened to be connected during the latest import. Use the [Definitive UI Layer Editor](definitive-ui-layer.md) to reconcile explicit additions, replacements, and removals. Absence is never an implicit deletion.
+The authoritative catalog is one definitive, manually maintained global inventory: the union of all supported hardware IDs, composite aliases, modifier families, instance choices, and overlays. It is not a snapshot of whichever controllers happened to be connected during the latest import. Use the [Definitive UI Layer Editor](definitive-ui-layer.md) to reconcile explicit additions, replacements, and removals. Absence is never an implicit deletion.
 
 ## Files
 
 - `functions.json` is the authoritative, device-independent UI Layer function list.
 - `hardware-overlays.json` maps those functions to stable control IDs from each canonical shared hardware definition.
+- `assets/shared/hardware/manifest.json` supplies the complete device and alias possibility matrix displayed by the definitive editor.
 - `scripts/ui-layer-overlays.mjs` derives completed overlays and fill-in templates and merges UI Layer labels with aircraft labels.
 
 The Draw.io source is never copied. Every overlay targets stable control IDs on the one canonical device definition under `assets/shared/hardware/drawio`.
@@ -37,6 +38,8 @@ During packaging it:
 - removes binding alternatives in shared peripheral profiles that reference unavailable modifiers;
 - excludes shared profiles left with no effective additions; and
 - verifies that every remaining modifier reference is declared by the tailored `UiLayer/modifiers.lua`.
+
+A configured modifier-provider device may be ineffective as an aircraft page while still selecting the modifier alternative required by another retained UI Layer profile. In that case its modifier declaration is retained, but its profile and kneeboard page remain excluded.
 
 Modifier selection belongs to the shared hardware definition in `assets/shared/hardware/manifest.json`. A canonical device may declare `uiLayerModifier`; a composite alias declares its selection under `uiLayerModifiers`. The scaffolded page `deviceId` therefore selects the matching modifier without a separate packaging lookup table. Adding or renaming a scaffolded stick/base combination and its modifier is a single hardware-catalog change.
 

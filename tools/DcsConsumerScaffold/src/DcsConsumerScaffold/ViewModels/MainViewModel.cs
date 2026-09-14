@@ -12,7 +12,6 @@ public sealed class MainViewModel : INotifyPropertyChanged
 {
     private readonly ScaffoldEngineService _engine;
     private readonly CurrentLabelService _currentLabels;
-    private readonly UiLayerImportService _uiLayerImport;
     private readonly PreviewComparisonService _comparison;
     private readonly DcsCommandCatalogService _commandCatalogService;
     private readonly DcsHtmlCommandCatalogProvider _htmlCommandCatalogProvider;
@@ -70,14 +69,12 @@ public sealed class MainViewModel : INotifyPropertyChanged
     public MainViewModel(
         ScaffoldEngineService? engine = null,
         CurrentLabelService? currentLabels = null,
-        UiLayerImportService? uiLayerImport = null,
         PreviewComparisonService? comparison = null,
         DcsCommandCatalogService? commandCatalogService = null,
         DcsHtmlCommandCatalogProvider? htmlCommandCatalogProvider = null)
     {
         _engine = engine ?? new ScaffoldEngineService();
         _currentLabels = currentLabels ?? new CurrentLabelService();
-        _uiLayerImport = uiLayerImport ?? new UiLayerImportService();
         _comparison = comparison ?? new PreviewComparisonService();
         _commandCatalogService = commandCatalogService ?? new DcsCommandCatalogService();
         _htmlCommandCatalogProvider = htmlCommandCatalogProvider ?? new DcsHtmlCommandCatalogProvider();
@@ -287,7 +284,7 @@ public sealed class MainViewModel : INotifyPropertyChanged
             {
                 RaiseCommands();
                 StatusText = IsUiLayerImport
-                    ? "UI Layer mode: select Saved Games UiLayer joystick profiles, modifiers.lua, and the DCS-Common root."
+                    ? "Observed UI Layer preview: inspect the current Saved Games snapshot here, then use the Definitive UI Layer Editor for explicit reconciliation."
                     : "Consumer mode: Load Preview, review labels, then Proceed to write the module repository.";
                 PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(IsUiLayerImport)));
                 PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(IsConsumerImport)));
@@ -446,16 +443,15 @@ public sealed class MainViewModel : INotifyPropertyChanged
 
     private bool CanProceed() =>
         !IsBusy &&
+        !IsUiLayerImport &&
         HasPreview &&
         _previewErrorCount == 0 &&
         !HasUiLayerConflicts &&
         !string.IsNullOrWhiteSpace(ProfilesDir) &&
-        (IsUiLayerImport
-            ? !string.IsNullOrWhiteSpace(CommonRoot) && !string.IsNullOrWhiteSpace(ModifiersPath)
-            : !string.IsNullOrWhiteSpace(OutputDir) &&
-              !string.IsNullOrWhiteSpace(DisplayName) &&
-              !string.IsNullOrWhiteSpace(InputModuleId) &&
-              !string.IsNullOrWhiteSpace(KneeboardId));
+        !string.IsNullOrWhiteSpace(OutputDir) &&
+        !string.IsNullOrWhiteSpace(DisplayName) &&
+        !string.IsNullOrWhiteSpace(InputModuleId) &&
+        !string.IsNullOrWhiteSpace(KneeboardId);
 
     public bool HasUiLayerConflicts => !IsUiLayerImport && Rows.Any(row =>
         !string.IsNullOrWhiteSpace(row.Command) && UiLayerConflictFor(row) is not null);
@@ -618,6 +614,11 @@ public sealed class MainViewModel : INotifyPropertyChanged
 
     public async Task ProceedAsync()
     {
+        if (IsUiLayerImport)
+        {
+            StatusText = "The current UI Layer is an observed snapshot, not the definitive catalog. Use the Definitive UI Layer Editor to compare it and explicitly choose Keep, Add, Replace, or Remove.";
+            return;
+        }
         if (!CanProceed())
         {
             StatusText = "Proceed requires a successful preview plus output directory, display name, input module ID, and kneeboard ID.";
@@ -625,21 +626,9 @@ public sealed class MainViewModel : INotifyPropertyChanged
         }
 
         IsBusy = true;
-        StatusText = IsUiLayerImport ? "Importing authoritative UI Layer into DCS-Common…" : "Writing consumer repository…";
+        StatusText = "Writing consumer repository…";
         try
         {
-            if (IsUiLayerImport)
-            {
-                var result = _uiLayerImport.Import(CommonRoot, ProfilesDir, ModifiersPath, Devices, Rows);
-                StatusText = $"UI Layer synchronized into DCS-Common: {result.ProfileCount} total profiles " +
-                    $"({result.ObservedProfileCount} observed, {result.PreservedProfileCount} preserved while absent), " +
-                    $"{result.PreservedModifierCount} modifiers preserved while absent, " +
-                    $"{result.FunctionCount} functions ({result.NewFunctionCount} new), " +
-                    $"{result.OverlayBindingCount} hardware overlay bindings updated, " +
-                    $"{result.ExemptBindingCount} exempt bindings ignored.";
-                return;
-            }
-
             var instanceRoles = Devices
                 .Where(device => !device.IsRepositoryOnly && !string.IsNullOrWhiteSpace(device.ProfileFile) && !string.IsNullOrWhiteSpace(device.Role))
                 .ToDictionary(device => device.ProfileFile!, device => device.Role!.Trim(), StringComparer.OrdinalIgnoreCase);

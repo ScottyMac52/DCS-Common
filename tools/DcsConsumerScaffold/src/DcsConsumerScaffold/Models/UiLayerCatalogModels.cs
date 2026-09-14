@@ -5,11 +5,13 @@ namespace DcsConsumerScaffold.Models;
 public sealed class UiLayerCatalogDocument
 {
     [JsonPropertyName("root")] public string Root { get; set; } = string.Empty;
+    [JsonPropertyName("scope")] public string Scope { get; set; } = string.Empty;
     [JsonPropertyName("fingerprint")] public string Fingerprint { get; set; } = string.Empty;
     [JsonPropertyName("valid")] public bool Valid { get; set; }
     [JsonPropertyName("profiles")] public List<UiLayerCatalogProfile> Profiles { get; set; } = [];
     [JsonPropertyName("bindings")] public List<UiLayerCatalogBinding> Bindings { get; set; } = [];
     [JsonPropertyName("modifiers")] public List<UiLayerCatalogModifier> Modifiers { get; set; } = [];
+    [JsonPropertyName("possibilities")] public List<UiLayerDevicePossibility> Possibilities { get; set; } = [];
     [JsonPropertyName("errors")] public List<string> Errors { get; set; } = [];
     [JsonPropertyName("summary")] public UiLayerCatalogSummary Summary { get; set; } = new();
 }
@@ -21,6 +23,7 @@ public sealed class UiLayerCatalogSummary
     [JsonPropertyName("keys")] public int Keys { get; set; }
     [JsonPropertyName("axes")] public int Axes { get; set; }
     [JsonPropertyName("modifiers")] public int Modifiers { get; set; }
+    [JsonPropertyName("possibilities")] public int Possibilities { get; set; }
     [JsonPropertyName("errors")] public int Errors { get; set; }
 }
 
@@ -33,6 +36,7 @@ public sealed class UiLayerCatalogProfile
     [JsonPropertyName("keyCount")] public int KeyCount { get; set; }
     [JsonPropertyName("axisCount")] public int AxisCount { get; set; }
     [JsonPropertyName("effectiveCount")] public int EffectiveCount { get; set; }
+    [JsonPropertyName("catalogState")] public string CatalogState { get; set; } = string.Empty;
 }
 
 public sealed class UiLayerCatalogBinding
@@ -44,6 +48,7 @@ public sealed class UiLayerCatalogBinding
     [JsonPropertyName("name")] public string Name { get; set; } = string.Empty;
     [JsonPropertyName("key")] public string Key { get; set; } = string.Empty;
     [JsonPropertyName("chord")] public string Chord { get; set; } = string.Empty;
+    [JsonPropertyName("catalogState")] public string CatalogState { get; set; } = string.Empty;
 }
 
 public sealed class UiLayerCatalogModifier
@@ -52,6 +57,20 @@ public sealed class UiLayerCatalogModifier
     [JsonPropertyName("device")] public string Device { get; set; } = string.Empty;
     [JsonPropertyName("key")] public string Key { get; set; } = string.Empty;
     [JsonPropertyName("mode")] public string Mode { get; set; } = string.Empty;
+    [JsonPropertyName("catalogState")] public string CatalogState { get; set; } = string.Empty;
+}
+
+public sealed class UiLayerDevicePossibility
+{
+    [JsonPropertyName("deviceId")] public string DeviceId { get; set; } = string.Empty;
+    [JsonPropertyName("canonicalDeviceId")] public string CanonicalDeviceId { get; set; } = string.Empty;
+    [JsonPropertyName("label")] public string Label { get; set; } = string.Empty;
+    [JsonPropertyName("modifier")] public string? Modifier { get; set; }
+    [JsonPropertyName("overlayStatus")] public string OverlayStatus { get; set; } = string.Empty;
+    [JsonPropertyName("instances")] public List<string> Instances { get; set; } = [];
+    [JsonPropertyName("catalogState")] public string CatalogState { get; set; } = string.Empty;
+    [JsonPropertyName("applicability")] public string Applicability { get; set; } = string.Empty;
+    public string InstanceDisplay => Instances.Count == 0 ? "All" : string.Join(", ", Instances);
 }
 
 public sealed class UiLayerCatalogComparison

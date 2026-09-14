@@ -121,6 +121,40 @@ test('empty selected module profiles are excluded even when legacy retainNoOpPro
   assert.deepEqual(readdirSync(fixture.stagedJoystick), []);
 });
 
+test('axis-only module devices remain applicable without inventing UI Layer bindings', () => {
+  const filename = 'T-Pendular-Rudder {11111111-1111-1111-1111-111111111111}.diff.lua';
+  const fixture = createConsumer({
+    profiles: { pedals: { filename, source: diffLua({ axis: true }) } },
+    pages: [{ deviceId: 'tm-tpr', controls: { rudder: { profile: 'pedals' } } }],
+  });
+  const result = packageUiLayerInput({ commonRoot: root, consumerJoystickDir: fixture.consumerJoystick,
+    destination: fixture.destination, moduleDestinationJoystick: fixture.stagedJoystick });
+  assert.deepEqual(result.activeProfiles, [filename]);
+  assert.deepEqual(readdirSync(fixture.stagedJoystick), [filename]);
+  assert.ok(result.skippedUiLayerProfiles.every(({ filename: item }) => !item.includes('T-Pendular-Rudder')));
+});
+
+test('configured modifier provider is retained without generating a provider payload or page', () => {
+  const ava = 'Ava [R] Viper {11111111-1111-1111-1111-111111111111}.diff.lua';
+  const mfd = 'F16 MFD 3 {C5BE49A0-2342-11ee-8001-444553540000}.diff.lua';
+  const fixture = createConsumer({
+    profiles: {
+      ava: { filename: ava, source: 'local diff = {}\nreturn diff\n' },
+      mfd3: { filename: mfd, source: diffLua() },
+    },
+    pages: [
+      { deviceId: 'ava-base-f16c', controls: { provider: { profile: 'ava' } } },
+      { deviceId: 'tm-mfd', deviceInstance: 'MFD3', controls: { button: { profile: 'mfd3' } } },
+    ],
+  });
+  const result = packageUiLayerInput({ commonRoot: root, consumerJoystickDir: fixture.consumerJoystick,
+    destination: fixture.destination, moduleDestinationJoystick: fixture.stagedJoystick });
+  assert.deepEqual(result.activeProfiles, [mfd]);
+  assert.deepEqual(result.availableModifiers.filter((name) => !/^L|^R/.test(name)), ['AVA_BASE_MODIFIER_BTN3']);
+  assert.equal(result.copiedProfiles.some((filename) => filename.includes('Ava [R] Viper')), false);
+  assert.match(readFileSync(join(fixture.destination, 'joystick', mfd), 'utf8'), /AVA_BASE_MODIFIER_BTN3/);
+});
+
 test('configured keyboard additions project the definitive keyboard UI Layer profile', () => {
   const fixture = createConsumer({ profiles: {}, pages: [] });
   const moduleKeyboard = join(fixture.consumerRoot, 'src/Config/Input/Test/keyboard');

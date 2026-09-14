@@ -25,6 +25,33 @@ function sha256(source) {
   return createHash('sha256').update(source).digest('hex');
 }
 
+function devicePossibilities(root) {
+  const sharedRoot = dirname(dirname(dirname(root)));
+  const manifestPath = join(sharedRoot, 'hardware', 'manifest.json');
+  const overlaysPath = join(dirname(dirname(root)), 'hardware-overlays.json');
+  if (!existsSync(manifestPath) || !existsSync(overlaysPath)) return [];
+
+  const hardware = JSON.parse(readFileSync(manifestPath, 'utf8')).devices ?? [];
+  const overlays = JSON.parse(readFileSync(overlaysPath, 'utf8'));
+  return hardware.flatMap((device) => {
+    const overlay = overlays.devices?.[device.id];
+    const exemption = overlays.exemptions?.[device.id];
+    const identities = [device.id, ...(device.aliases ?? [])];
+    return identities.map((deviceId) => ({
+      deviceId,
+      canonicalDeviceId: device.id,
+      label: device.label,
+      modifier: device.uiLayerModifiers?.[deviceId]
+        ?? (deviceId === device.id ? device.uiLayerModifier : null)
+        ?? null,
+      overlayStatus: exemption ? 'exempt' : overlay?.status ?? 'template',
+      instances: overlay?.appliesToInstances ?? [],
+      catalogState: 'Definitive possibility',
+      applicability: 'Resolved from each module\'s effective profiles',
+    }));
+  }).sort((left, right) => left.deviceId.localeCompare(right.deviceId));
+}
+
 export function inspectCatalog(rootArg) {
   const root = resolve(rootArg);
   const errors = [];
@@ -67,11 +94,24 @@ export function inspectCatalog(rootArg) {
       errors.push(`functions.json: ${String(error.message ?? error)}`);
     }
   }
-  const fingerprint = sha256(files(root).map((file) => `${file.relativePath}\0${sha256(readFileSync(file.absolutePath))}`).join('\n'));
-  return { root, fingerprint, profiles, bindings, modifiers, errors, valid: errors.length === 0,
+  const sharedRoot = dirname(dirname(dirname(root)));
+  const catalogFiles = [
+    ...files(root).map((file) => ({ name: `input/UiLayer/${file.relativePath}`, path: file.absolutePath })),
+    { name: 'functions.json', path: join(dirname(dirname(root)), 'functions.json') },
+    { name: 'hardware-overlays.json', path: join(dirname(dirname(root)), 'hardware-overlays.json') },
+    { name: 'hardware/manifest.json', path: join(sharedRoot, 'hardware', 'manifest.json') },
+  ].filter((file) => existsSync(file.path));
+  const fingerprint = sha256(catalogFiles.map((file) => `${file.name}\0${sha256(readFileSync(file.path))}`).join('\n'));
+  const possibilities = devicePossibilities(root);
+  const catalogState = possibilities.length ? 'Definitive' : 'Observed snapshot';
+  return { root, scope: possibilities.length ? 'Definitive catalog' : 'Observed snapshot', fingerprint,
+    profiles: profiles.map((profile) => ({ ...profile, catalogState })),
+    bindings: bindings.map((binding) => ({ ...binding, catalogState })),
+    modifiers: modifiers.map((modifier) => ({ ...modifier, catalogState: possibilities.length ? 'Definitive' : 'Observed' })),
+    possibilities, errors, valid: errors.length === 0,
     summary: { profiles: profiles.length, bindings: bindings.length, keys: profiles.reduce((n, item) => n + item.keyCount, 0),
       axes: profiles.reduce((n, item) => n + item.axisCount, 0), modifiers: modifiers.length, functions: functionCount,
-      errors: errors.length } };
+      possibilities: possibilities.length, errors: errors.length } };
 }
 
 export function compareCatalogs(canonicalArg, sourceArg) {
@@ -87,7 +127,26 @@ export function compareCatalogs(canonicalArg, sourceArg) {
     const state = same ? 'Unchanged' : !left ? 'New' : !right ? 'CanonicalOnly' : 'Changed';
     changes.push({ relativePath, state, action: state === 'New' ? 'Add' : state === 'Changed' ? 'Replace' : 'Keep' });
   }
-  return { canonical: inspectCatalog(canonical), source: inspectCatalog(source), changes };
+  const canonicalCatalog = inspectCatalog(canonical);
+  const sourceCatalog = inspectCatalog(source);
+  const stateByPath = new Map(changes.map((change) => [change.relativePath, change.state]));
+  canonicalCatalog.profiles = canonicalCatalog.profiles.map((profile) => ({ ...profile,
+    catalogState: stateByPath.get(profile.relativePath) === 'CanonicalOnly'
+      ? 'Definitive only'
+      : stateByPath.get(profile.relativePath) === 'Changed'
+        ? 'Definitive + changed observation'
+        : 'Definitive + observed' }));
+  const bindingKey = (binding) => [binding.category, binding.profile, binding.section, binding.command, binding.key, binding.chord].join('\0');
+  const observedBindings = new Set(sourceCatalog.bindings.map(bindingKey));
+  canonicalCatalog.bindings = canonicalCatalog.bindings.map((binding) => ({ ...binding,
+    catalogState: observedBindings.has(bindingKey(binding)) ? 'Definitive + observed' : 'Definitive only' }));
+  const modifierKey = (modifier) => [modifier.name, modifier.device, modifier.key, modifier.mode].join('\0');
+  const observedModifiers = new Set(sourceCatalog.modifiers.map(modifierKey));
+  canonicalCatalog.modifiers = canonicalCatalog.modifiers.map((modifier) => ({ ...modifier,
+    catalogState: observedModifiers.has(modifierKey(modifier)) ? 'Definitive + observed' : 'Definitive only' }));
+  sourceCatalog.profiles = sourceCatalog.profiles.map((profile) => ({ ...profile, catalogState: 'Observed snapshot' }));
+  sourceCatalog.bindings = sourceCatalog.bindings.map((binding) => ({ ...binding, catalogState: 'Observed snapshot' }));
+  return { canonical: canonicalCatalog, source: sourceCatalog, changes };
 }
 
 export function applyReconciliation(canonicalArg, sourceArg, decisions) {
