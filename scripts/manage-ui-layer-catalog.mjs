@@ -253,13 +253,19 @@ export function applyAuthoritativeEdits(commonRootArg, request) {
       const assignment = (target, clear = false) => ({ profileFile: edit.profile.filename, section: edit.section,
         key: target.key, reformers: target.reformers ?? [], command: edit.command, name: edit.name ?? fn.label,
         clear, allowCreate: !clear });
+      const allowedInputs = controlCatalog.controls.flatMap((control) => {
+        const section = control.type === 'axis' ? 'axisDiffs' : 'keyDiffs';
+        const aliases = Object.entries(deviceMap.inputKeyAliases?.[edit.profile.deviceId] ?? {})
+          .filter(([, canonical]) => canonical === control.key).map(([key]) => ({ key, section }));
+        return [{ key: control.key, section }, ...aliases];
+      });
       if (edit.action === 'move') {
         source = applyDcsCommandAssignments(source, [assignment(edit.from, true)], { filename: edit.profile.filename });
       }
       const target = edit.action === 'move' ? edit.to : edit;
       source = applyDcsCommandAssignments(source, [assignment(target, edit.action === 'clear')], {
         filename: edit.profile.filename,
-        allowedInputs: controlCatalog.controls.map((control) => ({ key: control.key, section: control.type === 'axis' ? 'axisDiffs' : 'keyDiffs' })),
+        allowedInputs,
       });
       writeFileSync(profilePath, source, 'utf8');
       changedFiles.add(relative(stage, profilePath).replaceAll('\\', '/'));
