@@ -106,6 +106,7 @@ public sealed class ScaffoldEngineService
         bool includeUiLayer = true,
         IReadOnlyCollection<DcsCommandAssignment>? assignments = null,
         string? repositoryProfilesDir = null,
+        IReadOnlyCollection<PreviewModifier>? authoredModifiers = null,
         CancellationToken cancellationToken = default)
     {
         var root = ResolveCommonRoot(commonRoot)
@@ -120,6 +121,7 @@ public sealed class ScaffoldEngineService
         string? mfdCategoriesPath = null;
         string? pagePresentationsPath = null;
         string? assignmentsPath = null;
+        string? authoredModifiersPath = null;
         try
         {
             if (instanceRoles is { Count: > 0 })
@@ -134,9 +136,14 @@ public sealed class ScaffoldEngineService
             mfdCategoriesPath = await WriteTemporaryObjectAsync("mfd-categories", mfdCategories, cancellationToken);
             pagePresentationsPath = await WriteTemporaryObjectAsync("page-presentation", pagePresentations, cancellationToken);
             assignmentsPath = await WriteTemporaryJsonArrayAsync("assignments", assignments, cancellationToken);
+            if (authoredModifiers is not null)
+            {
+                authoredModifiersPath = Path.Combine(Path.GetTempPath(), $"dcs-scaffold-modifiers-{Guid.NewGuid():N}.lua");
+                await File.WriteAllTextAsync(authoredModifiersPath, SerializeModifiers(authoredModifiers), cancellationToken).ConfigureAwait(false);
+            }
 
             var args = BuildWriteArguments(
-                script, profilesDir, modifiersPath, mozaGrip, rolesPath, root, outputDir, displayName, inputModuleId, kneeboardId, repoName, semanticPath, labelsPath, removedProfilesPath, mfdCategoriesPath, pagePresentationsPath, includeUiLayer, assignmentsPath, repositoryProfilesDir);
+                script, profilesDir, authoredModifiersPath ?? modifiersPath, mozaGrip, rolesPath, root, outputDir, displayName, inputModuleId, kneeboardId, repoName, semanticPath, labelsPath, removedProfilesPath, mfdCategoriesPath, pagePresentationsPath, includeUiLayer, assignmentsPath, repositoryProfilesDir, authoredModifiers is not null);
             var (exitCode, stdout, stderr) = await RunNodeAsync(root, args, cancellationToken).ConfigureAwait(false);
             return (stdout, stderr, exitCode);
         }
@@ -152,6 +159,7 @@ public sealed class ScaffoldEngineService
             DeleteTemporary(mfdCategoriesPath);
             DeleteTemporary(pagePresentationsPath);
             DeleteTemporary(assignmentsPath);
+            DeleteTemporary(authoredModifiersPath);
         }
     }
 
@@ -189,6 +197,7 @@ public sealed class ScaffoldEngineService
         bool includeUiLayer = true,
         IReadOnlyCollection<DcsCommandAssignment>? assignments = null,
         string? repositoryProfilesDir = null,
+        IReadOnlyCollection<PreviewModifier>? authoredModifiers = null,
         CancellationToken cancellationToken = default)
     {
         var root = ResolveCommonRoot(commonRoot)
@@ -202,7 +211,8 @@ public sealed class ScaffoldEngineService
                 profilesDir, modifiersPath, mozaGrip, instanceRoles, semanticModifiers, labels, root,
                 temporaryRoot, displayName, inputModuleId, kneeboardId,
                 mfdCategories: mfdCategories, pagePresentations: pagePresentations,
-                includeUiLayer: includeUiLayer, assignments: assignments, repositoryProfilesDir: repositoryProfilesDir, cancellationToken: cancellationToken);
+                includeUiLayer: includeUiLayer, assignments: assignments, repositoryProfilesDir: repositoryProfilesDir,
+                authoredModifiers: authoredModifiers, cancellationToken: cancellationToken);
             if (exitCode is not (0 or 2)) throw new InvalidOperationException($"Temporary scaffold failed: {stderr}");
 
             var script = Path.Combine(root, "scripts", "render-scaffold-preview.mjs");
@@ -373,7 +383,8 @@ public sealed class ScaffoldEngineService
         string? pagePresentationsPath = null,
         bool includeUiLayer = true,
         string? assignmentsPath = null,
-        string? repositoryProfilesDir = null)
+        string? repositoryProfilesDir = null,
+        bool replaceModifiers = false)
     {
         var list = new List<string>
         {
@@ -396,6 +407,7 @@ public sealed class ScaffoldEngineService
             list.Add("--modifiers");
             list.Add(modifiersPath);
         }
+        if (replaceModifiers) list.Add("--replace-modifiers");
 
         if (!string.IsNullOrWhiteSpace(mozaGrip))
         {
@@ -428,6 +440,27 @@ public sealed class ScaffoldEngineService
         }
 
         return list;
+    }
+
+    public static string SerializeModifiers(IEnumerable<PreviewModifier> modifiers)
+    {
+        var names = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+        var physical = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+        var normalized = modifiers.Select((item, index) =>
+        {
+            var name = item.Name?.Trim() ?? string.Empty;
+            var device = item.Device?.Trim() ?? string.Empty;
+            var key = item.Key?.Trim() ?? string.Empty;
+            var mode = item.Mode?.Trim().ToLowerInvariant() ?? string.Empty;
+            if (name.Length == 0 || device.Length == 0 || key.Length == 0 || mode is not ("hold" or "toggle"))
+                throw new InvalidOperationException($"Modifier {index + 1} requires name, device, key, and hold/toggle mode.");
+            if (!names.Add(name)) throw new InvalidOperationException($"Duplicate modifier name: {name}");
+            if (!physical.Add($"{device}\0{key}")) throw new InvalidOperationException($"Duplicate modifier physical input: {device} {key}");
+            return new { name, device, key, mode };
+        }).OrderBy(item => item.name, StringComparer.Ordinal).ToList();
+        static string Lua(string value) => JsonSerializer.Serialize(value);
+        return $"local modifiers = {{\n{string.Join("\n", normalized.Select(item =>
+            $"\t[{Lua(item.name)}] = {{\n\t\t[\"device\"] = {Lua(item.device)},\n\t\t[\"key\"] = {Lua(item.key)},\n\t\t[\"switch\"] = {(item.mode == "toggle").ToString().ToLowerInvariant()},\n\t}},"))}\n}}\nreturn modifiers\n";
     }
 
     private static void AddOptionalFile(List<string> arguments, string option, string? path)

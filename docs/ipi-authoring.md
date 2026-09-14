@@ -20,6 +20,8 @@ The module and definitive UI Layer authoring screens expose deliberate layer man
 
 Any number of modifiers may be defined and any combination may be selected as an assignment chord. Duplicate names and duplicate physical inputs are rejected. Normal command assignment selects existing modifiers; it never silently creates, renames, or removes one. Modifier and utilization saves are fingerprint-protected.
 
+The main assignment screen also contains a modifier editor. Add selects an imported device and one of its DCS-Common shared controls, so the native device identity and physical key are derived rather than typed. Update can rename a modifier, change its hold/toggle mode, semantic family, or shared physical control. Renames migrate staged assignment chords. Remove is allowed only after every dependent assignment has been moved or cleared. All changes remain staged until **Proceed**, which writes the edited modifier set as the module's authoritative `modifiers.lua`.
+
 ## Definitive UI Layer authoring
 
 The **Definitive UI Layer Editor** treats DCS-Common's shared hardware catalog as its physical-control API. Select a validated UI Layer command, canonical device, shared control, and an existing layer. IPI derives the native input key, `keyDiffs`/`axisDiffs` section, hardware label, and control identity. Moving or clearing starts from a selected authoritative binding, so its source key and chord are never retyped. Stage an upsert, move, clear, or relabel operation, then save the complete batch.

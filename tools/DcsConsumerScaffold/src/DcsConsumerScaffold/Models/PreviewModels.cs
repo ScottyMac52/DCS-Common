@@ -373,23 +373,28 @@ public sealed class DcsCommandAssignment
 
 public sealed class PreviewModifier : INotifyPropertyChanged
 {
+    private string? _name;
+    private string? _device;
+    private string? _key;
+    private string? _mode;
+    private string? _deviceId;
     private string? _semanticModifier;
     private PreviewChangeState _changeState = PreviewChangeState.NotCompared;
     private string _changeReason = "Select an output repository to compare.";
     [JsonPropertyName("name")]
-    public string? Name { get; set; }
+    public string? Name { get => _name; set => Set(ref _name, value); }
 
     [JsonPropertyName("device")]
-    public string? Device { get; set; }
+    public string? Device { get => _device; set => Set(ref _device, value); }
 
     [JsonPropertyName("key")]
-    public string? Key { get; set; }
+    public string? Key { get => _key; set => Set(ref _key, value); }
 
     [JsonPropertyName("mode")]
-    public string? Mode { get; set; }
+    public string? Mode { get => _mode; set => Set(ref _mode, value); }
 
     [JsonPropertyName("deviceId")]
-    public string? DeviceId { get; set; }
+    public string? DeviceId { get => _deviceId; set => Set(ref _deviceId, value); }
 
     [JsonPropertyName("semanticModifier")]
     public string? SemanticModifier

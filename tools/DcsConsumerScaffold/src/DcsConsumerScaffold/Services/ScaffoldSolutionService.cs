@@ -1,6 +1,7 @@
 using System.IO;
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using DcsConsumerScaffold.Models;
 
 namespace DcsConsumerScaffold.Services;
 
@@ -59,6 +60,9 @@ public sealed class ScaffoldSolutionDecisions
 
     [JsonPropertyName("removedProfiles")]
     public SortedSet<string> RemovedProfiles { get; set; } = new(StringComparer.OrdinalIgnoreCase);
+
+    [JsonPropertyName("authoredModifiers")]
+    public List<IpiModifierDefinition>? AuthoredModifiers { get; set; }
 }
 
 public sealed class ScaffoldSolutionService

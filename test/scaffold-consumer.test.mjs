@@ -1241,6 +1241,31 @@ test('mergeModifierSources preserves unobserved global modifiers and updates obs
   assert.doesNotMatch(merged, /JOY_BTN20/);
 });
 
+test('authored modifier replacement removes definitions deleted in the main editor', () => {
+  const fixture = mkdtempSync(join(tmpdir(), 'scaffold-authored-modifiers-'));
+  const profilesDir = join(fixture, 'profiles');
+  const out = join(fixture, 'consumer');
+  const modifiersPath = join(fixture, 'modifiers.lua');
+  mkdirSync(profilesDir, { recursive: true });
+  writeFileSync(join(profilesDir, 'F16 MFD 3.diff.lua'), `local diff = { ["keyDiffs"] = {
+    ["d1"] = { ["added"] = { [1] = { ["key"] = "JOY_BTN1" }, }, ["name"] = "OSB 1", },
+  } } return diff`);
+  writeFileSync(modifiersPath, `local modifiers = {
+    ["NEW"] = { ["device"] = "F16 MFD 3", ["key"] = "JOY_BTN2", ["switch"] = false },
+  } return modifiers`);
+  const destination = join(out, 'src/Config/Input/TestJet');
+  mkdirSync(destination, { recursive: true });
+  writeFileSync(join(destination, 'modifiers.lua'), `local modifiers = {
+    ["DELETED"] = { ["device"] = "Old", ["key"] = "JOY_BTN9", ["switch"] = false },
+  } return modifiers`);
+
+  const preview = buildPreview({ profilesDir, modifiersPath, replaceModifiers: true, commonRoot });
+  writeConsumer({ preview, outputDir: out, displayName: 'TestJet', inputModuleId: 'TestJet', kneeboardId: 'TestJet', commonRoot });
+  const written = readFileSync(join(destination, 'modifiers.lua'), 'utf8');
+  assert.match(written, /\["NEW"\]/);
+  assert.doesNotMatch(written, /DELETED/);
+});
+
 
 test('repeated identical hardware gets one stable profile and kneeboard page per GUID', () => {
   const root = mkdtempSync(join(tmpdir(), 'scaffold-repeated-quadrant-'));

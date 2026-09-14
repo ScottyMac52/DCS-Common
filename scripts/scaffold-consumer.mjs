@@ -75,6 +75,7 @@ export function parseArgs(argv = process.argv.slice(2)) {
     outputDir: null,
     profilesDir: null,
     modifiersPath: null,
+    replaceModifiers: false,
     mapPath: null,
     rolesPath: null,
     semanticModifiersPath: null,
@@ -106,6 +107,7 @@ export function parseArgs(argv = process.argv.slice(2)) {
     else if (arg === '--output-dir') options.outputDir = next();
     else if (arg === '--profiles-dir') options.profilesDir = next();
     else if (arg === '--modifiers') options.modifiersPath = next();
+    else if (arg === '--replace-modifiers') options.replaceModifiers = true;
     else if (arg === '--map') options.mapPath = next();
     else if (arg === '--roles') options.rolesPath = next();
     else if (arg === '--semantic-modifiers') options.semanticModifiersPath = next();
@@ -584,7 +586,7 @@ export function assignDeviceInstances(devices, rows, roleOverrides = {}, errors 
   }
 }
 
-export function buildPreview({ profilesDir, repositoryProfilesDir = null, modifiersPath = null, mapPath = null, rolesPath = null, semanticModifiersPath = null, labelsPath = null, mfdCategoriesPath = null, pagePresentationPath = null, mozaGrip = null, commonRoot = defaultCommonRoot }) {
+export function buildPreview({ profilesDir, repositoryProfilesDir = null, modifiersPath = null, replaceModifiers = false, mapPath = null, rolesPath = null, semanticModifiersPath = null, labelsPath = null, mfdCategoriesPath = null, pagePresentationPath = null, mozaGrip = null, commonRoot = defaultCommonRoot }) {
   if (!profilesDir || !existsSync(profilesDir) || !statSync(profilesDir).isDirectory()) {
     throw new Error(`profiles directory not found: ${profilesDir}`);
   }
@@ -852,6 +854,7 @@ export function buildPreview({ profilesDir, repositoryProfilesDir = null, modifi
     profilesDir: resolve(profilesDir),
     repositoryProfilesDir: repositoryProfilesDir ? resolve(repositoryProfilesDir) : null,
     modifiersPath: modifiersPath ? resolve(modifiersPath) : null,
+    replaceModifiers,
     mapPath: mapPath ? resolve(mapPath) : null,
     rolesPath: rolesPath ? resolve(rolesPath) : null,
     semanticModifiersPath: semanticModifiersPath ? resolve(semanticModifiersPath) : null,
@@ -1196,7 +1199,7 @@ export function writeConsumer({ preview, outputDir, displayName, inputModuleId, 
     const modifierRel = `src/Config/Input/${inputModuleId}/modifiers.lua`;
     const existingModifierPath = join(out, modifierRel);
     const observedModifiers = readFileSync(preview.modifiersPath, 'utf8');
-    const mergedModifiers = existsSync(existingModifierPath)
+    const mergedModifiers = existsSync(existingModifierPath) && !preview.replaceModifiers
       ? mergeModifierSources(readFileSync(existingModifierPath, 'utf8'), observedModifiers)
       : observedModifiers;
     write(modifierRel, mergedModifiers);
@@ -1345,6 +1348,7 @@ export function main(argv = process.argv.slice(2)) {
     repositoryProfilesDir: options.repositoryProfilesDir ?? (options.outputDir && options.inputModuleId
       ? join(options.outputDir, 'src', 'Config', 'Input', options.inputModuleId, 'joystick') : null),
     modifiersPath: options.modifiersPath,
+    replaceModifiers: options.replaceModifiers,
     mapPath: options.mapPath,
     rolesPath: options.rolesPath,
     semanticModifiersPath: options.semanticModifiersPath,
