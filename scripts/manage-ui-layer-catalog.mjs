@@ -5,7 +5,8 @@ import { basename, dirname, join, relative, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { parseDcsDiffLua, parseDcsModifiersLua } from './profile-driven-kneeboard.mjs';
 import { summarizeEffectiveAdditions } from './effective-profile-applicability.mjs';
-import { applyDcsCommandAssignments, loadCalloutCatalog, serializeDcsProfile } from './scaffold-consumer.mjs';
+import { applyDcsCommandAssignments, loadCalloutCatalog, loadDeviceMap, resolveDeviceMapping,
+  resolveCatalogInputKey, resolveInstanceHint, serializeDcsProfile } from './scaffold-consumer.mjs';
 
 const CATEGORIES = ['joystick', 'keyboard', 'mouse'];
 
@@ -83,10 +84,12 @@ export function inspectCatalog(rootArg) {
     if (!declared.has(modifier)) errors.push(`${binding.profile}: ${binding.command} references undeclared modifier ${modifier}`);
   }
   const functionsPath = join(dirname(dirname(root)), 'functions.json');
+  const sharedRoot = dirname(dirname(dirname(root)));
   let functionCount = null;
+  let functions = [];
   if (existsSync(functionsPath)) {
     try {
-      const functions = JSON.parse(readFileSync(functionsPath, 'utf8')).functions ?? [];
+      functions = JSON.parse(readFileSync(functionsPath, 'utf8')).functions ?? [];
       functionCount = functions.length;
       const commands = new Set(functions.map(({ command }) => command));
       for (const binding of bindings) {
@@ -96,7 +99,26 @@ export function inspectCatalog(rootArg) {
       errors.push(`functions.json: ${String(error.message ?? error)}`);
     }
   }
-  const sharedRoot = dirname(dirname(dirname(root)));
+  if (existsSync(join(sharedRoot, 'hardware', 'scaffold-device-map.json'))) {
+    const commonRoot = dirname(dirname(sharedRoot));
+    const deviceMap = loadDeviceMap(commonRoot);
+    const functionsByCommand = new Map(functions.map((item) => [item.command, item]));
+    for (const binding of bindings) {
+      const mapping = resolveDeviceMapping(binding.profile, deviceMap);
+      binding.deviceId = mapping.deviceId;
+      const instance = mapping.deviceId ? resolveInstanceHint(mapping.stem, mapping.deviceId, deviceMap) : null;
+      binding.deviceInstance = mapping.deviceId === 'tm-mfd' && instance ? `MFD${instance}` : instance;
+      binding.modifiers = binding.reformers;
+      binding.functionId = functionsByCommand.get(binding.command)?.id ?? null;
+      if (mapping.deviceId) {
+        const catalogKey = resolveCatalogInputKey(mapping.deviceId, binding.key, deviceMap);
+        const control = loadCalloutCatalog(commonRoot, mapping.deviceId).controls.find((item) => item.key === catalogKey);
+        binding.controlId = control?.id ?? null;
+        binding.hardwareLabel = control?.hardwareLabel ?? null;
+      }
+      binding.bindingId = [binding.deviceId, binding.deviceInstance, binding.functionId, ...binding.reformers].map((value) => value ?? '').join('|');
+    }
+  }
   const catalogFiles = [
     ...files(root).map((file) => ({ name: `input/UiLayer/${file.relativePath}`, path: file.absolutePath })),
     { name: 'functions.json', path: join(dirname(dirname(root)), 'functions.json') },
@@ -218,8 +240,10 @@ export function applyAuthoritativeEdits(commonRootArg, request) {
       mkdirSync(dirname(profilePath), { recursive: true });
       let source = existsSync(profilePath) ? readFileSync(profilePath, 'utf8') : emptyProfile();
       const controlCatalog = loadCalloutCatalog(commonRoot, edit.profile.deviceId);
+      const deviceMap = loadDeviceMap(commonRoot);
       const validateTarget = (target) => {
-        const control = controlCatalog.controls.find((item) => item.key === target?.key);
+        const catalogKey = resolveCatalogInputKey(edit.profile.deviceId, target?.key, deviceMap);
+        const control = controlCatalog.controls.find((item) => item.key === catalogKey);
         if (!control) throw new Error(`${edit.profile.deviceId}: ${target?.key ?? '(missing key)'} is not a supported canonical physical control.`);
         const expectedSection = control.type === 'axis' ? 'axisDiffs' : 'keyDiffs';
         if (edit.section !== expectedSection) throw new Error(`${target.key} requires ${expectedSection}, not ${edit.section}.`);

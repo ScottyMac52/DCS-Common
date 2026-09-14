@@ -22,7 +22,7 @@ Any number of modifiers may be defined and any combination may be selected as an
 
 ## Definitive UI Layer authoring
 
-The **Definitive UI Layer Editor** includes a searchable assignment workspace. Select a validated UI Layer command, authoritative profile or new supported profile, canonical device, physical key, and exact chord. Stage an upsert, move, clear, or relabel operation, then save the complete batch.
+The **Definitive UI Layer Editor** treats DCS-Common's shared hardware catalog as its physical-control API. Select a validated UI Layer command, canonical device, shared control, and an existing layer. IPI derives the native input key, `keyDiffs`/`axisDiffs` section, hardware label, and control identity. Moving or clearing starts from a selected authoritative binding, so its source key and chord are never retyped. Stage an upsert, move, clear, or relabel operation, then save the complete batch.
 
 The destination is always `DCS-Common/assets/shared/ui-layer`. Save stages the catalog, validates command identities, physical controls, modifier closure, and the expected fingerprint, then atomically replaces the authoritative directory. Existing unknown command entries are preserved as warnings; IPI will not newly assign an unknown identity.
 
@@ -48,7 +48,7 @@ A module can save an exact `uiLayerUtilization` selection in `config/kneeboard.j
 }
 ```
 
-Each entry selects one canonical device, optional instance, UI function, and exact native chord. When the object is absent, existing consumers retain compatibility inference from their effective device profiles. Once present, it is authoritative—even an empty binding list means the module utilizes no UI Layer assignments.
+The IPI module screen presents these entries as a checklist of existing definitive assignments. Checking a row copies its stable canonical device, optional instance, function, shared control, and exact native chord; authors do not reconstruct tuples or type keys. When the object is absent, existing consumers retain compatibility inference from their effective device profiles. Once present, it is authoritative—even an empty binding list means the module utilizes no UI Layer assignments.
 
 The same selection filters kneeboard overlays and packaged DCS UI Layer profiles. Unselected functions, chords, profiles, and modifier declarations produce no module output. Device applicability still requires an effective module profile, and MFD instance restrictions remain enforced.
 

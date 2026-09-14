@@ -12,6 +12,7 @@ public partial class UiLayerEditorWindow : Window
     private readonly UiLayerCatalogService _service = new();
     private UiLayerCatalogComparison? _comparison;
     private readonly List<IpiUiFunctionChoice> _functions = [];
+    private UiLayerCatalogBinding? _selectedBinding;
     private string _fingerprint = string.Empty;
     public ObservableCollection<UiLayerBindingEdit> StagedEdits { get; } = [];
     public ObservableCollection<IpiModifierDefinition> EditableModifiers { get; } = [];
@@ -79,6 +80,8 @@ public partial class UiLayerEditorWindow : Window
             { Name = modifier.Name, Device = modifier.Device, Key = modifier.Key, Mode = modifier.Mode });
         PossibilitiesGrid.ItemsSource = document.Possibilities;
         EditDeviceBox.ItemsSource = document.Possibilities;
+        LayerBox.ItemsSource = new[] { new IpiLayerChoice() }.Concat(document.Modifiers.Select(item => new IpiLayerChoice { Name = item.Name })).ToList();
+        LayerBox.SelectedIndex = 0;
         ErrorsList.ItemsSource = document.Errors;
         SummaryText.Text = $"{document.Scope}: Possibilities={document.Summary.Possibilities}  Profiles={document.Summary.Profiles}  Bindings={document.Summary.Bindings}  " +
             $"Keys={document.Summary.Keys}  Axes={document.Summary.Axes}  Modifiers={document.Summary.Modifiers}  Errors={document.Summary.Errors}";
@@ -103,20 +106,29 @@ public partial class UiLayerEditorWindow : Window
             new[] { item.Id, item.Command, item.Label, item.Category }.Any(value => value.Contains(query, StringComparison.OrdinalIgnoreCase))).ToList();
     }
 
-    private static List<string> Chord(string? value) => (value ?? string.Empty)
-        .Split('+', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries).Distinct(StringComparer.Ordinal).OrderBy(item => item).ToList();
-
     private static string SelectedText(ComboBox box) => (box.SelectedItem as ComboBoxItem)?.Content?.ToString() ?? string.Empty;
+
+    private async void EditDevice_Changed(object sender, SelectionChangedEventArgs e)
+    {
+        if (EditDeviceBox.SelectedItem is not UiLayerDevicePossibility device) return;
+        try
+        {
+            SharedControlBox.ItemsSource = await new IpiAuthoringService().SharedControlsAsync(CommonRootBox.Text.Trim(), device.DeviceId);
+            SharedControlBox.SelectedIndex = SharedControlBox.Items.Count > 0 ? 0 : -1;
+        }
+        catch (Exception ex) { StatusText.Text = ex.Message; }
+    }
 
     private void BindingSelection_Changed(object sender, SelectionChangedEventArgs e)
     {
         if (BindingsGrid.SelectedItem is not UiLayerCatalogBinding binding) return;
+        _selectedBinding = binding;
         EditProfileBox.Text = binding.Profile;
-        EditCategoryBox.SelectedIndex = binding.Category switch { "keyboard" => 1, "mouse" => 2, _ => 0 };
-        EditSectionBox.SelectedIndex = binding.Section == "axisDiffs" ? 1 : 0;
-        SourceKeyBox.Text = TargetKeyBox.Text = binding.Key;
-        SourceChordBox.Text = TargetChordBox.Text = binding.Chord.StartsWith("Base", StringComparison.OrdinalIgnoreCase) ? string.Empty : binding.Chord;
         EditLabelBox.Text = binding.Name;
+        EditDeviceBox.SelectedItem = ((IEnumerable<UiLayerDevicePossibility>)EditDeviceBox.ItemsSource)
+            .FirstOrDefault(item => item.DeviceId.Equals(binding.DeviceId, StringComparison.OrdinalIgnoreCase));
+        LayerBox.SelectedItem = ((IEnumerable<IpiLayerChoice>)LayerBox.ItemsSource)
+            .FirstOrDefault(item => item.Name.Equals(binding.Modifiers.FirstOrDefault() ?? string.Empty, StringComparison.Ordinal));
         var command = _functions.FirstOrDefault(item => item.Command == binding.Command);
         if (command is not null) UiCommandsGrid.SelectedItem = command;
     }
@@ -135,17 +147,24 @@ public partial class UiLayerEditorWindow : Window
         {
             if (EditDeviceBox.SelectedItem is not UiLayerDevicePossibility device || string.IsNullOrWhiteSpace(EditProfileBox.Text))
                 throw new InvalidOperationException("Select a definitive device possibility and profile filename.");
-            edit.Profile = new UiLayerProfileTarget { Category = SelectedText(EditCategoryBox), Filename = EditProfileBox.Text.Trim(), DeviceId = device.DeviceId };
-            edit.Section = SelectedText(EditSectionBox);
+            var control = SharedControlBox.SelectedItem as IpiSharedControlChoice;
+            if (action != "clear" && control is null)
+                throw new InvalidOperationException("Select a shared DCS-Common control.");
+            var category = _selectedBinding?.Profile == EditProfileBox.Text.Trim() ? _selectedBinding.Category : "joystick";
+            edit.Profile = new UiLayerProfileTarget { Category = category, Filename = EditProfileBox.Text.Trim(), DeviceId = device.DeviceId };
+            edit.Section = action == "clear" ? _selectedBinding?.Section ?? "keyDiffs" : control!.Section;
+            var chord = LayerBox.SelectedItem is IpiLayerChoice layer && !string.IsNullOrEmpty(layer.Name) ? new List<string> { layer.Name } : [];
             if (action == "move")
             {
-                edit.From = new UiLayerPhysicalTarget { Key = SourceKeyBox.Text.Trim(), Reformers = Chord(SourceChordBox.Text) };
-                edit.To = new UiLayerPhysicalTarget { Key = TargetKeyBox.Text.Trim(), Reformers = Chord(TargetChordBox.Text) };
+                if (_selectedBinding is null) throw new InvalidOperationException("Select the existing binding to move.");
+                edit.From = new UiLayerPhysicalTarget { Key = _selectedBinding.Key, Reformers = [.. _selectedBinding.Modifiers] };
+                edit.To = new UiLayerPhysicalTarget { Key = control!.Key, Reformers = chord };
             }
             else
             {
-                edit.Key = (action == "clear" && !string.IsNullOrWhiteSpace(SourceKeyBox.Text) ? SourceKeyBox.Text : TargetKeyBox.Text).Trim();
-                edit.Reformers = Chord(action == "clear" ? SourceChordBox.Text : TargetChordBox.Text);
+                if (action == "clear" && _selectedBinding is null) throw new InvalidOperationException("Select the existing binding to clear.");
+                edit.Key = action == "clear" ? _selectedBinding!.Key : control!.Key;
+                edit.Reformers = action == "clear" ? [.. _selectedBinding!.Modifiers] : chord;
             }
         }
         StagedEdits.Add(edit);

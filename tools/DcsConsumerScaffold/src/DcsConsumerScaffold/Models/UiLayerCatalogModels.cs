@@ -67,6 +67,9 @@ public sealed class UiLayerCatalogProfile
     [JsonPropertyName("axisCount")] public int AxisCount { get; set; }
     [JsonPropertyName("effectiveCount")] public int EffectiveCount { get; set; }
     [JsonPropertyName("catalogState")] public string CatalogState { get; set; } = string.Empty;
+    [JsonPropertyName("deviceId")] public string? DeviceId { get; set; }
+    [JsonPropertyName("deviceInstance")] public string? DeviceInstance { get; set; }
+    public override string ToString() => $"{Category} — {Name}";
 }
 
 public sealed class UiLayerCatalogBinding
@@ -79,6 +82,13 @@ public sealed class UiLayerCatalogBinding
     [JsonPropertyName("key")] public string Key { get; set; } = string.Empty;
     [JsonPropertyName("chord")] public string Chord { get; set; } = string.Empty;
     [JsonPropertyName("catalogState")] public string CatalogState { get; set; } = string.Empty;
+    [JsonPropertyName("deviceId")] public string? DeviceId { get; set; }
+    [JsonPropertyName("deviceInstance")] public string? DeviceInstance { get; set; }
+    [JsonPropertyName("functionId")] public string? FunctionId { get; set; }
+    [JsonPropertyName("controlId")] public string? ControlId { get; set; }
+    [JsonPropertyName("hardwareLabel")] public string? HardwareLabel { get; set; }
+    [JsonPropertyName("bindingId")] public string BindingId { get; set; } = string.Empty;
+    [JsonPropertyName("modifiers")] public List<string> Modifiers { get; set; } = [];
 }
 
 public sealed class UiLayerCatalogModifier

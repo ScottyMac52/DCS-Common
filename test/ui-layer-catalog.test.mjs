@@ -29,6 +29,11 @@ test('definitive UI Layer snapshot is valid and complete', () => {
   assert.ok(catalog.profiles.some(({ relativePath }) => relativePath === 'keyboard/Keyboard.diff.lua'));
   assert.ok(catalog.modifiers.some(({ name }) => name === 'AVA_BASE_MODIFIER_BTN3'));
   assert.ok(catalog.modifiers.some(({ name }) => name === 'MOZA_MODIFIER_BTN3'));
+  assert.ok(catalog.bindings.some(({ deviceId, deviceInstance, functionId, controlId, bindingId }) =>
+    deviceId === 'tm-mfd' && deviceInstance === 'MFD3' && functionId && controlId && bindingId));
+  assert.ok(catalog.bindings.some(({ deviceId, key, controlId }) =>
+    deviceId === 'ava-base-f16c' && key === 'JOY_BTN_POV1_U' && controlId),
+    'input aliases must resolve back to their shared control');
   assert.equal(catalog.modifiers.some(({ name }) => name === 'TM_AVA_BASE_F16_MODIFIER'), false);
   assert.equal(catalog.modifiers.some(({ name }) => name === 'MOZA_F16_F18_BTN3'), false);
 });
@@ -102,6 +107,24 @@ test('authoritative binding edits create profiles atomically and reject stale pr
   assert.ok(result.changedFiles.includes(`input/UiLayer/joystick/${filename}`));
   assert.match(readFileSync(join(input, 'joystick', filename), 'utf8'), /JOY_BTN11/);
   assert.throws(() => applyAuthoritativeEdits(fixture, { expectedFingerprint: before.fingerprint, bindings: [] }), /Stale definitive UI Layer catalog/);
+});
+
+test('authoritative edits accept the DCS input alias selected from a shared control', () => {
+  const fixture = mkdtempSync(join(tmpdir(), 'dcs-common-alias-authoring-'));
+  writeFileSync(join(fixture, 'package.json'), JSON.stringify({ name: 'dcs-common' }));
+  mkdirSync(join(fixture, 'assets/shared'), { recursive: true });
+  cpSync(join(root, 'assets/shared/ui-layer'), join(fixture, 'assets/shared/ui-layer'), { recursive: true });
+  cpSync(join(root, 'assets/shared/hardware'), join(fixture, 'assets/shared/hardware'), { recursive: true });
+  const input = join(fixture, 'assets/shared/ui-layer/input/UiLayer');
+  const before = inspectCatalog(input);
+  const filename = 'Ava [R] Viper Alias.diff.lua';
+  const result = applyAuthoritativeEdits(fixture, {
+    expectedFingerprint: before.fingerprint,
+    bindings: [{ action: 'upsert', profile: { category: 'joystick', filename, deviceId: 'ava-base-f16c' },
+      section: 'keyDiffs', key: 'JOY_BTN_POV1_U', reformers: [], command: 'd2604pnilu2604cdnilvd1vpnilvu0', name: 'VR Zoom' }],
+  });
+  assert.ok(result.changedFiles.includes(`input/UiLayer/joystick/${filename}`));
+  assert.match(readFileSync(join(input, 'joystick', filename), 'utf8'), /JOY_BTN_POV1_U/);
 });
 
 test('layer serialization is deterministic and rejects ambiguous physical modifiers', () => {

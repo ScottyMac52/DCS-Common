@@ -50,22 +50,16 @@
       <TabItem Header="UI Layer utilization">
         <DockPanel Margin="8">
           <StackPanel DockPanel.Dock="Top">
-            <TextBlock TextWrapping="Wrap" Text="Every row is one exact authoritative selection. An empty explicit list means this module uses no UI Layer bindings. Legacy inference remains only until an explicit selection is saved."/>
-            <WrapPanel Margin="0,7">
-              <ComboBox x:Name="UtilDeviceBox" Width="260"/>
-              <TextBox x:Name="UtilInstanceBox" Width="100" Margin="6,0" ToolTip="For example MFD3"/>
-              <ComboBox x:Name="UtilFunctionBox" Width="310"/>
-              <TextBox x:Name="UtilModifiersBox" Width="220" Margin="6,0" ToolTip="Modifier names separated by +"/>
-              <Button Content="Add exact selection" Padding="10,3" Click="AddUtilization_Click"/>
-              <Button Content="Remove selected" Padding="10,3" Margin="6,0,0,0" Click="RemoveUtilization_Click"/>
-            </WrapPanel>
+            <TextBlock Margin="0,0,0,7" TextWrapping="Wrap" Text="Check the definitive DCS-Common assignments this module uses. Device, instance, function, shared control, and layer are copied from the authoritative binding; an empty selection means none."/>
           </StackPanel>
           <DataGrid x:Name="UtilizationGrid" AutoGenerateColumns="False" CanUserAddRows="False">
             <DataGrid.Columns>
+              <DataGridCheckBoxColumn Header="Use" Binding="{Binding IsSelected, UpdateSourceTrigger=PropertyChanged}" Width="55"/>
               <DataGridTextColumn Header="Device ID" Binding="{Binding DeviceId}" Width="*"/>
               <DataGridTextColumn Header="Instance" Binding="{Binding DeviceInstance}" Width="100"/>
-              <DataGridTextColumn Header="Function" Binding="{Binding FunctionId}" Width="*"/>
-              <DataGridTextColumn Header="Exact chord" Binding="{Binding ModifierDisplay}" Width="2*"/>
+              <DataGridTextColumn Header="Function" Binding="{Binding FunctionLabel}" Width="*"/>
+              <DataGridTextColumn Header="Shared control" Binding="{Binding HardwareLabel}" Width="*"/>
+              <DataGridTextColumn Header="Layer" Binding="{Binding ModifierDisplay}" Width="*"/>
             </DataGrid.Columns>
           </DataGrid>
         </DockPanel>

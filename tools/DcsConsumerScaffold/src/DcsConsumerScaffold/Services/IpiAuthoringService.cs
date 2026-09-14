@@ -32,6 +32,30 @@ public sealed class IpiAuthoringService
         }).OrderBy(item => item.Category).ThenBy(item => item.Label).ToList();
     }
 
+    public async Task<IReadOnlyList<IpiSharedControlChoice>> SharedControlsAsync(string commonRoot, string deviceId,
+        CancellationToken cancellationToken = default)
+    {
+        var device = await new ScaffoldEngineService().LoadInteractiveDeviceAsync(commonRoot, deviceId);
+        return device.Controls.Where(item => !item.Shifted).Select(item => new IpiSharedControlChoice
+        {
+            Id = item.Id, Key = item.Key, Type = item.Type, HardwareLabel = item.HardwareLabel,
+        }).OrderBy(item => item.HardwareLabel).ThenBy(item => item.Id).ToList();
+    }
+
+    public async Task<IReadOnlyList<IpiUiLayerBindingChoice>> UiLayerBindingsAsync(string commonRoot,
+        CancellationToken cancellationToken = default)
+    {
+        var document = await new UiLayerCatalogService().InspectAsync(commonRoot, cancellationToken);
+        var functions = UiFunctions(commonRoot).ToDictionary(item => item.Id, StringComparer.Ordinal);
+        return document.Bindings.Where(item => item.DeviceId is not null && item.FunctionId is not null && item.ControlId is not null)
+            .Select(item => new IpiUiLayerBindingChoice
+            {
+                BindingId = item.BindingId, DeviceId = item.DeviceId!, DeviceInstance = item.DeviceInstance,
+                FunctionId = item.FunctionId!, FunctionLabel = functions.GetValueOrDefault(item.FunctionId!)?.Label ?? item.Name,
+                ControlId = item.ControlId!, HardwareLabel = item.HardwareLabel ?? item.ControlId!, Modifiers = [.. item.Modifiers],
+            }).OrderBy(item => item.DeviceId).ThenBy(item => item.DeviceInstance).ThenBy(item => item.FunctionLabel).ToList();
+    }
+
     public Task<IpiAuthoringResult> InitializeAsync(string commonRoot, object request, CancellationToken cancellationToken = default) =>
         RunAsync<IpiAuthoringResult>(commonRoot, "initialize", request, cancellationToken);
 
