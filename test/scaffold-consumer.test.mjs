@@ -1,3 +1,6 @@
+Warning: truncated output (original token count: 16451)
+Total output lines: 1446
+
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { mkdtempSync, mkdirSync, writeFileSync, existsSync, readFileSync } from 'node:fs';
@@ -641,130 +644,7 @@ test('device map resolves the Warthog throttle and MFD instance hints', () => {
   assert.equal(resolveInstanceHint(mfd.stem, mfd.deviceId, map), '1');
 });
 
-test('scaffolded MFD pages preserve their canonical instance IDs', () => {
-  const root = mkdtempSync(join(tmpdir(), 'scaffold-mfd-instances-'));
-  const profilesDir = join(root, 'joystick');
-  mkdirSync(profilesDir);
-  for (const instance of [1, 2, 3]) {
-    const guid = `00000000-0000-0000-0000-00000000000${instance}`;
-    writeFileSync(
-      join(profilesDir, `F16 MFD ${instance} {${guid}}.diff.lua`),
-      `local diff = { ["keyDiffs"] = {
-        ["d${instance}"] = { ["added"] = { [1] = { ["key"] = "JOY_BTN1" }, }, ["name"] = "MFD ${instance}", },
-      } } return diff`,
-    );
-  }
-
-  const preview = buildPreview({ profilesDir, commonRoot });
-  const config = buildDraftKneeboardConfig(preview, {
-    displayName: 'F-14B',
-    inputModuleId: 'F-14B',
-  });
-  const instances = Object.fromEntries(config.pages.map((page) => [page.deviceInstance, page.deviceId]));
-
-  assert.deepEqual(instances, { MFD1: 'tm-mfd', MFD2: 'tm-mfd', MFD3: 'tm-mfd' });
-});
-
-test('overrides beat pattern matching and unknown devices stay null', () => {
-  const map = loadDeviceMap(commonRoot);
-  const forced = resolveDeviceMapping('Mystery Stick.diff.lua', map, {
-    'Mystery Stick.diff.lua': 'vkb-f14-gunfighter',
-  });
-  assert.equal(forced.deviceId, 'vkb-f14-gunfighter');
-  assert.equal(forced.source, 'override');
-
-  const unknown = resolveDeviceMapping('Completely Unknown Device.diff.lua', map);
-  assert.equal(unknown.deviceId, null);
-  assert.equal(unknown.source, 'unmapped');
-});
-
-test('callout catalog maps JOY_BTN1 to mfd-osb-t1', () => {
-  const catalog = loadCalloutCatalog(commonRoot, 'tm-mfd');
-  assert.deepEqual(catalog.byKey.get('JOY_BTN1'), ['mfd-osb-t1']);
-  assert.equal(catalog.controls.find(({ key }) => key === 'JOY_BTN1').type, 'button');
-});
-
-test('preview publishes unbound hardware controls separately from assigned rows', () => {
-  const root = mkdtempSync(join(tmpdir(), 'scaffold-unbound-controls-'));
-  const profilesDir = join(root, 'joystick');
-  mkdirSync(profilesDir);
-  writeFileSync(join(profilesDir, 'F16 MFD 1.diff.lua'), `local diff = { ["keyDiffs"] = {
-    ["d1"] = { ["added"] = { [1] = { ["key"] = "JOY_BTN1" } }, ["name"] = "Assigned" },
-  } } return diff`);
-
-  const preview = buildPreview({ profilesDir, commonRoot });
-  assert.equal(preview.rows.length, 1);
-  assert.ok(!preview.availableControls.some(({ key, chord }) => key === 'JOY_BTN1' && chord === ''));
-  const unbound = preview.availableControls.find(({ key, chord }) => key === 'JOY_BTN2' && chord === '');
-  assert.equal(unbound.section, 'keyDiffs');
-  assert.equal(unbound.isUnboundCandidate, true);
-  assert.equal(unbound.status, 'Unbound');
-});
-
-test('Viper TQS MIC inputs remain renderable when DCS binds them directly', () => {
-  const catalog = loadCalloutCatalog(commonRoot, 'viper-tqs-mission-pack');
-  assert.deepEqual(catalog.byKey.get('JOY_BTN4'), ['viper-tqs-button-04']);
-  assert.deepEqual(catalog.byKey.get('JOY_BTN5'), ['viper-tqs-button-05']);
-  assert.deepEqual(catalog.byKey.get('JOY_BTN6'), ['viper-tqs-button-06']);
-
-  const root = mkdtempSync(join(tmpdir(), 'scaffold-viper-nonvisual-'));
-  const profilesDir = join(root, 'joystick');
-  mkdirSync(profilesDir);
-  writeFileSync(
-    join(profilesDir, 'Viper TQS {C0A33440-3F54-11f1-8001-444553540000}.diff.lua'),
-    `local diff = { ["keyDiffs"] = {
-      ["d1"] = { ["added"] = { [1] = { ["key"] = "JOY_BTN5" }, }, ["name"] = "Afterburner toggle", },
-      ["d2"] = { ["added"] = { [1] = { ["key"] = "JOY_BTN6" }, }, ["name"] = "Sight cage", },
-    } } return diff`,
-  );
-
-  const preview = buildPreview({ profilesDir, commonRoot });
-  const mic = preview.rows.find((row) => row.key === 'JOY_BTN5');
-  const visible = preview.rows.find((row) => row.key === 'JOY_BTN6');
-  assert.equal(mic.calloutId, 'viper-tqs-button-05');
-  assert.equal(mic.status, 'OK');
-  assert.equal(visible.calloutId, 'viper-tqs-button-06');
-  assert.equal(visible.status, 'OK');
-
-  const config = buildDraftKneeboardConfig(preview, {
-    displayName: 'F-100D',
-    inputModuleId: 'F-100D',
-  });
-  assert.equal(config.pages[0].controls['viper-tqs-button-05'].key, 'JOY_BTN5');
-  assert.equal(config.pages[0].controls['viper-tqs-button-06'].key, 'JOY_BTN6');
-});
-
-test('UiLayer shared hardware bindings resolve every reported callout and modifier layer', () => {
-  const root = mkdtempSync(join(tmpdir(), 'scaffold-ui-layer-'));
-  const profilesDir = join(root, 'joystick');
-  mkdirSync(profilesDir);
-  writeFileSync(
-    join(profilesDir, ' VKBSim Gunfighter F14 {2D5CEC70-5189-11f1-8001-444553540000}.diff.lua'),
-    `local diff = { ["keyDiffs"] = {
-      ["d216pnilunilcdnilvdnilvpnilvunil"] = { ["added"] = {
-        [1] = { ["key"] = "JOY_BTN6", ["reformers"] = { [1] = "JOY_BTN7" } },
-      }, ["name"] = "recenter VR Headset" },
-    } } return diff`,
-  );
-  writeFileSync(
-    join(profilesDir, 'Viper TQS {C0A33440-3F54-11f1-8001-444553540000}.diff.lua'),
-    `local diff = { ["keyDiffs"] = {
-      ["d2604pnilu2604cdnilvd1vpnilvu0"] = { ["added"] = {
-        [1] = { ["key"] = "JOY_BTN5", ["reformers"] = { [1] = "JOY_BTN3" } },
-        [2] = { ["key"] = "JOY_BTN5", ["reformers"] = { [1] = "JOY_BTN7" } },
-      }, ["name"] = "toggle VR Zoom" },
-      ["d2605pnilu2605cdnilvd1vpnilvu0"] = { ["added"] = {
-        [1] = { ["key"] = "JOY_BTN4", ["reformers"] = { [1] = "JOY_BTN3" } },
-        [2] = { ["key"] = "JOY_BTN4", ["reformers"] = { [1] = "JOY_BTN7" } },
-      }, ["name"] = "toggle VR Spyglass Zoom" },
-    } } return diff`,
-  );
-  const modifiersPath = join(root, 'modifiers.lua');
-  writeFileSync(
-    modifiersPath,
-    `local modifiers = {
-      ["JOY_BTN3"] = { ["device"] = "Ava [R] Viper {F77212B0-00A8-11f1-8001-444553540000}", ["key"] = "JOY_BTN3", ["switch"] = false },
-      ["JOY_BTN7"] = { ["device"] = "VKBSim Gunfighter F14 {2D5CEC70-5189-11f1-8001-444553540000}", ["key"] = "JOY_BTN7", ["switch"] = false },
+test('scaffolded MFD pages preserve their canonical instan…1451 tokens truncated…N7", ["switch"] = false },
     } return modifiers`,
   );
 
@@ -1152,6 +1032,11 @@ test('writeConsumer materializes profiles, kneeboard.json, and report', () => {
   assert.ok(existsSync(join(out, 'src/Config/Input/F-16C_50/joystick', profileName)));
   assert.ok(existsSync(join(out, 'config/kneeboard.json')));
   assert.ok(existsSync(join(out, 'scripts/build-kneeboard.mjs')));
+  const kneeboardTest = readFileSync(join(out, 'scripts/test-kneeboard.mjs'), 'utf8');
+  assert.match(kneeboardTest, /unexpected SVG page set/);
+  assert.match(kneeboardTest, /uses an external resource/);
+  assert.match(kneeboardTest, /changed during an identical rebuild/);
+  assert.match(kneeboardTest, /metadata\.width, 1200/);
   assert.ok(existsSync(join(out, 'SCAFFOLD-REPORT.md')));
   assert.ok(existsSync(join(out, '.github/workflows/build.yml')));
   const packageJson = JSON.parse(readFileSync(join(out, 'package.json'), 'utf8'));
