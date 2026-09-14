@@ -37,14 +37,12 @@
           </DataGrid>
           <WrapPanel Grid.Row="2" Margin="0,7">
             <TextBlock Text="Action" VerticalAlignment="Center"/><ComboBox x:Name="EditActionBox" Width="95" Margin="5,0" SelectedIndex="0"><ComboBoxItem Content="upsert"/><ComboBoxItem Content="move"/><ComboBoxItem Content="clear"/><ComboBoxItem Content="relabel"/></ComboBox>
-            <TextBlock Text="Category" VerticalAlignment="Center"/><ComboBox x:Name="EditCategoryBox" Width="95" Margin="5,0" SelectedIndex="0"><ComboBoxItem Content="joystick"/><ComboBoxItem Content="keyboard"/><ComboBoxItem Content="mouse"/></ComboBox>
-            <TextBlock Text="Profile" VerticalAlignment="Center"/><TextBox x:Name="EditProfileBox" Width="220" Margin="5,0"/>
-            <TextBlock Text="deviceId" VerticalAlignment="Center"/><ComboBox x:Name="EditDeviceBox" Width="210" Margin="5,0" DisplayMemberPath="DeviceId"/>
-            <TextBlock Text="Section" VerticalAlignment="Center"/><ComboBox x:Name="EditSectionBox" Width="95" Margin="5,0" SelectedIndex="0"><ComboBoxItem Content="keyDiffs"/><ComboBoxItem Content="axisDiffs"/></ComboBox>
+            <TextBlock Text="Device" VerticalAlignment="Center"/><ComboBox x:Name="EditDeviceBox" Width="260" Margin="5,0" DisplayMemberPath="DeviceId" SelectionChanged="EditDevice_Changed"/>
+            <TextBlock Text="Profile" VerticalAlignment="Center"/><TextBox x:Name="EditProfileBox" Width="240" Margin="5,0" ToolTip="Native DCS profile filename; existing selection fills this automatically"/>
           </WrapPanel>
           <WrapPanel Grid.Row="3" Margin="0,0,0,7">
-            <TextBlock Text="Source key" VerticalAlignment="Center"/><TextBox x:Name="SourceKeyBox" Width="105" Margin="5,0"/><TextBlock Text="Source chord" VerticalAlignment="Center"/><TextBox x:Name="SourceChordBox" Width="180" Margin="5,0"/>
-            <TextBlock Text="Target key" VerticalAlignment="Center"/><TextBox x:Name="TargetKeyBox" Width="105" Margin="5,0"/><TextBlock Text="Target chord" VerticalAlignment="Center"/><TextBox x:Name="TargetChordBox" Width="180" Margin="5,0"/>
+            <TextBlock Text="Shared control" VerticalAlignment="Center"/><ComboBox x:Name="SharedControlBox" Width="290" Margin="5,0"/>
+            <TextBlock Text="Layer" VerticalAlignment="Center"/><ComboBox x:Name="LayerBox" Width="230" Margin="5,0"/>
             <TextBlock Text="Label/name" VerticalAlignment="Center"/><TextBox x:Name="EditLabelBox" Width="180" Margin="5,0"/>
             <Button Content="Stage edit" Padding="10,3" Click="StageEdit_Click"/><Button Content="Unstage selected" Padding="10,3" Margin="6,0,0,0" Click="UnstageEdit_Click"/>
           </WrapPanel>
@@ -75,6 +73,7 @@
             <DataGridTextColumn Header="Command" Binding="{Binding Command}" Width="1.4*"/>
             <DataGridTextColumn Header="DCS name" Binding="{Binding Name}" Width="1.5*"/>
             <DataGridTextColumn Header="Input" Binding="{Binding Key}" Width="110"/>
+            <DataGridTextColumn Header="Shared control" Binding="{Binding HardwareLabel}" Width="140"/>
             <DataGridTextColumn Header="Modifier chord" Binding="{Binding Chord}" Width="1.5*"/>
           </DataGrid.Columns>
         </DataGrid>

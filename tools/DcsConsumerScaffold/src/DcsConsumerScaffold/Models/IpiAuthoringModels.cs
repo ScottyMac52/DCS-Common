@@ -53,6 +53,41 @@ public sealed class IpiHardwareChoice
     public override string ToString() => $"{Label} — {DeviceId}";
 }
 
+public sealed class IpiSharedControlChoice
+{
+    public string Id { get; set; } = string.Empty;
+    public string Key { get; set; } = string.Empty;
+    public string Type { get; set; } = "button";
+    public string HardwareLabel { get; set; } = string.Empty;
+    public string Section => Type == "axis" ? "axisDiffs" : "keyDiffs";
+    public override string ToString() => $"{HardwareLabel} — {Id}";
+}
+
+public sealed class IpiLayerChoice
+{
+    public string Name { get; set; } = string.Empty;
+    public string DisplayName => string.IsNullOrEmpty(Name) ? "Base (no modifier)" : Name;
+    public override string ToString() => DisplayName;
+}
+
+public sealed class IpiUiLayerBindingChoice
+{
+    public bool IsSelected { get; set; }
+    public string BindingId { get; set; } = string.Empty;
+    public string DeviceId { get; set; } = string.Empty;
+    public string? DeviceInstance { get; set; }
+    public string FunctionId { get; set; } = string.Empty;
+    public string FunctionLabel { get; set; } = string.Empty;
+    public string ControlId { get; set; } = string.Empty;
+    public string HardwareLabel { get; set; } = string.Empty;
+    public List<string> Modifiers { get; set; } = [];
+    public string ModifierDisplay => Modifiers.Count == 0 ? "Base" : string.Join(" + ", Modifiers);
+    public IpiUiLayerSelection ToSelection() => new()
+    {
+        DeviceId = DeviceId, DeviceInstance = DeviceInstance, FunctionId = FunctionId, Modifiers = [.. Modifiers],
+    };
+}
+
 public sealed class IpiUiFunctionChoice
 {
     public string Id { get; set; } = string.Empty;
