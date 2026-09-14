@@ -13,7 +13,37 @@ public sealed class UiLayerCatalogDocument
     [JsonPropertyName("modifiers")] public List<UiLayerCatalogModifier> Modifiers { get; set; } = [];
     [JsonPropertyName("possibilities")] public List<UiLayerDevicePossibility> Possibilities { get; set; } = [];
     [JsonPropertyName("errors")] public List<string> Errors { get; set; } = [];
+    [JsonPropertyName("warnings")] public List<string> Warnings { get; set; } = [];
+    [JsonPropertyName("changedFiles")] public List<string> ChangedFiles { get; set; } = [];
     [JsonPropertyName("summary")] public UiLayerCatalogSummary Summary { get; set; } = new();
+}
+
+public sealed class UiLayerProfileTarget
+{
+    [JsonPropertyName("category")] public string Category { get; set; } = "joystick";
+    [JsonPropertyName("filename")] public string Filename { get; set; } = string.Empty;
+    [JsonPropertyName("deviceId")] public string DeviceId { get; set; } = string.Empty;
+}
+
+public sealed class UiLayerPhysicalTarget
+{
+    [JsonPropertyName("key")] public string Key { get; set; } = string.Empty;
+    [JsonPropertyName("reformers")] public List<string> Reformers { get; set; } = [];
+}
+
+public sealed class UiLayerBindingEdit
+{
+    [JsonPropertyName("action")] public string Action { get; set; } = "upsert";
+    [JsonPropertyName("profile")] public UiLayerProfileTarget? Profile { get; set; }
+    [JsonPropertyName("section")] public string Section { get; set; } = "keyDiffs";
+    [JsonPropertyName("key")] public string? Key { get; set; }
+    [JsonPropertyName("reformers")] public List<string> Reformers { get; set; } = [];
+    [JsonPropertyName("command")] public string Command { get; set; } = string.Empty;
+    [JsonPropertyName("name")] public string? Name { get; set; }
+    [JsonPropertyName("label")] public string? Label { get; set; }
+    [JsonPropertyName("from")] public UiLayerPhysicalTarget? From { get; set; }
+    [JsonPropertyName("to")] public UiLayerPhysicalTarget? To { get; set; }
+    [JsonIgnore] public string Summary => $"{Action}: {Command} → {Profile?.Filename ?? "functions.json"} {Key ?? To?.Key} {string.Join(" + ", Reformers.Count > 0 ? Reformers : To?.Reformers ?? [])}";
 }
 
 public sealed class UiLayerCatalogSummary

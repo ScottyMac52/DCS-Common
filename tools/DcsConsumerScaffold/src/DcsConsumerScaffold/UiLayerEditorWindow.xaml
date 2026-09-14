@@ -21,12 +21,38 @@
         <Button Content="Load Canonical" Padding="14,5" Click="Load_Click" />
         <Button Content="Compare Import" Padding="14,5" Margin="8,0,0,0" Click="Compare_Click" />
         <Button x:Name="SaveButton" Content="Validate &amp; Save Selected Actions" Padding="14,5" Margin="8,0,0,0" IsEnabled="False" Click="Save_Click" />
+        <Button x:Name="AuthorSaveButton" Content="Save Authored Bindings &amp; Layers" Padding="14,5" Margin="8,0,0,0" IsEnabled="False" Click="SaveAuthored_Click" />
         <TextBlock x:Name="SummaryText" Margin="16,5,0,0" FontWeight="SemiBold" />
       </StackPanel>
       <TextBlock x:Name="StatusText" Foreground="#334155" TextWrapping="Wrap" Margin="0,0,0,8" />
     </StackPanel>
 
     <TabControl>
+      <TabItem Header="Assignment workspace">
+        <Grid Margin="8">
+          <Grid.RowDefinitions><RowDefinition Height="Auto"/><RowDefinition Height="170"/><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/><RowDefinition Height="*"/></Grid.RowDefinitions>
+          <TextBox x:Name="CommandSearchBox" Grid.Row="0" Margin="0,0,0,6" TextChanged="CommandSearch_Changed" ToolTip="Search UI Layer command name, category, ID, or command identity"/>
+          <DataGrid x:Name="UiCommandsGrid" Grid.Row="1" AutoGenerateColumns="False" IsReadOnly="True" CanUserAddRows="False">
+            <DataGrid.Columns><DataGridTextColumn Header="Category" Binding="{Binding Category}" Width="120"/><DataGridTextColumn Header="Function" Binding="{Binding Label}" Width="*"/><DataGridTextColumn Header="Function ID" Binding="{Binding Id}" Width="180"/><DataGridTextColumn Header="Command identity" Binding="{Binding Command}" Width="2*"/></DataGrid.Columns>
+          </DataGrid>
+          <WrapPanel Grid.Row="2" Margin="0,7">
+            <TextBlock Text="Action" VerticalAlignment="Center"/><ComboBox x:Name="EditActionBox" Width="95" Margin="5,0" SelectedIndex="0"><ComboBoxItem Content="upsert"/><ComboBoxItem Content="move"/><ComboBoxItem Content="clear"/><ComboBoxItem Content="relabel"/></ComboBox>
+            <TextBlock Text="Category" VerticalAlignment="Center"/><ComboBox x:Name="EditCategoryBox" Width="95" Margin="5,0" SelectedIndex="0"><ComboBoxItem Content="joystick"/><ComboBoxItem Content="keyboard"/><ComboBoxItem Content="mouse"/></ComboBox>
+            <TextBlock Text="Profile" VerticalAlignment="Center"/><TextBox x:Name="EditProfileBox" Width="220" Margin="5,0"/>
+            <TextBlock Text="deviceId" VerticalAlignment="Center"/><ComboBox x:Name="EditDeviceBox" Width="210" Margin="5,0" DisplayMemberPath="DeviceId"/>
+            <TextBlock Text="Section" VerticalAlignment="Center"/><ComboBox x:Name="EditSectionBox" Width="95" Margin="5,0" SelectedIndex="0"><ComboBoxItem Content="keyDiffs"/><ComboBoxItem Content="axisDiffs"/></ComboBox>
+          </WrapPanel>
+          <WrapPanel Grid.Row="3" Margin="0,0,0,7">
+            <TextBlock Text="Source key" VerticalAlignment="Center"/><TextBox x:Name="SourceKeyBox" Width="105" Margin="5,0"/><TextBlock Text="Source chord" VerticalAlignment="Center"/><TextBox x:Name="SourceChordBox" Width="180" Margin="5,0"/>
+            <TextBlock Text="Target key" VerticalAlignment="Center"/><TextBox x:Name="TargetKeyBox" Width="105" Margin="5,0"/><TextBlock Text="Target chord" VerticalAlignment="Center"/><TextBox x:Name="TargetChordBox" Width="180" Margin="5,0"/>
+            <TextBlock Text="Label/name" VerticalAlignment="Center"/><TextBox x:Name="EditLabelBox" Width="180" Margin="5,0"/>
+            <Button Content="Stage edit" Padding="10,3" Click="StageEdit_Click"/><Button Content="Unstage selected" Padding="10,3" Margin="6,0,0,0" Click="UnstageEdit_Click"/>
+          </WrapPanel>
+          <DataGrid x:Name="StagedEditsGrid" Grid.Row="4" AutoGenerateColumns="False" IsReadOnly="True" CanUserAddRows="False">
+            <DataGrid.Columns><DataGridTextColumn Header="Pending destination: DCS-Common authoritative UI Layer" Binding="{Binding Summary}" Width="*"/></DataGrid.Columns>
+          </DataGrid>
+        </Grid>
+      </TabItem>
       <TabItem Header="Profiles">
         <DataGrid x:Name="ProfilesGrid" AutoGenerateColumns="False" IsReadOnly="True" CanUserAddRows="False">
           <DataGrid.Columns>
@@ -41,7 +67,7 @@
         </DataGrid>
       </TabItem>
       <TabItem Header="Bindings">
-        <DataGrid x:Name="BindingsGrid" AutoGenerateColumns="False" IsReadOnly="True" CanUserAddRows="False">
+        <DataGrid x:Name="BindingsGrid" AutoGenerateColumns="False" IsReadOnly="True" CanUserAddRows="False" SelectionChanged="BindingSelection_Changed">
           <DataGrid.Columns>
             <DataGridTextColumn Header="Catalog scope" Binding="{Binding CatalogState}" Width="170"/>
             <DataGridTextColumn Header="Profile" Binding="{Binding Profile}" Width="1.5*"/>
@@ -54,15 +80,15 @@
         </DataGrid>
       </TabItem>
       <TabItem Header="Modifiers">
-        <DataGrid x:Name="ModifiersGrid" AutoGenerateColumns="False" IsReadOnly="True" CanUserAddRows="False">
+        <DockPanel><TextBlock DockPanel.Dock="Top" Margin="6" TextWrapping="Wrap" Text="Layer Manager: add, edit, rename, or remove deliberate authoritative modifiers here. Save Authored Bindings &amp; Layers validates every dependent profile before committing."/>
+        <DataGrid x:Name="ModifiersGrid" AutoGenerateColumns="False" IsReadOnly="False" CanUserAddRows="True">
           <DataGrid.Columns>
-            <DataGridTextColumn Header="Catalog scope" Binding="{Binding CatalogState}" Width="140"/>
             <DataGridTextColumn Header="Name" Binding="{Binding Name}" Width="1.5*"/>
             <DataGridTextColumn Header="Device" Binding="{Binding Device}" Width="2*"/>
             <DataGridTextColumn Header="Key" Binding="{Binding Key}" Width="120"/>
             <DataGridTextColumn Header="Mode" Binding="{Binding Mode}" Width="100"/>
           </DataGrid.Columns>
-        </DataGrid>
+        </DataGrid></DockPanel>
       </TabItem>
       <TabItem Header="Device possibilities">
         <DataGrid x:Name="PossibilitiesGrid" AutoGenerateColumns="False" IsReadOnly="True" CanUserAddRows="False">

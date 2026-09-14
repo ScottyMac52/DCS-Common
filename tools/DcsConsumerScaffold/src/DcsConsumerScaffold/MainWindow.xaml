@@ -33,8 +33,10 @@
       <TextBlock FontSize="18" FontWeight="SemiBold" Text="DCS Input Profile Importer" />
       <TextBlock Margin="0,4,0,0" TextWrapping="Wrap" Foreground="#555"
                  Text="Load Preview, review the resolved devices and labels, then Proceed with the selected import target." />
-      <Button HorizontalAlignment="Left" Margin="0,6,0,0" Padding="12,4"
-              Content="Open Definitive UI Layer Editor…" Click="OpenUiLayerEditor_Click" />
+      <StackPanel Orientation="Horizontal" Margin="0,6,0,0">
+        <Button Padding="12,4" Content="Blank-clone / module authoring…" Click="OpenModuleAuthoring_Click" />
+        <Button Margin="8,0,0,0" Padding="12,4" Content="Open Definitive UI Layer Editor…" Click="OpenUiLayerEditor_Click" />
+      </StackPanel>
       <Border Margin="0,8,0,0" Padding="8" BorderBrush="#CCC" BorderThickness="1" CornerRadius="3">
         <DockPanel>
           <StackPanel DockPanel.Dock="Right" Orientation="Horizontal">
@@ -296,6 +298,8 @@
             <TextBlock Text="{Binding PendingAssignmentSummary}" FontWeight="SemiBold" VerticalAlignment="Center" Margin="0,0,10,0" />
             <Button Content="3. Stage selected replacement" Padding="12,5" Click="AssignCommand_Click"
                     IsEnabled="{Binding CanAssignSelectedCommand}" />
+            <Button Content="Edit in UI Layer…" Padding="12,5" Margin="6,0,0,0" Click="EditInUiLayer_Click"
+                    IsEnabled="{Binding HasPreview}" ToolTip="Route this module context to the one authoritative DCS-Common UI Layer editor" />
           </StackPanel>
         </Grid>
       </Border>

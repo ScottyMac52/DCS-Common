@@ -4,7 +4,7 @@ import { cpSync, mkdtempSync, mkdirSync, readFileSync, rmSync, writeFileSync } f
 import { dirname, join, resolve } from 'node:path';
 import { tmpdir } from 'node:os';
 import { fileURLToPath } from 'node:url';
-import { applyReconciliation, compareCatalogs, inspectCatalog } from '../scripts/manage-ui-layer-catalog.mjs';
+import { applyAuthoritativeEdits, applyReconciliation, compareCatalogs, inspectCatalog, serializeModifiers } from '../scripts/manage-ui-layer-catalog.mjs';
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const canonical = join(root, 'assets/shared/ui-layer/input/UiLayer');
@@ -83,4 +83,35 @@ test('catalog reconciliation keeps absences and applies explicit validated addit
   assert.equal(result.valid, true);
   assert.ok(result.profiles.some(({ relativePath }) => relativePath === 'mouse/Mouse.diff.lua'));
   assert.match(readFileSync(join(target, 'mouse/Mouse.diff.lua'), 'utf8'), /MOUSE_BTN1/);
+});
+
+test('authoritative binding edits create profiles atomically and reject stale previews', () => {
+  const fixture = mkdtempSync(join(tmpdir(), 'dcs-common-authoring-'));
+  writeFileSync(join(fixture, 'package.json'), JSON.stringify({ name: 'dcs-common' }));
+  mkdirSync(join(fixture, 'assets/shared'), { recursive: true });
+  cpSync(join(root, 'assets/shared/ui-layer'), join(fixture, 'assets/shared/ui-layer'), { recursive: true });
+  cpSync(join(root, 'assets/shared/hardware'), join(fixture, 'assets/shared/hardware'), { recursive: true });
+  const input = join(fixture, 'assets/shared/ui-layer/input/UiLayer');
+  const before = inspectCatalog(input);
+  const filename = 'Viper TQS Authoring.diff.lua';
+  const result = applyAuthoritativeEdits(fixture, {
+    expectedFingerprint: before.fingerprint,
+    bindings: [{ action: 'upsert', profile: { category: 'joystick', filename, deviceId: 'viper-tqs-mission-pack' },
+      section: 'keyDiffs', key: 'JOY_BTN11', reformers: [], command: 'd2604pnilu2604cdnilvd1vpnilvu0', name: 'VR Zoom' }],
+  });
+  assert.ok(result.changedFiles.includes(`input/UiLayer/joystick/${filename}`));
+  assert.match(readFileSync(join(input, 'joystick', filename), 'utf8'), /JOY_BTN11/);
+  assert.throws(() => applyAuthoritativeEdits(fixture, { expectedFingerprint: before.fingerprint, bindings: [] }), /Stale definitive UI Layer catalog/);
+});
+
+test('layer serialization is deterministic and rejects ambiguous physical modifiers', () => {
+  const source = serializeModifiers([
+    { name: 'SECOND', device: 'Device B', key: 'JOY_BTN2', mode: 'toggle' },
+    { name: 'FIRST', device: 'Device A', key: 'JOY_BTN1', mode: 'hold' },
+  ]);
+  assert.ok(source.indexOf('["FIRST"]') < source.indexOf('["SECOND"]'));
+  assert.throws(() => serializeModifiers([
+    { name: 'A', device: 'Device', key: 'JOY_BTN1', mode: 'hold' },
+    { name: 'B', device: 'Device', key: 'JOY_BTN1', mode: 'hold' },
+  ]), /Duplicate modifier physical input/);
 });

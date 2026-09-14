@@ -180,6 +180,24 @@ public partial class MainWindow : Window
         new UiLayerEditorWindow(_viewModel.CommonRoot) { Owner = this }.ShowDialog();
     }
 
+    private void OpenModuleAuthoring_Click(object sender, RoutedEventArgs e)
+    {
+        var window = new ModuleAuthoringWindow(_viewModel.CommonRoot, _viewModel.OutputDir, _viewModel.DisplayName,
+            _viewModel.InputModuleId, _viewModel.KneeboardId) { Owner = this };
+        window.ShowDialog();
+        if (!string.IsNullOrWhiteSpace(window.ProfilesDirectoryCreated))
+        {
+            _viewModel.ProfilesDir = window.ProfilesDirectoryCreated;
+            _viewModel.OutputDir = window.RepositoryRoot;
+            _viewModel.DisplayName = window.DisplayName;
+            _viewModel.InputModuleId = window.InputModuleId;
+            _viewModel.KneeboardId = window.KneeboardId;
+            var modifiers = Path.Combine(window.RepositoryRoot, "src", "Config", "Input", window.InputModuleId, "modifiers.lua");
+            _viewModel.ModifiersPath = File.Exists(modifiers) ? modifiers : string.Empty;
+            _viewModel.StatusText = "Blank clone initialized. Load Preview, import the module command catalog, then add controls on base or created layers.";
+        }
+    }
+
     private void ApplyCommandLabel_Click(object sender, RoutedEventArgs e)
     {
         if ((sender as FrameworkElement)?.Tag is CommandLabelGroup group)
@@ -257,6 +275,13 @@ public partial class MainWindow : Window
             _viewModel.StatusText = ex.Message;
             MessageBox.Show(this, ex.Message, "Unable to assign command", MessageBoxButton.OK, MessageBoxImage.Error);
         }
+    }
+
+    private void EditInUiLayer_Click(object sender, RoutedEventArgs e)
+    {
+        var row = _viewModel.SelectedPreviewRow;
+        var context = row is null ? null : $"Module context: {_viewModel.DisplayName} — {row.Stem} {row.Key} {row.Chord}";
+        new UiLayerEditorWindow(_viewModel.CommonRoot, context) { Owner = this }.ShowDialog();
     }
 
     private void PreviewGrid_BeginningEdit(object sender, DataGridBeginningEditEventArgs e)

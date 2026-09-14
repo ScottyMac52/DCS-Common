@@ -23,7 +23,7 @@ function diffLua({ modifier = null, axis = false, removedOnly = false } = {}) {
   return `local diff = {\n\t["${section}"] = {\n\t\t["command"] = {\n\t\t\t["${list}"] = { [1] = { ["key"] = "JOY_BTN1",${reformers}\n\t\t\t} },\n\t\t\t["name"] = "Test",\n\t\t},\n\t},\n}\nreturn diff\n`;
 }
 
-function createConsumer({ profiles, pages, retainNoOpProfiles = [] }) {
+function createConsumer({ profiles, pages, retainNoOpProfiles = [], uiLayerUtilization = undefined }) {
   const consumerRoot = mkdtempSync(join(tmpdir(), 'dcs-ui-layer-consumer-'));
   const consumerJoystick = join(consumerRoot, 'src/Config/Input/Test/joystick');
   const stagedJoystick = join(consumerRoot, 'stage/Config/Input/Test/joystick');
@@ -43,6 +43,7 @@ function createConsumer({ profiles, pages, retainNoOpProfiles = [] }) {
     aircraft: 'Test',
     profiles: profileMap,
     pages,
+    ...(uiLayerUtilization ? { uiLayerUtilization } : {}),
     packaging: { retainNoOpProfiles },
   }));
   return { consumerRoot, consumerJoystick, stagedJoystick, destination };
@@ -50,6 +51,33 @@ function createConsumer({ profiles, pages, retainNoOpProfiles = [] }) {
 
 test('physicalDeviceName ignores GUID, spacing, and case', () => {
   assert.equal(physicalDeviceName(' VKBSim Gunfighter F14   {2D5CEC70-5189-11f1-8001-444553540000}.diff.lua'), 'vkbsim gunfighter f14');
+});
+
+test('explicit utilization packages only the selected device, function, instance, and layer', () => {
+  const ava = 'Ava [R] Viper {11111111-1111-1111-1111-111111111111}.diff.lua';
+  const mfd = 'F16 MFD 3 {C5BE49A0-2342-11ee-8001-444553540000}.diff.lua';
+  const fixture = createConsumer({
+    profiles: {
+      ava: { filename: ava, source: diffLua() },
+      mfd3: { filename: mfd, source: diffLua() },
+    },
+    pages: [
+      { deviceId: 'ava-base-f16c', controls: { stick: { profile: 'ava' } } },
+      { deviceId: 'tm-mfd', deviceInstance: 'MFD3', controls: { button: { profile: 'mfd3' } } },
+    ],
+    uiLayerUtilization: { mode: 'explicit', bindings: [{
+      deviceId: 'tm-mfd', deviceInstance: 'MFD3', functionId: 'vr-zoom', modifiers: ['AVA_BASE_MODIFIER_BTN3'],
+    }] },
+  });
+  const result = packageUiLayerInput({ commonRoot: root, consumerJoystickDir: fixture.consumerJoystick,
+    destination: fixture.destination, moduleDestinationJoystick: fixture.stagedJoystick });
+  assert.deepEqual(result.copiedProfiles, [`joystick/${mfd}`]);
+  assert.deepEqual(result.availableModifiers, ['AVA_BASE_MODIFIER_BTN3']);
+  const parsed = parseDcsDiffLua(readFileSync(join(fixture.destination, 'joystick', mfd), 'utf8'), { filename: mfd });
+  const additions = parsed.bindings.flatMap((binding) => binding.added.map((input) => ({ binding, input })));
+  assert.equal(additions.length, 1);
+  assert.equal(additions[0].binding.command, 'd2604pnilu2604cdnilvd1vpnilvu0');
+  assert.deepEqual(additions[0].input.reformers, ['AVA_BASE_MODIFIER_BTN3']);
 });
 
 test('hasEffectiveAdditions distinguishes key, axis, empty, and deletion-only profiles', () => {
