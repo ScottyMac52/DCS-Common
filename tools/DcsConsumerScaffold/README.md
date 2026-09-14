@@ -2,6 +2,8 @@
 
 Windows shell for the Option A scaffold flow. **Requires Node.js on PATH** and **.NET 10** SDK for local builds.
 
+IPI can also begin with a blank consumer Git clone. Choose **Blank-clone / module authoring…** to create the first catalog-backed device profile and repository skeleton, manage modifier layers, and explicitly select the definitive UI Layer bindings the module utilizes. See [IPI repository authoring](../../docs/ipi-authoring.md).
+
 Publisher: **Vyper Industries** · TFM: `net10.0-windows` · Assembly: `DcsConsumerScaffold.exe`
 
 ## Capabilities

@@ -6,6 +6,8 @@ import { parseDcsDiffLua, parseDcsModifiersLua } from './profile-driven-kneeboar
 import { analyzeProfileSource, resolveConfiguredProfileApplicability } from './effective-profile-applicability.mjs';
 import { resolveUiLayerModifier } from './ui-layer-overlays.mjs';
 import { inspectCatalog } from './manage-ui-layer-catalog.mjs';
+import { loadDeviceMap, resolveDeviceMapping } from './scaffold-consumer.mjs';
+import { filterUiLayerProfile, normalizeUiLayerUtilization } from './ui-layer-utilization.mjs';
 
 const GUID_SUFFIX = /\s*\{[0-9A-Fa-f-]{36}\}\s*$/u;
 
@@ -106,7 +108,7 @@ export function hasEffectiveAdditions(source, { filename = 'profile.diff.lua' } 
   return analyzeProfileSource(source, { filename, parseProfile: parseDcsDiffLua }).effective;
 }
 
-export function tailorModifiers(source, activePhysicalDevices, allowedDeviceModifiers = null) {
+export function tailorModifiers(source, activePhysicalDevices, allowedDeviceModifiers = null, { keepKeyboard = true } = {}) {
   const active = new Set([...activePhysicalDevices].map((value) => String(value).trim().replace(/\s+/gu, ' ').toLocaleLowerCase()));
   const headerEnd = source.indexOf('{') + 1;
   const returnIndex = source.lastIndexOf('return modifiers');
@@ -122,7 +124,7 @@ export function tailorModifiers(source, activePhysicalDevices, allowedDeviceModi
     const device = block.match(/\["device"\]\s*=\s*"((?:\\.|[^"])*)"/)?.[1] ?? '';
     const normalized = device.replace(GUID_SUFFIX, '').trim().replace(/\s+/gu, ' ').toLocaleLowerCase();
     const modifierName = match[1];
-    if (normalized === 'keyboard' || (allowedDeviceModifiers
+    if ((keepKeyboard && normalized === 'keyboard') || (allowedDeviceModifiers
       ? allowedDeviceModifiers.has(modifierName)
       : active.has(normalized))) entries.push(block);
     pattern.lastIndex = close + 1;
@@ -194,6 +196,7 @@ function findModuleDestinationJoystick(destination) {
 export function packageUiLayerInput({ commonRoot, consumerJoystickDir, destination, configPath, moduleDestinationJoystick }) {
   const resolvedConfigPath = configPath ? resolve(configPath) : findConfig(consumerJoystickDir);
   const config = JSON.parse(readFileSync(resolvedConfigPath, 'utf8'));
+  const utilization = normalizeUiLayerUtilization(config.uiLayerUtilization);
   const { filenames: configuredFilenames, profileIdsByFilename, categoryByFilename } = configuredProfiles(config);
   const consumerRoot = dirname(dirname(resolvedConfigPath));
   const applicability = resolveConfiguredProfileApplicability(config, consumerRoot, { parseProfile: parseDcsDiffLua });
@@ -227,9 +230,14 @@ export function packageUiLayerInput({ commonRoot, consumerJoystickDir, destinati
   const effectiveConfiguredProfiles = [...applicability.profiles.values()].filter((profile) => profile.referenced && profile.effective);
   const activePhysicalDevices = new Set(effectiveConfiguredProfiles.map((profile) => physicalDeviceName(profile.filename)));
   const sourceRoot = join(commonRoot, 'assets', 'shared', 'ui-layer', 'input', 'UiLayer');
+  const uiFunctions = JSON.parse(readFileSync(join(commonRoot, 'assets', 'shared', 'ui-layer', 'functions.json'), 'utf8')).functions ?? [];
+  const deviceMap = loadDeviceMap(commonRoot);
   mkdirSync(destination, { recursive: true });
-  const selectedModifiers = selectedUiLayerModifiers(commonRoot, config, configuredDeviceIds(config));
-  const tailoredModifiers = tailorModifiers(readFileSync(join(sourceRoot, 'modifiers.lua'), 'utf8'), activePhysicalDevices, selectedModifiers);
+  const selectedModifiers = utilization
+    ? new Set(utilization.bindings.flatMap((binding) => binding.modifiers))
+    : selectedUiLayerModifiers(commonRoot, config, configuredDeviceIds(config));
+  const tailoredModifiers = tailorModifiers(readFileSync(join(sourceRoot, 'modifiers.lua'), 'utf8'), activePhysicalDevices,
+    selectedModifiers, { keepKeyboard: !utilization });
   const availableModifiers = new Set(parseDcsModifiersLua(tailoredModifiers, { filename: 'UiLayer/modifiers.lua' }).modifiers.map(({ name }) => name));
   writeFileSync(join(destination, 'modifiers.lua'), tailoredModifiers, 'utf8');
 
@@ -244,9 +252,16 @@ export function packageUiLayerInput({ commonRoot, consumerJoystickDir, destinati
         skippedUiLayerProfiles.push({ filename: `${category}/${filename}`, reason: 'device not active in target module configuration' });
         continue;
       }
-      const tailored = tailorDiffLua(readFileSync(join(sourceCategory, filename), 'utf8'), availableModifiers, { filename });
+      const mapping = resolveDeviceMapping(filename, deviceMap);
+      const deviceId = category === 'joystick' ? mapping.deviceId : category;
+      const instance = mapping.deviceId === 'tm-mfd' ? `MFD${filename.match(/MFD\s*(\d+)/iu)?.[1] ?? ''}` : null;
+      let tailored = tailorDiffLua(readFileSync(join(sourceCategory, filename), 'utf8'), availableModifiers, { filename });
+      tailored = filterUiLayerProfile(tailored, { utilization, deviceId, deviceInstance: instance,
+        functions: uiFunctions, filename });
       if (!hasEffectiveAdditions(tailored, { filename })) {
-        skippedUiLayerProfiles.push({ filename: `${category}/${filename}`, reason: 'no effective additions after modifier tailoring' });
+        skippedUiLayerProfiles.push({ filename: `${category}/${filename}`, reason: utilization
+          ? 'no explicitly utilized bindings after device/function/layer filtering'
+          : 'no effective additions after modifier tailoring' });
         continue;
       }
       mkdirSync(destinationCategory, { recursive: true });

@@ -371,7 +371,7 @@ export function applyDcsCommandAssignments(source, assignments, { filename = 'pr
   return serializeDcsProfile(parsed);
 }
 
-function serializeDcsProfile(parsed) {
+export function serializeDcsProfile(parsed) {
   const sections = ['keyDiffs', 'axisDiffs'].map((section) => {
     const entries = parsed.bindings
       .filter((binding) => binding.section === section && (binding.added.length > 0 || (binding.changed?.length ?? 0) > 0 || binding.removed.length > 0))

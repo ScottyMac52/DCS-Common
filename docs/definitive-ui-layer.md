@@ -29,11 +29,15 @@ Open **Definitive UI Layer Editor…** from the DCS Input Profile Importer.
 
 The editor reports a deterministic SHA-256 fingerprint for the complete catalog. A failed validation or write leaves the prior catalog in place.
 
+The **Assignment workspace** also supports direct catalog-backed upsert, move, clear, and relabel operations. It can create an authoritative profile for a supported device, and its Layer Manager can deliberately create or migrate modifier definitions. These operations are staged, validate the fingerprint again immediately before save, and never use an aircraft command catalog. See [IPI repository authoring](ipi-authoring.md).
+
 The legacy main-window UI Layer target is now named **Observed UI Layer snapshot (preview only)**. It remains useful for binding previews and mapping review, but its Proceed action is disabled. Only the definitive editor may change the canonical catalog, and only through explicit Keep, Add, Replace, or Remove decisions.
 
 ## Module projection
 
 Every consumer build calculates applicability from the module's final configured profile files. A device is applicable only when a referenced module profile has at least one effective `added` entry in `keyDiffs` or `axisDiffs`.
+
+A consumer may declare `uiLayerUtilization.mode = "explicit"`. Its selections further filter the applicable projection by canonical device, optional instance, function ID, and exact chord. Compatibility inference remains in effect only while that declaration is absent. Once present, unused bindings and modifiers are omitted from kneeboards and OVGME payloads.
 
 - Button, key, and POV additions qualify.
 - Axis-only profiles qualify, so devices such as the TPR rudder are retained.

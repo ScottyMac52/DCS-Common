@@ -3,6 +3,7 @@ import { dirname, isAbsolute, join, resolve } from 'node:path';
 import { loadSharedHardware, resolveDcsCommonRoot, modifierColorAt, MODIFIER_COLOR_CONTRACT } from './shared-hardware-consumer.mjs';
 import { composeUiLayerLabels } from './ui-layer-overlays.mjs';
 import { pageProfileIds, resolveConfiguredProfileApplicability } from './effective-profile-applicability.mjs';
+import { normalizeUiLayerUtilization, utilizedFunctionsForPage } from './ui-layer-utilization.mjs';
 
 export function aircraftFolderName(aircraft) {
   return String(aircraft).replace(/[^a-zA-Z0-9_-]/g, '');
@@ -260,6 +261,7 @@ export function loadProfileDrivenConfig(configPath, options = {}) {
   const config = JSON.parse(readFileSync(absoluteConfig, 'utf8'));
   if (config.schemaVersion !== 1) throw new Error('Kneeboard configuration schemaVersion must be 1.');
   if (!config.aircraft || !Array.isArray(config.pages)) throw new Error('Kneeboard configuration requires aircraft and pages.');
+  config.uiLayerUtilization = normalizeUiLayerUtilization(config.uiLayerUtilization);
   const modifierCatalog = buildModifierCatalog(config, consumerRoot);
   const applicability = resolveConfiguredProfileApplicability(config, consumerRoot, { parseProfile: parseDcsDiffLua });
 
@@ -441,7 +443,8 @@ export function loadProfileDrivenConfig(configPath, options = {}) {
     const includeUiLayer = page.includeUiLayer !== false
       && (page.includeUiLayer === true || config.includeUiLayer === true);
     const uiLayer = includeUiLayer
-      ? composeUiLayerLabels(page.deviceId, labels, { catalog: undefined, deviceInstance: page.deviceInstance ?? null })
+      ? composeUiLayerLabels(page.deviceId, labels, { catalog: undefined, deviceInstance: page.deviceInstance ?? null,
+        enabledFunctionIds: utilizedFunctionsForPage(config.uiLayerUtilization, page.deviceId, page.deviceInstance ?? null) })
       : null;
     if (uiLayer) labels = uiLayer.labels;
 

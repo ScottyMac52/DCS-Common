@@ -5,6 +5,7 @@ import { basename, dirname, join, relative, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { parseDcsDiffLua, parseDcsModifiersLua } from './profile-driven-kneeboard.mjs';
 import { summarizeEffectiveAdditions } from './effective-profile-applicability.mjs';
+import { applyDcsCommandAssignments, loadCalloutCatalog, serializeDcsProfile } from './scaffold-consumer.mjs';
 
 const CATEGORIES = ['joystick', 'keyboard', 'mouse'];
 
@@ -55,6 +56,7 @@ function devicePossibilities(root) {
 export function inspectCatalog(rootArg) {
   const root = resolve(rootArg);
   const errors = [];
+  const warnings = [];
   const profiles = [];
   const bindings = [];
   let modifiers = [];
@@ -88,7 +90,7 @@ export function inspectCatalog(rootArg) {
       functionCount = functions.length;
       const commands = new Set(functions.map(({ command }) => command));
       for (const binding of bindings) {
-        if (!commands.has(binding.command)) errors.push(`${binding.profile}: ${binding.command} is missing from functions.json`);
+        if (!commands.has(binding.command)) warnings.push(`${binding.profile}: ${binding.command} is unknown to functions.json and will be preserved`);
       }
     } catch (error) {
       errors.push(`functions.json: ${String(error.message ?? error)}`);
@@ -108,10 +110,149 @@ export function inspectCatalog(rootArg) {
     profiles: profiles.map((profile) => ({ ...profile, catalogState })),
     bindings: bindings.map((binding) => ({ ...binding, catalogState })),
     modifiers: modifiers.map((modifier) => ({ ...modifier, catalogState: possibilities.length ? 'Definitive' : 'Observed' })),
-    possibilities, errors, valid: errors.length === 0,
+    possibilities, errors, warnings, valid: errors.length === 0,
     summary: { profiles: profiles.length, bindings: bindings.length, keys: profiles.reduce((n, item) => n + item.keyCount, 0),
       axes: profiles.reduce((n, item) => n + item.axisCount, 0), modifiers: modifiers.length, functions: functionCount,
       possibilities: possibilities.length, errors: errors.length } };
+}
+
+function safeName(value, context) {
+  if (typeof value !== 'string' || !value.endsWith('.diff.lua') || value !== basename(value) || value.includes('..')) {
+    throw new Error(`${context} must be a plain .diff.lua filename.`);
+  }
+  return value;
+}
+
+function emptyProfile() {
+  return 'local diff = {\n}\nreturn diff\n';
+}
+
+function luaString(value) {
+  return JSON.stringify(String(value));
+}
+
+export function serializeModifiers(modifiers) {
+  const names = new Set();
+  const physical = new Set();
+  const sorted = [...modifiers].map((modifier, index) => {
+    if (!modifier || typeof modifier !== 'object') throw new Error(`Modifier ${index + 1} must be an object.`);
+    if (!modifier.name || !modifier.device || !modifier.key || !['hold', 'toggle'].includes(modifier.mode)) {
+      throw new Error(`Modifier ${index + 1} requires name, device, key, and hold/toggle mode.`);
+    }
+    const folded = modifier.name.toLocaleLowerCase();
+    if (names.has(folded)) throw new Error(`Duplicate modifier name: ${modifier.name}`);
+    names.add(folded);
+    const tuple = `${modifier.device.toLocaleLowerCase()}\0${modifier.key.toLocaleUpperCase()}`;
+    if (physical.has(tuple)) throw new Error(`Duplicate modifier physical input: ${modifier.device} ${modifier.key}`);
+    physical.add(tuple);
+    return { name: modifier.name, device: modifier.device, key: modifier.key, mode: modifier.mode };
+  }).sort((left, right) => left.name.localeCompare(right.name));
+  return `local modifiers = {\n${sorted.map((modifier) =>
+    `\t[${luaString(modifier.name)}] = {\n\t\t["device"] = ${luaString(modifier.device)},\n\t\t["key"] = ${luaString(modifier.key)},\n\t\t["switch"] = ${modifier.mode === 'toggle'},\n\t},`
+  ).join('\n')}\n}\nreturn modifiers\n`;
+}
+
+function canonicalProfilePath(uiRoot, profile) {
+  if (!profile || !CATEGORIES.includes(profile.category)) throw new Error('Profile category must be joystick, keyboard, or mouse.');
+  return join(uiRoot, 'input', 'UiLayer', profile.category, safeName(profile.filename, 'Profile filename'));
+}
+
+function migrateModifierReferences(uiRoot, renames) {
+  if (!renames?.length) return;
+  const renameMap = new Map(renames.map((item) => {
+    if (!item?.from || !item?.to) throw new Error('Modifier rename requires from and to.');
+    return [item.from, item.to];
+  }));
+  const inputRoot = join(uiRoot, 'input', 'UiLayer');
+  for (const file of files(inputRoot).filter((item) => item.name !== 'modifiers.lua')) {
+    const parsed = parseDcsDiffLua(readFileSync(file.absolutePath, 'utf8'), { filename: file.relativePath });
+    let changed = false;
+    for (const binding of parsed.bindings) for (const input of [...binding.added, ...(binding.changed ?? []), ...binding.removed]) {
+      input.reformers = input.reformers.map((name) => renameMap.get(name) ?? name).sort();
+      if (input.reformers.some((name) => renameMap.has(name))) changed = true;
+    }
+    if ([...renameMap.keys()].some((name) => readFileSync(file.absolutePath, 'utf8').includes(`"${name}"`))) changed = true;
+    if (changed) writeFileSync(file.absolutePath, serializeDcsProfile(parsed), 'utf8');
+  }
+}
+
+export function applyAuthoritativeEdits(commonRootArg, request) {
+  const commonRoot = resolve(commonRootArg);
+  const packagePath = join(commonRoot, 'package.json');
+  if (!existsSync(packagePath) || JSON.parse(readFileSync(packagePath, 'utf8')).name !== 'dcs-common') {
+    throw new Error('Authoritative edits require the root of a DCS-Common checkout.');
+  }
+  const canonicalInput = join(commonRoot, 'assets', 'shared', 'ui-layer', 'input', 'UiLayer');
+  const current = inspectCatalog(canonicalInput);
+  if (request.expectedFingerprint && request.expectedFingerprint !== current.fingerprint) {
+    throw new Error(`Stale definitive UI Layer catalog: expected ${request.expectedFingerprint}, found ${current.fingerprint}. Reload before saving.`);
+  }
+  const liveUiRoot = join(commonRoot, 'assets', 'shared', 'ui-layer');
+  const parent = dirname(liveUiRoot);
+  const stage = join(parent, `.ui-layer-authoring-stage-${randomUUID()}`);
+  const backup = join(parent, `.ui-layer-authoring-backup-${randomUUID()}`);
+  cpSync(liveUiRoot, stage, { recursive: true });
+  const changedFiles = new Set();
+  try {
+    const stagedInput = join(stage, 'input', 'UiLayer');
+    if (request.modifiers) {
+      migrateModifierReferences(stage, request.modifierRenames ?? []);
+      const modifierSource = serializeModifiers(request.modifiers);
+      writeFileSync(join(stagedInput, 'modifiers.lua'), modifierSource, 'utf8');
+      changedFiles.add('input/UiLayer/modifiers.lua');
+    }
+    const functionsPath = join(stage, 'functions.json');
+    const functionsDoc = JSON.parse(readFileSync(functionsPath, 'utf8'));
+    const functionsByCommand = new Map((functionsDoc.functions ?? []).map((item) => [item.command, item]));
+    for (const edit of request.bindings ?? []) {
+      if (!['upsert', 'move', 'clear', 'relabel'].includes(edit.action)) throw new Error(`Unsupported binding action: ${edit.action}`);
+      const fn = functionsByCommand.get(edit.command);
+      if (!fn) throw new Error(`UI Layer command ${edit.command} is not in functions.json.`);
+      if (edit.action === 'relabel') {
+        if (typeof edit.label !== 'string') throw new Error('Relabel requires label.');
+        fn.label = edit.label;
+        changedFiles.add('functions.json');
+        continue;
+      }
+      const profilePath = canonicalProfilePath(stage, edit.profile);
+      mkdirSync(dirname(profilePath), { recursive: true });
+      let source = existsSync(profilePath) ? readFileSync(profilePath, 'utf8') : emptyProfile();
+      const controlCatalog = loadCalloutCatalog(commonRoot, edit.profile.deviceId);
+      const validateTarget = (target) => {
+        const control = controlCatalog.controls.find((item) => item.key === target?.key);
+        if (!control) throw new Error(`${edit.profile.deviceId}: ${target?.key ?? '(missing key)'} is not a supported canonical physical control.`);
+        const expectedSection = control.type === 'axis' ? 'axisDiffs' : 'keyDiffs';
+        if (edit.section !== expectedSection) throw new Error(`${target.key} requires ${expectedSection}, not ${edit.section}.`);
+      };
+      if (edit.action === 'move') { validateTarget(edit.from); validateTarget(edit.to); }
+      else validateTarget(edit);
+      const assignment = (target, clear = false) => ({ profileFile: edit.profile.filename, section: edit.section,
+        key: target.key, reformers: target.reformers ?? [], command: edit.command, name: edit.name ?? fn.label,
+        clear, allowCreate: !clear });
+      if (edit.action === 'move') {
+        source = applyDcsCommandAssignments(source, [assignment(edit.from, true)], { filename: edit.profile.filename });
+      }
+      const target = edit.action === 'move' ? edit.to : edit;
+      source = applyDcsCommandAssignments(source, [assignment(target, edit.action === 'clear')], {
+        filename: edit.profile.filename,
+        allowedInputs: controlCatalog.controls.map((control) => ({ key: control.key, section: control.type === 'axis' ? 'axisDiffs' : 'keyDiffs' })),
+      });
+      writeFileSync(profilePath, source, 'utf8');
+      changedFiles.add(relative(stage, profilePath).replaceAll('\\', '/'));
+    }
+    if (changedFiles.has('functions.json')) writeFileSync(functionsPath, `${JSON.stringify(functionsDoc, null, 2)}\n`, 'utf8');
+    const inspected = inspectCatalog(stagedInput);
+    if (!inspected.valid) throw new Error(`Catalog validation failed:\n${inspected.errors.join('\n')}`);
+    renameSync(liveUiRoot, backup);
+    try { renameSync(stage, liveUiRoot); }
+    catch (error) { renameSync(backup, liveUiRoot); throw error; }
+    rmSync(backup, { recursive: true, force: true });
+    return { ...inspectCatalog(canonicalInput), changedFiles: [...changedFiles].sort(),
+      rebuild: { importerExe: false, consumerRescaffold: true, kneeboards: true, ovgmePackage: true } };
+  } catch (error) {
+    rmSync(stage, { recursive: true, force: true });
+    throw error;
+  }
 }
 
 export function compareCatalogs(canonicalArg, sourceArg) {
@@ -186,7 +327,9 @@ function main(argv = process.argv.slice(2)) {
   else if (command === 'compare' && canonical && source) console.log(JSON.stringify(compareCatalogs(canonical, source)));
   else if (command === 'apply' && canonical && source && decisionsPath) {
     console.log(JSON.stringify(applyReconciliation(canonical, source, JSON.parse(readFileSync(decisionsPath, 'utf8')))));
-  } else throw new Error('Usage: manage-ui-layer-catalog.mjs inspect <catalog> | compare <catalog> <source> | apply <catalog> <source> <decisions.json>');
+  } else if (command === 'edit' && canonical && source) {
+    console.log(JSON.stringify(applyAuthoritativeEdits(canonical, JSON.parse(readFileSync(source, 'utf8')))));
+  } else throw new Error('Usage: manage-ui-layer-catalog.mjs inspect <catalog> | compare <catalog> <source> | apply <catalog> <source> <decisions.json> | edit <common-root> <request.json>');
 }
 
 if (process.argv[1] && resolve(process.argv[1]) === resolve(fileURLToPath(import.meta.url))) main();

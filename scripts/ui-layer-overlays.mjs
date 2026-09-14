@@ -79,14 +79,15 @@ function labelVariants(value) {
   return [{ label: value, fullLabel: value }];
 }
 
-export function composeUiLayerLabels(deviceId, labels = {}, { catalog = loadUiLayerCatalog(), deviceInstance = null } = {}) {
+export function composeUiLayerLabels(deviceId, labels = {}, { catalog = loadUiLayerCatalog(), deviceInstance = null, enabledFunctionIds = null } = {}) {
   const template = buildUiLayerHardwareTemplate(deviceId, catalog, { deviceInstance });
   const merged = Array.isArray(labels) ? [...labels] : { ...labels };
   if (['exempt', 'not-applicable'].includes(template.status) || Array.isArray(merged)) {
     return { labels: merged, template, legend: null };
   }
 
-  for (const fn of template.functions.filter((entry) => entry.controlId)) {
+  const enabled = enabledFunctionIds === null ? null : new Set(enabledFunctionIds);
+  for (const fn of template.functions.filter((entry) => entry.controlId && (enabled === null || enabled.has(entry.id)))) {
     const existing = labelVariants(merged[fn.controlId]);
     const duplicate = existing.some((entry) => (entry?.fullLabel ?? entry?.label ?? entry) === fn.label);
     if (!duplicate) {
@@ -100,7 +101,7 @@ export function composeUiLayerLabels(deviceId, labels = {}, { catalog = loadUiLa
     }
     merged[fn.controlId] = existing;
   }
-  const modifierInUse = template.modifier && template.functions.some((entry) => entry.controlId);
+  const modifierInUse = template.modifier && template.functions.some((entry) => entry.controlId && (enabled === null || enabled.has(entry.id)));
   const legend = modifierInUse ? {
     label: `UI Layer — ${template.modifier}`,
     fill: catalog.overlays.defaultColor,

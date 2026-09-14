@@ -1,0 +1,75 @@
+<Window x:Class="DcsConsumerScaffold.ModuleAuthoringWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="IPI Blank-Clone and Module Authoring" Height="820" Width="1180" MinHeight="620" MinWidth="900">
+  <DockPanel Margin="12">
+    <StackPanel DockPanel.Dock="Top">
+      <TextBlock FontSize="20" FontWeight="SemiBold" Text="IPI Blank-Clone and Module Authoring" />
+      <TextBlock Margin="0,3,0,8" Foreground="#555" TextWrapping="Wrap"
+                 Text="Create the first profile without Saved Games, manage deliberate modifier layers, and select the exact definitive UI Layer bindings this module utilizes." />
+      <Grid>
+        <Grid.ColumnDefinitions><ColumnDefinition Width="150"/><ColumnDefinition Width="*"/><ColumnDefinition Width="90"/><ColumnDefinition Width="150"/><ColumnDefinition Width="*"/></Grid.ColumnDefinitions>
+        <Grid.RowDefinitions><RowDefinition/><RowDefinition/><RowDefinition/><RowDefinition/></Grid.RowDefinitions>
+        <TextBlock Grid.Row="0" Text="DCS-Common root" VerticalAlignment="Center"/><TextBox x:Name="CommonRootBox" Grid.Row="0" Grid.Column="1" Margin="5,2"/><Button Grid.Row="0" Grid.Column="2" Content="Browse…" Click="BrowseCommon_Click"/>
+        <TextBlock Grid.Row="1" Text="Repository root" VerticalAlignment="Center"/><TextBox x:Name="RepositoryRootBox" Grid.Row="1" Grid.Column="1" Margin="5,2"/><Button Grid.Row="1" Grid.Column="2" Content="Browse…" Click="BrowseRepository_Click"/>
+        <TextBlock Grid.Row="2" Text="Display name" VerticalAlignment="Center"/><TextBox x:Name="DisplayNameBox" Grid.Row="2" Grid.Column="1" Margin="5,2"/>
+        <TextBlock Grid.Row="2" Grid.Column="3" Text="Input module ID" VerticalAlignment="Center"/><TextBox x:Name="ModuleIdBox" Grid.Row="2" Grid.Column="4" Margin="5,2"/>
+        <TextBlock Grid.Row="3" Text="Kneeboard ID" VerticalAlignment="Center"/><TextBox x:Name="KneeboardIdBox" Grid.Row="3" Grid.Column="1" Margin="5,2"/>
+      </Grid>
+      <StackPanel Orientation="Horizontal" Margin="0,8">
+        <Button Content="Load module authoring" Padding="12,5" Click="Load_Click"/>
+        <Button Content="Save layers and utilization" Padding="12,5" Margin="8,0,0,0" Click="Save_Click"/>
+        <TextBlock x:Name="StatusText" Margin="14,5,0,0" TextWrapping="Wrap" Foreground="#334155"/>
+      </StackPanel>
+    </StackPanel>
+    <TabControl>
+      <TabItem Header="Initialize blank clone">
+        <StackPanel Margin="10">
+          <TextBlock TextWrapping="Wrap" Margin="0,0,0,8" Text="Choose the first canonical device. IPI creates a valid empty profile, kneeboard configuration, build scripts, and repository scaffolding. Then return to the main assignment workspace to load a command catalog and add controls."/>
+          <TextBlock Text="Canonical device"/><ComboBox x:Name="DeviceBox" Margin="0,3,0,8"/>
+          <TextBlock Text="Profile filename (.diff.lua)"/><TextBox x:Name="ProfileFilenameBox" Margin="0,3,0,8" Text="Device.diff.lua"/>
+          <TextBlock Text="Device instance/role (optional)"/><TextBox x:Name="DeviceInstanceBox" Margin="0,3,0,8"/>
+          <Button HorizontalAlignment="Left" Content="Initialize repository and first profile" Padding="14,6" Click="Initialize_Click"/>
+        </StackPanel>
+      </TabItem>
+      <TabItem Header="Layer Manager">
+        <DockPanel Margin="8">
+          <TextBlock DockPanel.Dock="Top" Margin="0,0,0,6" TextWrapping="Wrap" Text="Add any number of explicit modifiers. Semantic names may group device-qualified alternatives. Removing or renaming a row is an explicit migration and validation blocks duplicate physical inputs."/>
+          <DataGrid x:Name="ModifiersGrid" AutoGenerateColumns="False" CanUserAddRows="True">
+            <DataGrid.Columns>
+              <DataGridTextColumn Header="Native name" Binding="{Binding Name, UpdateSourceTrigger=PropertyChanged}" Width="*"/>
+              <DataGridTextColumn Header="Physical DCS device" Binding="{Binding Device, UpdateSourceTrigger=PropertyChanged}" Width="2*"/>
+              <DataGridTextColumn Header="Key" Binding="{Binding Key, UpdateSourceTrigger=PropertyChanged}" Width="110"/>
+              <DataGridTextColumn Header="Mode (hold/toggle)" Binding="{Binding Mode, UpdateSourceTrigger=PropertyChanged}" Width="130"/>
+              <DataGridTextColumn Header="Semantic layer" Binding="{Binding SemanticModifier, UpdateSourceTrigger=PropertyChanged}" Width="*"/>
+              <DataGridTextColumn Header="Modifier deviceId" Binding="{Binding DeviceId, UpdateSourceTrigger=PropertyChanged}" Width="*"/>
+            </DataGrid.Columns>
+          </DataGrid>
+        </DockPanel>
+      </TabItem>
+      <TabItem Header="UI Layer utilization">
+        <DockPanel Margin="8">
+          <StackPanel DockPanel.Dock="Top">
+            <TextBlock TextWrapping="Wrap" Text="Every row is one exact authoritative selection. An empty explicit list means this module uses no UI Layer bindings. Legacy inference remains only until an explicit selection is saved."/>
+            <WrapPanel Margin="0,7">
+              <ComboBox x:Name="UtilDeviceBox" Width="260"/>
+              <TextBox x:Name="UtilInstanceBox" Width="100" Margin="6,0" ToolTip="For example MFD3"/>
+              <ComboBox x:Name="UtilFunctionBox" Width="310"/>
+              <TextBox x:Name="UtilModifiersBox" Width="220" Margin="6,0" ToolTip="Modifier names separated by +"/>
+              <Button Content="Add exact selection" Padding="10,3" Click="AddUtilization_Click"/>
+              <Button Content="Remove selected" Padding="10,3" Margin="6,0,0,0" Click="RemoveUtilization_Click"/>
+            </WrapPanel>
+          </StackPanel>
+          <DataGrid x:Name="UtilizationGrid" AutoGenerateColumns="False" CanUserAddRows="False">
+            <DataGrid.Columns>
+              <DataGridTextColumn Header="Device ID" Binding="{Binding DeviceId}" Width="*"/>
+              <DataGridTextColumn Header="Instance" Binding="{Binding DeviceInstance}" Width="100"/>
+              <DataGridTextColumn Header="Function" Binding="{Binding FunctionId}" Width="*"/>
+              <DataGridTextColumn Header="Exact chord" Binding="{Binding ModifierDisplay}" Width="2*"/>
+            </DataGrid.Columns>
+          </DataGrid>
+        </DockPanel>
+      </TabItem>
+    </TabControl>
+  </DockPanel>
+</Window>

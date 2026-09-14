@@ -33,6 +33,19 @@ public sealed class UiLayerCatalogService
         finally { try { File.Delete(path); } catch { /* best effort */ } }
     }
 
+    public async Task<UiLayerCatalogDocument> ApplyEditsAsync(string commonRoot, string expectedFingerprint,
+        IReadOnlyCollection<IpiModifierDefinition> modifiers, IReadOnlyCollection<UiLayerBindingEdit> bindings,
+        CancellationToken cancellationToken = default)
+    {
+        var path = Path.Combine(Path.GetTempPath(), $"ui-layer-edits-{Guid.NewGuid():N}.json");
+        try
+        {
+            await File.WriteAllTextAsync(path, JsonSerializer.Serialize(new { expectedFingerprint, modifiers, bindings }), cancellationToken);
+            return Deserialize<UiLayerCatalogDocument>(await RunAsync(commonRoot, ["edit", commonRoot, path], cancellationToken));
+        }
+        finally { try { File.Delete(path); } catch { /* best effort */ } }
+    }
+
     private static T Deserialize<T>(string json) where T : class =>
         JsonSerializer.Deserialize<T>(json, JsonOptions) ?? throw new InvalidOperationException("Catalog manager returned no result.");
 
