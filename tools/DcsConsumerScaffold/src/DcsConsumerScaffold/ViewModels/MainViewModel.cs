@@ -41,6 +41,7 @@ public sealed class MainViewModel : INotifyPropertyChanged
     private string _solutionName = string.Empty;
     private bool _isSolutionDirty;
     private bool _suppressSolutionDirty;
+    private bool _modifiersAuthored;
     private readonly Dictionary<string, (string Raw, string Resolved)> _loadedSolutionPaths = new(StringComparer.Ordinal);
     private DcsCommandCatalogDocument? _commandCatalog;
     private string? _commandCatalogPath;
@@ -52,6 +53,7 @@ public sealed class MainViewModel : INotifyPropertyChanged
     private string _selectedTargetChord = "All chords";
     private DcsCommandCatalogEntry? _selectedCatalogCommand;
     private PreviewRow? _selectedPreviewRow;
+    private PreviewModifier? _selectedModifier;
     private readonly Dictionary<PreviewRow, PreviewRow> _assignmentOriginals = [];
     private readonly HashSet<PreviewRow> _emptyControls = [];
     private readonly Dictionary<PreviewRow, List<PreviewRow>> _displacedRows = [];
@@ -113,6 +115,12 @@ public sealed class MainViewModel : INotifyPropertyChanged
     public ObservableCollection<string> TargetBindingStates { get; }
     public ObservableCollection<string> TargetChords { get; }
     public ObservableCollection<DcsCommandAssignment> PendingAssignments { get; }
+
+    public PreviewModifier? SelectedModifier
+    {
+        get => _selectedModifier;
+        set => Set(ref _selectedModifier, value);
+    }
 
     public DcsCommandCatalogEntry? SelectedCatalogCommand
     {
@@ -521,6 +529,7 @@ public sealed class MainViewModel : INotifyPropertyChanged
         CommandLabels.Clear();
         ClearCommandCatalog();
         Modifiers.Clear();
+        _modifiersAuthored = _pendingSolutionDecisions?.AuthoredModifiers is not null;
         HasPreview = false;
         _previewErrorCount = 0;
         PreviewErrorText = string.Empty;
@@ -652,7 +661,8 @@ public sealed class MainViewModel : INotifyPropertyChanged
                 mfdCategories: MfdCategoryOverrides(),
                 pagePresentations: PagePresentationOverrides(),
                 assignments: PendingAssignments.ToArray(),
-                repositoryProfilesDir: ExistingRepositoryProfilesDirectory());
+                repositoryProfilesDir: ExistingRepositoryProfilesDirectory(),
+                authoredModifiers: _modifiersAuthored ? Modifiers.ToArray() : null);
 
             StatusText = exitCode is 0 or 2
                 ? $"Proceed finished (exit {exitCode}). See SCAFFOLD-REPORT.md under the output folder.{Environment.NewLine}{stdout}{Environment.NewLine}{stderr}".Trim()
@@ -812,6 +822,100 @@ public sealed class MainViewModel : INotifyPropertyChanged
         if (chord.Any(name => !Modifiers.Any(modifier => !modifier.IsRepositoryOnly && modifier.Name == name)))
             throw new InvalidOperationException("Choose modifiers from the imported modifiers.lua file.");
         return chord;
+    }
+
+    public PreviewModifier AddModifier(PreviewDevice device, InteractiveControl control, string name, string mode, string? semanticModifier)
+    {
+        if (device.IsRepositoryOnly || string.IsNullOrWhiteSpace(device.ProfileFile) || string.IsNullOrWhiteSpace(device.DeviceId))
+            throw new InvalidOperationException("Select an imported physical device.");
+        var nativeDevice = NativeDeviceName(device.ProfileFile);
+        var modifier = new PreviewModifier
+        {
+            Name = name.Trim(), Device = nativeDevice, Key = control.Key, Mode = mode,
+            DeviceId = device.DeviceId, SemanticModifier = string.IsNullOrWhiteSpace(semanticModifier) ? name.Trim() : semanticModifier.Trim(),
+            ChangeState = PreviewChangeState.New, ChangeReason = "Added in the main modifier editor.",
+        };
+        ValidateModifier(modifier, null);
+        Modifiers.Add(modifier);
+        modifier.PropertyChanged += Modifier_PropertyChanged;
+        SelectedModifier = modifier;
+        ModifierCollectionChanged($"Added modifier {modifier.Name}.");
+        return modifier;
+    }
+
+    public void UpdateModifier(PreviewModifier modifier, PreviewDevice? device, InteractiveControl? control,
+        string name, string mode, string? semanticModifier)
+    {
+        var oldName = modifier.Name ?? string.Empty;
+        var candidate = new PreviewModifier
+        {
+            Name = name.Trim(), Device = modifier.Device, Key = modifier.Key, Mode = mode,
+            DeviceId = modifier.DeviceId, SemanticModifier = string.IsNullOrWhiteSpace(semanticModifier) ? name.Trim() : semanticModifier.Trim(),
+        };
+        if (device is not null && control is not null)
+        {
+            candidate.Device = NativeDeviceName(device.ProfileFile);
+            candidate.DeviceId = device.DeviceId;
+            candidate.Key = control.Key;
+        }
+        ValidateModifier(candidate, modifier);
+        modifier.Name = candidate.Name;
+        modifier.Device = candidate.Device;
+        modifier.Key = candidate.Key;
+        modifier.Mode = candidate.Mode;
+        modifier.DeviceId = candidate.DeviceId;
+        modifier.SemanticModifier = candidate.SemanticModifier;
+        modifier.IsRepositoryOnly = false;
+        modifier.ChangeState = PreviewChangeState.Changed;
+        modifier.ChangeReason = "Edited in the main modifier editor.";
+        if (!string.Equals(oldName, modifier.Name, StringComparison.Ordinal)) RenameModifierReferences(oldName, modifier.Name!);
+        ModifierCollectionChanged($"Updated modifier {modifier.Name}.");
+    }
+
+    public void RemoveModifier(PreviewModifier modifier)
+    {
+        var name = modifier.Name ?? string.Empty;
+        var uses = Rows.Count(row => row.Reformers.Contains(name, StringComparer.Ordinal)) +
+            PendingAssignments.Count(item => item.Reformers.Contains(name, StringComparer.Ordinal));
+        if (uses > 0) throw new InvalidOperationException($"{name} is used by {uses} assignment(s). Move or clear those assignments before removing it.");
+        modifier.PropertyChanged -= Modifier_PropertyChanged;
+        Modifiers.Remove(modifier);
+        SelectedModifier = null;
+        ModifierCollectionChanged($"Removed modifier {name}.");
+    }
+
+    private void ValidateModifier(PreviewModifier candidate, PreviewModifier? current) =>
+        _ = ScaffoldEngineService.SerializeModifiers(Modifiers.Where(item => item != current).Append(candidate));
+
+    private static string NativeDeviceName(string profileFile) => profileFile.EndsWith(".diff.lua", StringComparison.OrdinalIgnoreCase)
+        ? profileFile[..^".diff.lua".Length]
+        : Path.GetFileNameWithoutExtension(profileFile);
+
+    private void RenameModifierReferences(string oldName, string newName)
+    {
+        foreach (var row in AssignmentTargets.Where(row => row.Reformers.Contains(oldName, StringComparer.Ordinal)))
+        {
+            row.Reformers = row.Reformers.Select(item => item == oldName ? newName : item).OrderBy(item => item, StringComparer.Ordinal).ToList();
+            row.Chord = string.Join('+', row.Reformers);
+            row.SemanticChord = string.Join('+', row.Reformers.Select(name =>
+                Modifiers.FirstOrDefault(modifier => modifier.Name == name)?.SemanticModifier ?? name).OrderBy(value => value, StringComparer.Ordinal));
+        }
+        foreach (var assignment in PendingAssignments.Where(item => item.Reformers.Contains(oldName, StringComparer.Ordinal)))
+        {
+            var renamed = assignment.Reformers.Select(item => item == oldName ? newName : item).OrderBy(item => item, StringComparer.Ordinal).ToList();
+            assignment.Reformers.Clear();
+            assignment.Reformers.AddRange(renamed);
+        }
+    }
+
+    private void ModifierCollectionChanged(string status)
+    {
+        _modifiersAuthored = true;
+        RebuildTargetChords();
+        RefreshTargetFilter();
+        RecomparePreview();
+        MarkSolutionDirty();
+        StatusText = status + " The change will be written when you choose Proceed.";
     }
 
     private void RememberOriginal(PreviewRow row)
@@ -1117,7 +1221,9 @@ public sealed class MainViewModel : INotifyPropertyChanged
 
     private void Modifier_PropertyChanged(object? sender, PropertyChangedEventArgs e)
     {
-        if (e.PropertyName == nameof(PreviewModifier.SemanticModifier)) { RecomparePreview(); MarkSolutionDirty(); }
+        if (e.PropertyName is nameof(PreviewModifier.SemanticModifier) or nameof(PreviewModifier.Name) or nameof(PreviewModifier.Device)
+            or nameof(PreviewModifier.Key) or nameof(PreviewModifier.Mode) or nameof(PreviewModifier.DeviceId))
+        { RecomparePreview(); MarkSolutionDirty(); }
     }
 
     private void Device_PropertyChanged(object? sender, PropertyChangedEventArgs e)
@@ -1212,7 +1318,8 @@ public sealed class MainViewModel : INotifyPropertyChanged
             MfdCategoryOverrides(),
             PagePresentationOverrides(),
             includeUiLayer: !IsUiLayerImport, assignments: PendingAssignments.ToArray(),
-            repositoryProfilesDir: ExistingRepositoryProfilesDirectory());
+            repositoryProfilesDir: ExistingRepositoryProfilesDirectory(),
+            authoredModifiers: _modifiersAuthored ? Modifiers.ToArray() : null);
     }
 
 
@@ -1231,6 +1338,14 @@ public sealed class MainViewModel : INotifyPropertyChanged
         foreach (var modifier in ModifierOverrides()) decisions.SemanticModifiers[modifier.Key] = modifier.Value;
         foreach (var device in Devices.Where(item => item.IsRepositoryOnly && item.RemoveRequested && !string.IsNullOrWhiteSpace(item.ProfileKey)))
             decisions.RemovedProfiles.Add(device.ProfileKey!);
+        if (_modifiersAuthored)
+            decisions.AuthoredModifiers = Modifiers.Count > 0 || HasPreview
+                ? Modifiers.Select(ToDefinition).ToList()
+                : _pendingSolutionDecisions?.AuthoredModifiers?.Select(item => new IpiModifierDefinition
+                {
+                    Name = item.Name, Device = item.Device, Key = item.Key, Mode = item.Mode,
+                    SemanticModifier = item.SemanticModifier, DeviceId = item.DeviceId,
+                }).ToList() ?? [];
 
         return new ScaffoldSolutionDocument
         {
@@ -1251,6 +1366,12 @@ public sealed class MainViewModel : INotifyPropertyChanged
         };
     }
 
+    private static IpiModifierDefinition ToDefinition(PreviewModifier item) => new()
+    {
+        Name = item.Name ?? string.Empty, Device = item.Device ?? string.Empty, Key = item.Key ?? string.Empty,
+        Mode = item.Mode ?? "hold", SemanticModifier = item.SemanticModifier, DeviceId = item.DeviceId,
+    };
+
     public void LoadSolution(ScaffoldSolutionDocument document, string path)
     {
         ScaffoldSolutionService.Validate(document);
@@ -1268,6 +1389,7 @@ public sealed class MainViewModel : INotifyPropertyChanged
             InputModuleId = document.Import.InputModuleId ?? string.Empty;
             KneeboardId = document.Import.KneeboardId ?? string.Empty;
             _pendingSolutionDecisions = document.Decisions ?? new ScaffoldSolutionDecisions();
+            _modifiersAuthored = _pendingSolutionDecisions.AuthoredModifiers is not null;
             UntrackRows();
             Devices.Clear();
             Rows.Clear();
@@ -1311,6 +1433,23 @@ public sealed class MainViewModel : INotifyPropertyChanged
     {
         if (_pendingSolutionDecisions is null) return;
         var restored = 0;
+        if (_pendingSolutionDecisions.AuthoredModifiers is { } authored)
+        {
+            foreach (var modifier in Modifiers) modifier.PropertyChanged -= Modifier_PropertyChanged;
+            Modifiers.Clear();
+            foreach (var item in authored)
+            {
+                var modifier = new PreviewModifier
+                {
+                    Name = item.Name, Device = item.Device, Key = item.Key, Mode = item.Mode,
+                    SemanticModifier = item.SemanticModifier, DeviceId = item.DeviceId,
+                    ChangeState = PreviewChangeState.Changed, ChangeReason = "Restored from the saved main-screen modifier editor.",
+                };
+                Modifiers.Add(modifier);
+                modifier.PropertyChanged += Modifier_PropertyChanged;
+                restored++;
+            }
+        }
         restored += ApplyMap(_pendingSolutionDecisions.InstanceRoles, key =>
             Devices.Where(device => !device.IsRepositoryOnly && string.Equals(device.ProfileFile, key, StringComparison.OrdinalIgnoreCase)).ToList(),
             (device, value) => device.Role = value);

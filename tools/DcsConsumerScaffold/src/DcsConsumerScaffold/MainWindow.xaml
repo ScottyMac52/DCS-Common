@@ -222,17 +222,30 @@
       </DataGrid>
     </GroupBox>
 
-    <GroupBox DockPanel.Dock="Top" Header="Modifier equivalence" Margin="0,0,0,8" Padding="4">
-      <DataGrid ItemsSource="{Binding Modifiers}" Height="105" AutoGenerateColumns="False" CanUserAddRows="False"
-                RowStyle="{StaticResource PreviewChangeRowStyle}" BeginningEdit="PreviewGrid_BeginningEdit">
+    <GroupBox DockPanel.Dock="Top" Header="Modifiers" Margin="0,0,0,8" Padding="4" IsEnabled="{Binding IsConsumerImport}">
+      <DockPanel>
+        <WrapPanel DockPanel.Dock="Top" Margin="0,0,0,5">
+          <TextBlock Text="Name" VerticalAlignment="Center"/><TextBox x:Name="ModifierNameBox" Width="145" Margin="5,0"/>
+          <TextBlock Text="Device" VerticalAlignment="Center"/><ComboBox x:Name="ModifierDeviceBox" Width="205" Margin="5,0" ItemsSource="{Binding Devices}" DisplayMemberPath="Stem" SelectionChanged="ModifierDevice_Changed"/>
+          <TextBlock Text="Shared control" VerticalAlignment="Center"/><ComboBox x:Name="ModifierControlBox" Width="190" Margin="5,0" DisplayMemberPath="HardwareLabel"/>
+          <TextBlock Text="Mode" VerticalAlignment="Center"/><ComboBox x:Name="ModifierModeBox" Width="80" Margin="5,0" SelectedIndex="0"><ComboBoxItem Content="hold"/><ComboBoxItem Content="toggle"/></ComboBox>
+          <TextBlock Text="Semantic layer" VerticalAlignment="Center"/><TextBox x:Name="ModifierSemanticBox" Width="145" Margin="5,0"/>
+          <Button Content="Add" Padding="9,3" Click="AddModifier_Click"/>
+          <Button Content="Update selected" Padding="9,3" Margin="5,0,0,0" Click="UpdateModifier_Click"/>
+          <Button Content="Remove selected" Padding="9,3" Margin="5,0,0,0" Click="RemoveModifier_Click"/>
+        </WrapPanel>
+      <DataGrid x:Name="ModifiersGrid" ItemsSource="{Binding Modifiers}" SelectedItem="{Binding SelectedModifier, Mode=TwoWay}" Height="105" AutoGenerateColumns="False" CanUserAddRows="False" IsReadOnly="True"
+                SelectionChanged="ModifierSelection_Changed" RowStyle="{StaticResource PreviewChangeRowStyle}">
         <DataGrid.Columns>
-          <DataGridTextColumn Header="Native modifier" Binding="{Binding Name}" Width="*" IsReadOnly="True" />
-          <DataGridTextColumn Header="Device" Binding="{Binding Device}" Width="2*" IsReadOnly="True" />
-          <DataGridTextColumn Header="Key" Binding="{Binding Key}" Width="90" IsReadOnly="True" />
-          <DataGridTextColumn Header="Semantic modifier" Binding="{Binding SemanticModifier, UpdateSourceTrigger=PropertyChanged}" Width="*" />
-          <DataGridTextColumn Header="State" Binding="{Binding ChangeState}" Width="95" IsReadOnly="True" />
+          <DataGridTextColumn Header="Native modifier" Binding="{Binding Name}" Width="*" />
+          <DataGridTextColumn Header="Device" Binding="{Binding Device}" Width="2*" />
+          <DataGridTextColumn Header="Key" Binding="{Binding Key}" Width="90" />
+          <DataGridTextColumn Header="Mode" Binding="{Binding Mode}" Width="75" />
+          <DataGridTextColumn Header="Semantic modifier" Binding="{Binding SemanticModifier}" Width="*" />
+          <DataGridTextColumn Header="State" Binding="{Binding ChangeState}" Width="95" />
         </DataGrid.Columns>
       </DataGrid>
+      </DockPanel>
     </GroupBox>
 
     <GroupBox DockPanel.Dock="Top" Header="Command labels" Margin="0,0,0,8" Padding="4"

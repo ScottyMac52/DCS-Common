@@ -15,6 +15,7 @@ public partial class MainWindow : Window
 {
     private readonly MainViewModel _viewModel = new();
     private readonly ScaffoldSolutionService _solutionService = new();
+    private string? _pendingModifierControlKey;
 
     public MainWindow()
     {
@@ -283,6 +284,76 @@ public partial class MainWindow : Window
         var context = row is null ? null : $"Module context: {_viewModel.DisplayName} — {row.Stem} {row.Key} {row.Chord}";
         new UiLayerEditorWindow(_viewModel.CommonRoot, context) { Owner = this }.ShowDialog();
     }
+
+    private async void ModifierDevice_Changed(object sender, SelectionChangedEventArgs e)
+    {
+        if (ModifierDeviceBox.SelectedItem is not PreviewDevice device || string.IsNullOrWhiteSpace(device.DeviceId))
+        {
+            ModifierControlBox.ItemsSource = null;
+            return;
+        }
+        try
+        {
+            var layout = await _viewModel.LoadInteractiveDeviceAsync(device);
+            var controls = layout.Controls.Where(item => !item.Shifted).OrderBy(item => item.HardwareLabel).ToList();
+            ModifierControlBox.ItemsSource = controls;
+            ModifierControlBox.SelectedItem = controls.FirstOrDefault(item => item.Key == _pendingModifierControlKey);
+            if (ModifierControlBox.SelectedItem is null && controls.Count > 0) ModifierControlBox.SelectedIndex = 0;
+            _pendingModifierControlKey = null;
+        }
+        catch (Exception ex) { _viewModel.StatusText = ex.Message; }
+    }
+
+    private void ModifierSelection_Changed(object sender, SelectionChangedEventArgs e)
+    {
+        if (ModifiersGrid.SelectedItem is not PreviewModifier modifier) return;
+        ModifierNameBox.Text = modifier.Name ?? string.Empty;
+        ModifierSemanticBox.Text = modifier.SemanticModifier ?? string.Empty;
+        ModifierModeBox.SelectedIndex = string.Equals(modifier.Mode, "toggle", StringComparison.OrdinalIgnoreCase) ? 1 : 0;
+        _pendingModifierControlKey = modifier.Key;
+        ModifierDeviceBox.SelectedItem = _viewModel.Devices.FirstOrDefault(device =>
+            string.Equals(NativeDeviceName(device.ProfileFile), modifier.Device, StringComparison.OrdinalIgnoreCase));
+    }
+
+    private void AddModifier_Click(object sender, RoutedEventArgs e) => RunModifierEdit(() =>
+    {
+        if (ModifierDeviceBox.SelectedItem is not PreviewDevice device || ModifierControlBox.SelectedItem is not InteractiveControl control)
+            throw new InvalidOperationException("Select an imported device and one of its shared controls.");
+        _viewModel.AddModifier(device, control, ModifierNameBox.Text, ModifierMode(), ModifierSemanticBox.Text);
+    });
+
+    private void UpdateModifier_Click(object sender, RoutedEventArgs e) => RunModifierEdit(() =>
+    {
+        if (_viewModel.SelectedModifier is not { } modifier) throw new InvalidOperationException("Select a modifier to update.");
+        _viewModel.UpdateModifier(modifier, ModifierDeviceBox.SelectedItem as PreviewDevice,
+            ModifierControlBox.SelectedItem as InteractiveControl, ModifierNameBox.Text, ModifierMode(), ModifierSemanticBox.Text);
+        ModifiersGrid.Items.Refresh();
+    });
+
+    private void RemoveModifier_Click(object sender, RoutedEventArgs e) => RunModifierEdit(() =>
+    {
+        if (_viewModel.SelectedModifier is not { } modifier) throw new InvalidOperationException("Select a modifier to remove.");
+        if (MessageBox.Show(this, $"Remove modifier {modifier.Name}?", "Remove modifier", MessageBoxButton.YesNo,
+            MessageBoxImage.Warning) != MessageBoxResult.Yes) return;
+        _viewModel.RemoveModifier(modifier);
+    });
+
+    private void RunModifierEdit(Action action)
+    {
+        try { action(); }
+        catch (Exception ex)
+        {
+            _viewModel.StatusText = ex.Message;
+            MessageBox.Show(this, ex.Message, "Modifier editor", MessageBoxButton.OK, MessageBoxImage.Warning);
+        }
+    }
+
+    private string ModifierMode() => (ModifierModeBox.SelectedItem as ComboBoxItem)?.Content?.ToString() ?? "hold";
+
+    private static string NativeDeviceName(string? profileFile) => string.IsNullOrWhiteSpace(profileFile) ? string.Empty
+        : profileFile.EndsWith(".diff.lua", StringComparison.OrdinalIgnoreCase)
+            ? profileFile[..^".diff.lua".Length]
+            : Path.GetFileNameWithoutExtension(profileFile);
 
     private void PreviewGrid_BeginningEdit(object sender, DataGridBeginningEditEventArgs e)
     {
