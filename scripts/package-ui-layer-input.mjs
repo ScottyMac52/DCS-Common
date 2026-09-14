@@ -3,8 +3,9 @@ import { existsSync, mkdirSync, readFileSync, readdirSync, statSync, unlinkSync,
 import { basename, dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { parseDcsDiffLua, parseDcsModifiersLua } from './profile-driven-kneeboard.mjs';
-import { analyzeProfileSource, pageProfileIds, resolveConfiguredProfileApplicability } from './effective-profile-applicability.mjs';
+import { analyzeProfileSource, resolveConfiguredProfileApplicability } from './effective-profile-applicability.mjs';
 import { resolveUiLayerModifier } from './ui-layer-overlays.mjs';
+import { inspectCatalog } from './manage-ui-layer-catalog.mjs';
 
 const GUID_SUFFIX = /\s*\{[0-9A-Fa-f-]{36}\}\s*$/u;
 
@@ -121,7 +122,9 @@ export function tailorModifiers(source, activePhysicalDevices, allowedDeviceModi
     const device = block.match(/\["device"\]\s*=\s*"((?:\\.|[^"])*)"/)?.[1] ?? '';
     const normalized = device.replace(GUID_SUFFIX, '').trim().replace(/\s+/gu, ' ').toLocaleLowerCase();
     const modifierName = match[1];
-    if (normalized === 'keyboard' || (active.has(normalized) && (!allowedDeviceModifiers || allowedDeviceModifiers.has(modifierName)))) entries.push(block);
+    if (normalized === 'keyboard' || (allowedDeviceModifiers
+      ? allowedDeviceModifiers.has(modifierName)
+      : active.has(normalized))) entries.push(block);
     pattern.lastIndex = close + 1;
   }
   return `local modifiers = {\n${entries.map((entry) => `\t${entry.replace(/\n/g, '\n\t')},`).join('\n')}\n}\nreturn modifiers\n`;
@@ -225,10 +228,7 @@ export function packageUiLayerInput({ commonRoot, consumerJoystickDir, destinati
   const activePhysicalDevices = new Set(effectiveConfiguredProfiles.map((profile) => physicalDeviceName(profile.filename)));
   const sourceRoot = join(commonRoot, 'assets', 'shared', 'ui-layer', 'input', 'UiLayer');
   mkdirSync(destination, { recursive: true });
-  const applicableDeviceIds = new Set((config.pages ?? [])
-    .filter((page) => [...pageProfileIds(page, config)].some((profileId) => applicability.profiles.get(profileId)?.effective))
-    .map((page) => page?.deviceId).filter((value) => typeof value === 'string'));
-  const selectedModifiers = selectedUiLayerModifiers(commonRoot, config, applicableDeviceIds);
+  const selectedModifiers = selectedUiLayerModifiers(commonRoot, config, configuredDeviceIds(config));
   const tailoredModifiers = tailorModifiers(readFileSync(join(sourceRoot, 'modifiers.lua'), 'utf8'), activePhysicalDevices, selectedModifiers);
   const availableModifiers = new Set(parseDcsModifiersLua(tailoredModifiers, { filename: 'UiLayer/modifiers.lua' }).modifiers.map(({ name }) => name));
   writeFileSync(join(destination, 'modifiers.lua'), tailoredModifiers, 'utf8');
@@ -263,6 +263,7 @@ export function packageUiLayerInput({ commonRoot, consumerJoystickDir, destinati
     }
   }
   return {
+    canonicalCatalogFingerprint: inspectCatalog(sourceRoot).fingerprint,
     activePhysicalDevices: [...activePhysicalDevices].sort(), activeProfiles: activeProfiles.sort(),
     availableModifiers: [...availableModifiers].sort(), copiedProfiles: copiedProfiles.sort(),
     skippedProfiles, skippedUiLayerProfiles,
@@ -280,6 +281,7 @@ function main(argv = process.argv.slice(2)) {
   const result = packageUiLayerInput({ commonRoot: resolve(commonRoot), consumerJoystickDir: resolve(consumerJoystickDir),
     destination: resolve(destination), configPath: configPath ? resolve(configPath) : undefined });
   console.log(`Configured module profiles: ${result.activeProfiles.join(', ') || 'none'}`);
+  console.log(`Definitive UI Layer catalog: ${result.canonicalCatalogFingerprint}`);
   for (const skipped of result.skippedProfiles) console.log(`Skipped module profile ${skipped.filename}: ${skipped.reason}`);
   for (const profile of result.applicability) console.log(
     `Applicability ${profile.profileId}: ${profile.effective ? 'included' : 'excluded'} ` +

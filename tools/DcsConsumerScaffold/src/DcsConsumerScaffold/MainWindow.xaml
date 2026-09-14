@@ -59,10 +59,10 @@
                   SelectedValue="{Binding ImportTarget, UpdateSourceTrigger=PropertyChanged}"
                   SelectedValuePath="Tag">
           <ComboBoxItem Content="Consumer module repository" Tag="consumer" />
-          <ComboBoxItem Content="DCS-Common authoritative UI Layer" Tag="ui-layer" />
+          <ComboBoxItem Content="Observed UI Layer snapshot (preview only)" Tag="ui-layer" />
         </ComboBox>
         <TextBlock Margin="12,0,0,0" VerticalAlignment="Center" Foreground="#555" TextWrapping="Wrap"
-                   Text="UI Layer mode writes only assets/shared/ui-layer under the selected DCS-Common root." />
+                   Text="Observed UI Layer mode never writes DCS-Common. Use the Definitive UI Layer Editor to compare and explicitly reconcile a snapshot." />
       </DockPanel>
     </StackPanel>
 

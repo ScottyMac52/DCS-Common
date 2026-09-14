@@ -1,6 +1,8 @@
 # Definitive UI Layer
 
-DCS-Common owns one complete, manually maintained UI Layer catalog. It is independent of connected controllers and is never rewritten by consumer scaffolding or module builds.
+DCS-Common owns one complete, manually maintained UI Layer catalog. It is the union of every supported device, alias, modifier family, and overlay possibility—not a copy of the current Saved Games UI Layer. It is independent of connected controllers and is never rewritten by consumer scaffolding or module builds.
+
+The hardware manifest defines the permanent device-possibility inventory. The canonical UI Layer input files provide the maintained DCS bindings. A module's final effective profiles select an applicable projection from that inventory; they do not define or shrink the inventory itself.
 
 ## Canonical files
 
@@ -19,7 +21,7 @@ The former `TM_AVA_BASE_F16_MODIFIER` and `MOZA_F16_F18_BTN3` names are not comp
 Open **Definitive UI Layer Editor…** from the DCS Input Profile Importer.
 
 1. Select the DCS-Common root and choose **Load Canonical**.
-2. Review the complete Profiles, Bindings, Modifiers, and Validation errors tabs. No controller needs to be connected.
+2. Review the complete Profiles, Bindings, Modifiers, Device possibilities, and Validation errors tabs. No controller needs to be connected. **Device possibilities** includes canonical hardware IDs, aliases, modifier alternatives, instance restrictions, templates, and exemptions even when those devices are absent from the current DCS installation.
 3. To reconcile changes from DCS, select the Saved Games `Config\Input\UiLayer` folder and choose **Compare Import**.
 4. Review each file. New and changed files default to **Add** or **Replace**. A canonical-only file defaults to **Keep** because absence is not deletion.
 5. Choose **Remove** only for an intentional deletion.
@@ -27,7 +29,7 @@ Open **Definitive UI Layer Editor…** from the DCS Input Profile Importer.
 
 The editor reports a deterministic SHA-256 fingerprint for the complete catalog. A failed validation or write leaves the prior catalog in place.
 
-The legacy **DCS-Common authoritative UI Layer** import target remains useful for binding previews and mapping review, but the definitive editor is the ownership boundary for canonical file changes.
+The legacy main-window UI Layer target is now named **Observed UI Layer snapshot (preview only)**. It remains useful for binding previews and mapping review, but its Proceed action is disabled. Only the definitive editor may change the canonical catalog, and only through explicit Keep, Add, Replace, or Remove decisions.
 
 ## Module projection
 
@@ -40,6 +42,8 @@ Every consumer build calculates applicability from the module's final configured
 - Alternative MFD3 bindings are tailored to the selected VKB, MOZA, or AVA modifier family.
 
 The kneeboard renderer and UI Layer packager share the same applicability resolver. Build output reports key and axis counts and the reason each configured profile was included or excluded. Module builds never mutate the definitive catalog.
+
+The build also reports the definitive catalog fingerprint. This provides a stable audit link between the complete catalog and the smaller projection installed for a module.
 
 ## Validation
 

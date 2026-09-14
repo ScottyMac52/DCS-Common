@@ -27,7 +27,7 @@ In consumer mode, selecting or pasting a profiles directory below `Config/Input/
 
 When the output directory is an existing consumer, repository-only devices are preserved by default. Their red **Unused** state means “not observed in this scaffold session,” not “delete.” Check **Remove** on a repository-only device to request explicit deletion. This protects disconnected and axis-only controllers such as the TPR rudder. The definitive UI Layer is maintained separately; module packaging emits only devices whose referenced module profiles contain effective added keys/buttons/POVs or axes.
 
-Authoritative UI Layer previews render the selected Saved Games profiles directly and do not compose the shared UI Layer overlay back onto itself. Consumer previews continue to add the applicable shared overlay. In UI Layer mode, consumer-only identity/output fields are disabled, the source `modifiers.lua` and DCS-Common root are required, and **Proceed** remains disabled until all blocking preview errors (including unknown modifiers) are corrected.
+Observed UI Layer previews render the selected Saved Games profiles directly and do not compose the shared UI Layer overlay back onto itself. They are snapshots for inspection only and cannot write DCS-Common. Consumer previews continue to add the applicable shared overlay. In observed UI Layer mode, consumer-only identity/output fields are disabled and **Proceed** is always disabled; use **Open Definitive UI Layer Editor…** for explicit catalog reconciliation.
 
 Axis filters are first-class profile data. IPI preserves existing tuning when it merges repository assignments or moves an axis to a different DCS command. Tuning can be staged independently of a command change, appears in the selected-control panel, participates in Undo/Restore, and is validated before any destination file is written. Valid ranges match DCS storage: deadzone, saturation, and hardware-detent positions are 0–100%, curvature entries are -100–100%, and hardware detent/invert/slider are Boolean. DCS-saved tuning on default bindings is represented by `axisDiffs.changed`; IPI treats those entries as effective assigned axes and preserves that list during tuning and merges. IPI preserves DCS's sparse filter shape: only non-default tuning values are written, so an invert-only axis remains `{ ["invert"] = true }`. **DCS defaults** removes the binding's `filter` table.
 
@@ -117,7 +117,7 @@ Catalog loading remains intentionally read-only. It establishes validated comman
 
 ## Import the authoritative UI Layer
 
-For definitive maintenance, prefer **Open Definitive UI Layer Editor…**. It loads the complete DCS-Common catalog independently of connected hardware and reconciles a Saved Games UiLayer folder through explicit Keep/Add/Replace/Remove decisions. Save validates a staged catalog and swaps it into place atomically.
+For definitive maintenance, use **Open Definitive UI Layer Editor…**. It loads the complete DCS-Common catalog and the hardware-manifest device possibility matrix independently of connected hardware. A Saved Games UiLayer folder is displayed only as an observed snapshot and is reconciled through explicit Keep/Add/Replace/Remove decisions. Save validates a staged catalog and swaps it into place atomically.
 
 Use this mode after changing the simulator-wide bindings under DCS Saved Games.
 
