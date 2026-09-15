@@ -734,12 +734,12 @@ test('Viper TQS MIC inputs remain renderable when DCS binds them directly', () =
   assert.equal(config.pages[0].controls['viper-tqs-button-06'].key, 'JOY_BTN6');
 });
 
-test('UiLayer shared hardware bindings resolve every reported callout and modifier layer', () => {
+test('UiLayer bindings resolve every callout and canonicalize a legacy VKB filename and modifier', () => {
   const root = mkdtempSync(join(tmpdir(), 'scaffold-ui-layer-'));
   const profilesDir = join(root, 'joystick');
   mkdirSync(profilesDir);
   writeFileSync(
-    join(profilesDir, ' VKBSim Gunfighter F14 {2D5CEC70-5189-11f1-8001-444553540000}.diff.lua'),
+    join(profilesDir, ' VKBSim Gunfighter F14   {2D5CEC70-5189-11f1-8001-444553540000}.diff.lua'),
     `local diff = { ["keyDiffs"] = {
       ["d216pnilunilcdnilvdnilvpnilvunil"] = { ["added"] = {
         [1] = { ["key"] = "JOY_BTN6", ["reformers"] = { [1] = "JOY_BTN7" } },
@@ -764,7 +764,7 @@ test('UiLayer shared hardware bindings resolve every reported callout and modifi
     modifiersPath,
     `local modifiers = {
       ["JOY_BTN3"] = { ["device"] = "Ava [R] Viper {F77212B0-00A8-11f1-8001-444553540000}", ["key"] = "JOY_BTN3", ["switch"] = false },
-      ["JOY_BTN7"] = { ["device"] = "VKBSim Gunfighter F14 {2D5CEC70-5189-11f1-8001-444553540000}", ["key"] = "JOY_BTN7", ["switch"] = false },
+      ["JOY_BTN7"] = { ["device"] = " VKBSim Gunfighter F14   {2D5CEC70-5189-11f1-8001-444553540000}", ["key"] = "JOY_BTN7", ["switch"] = false },
     } return modifiers`,
   );
 
@@ -792,6 +792,22 @@ test('UiLayer shared hardware bindings resolve every reported callout and modifi
   assert.equal(vkbPage.modifierCallouts['vkb-nws'], 'JOY_BTN7');
   assert.equal(viperPage.layers[1].controls['viper-tqs-button-05'].key, 'JOY_BTN5');
   assert.equal(viperPage.layers[2].controls['viper-tqs-button-04'].key, 'JOY_BTN4');
+
+  const outputDir = join(root, 'consumer');
+  writeConsumer({
+    preview,
+    outputDir,
+    displayName: 'UiLayer',
+    inputModuleId: 'UiLayer',
+    kneeboardId: 'UiLayer',
+    commonRoot,
+  });
+  const canonicalVkb = 'VKBSim Gunfighter F14 {2D5CEC70-5189-11f1-8001-444553540000}.diff.lua';
+  assert.ok(existsSync(join(outputDir, 'src/Config/Input/UiLayer/joystick', canonicalVkb)));
+  assert.match(readFileSync(join(outputDir, 'src/Config/Input/UiLayer/modifiers.lua'), 'utf8'),
+    /"device"\] = "VKBSim Gunfighter F14 \{2D5CEC70-5189-11f1-8001-444553540000\}"/u);
+  assert.equal(JSON.parse(readFileSync(join(outputDir, 'config/kneeboard.json'), 'utf8'))
+    .profiles['vkb-f14-gunfighter'], `src/Config/Input/UiLayer/joystick/${canonicalVkb}`);
 });
 
 test('buildPreview emits base and modifier rows with hold mode', () => {
@@ -1118,7 +1134,6 @@ test('writeConsumer preserves the consumer-owned device override map', () => {
     kneeboardId: 'FA-18C_hornet',
     commonRoot,
   });
-
   assert.equal(
     readFileSync(join(out, 'config/scaffold-device-overrides.json'), 'utf8'),
     readFileSync(mapPath, 'utf8'),
@@ -1444,7 +1459,7 @@ test('label defaults to the DCS name, exposes the device label, and supports bla
   const root = mkdtempSync(join(tmpdir(), 'scaffold-labels-'));
   const profilesDir = join(root, 'joystick');
   mkdirSync(profilesDir);
-  const profile = ' VKBSim Gunfighter F14.diff.lua';
+  const profile = 'VKBSim Gunfighter F14.diff.lua';
   writeFileSync(join(profilesDir, profile), `local diff = { ["keyDiffs"] = {
     ["d1"] = { ["added"] = { [1] = { ["key"] = "JOY_BTN6" } }, ["name"] = "recenter VR Headset" },
   } } return diff`);
