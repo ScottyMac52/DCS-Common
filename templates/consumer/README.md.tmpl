@@ -1,12 +1,29 @@
 # {{REPO_NAME}}
 
-Scaffolded by **DCS Input Profile Importer** (DCS-Common).
+OvGME-ready DCS input profiles, shared UI Layer controls, and generated kneeboard references for **{{DISPLAY_NAME}}**.
 
 | Identity | Value |
 | --- | --- |
 | Display name | {{DISPLAY_NAME}} |
 | DCS input module | `{{INPUT_MODULE_ID}}` |
 | Kneeboard folder | `{{KNEEBOARD_ID}}` |
+| Release package | `{{REPO_NAME}}-<version>-OVGME.zip` |
+
+## Documentation
+
+| Guide | Purpose |
+| --- | --- |
+| [Installation](docs/INSTALLATION.md) | Back up, install, verify, and remove the OvGME package. |
+| [Control mappings](docs/CONTROL-MAPPINGS.md) | Device-by-device axes, buttons, modifiers, and empty/default profiles. |
+| [OpenKneeboard and VAICOM PRO](docs/OPENKNEEBOARD-VAICOM.md) | Use the generated tab and optional voice integrations. |
+| [Third-party assets](docs/THIRD-PARTY-ASSETS.md) | Shared-hardware provenance and redistribution notes. |
+
+## Package contents
+
+- `Config/Input/{{INPUT_MODULE_ID}}/joystick` — module-specific `.diff.lua` profiles.
+- `Config/Input/{{INPUT_MODULE_ID}}/modifiers.lua` — module modifiers when configured.
+- `Config/Input/UiLayer` — the DCS-Common UI Layer payload filtered for the packaged devices.
+- `KNEEBOARD/{{KNEEBOARD_ID}}` — numbered PNG control references.
 
 ## Local build
 
@@ -15,10 +32,9 @@ npm ci
 export DCS_COMMON_ROOT=/path/to/DCS-Common   # or checkout at .dcs-common
 npm run build:kneeboard
 npm run test:kneeboard
+pwsh ./scripts/Build-OvGME.ps1 -Version 0.0.0-local
 ```
 
-Review `SCAFFOLD-REPORT.md` and refine `config/kneeboard.json` before the first release.
-
-UI Layer composition is enabled by default. Hardware pages combine shared UI functions with module-specific functions, and the OvGME package includes DCS-Common's canonical `Config/Input/UiLayer` payload.
+Review `SCAFFOLD-REPORT.md`, `config/kneeboard.json`, and the generated guides before release. IPI refreshes the generated documentation when the repository is re-scaffolded.
 
 See DCS-Common [consumer-repository-setup.md](https://github.com/ScottyMac52/DCS-Common/blob/main/docs/consumer-repository-setup.md).

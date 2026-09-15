@@ -159,14 +159,24 @@
     </Border>
 
     <GroupBox DockPanel.Dock="Top" Header="Physical device instances" Margin="0,0,0,8" Padding="4">
-      <DataGrid ItemsSource="{Binding Devices}"
+      <DockPanel>
+        <WrapPanel DockPanel.Dock="Top" Margin="0,0,0,5">
+          <TextBlock Text="Shared hardware" VerticalAlignment="Center"/><ComboBox x:Name="DeviceHardwareBox" Width="220" Margin="5,0" DropDownOpened="DeviceHardware_DropDownOpened"/>
+          <TextBlock Text="Profile filename" VerticalAlignment="Center"/><TextBox x:Name="DeviceProfileBox" Width="245" Margin="5,0"/>
+          <TextBlock Text="Instance" VerticalAlignment="Center"/><TextBox x:Name="DeviceInstanceEditorBox" Width="85" Margin="5,0"/>
+          <TextBlock Text="Role" VerticalAlignment="Center"/><TextBox x:Name="DeviceRoleBox" Width="110" Margin="5,0"/>
+          <Button Content="Add" Padding="9,3" Click="AddDevice_Click"/>
+          <Button Content="Update selected" Padding="9,3" Margin="5,0,0,0" Click="UpdateDevice_Click"/>
+          <Button Content="Remove selected" Padding="9,3" Margin="5,0,0,0" Click="RemoveDevice_Click"/>
+        </WrapPanel>
+      <DataGrid x:Name="DevicesGrid" ItemsSource="{Binding Devices}" SelectedItem="{Binding SelectedDevice, Mode=TwoWay}"
                 Height="135"
                 AutoGenerateColumns="False"
                 CanUserAddRows="False"
                 HeadersVisibility="Column"
                 AlternatingRowBackground="#F5F7FA"
                 RowStyle="{StaticResource PreviewChangeRowStyle}"
-                BeginningEdit="PreviewGrid_BeginningEdit">
+                BeginningEdit="PreviewGrid_BeginningEdit" SelectionChanged="DeviceSelection_Changed">
         <DataGrid.Columns>
           <DataGridTextColumn Header="Profile" Binding="{Binding ProfileFile}" Width="2*" IsReadOnly="True" />
           <DataGridTextColumn Header="deviceId" Binding="{Binding DeviceId}" Width="*" IsReadOnly="True" />
@@ -220,6 +230,7 @@
           </DataGridTemplateColumn>
         </DataGrid.Columns>
       </DataGrid>
+      </DockPanel>
     </GroupBox>
 
     <GroupBox DockPanel.Dock="Top" Header="Modifiers" Margin="0,0,0,8" Padding="4" IsEnabled="{Binding IsConsumerImport}">

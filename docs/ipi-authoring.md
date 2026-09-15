@@ -22,6 +22,19 @@ Any number of modifiers may be defined and any combination may be selected as an
 
 The main assignment screen also contains a modifier editor. Add selects an imported device and one of its DCS-Common shared controls, so the native device identity and physical key are derived rather than typed. Update can rename a modifier, change its hold/toggle mode, semantic family, or shared physical control. Renames migrate staged assignment chords. Remove is allowed only after every dependent assignment has been moved or cleared. All changes remain staged until **Proceed**, which writes the edited modifier set as the module's authoritative `modifiers.lua`.
 
+The same screen contains a shared-hardware instance editor above **Physical device instances**. Choose a DCS-Common hardware definition, supply the native `.diff.lua` filename, and optionally give the instance a semantic instance or role. **Add** creates a valid empty profile backed by that shared control catalog, so controls can be assigned without first exporting the device from DCS. **Update** migrates the filename and instance references; changing the hardware type is allowed only while no assignments or modifiers depend on it. **Remove** is likewise blocked until dependent assignments and modifiers are cleared. These edits are staged in the solution and written only by **Proceed**.
+
+## Generated consumer documentation
+
+**Proceed** generates and refreshes the standard consumer documentation set alongside the scaffolded repository:
+
+- `docs/INSTALLATION.md`
+- `docs/CONTROL-MAPPINGS.md`
+- `docs/OPENKNEEBOARD-VAICOM.md`
+- `docs/THIRD-PARTY-ASSETS.md`
+
+The control-mapping guide is derived from the same effective profile preview used to write the package. It includes every physical device instance, including intentionally empty profiles, plus modifier layers and non-default axis filters. The integration guide inventories generated kneeboard pages and reports optional OpenKneeboard, VAICOM PRO, or AutoHotkey behavior only when that output actually exists. Re-running IPI deterministically refreshes these files and the README links to them.
+
 ## Definitive UI Layer authoring
 
 The **Definitive UI Layer Editor** treats DCS-Common's shared hardware catalog as its physical-control API. Select a validated UI Layer command, canonical device, shared control, and an existing layer. IPI derives the native input key, `keyDiffs`/`axisDiffs` section, hardware label, and control identity. Moving or clearing starts from a selected authoritative binding, so its source key and chord are never retyped. Stage an upsert, move, clear, or relabel operation, then save the complete batch.

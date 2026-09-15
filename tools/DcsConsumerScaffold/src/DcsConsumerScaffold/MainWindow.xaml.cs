@@ -15,6 +15,8 @@ public partial class MainWindow : Window
 {
     private readonly MainViewModel _viewModel = new();
     private readonly ScaffoldSolutionService _solutionService = new();
+    private readonly IpiAuthoringService _ipiAuthoringService = new();
+    private readonly ScaffoldEngineService _scaffoldEngine = new();
     private string? _pendingModifierControlKey;
 
     public MainWindow()
@@ -283,6 +285,65 @@ public partial class MainWindow : Window
         var row = _viewModel.SelectedPreviewRow;
         var context = row is null ? null : $"Module context: {_viewModel.DisplayName} — {row.Stem} {row.Key} {row.Chord}";
         new UiLayerEditorWindow(_viewModel.CommonRoot, context) { Owner = this }.ShowDialog();
+    }
+
+    private void DeviceHardware_DropDownOpened(object sender, EventArgs e) => LoadDeviceHardware();
+
+    private void LoadDeviceHardware()
+    {
+        if (DeviceHardwareBox.ItemsSource is not null) return;
+        var root = _scaffoldEngine.ResolveCommonRoot(_viewModel.CommonRoot)
+            ?? throw new InvalidOperationException("Select a valid DCS-Common root before adding shared hardware.");
+        DeviceHardwareBox.ItemsSource = _ipiAuthoringService.Hardware(root);
+    }
+
+    private void DeviceSelection_Changed(object sender, SelectionChangedEventArgs e)
+    {
+        if (DevicesGrid.SelectedItem is not PreviewDevice device) return;
+        try
+        {
+            LoadDeviceHardware();
+            DeviceHardwareBox.SelectedItem = (DeviceHardwareBox.ItemsSource as IEnumerable<IpiHardwareChoice>)?
+                .FirstOrDefault(item => string.Equals(item.DeviceId, device.DeviceId, StringComparison.OrdinalIgnoreCase));
+        }
+        catch (Exception ex) { _viewModel.StatusText = ex.Message; }
+        DeviceProfileBox.Text = device.ProfileFile ?? string.Empty;
+        DeviceInstanceEditorBox.Text = device.InstanceHint ?? string.Empty;
+        DeviceRoleBox.Text = device.Role ?? string.Empty;
+    }
+
+    private void AddDevice_Click(object sender, RoutedEventArgs e) => RunDeviceEdit(() =>
+    {
+        LoadDeviceHardware();
+        if (DeviceHardwareBox.SelectedItem is not IpiHardwareChoice hardware)
+            throw new InvalidOperationException("Select shared hardware.");
+        _viewModel.AddSharedDevice(hardware, DeviceProfileBox.Text, DeviceInstanceEditorBox.Text, DeviceRoleBox.Text);
+    });
+
+    private void UpdateDevice_Click(object sender, RoutedEventArgs e) => RunDeviceEdit(() =>
+    {
+        if (_viewModel.SelectedDevice is not { } device) throw new InvalidOperationException("Select a physical device instance to update.");
+        if (DeviceHardwareBox.SelectedItem is not IpiHardwareChoice hardware) throw new InvalidOperationException("Select shared hardware.");
+        _viewModel.UpdateSharedDevice(device, hardware, DeviceProfileBox.Text, DeviceInstanceEditorBox.Text, DeviceRoleBox.Text);
+        DevicesGrid.Items.Refresh();
+    });
+
+    private void RemoveDevice_Click(object sender, RoutedEventArgs e) => RunDeviceEdit(() =>
+    {
+        if (_viewModel.SelectedDevice is not { } device) throw new InvalidOperationException("Select a physical device instance to remove.");
+        if (MessageBox.Show(this, $"Remove {device.ProfileFile}?", "Remove shared hardware", MessageBoxButton.YesNo,
+            MessageBoxImage.Warning) != MessageBoxResult.Yes) return;
+        _viewModel.RemoveSharedDevice(device);
+    });
+
+    private void RunDeviceEdit(Action action)
+    {
+        try { action(); }
+        catch (Exception ex)
+        {
+            _viewModel.StatusText = ex.Message;
+            MessageBox.Show(this, ex.Message, "Shared hardware editor", MessageBoxButton.OK, MessageBoxImage.Warning);
+        }
     }
 
     private async void ModifierDevice_Changed(object sender, SelectionChangedEventArgs e)

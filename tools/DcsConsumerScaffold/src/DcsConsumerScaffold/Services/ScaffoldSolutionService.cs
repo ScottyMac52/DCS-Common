@@ -63,6 +63,9 @@ public sealed class ScaffoldSolutionDecisions
 
     [JsonPropertyName("authoredModifiers")]
     public List<IpiModifierDefinition>? AuthoredModifiers { get; set; }
+
+    [JsonPropertyName("authoredDevices")]
+    public List<IpiAuthoredDeviceDefinition>? AuthoredDevices { get; set; }
 }
 
 public sealed class ScaffoldSolutionService
@@ -162,6 +165,23 @@ public sealed class ScaffoldSolutionService
             {
                 Require(import.ModifiersPath, "import.modifiersPath", errors);
                 Require(import.CommonRoot, "import.commonRoot", errors);
+            }
+        }
+
+        if (document.Decisions?.AuthoredDevices is { } authoredDevices)
+        {
+            var profiles = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+            foreach (var (device, index) in authoredDevices.Select((device, index) => (device, index)))
+            {
+                var field = $"decisions.authoredDevices[{index}]";
+                Require(device.DeviceId, $"{field}.deviceId", errors);
+                Require(device.ProfileFile, $"{field}.profileFile", errors);
+                if (!string.IsNullOrWhiteSpace(device.ProfileFile) &&
+                    (!device.ProfileFile.EndsWith(".diff.lua", StringComparison.OrdinalIgnoreCase) ||
+                     device.ProfileFile != Path.GetFileName(device.ProfileFile)))
+                    errors.Add($"{field}.profileFile must be a filename ending in .diff.lua.");
+                if (!string.IsNullOrWhiteSpace(device.ProfileFile) && !profiles.Add(device.ProfileFile))
+                    errors.Add($"{field}.profileFile duplicates another authored device.");
             }
         }
 

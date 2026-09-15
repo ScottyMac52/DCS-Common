@@ -54,6 +54,7 @@ Optional:
   --semantic-modifiers <path> modifier name or device+key to semantic modifier ID (JSON)
   --labels <path>             stable binding identity to editable label override (JSON)
   --assignments <path>        pending physical-control command assignments (JSON)
+  --authored-devices <path>   shared-hardware instances added in IPI (JSON)
   --repository-profiles <dir> existing consumer profiles whose assignments take precedence
   --mfd-categories <path>     profile key/file to top/right/bottom/left category labels (JSON)
   --page-presentation <path>   profile key/file to page title and kicker (JSON)
@@ -81,6 +82,7 @@ export function parseArgs(argv = process.argv.slice(2)) {
     semanticModifiersPath: null,
     labelsPath: null,
     assignmentsPath: null,
+    authoredDevicesPath: null,
     repositoryProfilesDir: null,
     mfdCategoriesPath: null,
     pagePresentationPath: null,
@@ -113,6 +115,7 @@ export function parseArgs(argv = process.argv.slice(2)) {
     else if (arg === '--semantic-modifiers') options.semanticModifiersPath = next();
     else if (arg === '--labels') options.labelsPath = next();
     else if (arg === '--assignments') options.assignmentsPath = next();
+    else if (arg === '--authored-devices') options.authoredDevicesPath = next();
     else if (arg === '--repository-profiles') options.repositoryProfilesDir = resolve(next());
     else if (arg === '--mfd-categories') options.mfdCategoriesPath = next();
     else if (arg === '--page-presentation') options.pagePresentationPath = next();
@@ -1167,17 +1170,153 @@ export function mergeConsumerConfig(draft, existing, removedProfiles = []) {
   return { config, preservedProfiles, removedProfiles: [...removed].filter((profile) => existing.profiles?.[profile]) };
 }
 
-export function writeConsumer({ preview, outputDir, displayName, inputModuleId, kneeboardId, repoName, removedProfiles = [], assignments = [], includeUiLayer = true, dryRun = false, commonRoot = defaultCommonRoot }) {
-  const effectivePreview = previewWithAssignments(preview, assignments, commonRoot);
-  if (assignments.some((assignment) => !preview.devices.some((device) => device.profileFile === assignment.profileFile)))
+const emptyDcsProfile = 'local diff = {\n}\nreturn diff\n';
+
+export function previewWithAuthoredDevices(preview, authoredDevices = [], commonRoot = defaultCommonRoot) {
+  if (!authoredDevices?.length) return preview;
+  if (!Array.isArray(authoredDevices)) throw new Error('authored devices must be an array');
+  const knownIds = loadManifestDeviceIds(commonRoot);
+  const devices = preview.devices.map((device) => ({ ...device }));
+  const rows = preview.rows.map((row) => ({ ...row }));
+  const availableControls = (preview.availableControls ?? []).map((row) => ({ ...row }));
+  const authoredNames = new Set();
+  const roles = Object.fromEntries(devices.filter((device) => device.role)
+    .map((device) => [device.profileFile, device.role]));
+  for (const [index, definition] of authoredDevices.entries()) {
+    const deviceId = String(definition?.deviceId ?? '').trim();
+    const profileFile = String(definition?.profileFile ?? '').trim();
+    if (!knownIds.has(deviceId)) throw new Error(`Authored device ${index + 1}: unsupported shared deviceId '${deviceId}'`);
+    if (!profileFile.toLowerCase().endsWith('.diff.lua') || basename(profileFile) !== profileFile)
+      throw new Error(`Authored device ${index + 1}: profileFile must be a filename ending in .diff.lua`);
+    const normalizedProfileFile = profileFile.toLocaleLowerCase();
+    if (authoredNames.has(normalizedProfileFile)) throw new Error(`Duplicate physical device profile: ${profileFile}`);
+    authoredNames.add(normalizedProfileFile);
+    const existing = devices.find((device) => device.profileFile.toLocaleLowerCase() === normalizedProfileFile);
+    if (existing) {
+      if (existing.authored) throw new Error(`Duplicate physical device profile: ${profileFile}`);
+      existing.deviceId = deviceId;
+      existing.mappingSource = 'authored-selection';
+      if (definition.deviceInstance !== null && definition.deviceInstance !== undefined)
+        existing.instanceHint = String(definition.deviceInstance).trim() || null;
+      if (String(definition.role ?? '').trim()) roles[existing.profileFile] = String(definition.role).trim();
+      continue;
+    }
+    const stem = stripGuidSuffix(profileFile);
+    const instanceHint = definition.deviceInstance === null || definition.deviceInstance === undefined
+      ? resolveInstanceHint(stem, deviceId, loadDeviceMap(commonRoot))
+      : String(definition.deviceInstance).trim() || null;
+    const device = {
+      profileFile, outputProfileFile: profileFile, stem, deviceId, instanceHint,
+      mappingSource: 'authored', matchedPattern: null, bindingCount: 0, parseError: null, authored: true,
+    };
+    devices.push(device);
+    if (String(definition.role ?? '').trim()) roles[profileFile] = String(definition.role).trim();
+  }
+  const errors = [...(preview.errors ?? [])];
+  assignDeviceInstances(devices, [...rows, ...availableControls], roles, errors);
+  return {
+    ...preview, devices, rows, availableControls, errors,
+    summary: {
+      ...(preview.summary ?? {}), profileCount: devices.length,
+      mappedDevices: devices.filter((device) => device.deviceId).length,
+      unmappedDevices: devices.filter((device) => !device.deviceId).length,
+      errorCount: errors.length,
+    },
+  };
+}
+
+function effectiveDeviceProfileSource(preview, device) {
+  return device.authored
+    ? emptyDcsProfile
+    : effectiveProfileSource(preview.profilesDir, preview.repositoryProfilesDir, device.profileFile);
+}
+
+function markdownCell(value) {
+  return String(value ?? '').replaceAll('|', '\\|').replaceAll('\n', ' ');
+}
+
+function axisFilterSummary(filter) {
+  if (!filter || Object.keys(filter).length === 0) return '—';
+  return Object.entries(filter).map(([key, value]) =>
+    `${key}=${Array.isArray(value) ? `[${value.join(', ')}]` : value}`).join('; ');
+}
+
+function pageFiles(kneeboard) {
+  return (kneeboard.pages ?? []).flatMap((page) => [
+    `${page.file}.png`,
+    ...(page.layers ?? []).filter((layer) => layer.file).map((layer) => `${layer.file}.png`),
+  ]);
+}
+
+export function buildConsumerDocumentation({ preview, kneeboard, displayName, inputModuleId, kneeboardId, repoName, outputDir }) {
+  const profileByKey = new Map(Object.entries(kneeboard.profiles ?? {}).map(([key, relative]) =>
+    [basename(relative), key]));
+  const pageByProfile = new Map((kneeboard.pages ?? []).map((page) => [page.profile, page]));
+  const sections = preview.devices.map((device) => {
+    const profileFile = device.outputProfileFile ?? device.profileFile;
+    const profileKey = profileByKey.get(profileFile) ?? device.profileKey;
+    const page = pageByProfile.get(profileKey);
+    const rows = preview.rows.filter((row) => row.profileFile === device.profileFile);
+    const groups = new Map();
+    for (const row of rows) {
+      const chord = row.reformers?.length ? [...row.reformers].sort().join(' + ') : 'Base';
+      if (!groups.has(chord)) groups.set(chord, []);
+      groups.get(chord).push(row);
+    }
+    if (groups.size === 0) groups.set('Base', []);
+    const layers = [...groups].map(([chord, bindings]) => {
+      const heading = chord === 'Base' ? 'Base layer' : `Modifier layer: \`${chord}\``;
+      if (bindings.length === 0) return `#### ${heading}\n\nNo module-specific assignments are present. The profile remains available for shared UI Layer controls and future module bindings.`;
+      const table = bindings.map((row) => {
+        const physical = chord === 'Base' ? row.key : `${chord} + ${row.key}`;
+        return `| \`${markdownCell(physical)}\` | ${markdownCell(row.label ?? row.name ?? row.deviceLabel)} | ${markdownCell(axisFilterSummary(row.axisFilter))} |`;
+      });
+      return `#### ${heading}\n\n| Physical input | Assignment | Axis/filter settings |\n| --- | --- | --- |\n${table.join('\n')}`;
+    }).join('\n\n');
+    return `### ${markdownCell(page?.title ?? device.stem ?? device.deviceId)}\n\n- Profile: \`${markdownCell(profileFile)}\`\n- Shared hardware: \`${markdownCell(device.deviceId)}\`\n- Physical instance: \`${markdownCell(device.physicalInstance)}\`\n- Kneeboard page: \`${markdownCell(page ? `${page.file}.png` : 'not generated')}\`\n\n${layers}`;
+  }).join('\n\n');
+  const index = preview.devices.map((device) => {
+    const profileFile = device.outputProfileFile ?? device.profileFile;
+    const profileKey = profileByKey.get(profileFile) ?? device.profileKey;
+    const page = pageByProfile.get(profileKey);
+    const rows = preview.rows.filter((row) => row.profileFile === device.profileFile);
+    const layers = [...new Set(rows.map((row) => row.reformers?.length ? [...row.reformers].sort().join(' + ') : 'Base'))];
+    return `| ${markdownCell(page?.title ?? device.stem)} | \`${markdownCell(profileFile)}\` | ${markdownCell(layers.length ? layers.join(', ') : 'Base')} | ${rows.length} |`;
+  }).join('\n');
+  const controlMappings = `# ${displayName} control mappings\n\nThis reference is generated from the effective DCS \`.diff.lua\` profiles used by IPI. Those profiles remain the executable source of truth.\n\n## Device index\n\n| Device | Profile file | Layers | Assignments |\n| --- | --- | --- | ---: |\n${index}\n\n## Reading the tables\n\n- \`JOY_BTN#\` identifies a button; \`JOY_X\`, \`JOY_Y\`, and similar names identify axes.\n- A modifier before an input means both must be active.\n- Empty/default profiles are documented explicitly rather than omitted.\n- DCS device GUIDs in filenames are installation-specific; see [Installation](INSTALLATION.md#device-guids).\n\n## Devices\n\n${sections}\n`;
+
+  const installation = `# Installing ${repoName}\n\n## Requirements\n\n- DCS World with the ${displayName} module installed.\n- OvGME configured with the DCS Saved Games directory as its root.\n- The hardware profiles you intend to use.\n- OpenKneeboard, VoiceAttack, VAICOM PRO, and AutoHotkey are optional.\n\n## Back up existing controls\n\nBefore enabling the package, copy these folders somewhere outside Saved Games:\n\n\`\`\`text\nSaved Games\\DCS\\Config\\Input\\${inputModuleId}\nSaved Games\\DCS\\Config\\Input\\UiLayer\nSaved Games\\DCS\\KNEEBOARD\\${kneeboardId}\n\`\`\`\n\n## Install with OvGME\n\n1. Download \`${repoName}-<version>-OVGME.zip\` from the repository release.\n2. Add it to the OvGME configuration rooted at your DCS Saved Games directory.\n3. Enable the package.\n4. In DCS, open **Options → Controls → ${displayName}** and verify the expected device columns.\n5. Confirm that the numbered kneeboard pages appear in game or OpenKneeboard.\n\nThe archive writes \`Config/Input/${inputModuleId}\`, the applicable \`Config/Input/UiLayer\` profiles, and \`KNEEBOARD/${kneeboardId}\`.\n\n## Device GUIDs\n\nDCS embeds a Windows device-instance GUID in each \`.diff.lua\` filename. If your GUID differs, use DCS **Load profile** for the matching device or re-scaffold when the repository should adopt a newly captured device set.\n\n## Remove or restore\n\nDisable the package in OvGME before installing another version. Restore the backed-up folders to return to the pre-package state.\n`;
+
+  const generatedPages = pageFiles(kneeboard);
+  const ahkRoot = join(outputDir, 'autohotkey');
+  const ahkFiles = existsSync(ahkRoot) && statSync(ahkRoot).isDirectory()
+    ? readdirSync(ahkRoot).filter((file) => file.toLowerCase().endsWith('.ahk')).sort() : [];
+  const vaicom = ahkFiles.length
+    ? `This repository contains ${ahkFiles.map((file) => `\`autohotkey/${file}\``).join(', ')}. Review each script header for its physical joystick inputs and configure the same chords in VoiceAttack/VAICOM. Joystick numbers are installation-specific.`
+    : 'This scaffold does not bundle an AutoHotkey/VAICOM PTT bridge. Installing it does not change VoiceAttack or VAICOM. If a bridge is added, document its physical inputs and chords here and reserve those inputs in the module profile.';
+  const openKneeboard = `# OpenKneeboard and VAICOM PRO\n\n## Included kneeboard tab\n\nThe OvGME package installs ${generatedPages.length} numbered PNG reference pages into \`KNEEBOARD\\${kneeboardId}\`. OpenKneeboard should discover the directory through its DCS Aircraft tab; otherwise add it as a Folder tab.\n\nPlanned generated pages:\n\n${generatedPages.map((file) => `- \`${file}\``).join('\n')}\n\n## VAICOM PRO\n\n${vaicom}\n\n## Optional VoiceAttack navigation\n\nOpenKneeboard remote-control programs are normally under \`C:\\Program Files\\OpenKneeboard\\utilities\`. Useful commands include \`NEXT_PAGE\`, \`PREVIOUS_PAGE\`, \`NEXT_TAB\`, \`PREVIOUS_TAB\`, \`INCREASE_BRIGHTNESS\`, \`DECREASE_BRIGHTNESS\`, \`ENABLE_TINT\`, and \`DISABLE_TINT\`. Use phrases that do not overlap VAICOM keywords.\n`;
+
+  const thirdParty = `# Third-party assets\n\nThis consumer uses DCS-Common shared hardware definitions and artwork. DCS-Common owns the source images, attribution metadata, transformations, canonical UI Layer profiles, renderer, and packaging scripts.\n\nThis repository owns the ${displayName} assignments, device selection, page order, layers, callouts, labels, and generated kneeboard output.\n\nWhen adding consumer-owned imagery, record its source and permitted redistribution here before committing generated output.\n`;
+  return {
+    'docs/CONTROL-MAPPINGS.md': controlMappings,
+    'docs/INSTALLATION.md': installation,
+    'docs/OPENKNEEBOARD-VAICOM.md': openKneeboard,
+    'docs/THIRD-PARTY-ASSETS.md': thirdParty,
+  };
+}
+
+export function writeConsumer({ preview, outputDir, displayName, inputModuleId, kneeboardId, repoName, removedProfiles = [], assignments = [], authoredDevices = [], includeUiLayer = true, dryRun = false, commonRoot = defaultCommonRoot }) {
+  const authoredPreview = previewWithAuthoredDevices(preview, authoredDevices, commonRoot);
+  const effectivePreview = previewWithAssignments(authoredPreview, assignments, commonRoot);
+  if (assignments.some((assignment) => !authoredPreview.devices.some((device) => device.profileFile === assignment.profileFile)))
     throw new Error('Assignment profile is not in the preview');
   // Validate and materialize every changed profile before writing any destination files.
   const assignedProfiles = new Map();
-  for (const device of preview.devices) {
+  for (const device of authoredPreview.devices) {
     const pending = assignments.filter((assignment) => assignment.profileFile === device.profileFile);
     if (!pending.length) continue;
     assignedProfiles.set(device.profileFile, applyDcsCommandAssignments(
-      effectiveProfileSource(preview.profilesDir, preview.repositoryProfilesDir, device.profileFile), pending, { filename: device.profileFile,
+      effectiveDeviceProfileSource(authoredPreview, device), pending, { filename: device.profileFile,
         allowedInputs: pending.filter((item) => item.allowCreate && effectivePreview.rows.some((row) => row.profileFile === item.profileFile && row.key === item.key && row.section === item.section)) }));
   }
   const out = resolve(outputDir);
@@ -1207,13 +1346,13 @@ export function writeConsumer({ preview, outputDir, displayName, inputModuleId, 
   };
 
   const joystickRel = `src/Config/Input/${inputModuleId}/joystick`;
-  for (const device of preview.devices) {
-    const source = join(preview.profilesDir, device.profileFile);
+  for (const device of authoredPreview.devices) {
+    const source = device.authored ? null : join(authoredPreview.profilesDir, device.profileFile);
     const pending = assignments.filter((assignment) => assignment.profileFile === device.profileFile);
     if (pending.length === 0) {
-      const effective = effectiveProfileSource(preview.profilesDir, preview.repositoryProfilesDir, device.profileFile);
+      const effective = effectiveDeviceProfileSource(authoredPreview, device);
       const outputProfileFile = device.outputProfileFile ?? device.profileFile;
-      if (!preview.repositoryProfilesDir && effective === readFileSync(source, 'utf8')) copy(source, `${joystickRel}/${outputProfileFile}`);
+      if (source && !authoredPreview.repositoryProfilesDir && effective === readFileSync(source, 'utf8')) copy(source, `${joystickRel}/${outputProfileFile}`);
       else write(`${joystickRel}/${outputProfileFile}`, effective);
     }
     else write(`${joystickRel}/${device.outputProfileFile ?? device.profileFile}`, assignedProfiles.get(device.profileFile));
@@ -1266,6 +1405,11 @@ export function writeConsumer({ preview, outputDir, displayName, inputModuleId, 
 
   write('package.json', applyTokens(readTemplate(commonRoot, 'package.json.tmpl'), tokens));
   write('README.md', applyTokens(readTemplate(commonRoot, 'README.md.tmpl'), tokens));
+  const documentation = buildConsumerDocumentation({
+    preview: effectivePreview, kneeboard, displayName, inputModuleId, kneeboardId,
+    repoName: name, outputDir: out,
+  });
+  for (const [relativePath, content] of Object.entries(documentation)) write(relativePath, content);
   write('scripts/build-kneeboard.mjs', readTemplate(commonRoot, 'build-kneeboard.mjs.tmpl'));
   write('scripts/test-kneeboard.mjs', applyTokens(readTemplate(commonRoot, 'test-kneeboard.mjs.tmpl'), tokens));
   write('scripts/version.mjs', readTemplate(commonRoot, 'version.mjs.tmpl'));
@@ -1295,16 +1439,16 @@ export function writeConsumer({ preview, outputDir, displayName, inputModuleId, 
     '',
     `- Input module: \`${inputModuleId}\``,
     `- Kneeboard ID: \`${kneeboardId}\``,
-    `- Profiles: ${preview.summary.profileCount}`,
-    `- Mapped devices: ${preview.summary.mappedDevices}`,
-    `- Unmapped devices: ${preview.summary.unmappedDevices}`,
-    `- Preview errors: ${preview.summary.errorCount}`,
+    `- Profiles: ${authoredPreview.summary.profileCount}`,
+    `- Mapped devices: ${authoredPreview.summary.mappedDevices}`,
+    `- Unmapped devices: ${authoredPreview.summary.unmappedDevices}`,
+    `- Preview errors: ${authoredPreview.summary.errorCount}`,
     `- Preserved absent profiles: ${merge.preservedProfiles.length}`,
     `- Explicitly removed profiles: ${merge.removedProfiles.length}`,
     '',
     '## Devices',
     '',
-    ...preview.devices.map(
+    ...authoredPreview.devices.map(
       (d) =>
         `- \`${d.outputProfileFile ?? d.profileFile}\` → profile \`${d.profileKey ?? '**UNMAPPED**'}\` → ${d.deviceId ?? '**UNMAPPED**'} (${d.mappingSource}${d.role ? `, role ${d.role}` : ''}${d.guid ? `, GUID ${d.guid}` : ''}${d.mappingSource === 'standalone-fallback' ? '; generic AB9 profile—select the installed grip' : ''})`,
     ),
@@ -1313,7 +1457,7 @@ export function writeConsumer({ preview, outputDir, displayName, inputModuleId, 
     '',
     '## TM MFD categories',
     '',
-    ...preview.devices.filter((device) => device.deviceId === 'tm-mfd').map((device) => {
+    ...authoredPreview.devices.filter((device) => device.deviceId === 'tm-mfd').map((device) => {
       const categories = device.categoryLabels ?? {};
       const text = ['top', 'right', 'bottom', 'left'].map((side) => `${side}=${categories[side] ?? ''}`).join('; ');
       return `- \`${device.profileKey}\`: ${text}`;
@@ -1323,7 +1467,7 @@ export function writeConsumer({ preview, outputDir, displayName, inputModuleId, 
     '',
     '| Device | Control | DCS command name | Device label | Effective label | Label source |',
     '| --- | --- | --- | --- | --- | --- |',
-    ...preview.rows.map((row) => {
+    ...effectivePreview.rows.map((row) => {
       const cell = (value) => String(value ?? '').replaceAll('|', '\\|').replaceAll('\n', ' ');
       return `| ${cell(row.stem)} | ${cell(row.key)} | ${cell(row.name)} | ${cell(row.deviceLabel)} | ${cell(row.label)} | ${cell(row.labelSource)} |`;
     }),
@@ -1349,7 +1493,7 @@ export function writeConsumer({ preview, outputDir, displayName, inputModuleId, 
     plannedFiles: planned,
     kneeboard,
     dryRun,
-    errors: preview.errors,
+    errors: authoredPreview.errors,
   };
 }
 
@@ -1401,6 +1545,7 @@ export function main(argv = process.argv.slice(2)) {
       repoName: options.repoName,
       removedProfiles: options.removeProfilesPath ? JSON.parse(readFileSync(options.removeProfilesPath, 'utf8')) : [],
       assignments: options.assignmentsPath ? JSON.parse(readFileSync(options.assignmentsPath, 'utf8')) : [],
+      authoredDevices: options.authoredDevicesPath ? JSON.parse(readFileSync(options.authoredDevicesPath, 'utf8')) : [],
       includeUiLayer: options.includeUiLayer,
       dryRun: options.dryRun,
       commonRoot: options.commonRoot,
