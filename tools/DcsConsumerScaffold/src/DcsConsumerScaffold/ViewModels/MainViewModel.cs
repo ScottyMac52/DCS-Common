@@ -998,6 +998,8 @@ public sealed class MainViewModel : INotifyPropertyChanged
         };
         if (device is not null && control is not null)
         {
+            if (string.IsNullOrWhiteSpace(device.ProfileFile))
+                throw new InvalidOperationException("The selected physical device has no profile filename.");
             candidate.Device = NativeDeviceName(device.ProfileFile);
             candidate.DeviceId = device.DeviceId;
             candidate.Key = control.Key;
