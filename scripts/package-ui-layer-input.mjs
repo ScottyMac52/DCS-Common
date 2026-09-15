@@ -1,12 +1,12 @@
 #!/usr/bin/env node
-import { existsSync, mkdirSync, readFileSync, readdirSync, statSync, unlinkSync, writeFileSync } from 'node:fs';
+import { existsSync, mkdirSync, readFileSync, readdirSync, renameSync, statSync, unlinkSync, writeFileSync } from 'node:fs';
 import { basename, dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { parseDcsDiffLua, parseDcsModifiersLua } from './profile-driven-kneeboard.mjs';
 import { analyzeProfileSource, resolveConfiguredProfileApplicability } from './effective-profile-applicability.mjs';
 import { resolveUiLayerModifier } from './ui-layer-overlays.mjs';
 import { inspectCatalog } from './manage-ui-layer-catalog.mjs';
-import { loadDeviceMap, resolveDeviceMapping } from './scaffold-consumer.mjs';
+import { dcsDeviceIdentity, dcsProfileFilename, loadDeviceMap, resolveDeviceMapping } from './scaffold-consumer.mjs';
 import { filterUiLayerProfile, normalizeUiLayerUtilization } from './ui-layer-utilization.mjs';
 
 const GUID_SUFFIX = /\s*\{[0-9A-Fa-f-]{36}\}\s*$/u;
@@ -132,6 +132,11 @@ export function tailorModifiers(source, activePhysicalDevices, allowedDeviceModi
   return `local modifiers = {\n${entries.map((entry) => `\t${entry.replace(/\n/g, '\n\t')},`).join('\n')}\n}\nreturn modifiers\n`;
 }
 
+export function translateModifierDevicesForDcs(source, deviceMap) {
+  return source.replace(/(\["device"\]\s*=\s*")((?:\\.|[^"])*)"/gu,
+    (match, prefix, device) => `${prefix}${dcsDeviceIdentity(device, deviceMap)}"`);
+}
+
 function findConfig(consumerJoystickDir) {
   let current = resolve(consumerJoystickDir);
   for (let depth = 0; depth < 8; depth += 1) {
@@ -219,9 +224,20 @@ export function packageUiLayerInput({ commonRoot, consumerJoystickDir, destinati
     categoryByFilename.get(filename) === 'joystick' && !consumerProfiles.includes(filename));
   if (missing.length) throw new Error(`Configured profile file(s) not found: ${missing.join(', ')}`);
 
+  const deviceMap = loadDeviceMap(commonRoot);
+
   const stagedJoystick = moduleDestinationJoystick ?? findModuleDestinationJoystick(destination);
   if (stagedJoystick) {
-    const active = new Set(activeProfiles);
+    const deployedProfiles = new Map(activeProfiles.map((filename) => [filename, dcsProfileFilename(filename, deviceMap)]));
+    const active = new Set(deployedProfiles.values());
+    for (const [sourceName, deployedName] of deployedProfiles) {
+      if (sourceName === deployedName) continue;
+      const sourcePath = join(stagedJoystick, sourceName);
+      const deployedPath = join(stagedJoystick, deployedName);
+      if (!existsSync(sourcePath)) continue;
+      if (existsSync(deployedPath)) unlinkSync(deployedPath);
+      renameSync(sourcePath, deployedPath);
+    }
     for (const filename of readdirSync(stagedJoystick).filter((name) => name.endsWith('.diff.lua'))) {
       if (!active.has(filename)) unlinkSync(join(stagedJoystick, filename));
     }
@@ -231,13 +247,15 @@ export function packageUiLayerInput({ commonRoot, consumerJoystickDir, destinati
   const activePhysicalDevices = new Set(effectiveConfiguredProfiles.map((profile) => physicalDeviceName(profile.filename)));
   const sourceRoot = join(commonRoot, 'assets', 'shared', 'ui-layer', 'input', 'UiLayer');
   const uiFunctions = JSON.parse(readFileSync(join(commonRoot, 'assets', 'shared', 'ui-layer', 'functions.json'), 'utf8')).functions ?? [];
-  const deviceMap = loadDeviceMap(commonRoot);
   mkdirSync(destination, { recursive: true });
   const selectedModifiers = utilization
     ? new Set(utilization.bindings.flatMap((binding) => binding.modifiers))
     : selectedUiLayerModifiers(commonRoot, config, configuredDeviceIds(config));
-  const tailoredModifiers = tailorModifiers(readFileSync(join(sourceRoot, 'modifiers.lua'), 'utf8'), activePhysicalDevices,
-    selectedModifiers, { keepKeyboard: !utilization });
+  const tailoredModifiers = translateModifierDevicesForDcs(
+    tailorModifiers(readFileSync(join(sourceRoot, 'modifiers.lua'), 'utf8'), activePhysicalDevices,
+      selectedModifiers, { keepKeyboard: !utilization }),
+    deviceMap,
+  );
   const availableModifiers = new Set(parseDcsModifiersLua(tailoredModifiers, { filename: 'UiLayer/modifiers.lua' }).modifiers.map(({ name }) => name));
   writeFileSync(join(destination, 'modifiers.lua'), tailoredModifiers, 'utf8');
 
@@ -264,9 +282,10 @@ export function packageUiLayerInput({ commonRoot, consumerJoystickDir, destinati
           : 'no effective additions after modifier tailoring' });
         continue;
       }
+      const deployedFilename = category === 'joystick' ? dcsProfileFilename(filename, deviceMap) : filename;
       mkdirSync(destinationCategory, { recursive: true });
-      writeFileSync(join(destinationCategory, filename), tailored, 'utf8');
-      copiedProfiles.push(`${category}/${filename}`);
+      writeFileSync(join(destinationCategory, deployedFilename), tailored, 'utf8');
+      copiedProfiles.push(`${category}/${deployedFilename}`);
     }
   }
   const copied = new Set(copiedProfiles);

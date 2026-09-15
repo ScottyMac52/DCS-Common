@@ -43,6 +43,12 @@ node scripts/scaffold-consumer.mjs \
 
 Scaffold output is a **draft**: review `SCAFFOLD-REPORT.md` and `config/kneeboard.json`, fix any **UNMAPPED** devices (or re-run with `--map`), then complete sections 6–12 below (build, package, CI).
 
+### Canonical and native device names
+
+Consumer repositories store canonical profile filenames so accidental or vendor-supplied whitespace does not leak into source, documentation, or IPI. When a mapping declares `dcsName`, the OvGME packager translates the canonical filename and matching modifier device identity to that exact native DCS name. The GUID is preserved. For example, the VKB F-14 Gunfighter remains `VKBSim Gunfighter F14 {GUID}.diff.lua` in a consumer repository but is packaged as ` VKBSim Gunfighter F14 {GUID}.diff.lua` because that leading space is part of the name DCS requires.
+
+After a canonical or native name mapping changes, re-scaffold the affected consumer repositories and rebuild their packages. No manual filename edits are required in those repositories.
+
 ### Multiple physical instances of shared hardware
 
 The importer treats the canonical hardware model, the GUID-qualified physical instance, and the operator role as separate identities. Two devices may therefore share one `deviceId` and the same `JOY_*` keys while receiving separate profile aliases and kneeboard pages.

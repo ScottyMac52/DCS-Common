@@ -17,7 +17,10 @@ import {
   mergeModifierSources,
   writeConsumer,
   applyDcsCommandAssignments,
+  canonicalProfileFilename,
   canonicalizeLegacyChordCommandIds,
+  dcsDeviceIdentity,
+  dcsProfileFilename,
   mergeRepositoryAssignments,
   previewWithAuthoredDevices,
   previewWithoutRemovedProfiles,
@@ -30,6 +33,18 @@ test('parseArgs requires preview and profiles flags', () => {
   const options = parseArgs(['--preview-json', 'out.json', '--profiles-dir', 'profiles']);
   assert.equal(options.previewJson, 'out.json');
   assert.equal(options.profilesDir, 'profiles');
+});
+
+test('VKB profiles use a clean repository name and the exact native DCS name at deployment', () => {
+  const deviceMap = loadDeviceMap(commonRoot);
+  const raw = ' VKBSim Gunfighter F14 {2D5CEC70-5189-11f1-8001-444553540000}.diff.lua';
+  const clean = 'VKBSim Gunfighter F14 {2D5CEC70-5189-11f1-8001-444553540000}.diff.lua';
+  assert.equal(canonicalProfileFilename(raw, deviceMap), clean);
+  assert.equal(dcsProfileFilename(clean, deviceMap), raw);
+  assert.equal(
+    dcsDeviceIdentity(clean.replace(/\.diff\.lua$/u, ''), deviceMap),
+    raw.replace(/\.diff\.lua$/u, ''),
+  );
 });
 
 test('parseArgs accepts write-mode identity flags', () => {

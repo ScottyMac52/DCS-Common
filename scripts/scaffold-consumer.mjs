@@ -197,6 +197,25 @@ export function canonicalProfileFilename(profileFileName, deviceMap, overrides =
   return `${canonicalName}${guid ? ` {${guid}}` : ''}.diff.lua`;
 }
 
+/**
+ * Translate a clean repository profile filename to the exact device name DCS
+ * expects. Most devices need no translation; dcsName exists only for hardware
+ * whose HID descriptor differs from the canonical repository name.
+ */
+export function dcsProfileFilename(profileFileName, deviceMap, overrides = {}) {
+  const mapping = resolveDeviceMapping(profileFileName, deviceMap, overrides);
+  const dcsName = deviceMap.mappings.find((entry) => entry.deviceId === mapping.deviceId)?.dcsName;
+  if (!dcsName) return profileFileName;
+  const guid = profileFileName.match(/\{([0-9A-Fa-f-]{36})\}/u)?.[1];
+  return `${dcsName}${guid ? ` {${guid}}` : ''}.diff.lua`;
+}
+
+export function dcsDeviceIdentity(device, deviceMap) {
+  const value = String(device ?? '');
+  const filename = value.toLowerCase().endsWith('.diff.lua') ? value : `${value}.diff.lua`;
+  return dcsProfileFilename(filename, deviceMap).replace(/\.diff\.lua$/iu, '');
+}
+
 export function canonicalDeviceIdentity(device, deviceMap) {
   const value = String(device ?? '');
   const filename = value.toLowerCase().endsWith('.diff.lua') ? value : `${value}.diff.lua`;
