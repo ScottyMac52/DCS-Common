@@ -35,6 +35,7 @@ public sealed class MainViewModel : INotifyPropertyChanged
     private bool _hasPreview;
     private bool _isLoadingPreview;
     private int _previewErrorCount;
+    private readonly List<string> _previewErrors = [];
     private string _previewErrorText = string.Empty;
     private ScaffoldSolutionDecisions? _pendingSolutionDecisions;
     private string? _solutionPath;
@@ -540,6 +541,7 @@ public sealed class MainViewModel : INotifyPropertyChanged
         _modifiersAuthored = _pendingSolutionDecisions?.AuthoredModifiers is not null;
         HasPreview = false;
         _previewErrorCount = 0;
+        _previewErrors.Clear();
         PreviewErrorText = string.Empty;
         try
         {
@@ -587,11 +589,9 @@ public sealed class MainViewModel : INotifyPropertyChanged
                 ? string.Empty
                 : $"Profiles={summary.ProfileCount}  Rows={summary.RowCount}  Mapped={summary.MappedDevices}  Unmapped={summary.UnmappedDevices}  Errors={summary.ErrorCount}";
 
-            var errorBlock = document?.Errors is { Count: > 0 }
-                ? string.Join(Environment.NewLine, document.Errors)
-                : string.Empty;
-            _previewErrorCount = document?.Errors?.Count ?? 0;
-            PreviewErrorText = errorBlock;
+            _previewErrors.AddRange(document?.Errors ?? []);
+            RefreshPreviewErrors();
+            var errorBlock = PreviewErrorText;
             if (IsUiLayerImport) ApplyUiLayerObservedStates();
             RaiseCommands();
             StatusText = exitCode is 0 or 2
@@ -663,8 +663,9 @@ public sealed class MainViewModel : INotifyPropertyChanged
                 InputModuleId.Trim(),
                 KneeboardId.Trim(),
                 removedProfiles: Devices
-                    .Where(device => device.IsRepositoryOnly && device.RemoveRequested && !string.IsNullOrWhiteSpace(device.ProfileKey))
-                    .Select(device => device.ProfileKey!)
+                    .Where(device => device.RemoveRequested &&
+                        (!string.IsNullOrWhiteSpace(device.ProfileKey) || !string.IsNullOrWhiteSpace(device.ProfileFile)))
+                    .Select(device => device.ProfileKey ?? device.ProfileFile!)
                     .ToArray(),
                 mfdCategories: MfdCategoryOverrides(),
                 pagePresentations: PagePresentationOverrides(),
@@ -916,7 +917,6 @@ public sealed class MainViewModel : INotifyPropertyChanged
 
     public void RemoveSharedDevice(PreviewDevice device)
     {
-        if (!device.IsAuthored) throw new InvalidOperationException("Only devices added in the shared-hardware editor can be removed here.");
         var profile = device.ProfileFile!;
         var native = NativeDeviceName(profile);
         var assignments = PendingAssignments.Count(item => string.Equals(item.ProfileFile, profile, StringComparison.OrdinalIgnoreCase))
@@ -924,17 +924,10 @@ public sealed class MainViewModel : INotifyPropertyChanged
                 && !row.IsUnboundCandidate && !string.IsNullOrWhiteSpace(row.Command));
         var modifiers = Modifiers.Count(item => string.Equals(item.Device, native, StringComparison.OrdinalIgnoreCase));
         if (assignments + modifiers > 0)
-            throw new InvalidOperationException($"{profile} is used by {assignments} pending assignment(s) and {modifiers} modifier(s). Move or clear them before removing it.");
-        foreach (var row in AssignmentTargets.Where(row => string.Equals(row.ProfileFile, profile, StringComparison.OrdinalIgnoreCase)).ToList())
-        {
-            Rows.Remove(row);
-            AssignmentTargets.Remove(row);
-            _emptyControls.Remove(row);
-        }
-        device.PropertyChanged -= Device_PropertyChanged;
-        Devices.Remove(device);
+            throw new InvalidOperationException($"{profile} is used by {assignments} assignment(s) and {modifiers} modifier(s). Move or clear them before removing it.");
+        device.RemoveRequested = true;
         SelectedDevice = null;
-        DeviceCollectionChanged($"Removed shared hardware instance {profile}.");
+        DeviceCollectionChanged($"Staged removal of unused physical device {profile}.");
     }
 
     private PreviewDevice CreateAuthoredDevice(IpiHardwareChoice hardware, string profileFile, string? deviceInstance, string? role)
@@ -1376,9 +1369,23 @@ public sealed class MainViewModel : INotifyPropertyChanged
     {
         if (e.PropertyName is nameof(PreviewDevice.Role) or nameof(PreviewDevice.RemoveRequested))
         {
+            if (e.PropertyName == nameof(PreviewDevice.RemoveRequested)) RefreshPreviewErrors();
             RecomparePreview();
             MarkSolutionDirty();
+            RaiseCommands();
         }
+    }
+
+    private void RefreshPreviewErrors()
+    {
+        var removedPrefixes = Devices
+            .Where(device => device.RemoveRequested && !string.IsNullOrWhiteSpace(device.ProfileFile))
+            .Select(device => $"{device.ProfileFile}:")
+            .ToArray();
+        var active = _previewErrors.Where(error => !removedPrefixes.Any(prefix =>
+            error.StartsWith(prefix, StringComparison.OrdinalIgnoreCase))).ToList();
+        _previewErrorCount = active.Count;
+        PreviewErrorText = string.Join(Environment.NewLine, active);
     }
 
     private void UntrackRows()
@@ -1484,8 +1491,9 @@ public sealed class MainViewModel : INotifyPropertyChanged
         foreach (var device in Devices.Where(item => !item.IsRepositoryOnly && !string.IsNullOrWhiteSpace(item.ProfileFile) && !string.IsNullOrWhiteSpace(item.Role)))
             decisions.InstanceRoles[device.ProfileFile!] = device.Role!.Trim();
         foreach (var modifier in ModifierOverrides()) decisions.SemanticModifiers[modifier.Key] = modifier.Value;
-        foreach (var device in Devices.Where(item => item.IsRepositoryOnly && item.RemoveRequested && !string.IsNullOrWhiteSpace(item.ProfileKey)))
-            decisions.RemovedProfiles.Add(device.ProfileKey!);
+        foreach (var device in Devices.Where(item => item.RemoveRequested &&
+                     (!string.IsNullOrWhiteSpace(item.ProfileKey) || !string.IsNullOrWhiteSpace(item.ProfileFile))))
+            decisions.RemovedProfiles.Add(device.ProfileKey ?? device.ProfileFile!);
         if (_modifiersAuthored)
             decisions.AuthoredModifiers = Modifiers.Count > 0 || HasPreview
                 ? Modifiers.Select(ToDefinition).ToList()
@@ -1650,8 +1658,9 @@ public sealed class MainViewModel : INotifyPropertyChanged
 
         foreach (var key in _pendingSolutionDecisions.RemovedProfiles.ToList())
         {
-            var matches = Devices.Where(device => device.IsRepositoryOnly &&
-                string.Equals(device.ProfileKey, key, StringComparison.OrdinalIgnoreCase)).ToList();
+            var matches = Devices.Where(device =>
+                string.Equals(device.ProfileKey, key, StringComparison.OrdinalIgnoreCase) ||
+                string.Equals(device.ProfileFile, key, StringComparison.OrdinalIgnoreCase)).ToList();
             if (matches.Count != 1) continue;
             matches[0].RemoveRequested = true;
             _pendingSolutionDecisions.RemovedProfiles.Remove(key);

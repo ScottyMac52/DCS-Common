@@ -331,7 +331,7 @@ public partial class MainWindow : Window
     private void RemoveDevice_Click(object sender, RoutedEventArgs e) => RunDeviceEdit(() =>
     {
         if (_viewModel.SelectedDevice is not { } device) throw new InvalidOperationException("Select a physical device instance to remove.");
-        if (MessageBox.Show(this, $"Remove {device.ProfileFile}?", "Remove shared hardware", MessageBoxButton.YesNo,
+        if (MessageBox.Show(this, $"Stage removal of unused device {device.ProfileFile}?", "Remove physical device", MessageBoxButton.YesNo,
             MessageBoxImage.Warning) != MessageBoxResult.Yes) return;
         _viewModel.RemoveSharedDevice(device);
     });

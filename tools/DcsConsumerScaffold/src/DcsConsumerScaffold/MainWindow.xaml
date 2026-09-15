@@ -201,8 +201,8 @@
               <DataTemplate>
                 <CheckBox HorizontalAlignment="Center" VerticalAlignment="Center"
                           IsChecked="{Binding RemoveRequested, UpdateSourceTrigger=PropertyChanged}"
-                          IsEnabled="{Binding IsRepositoryOnly}"
-                          ToolTip="Explicitly remove this repository-only device; unchecked unused devices are preserved" />
+                          IsEnabled="{Binding CanToggleRemoval}"
+                          ToolTip="Explicitly remove this unused device; use Remove selected to stage imported-device removal" />
               </DataTemplate>
             </DataGridTemplateColumn.CellTemplate>
           </DataGridTemplateColumn>
