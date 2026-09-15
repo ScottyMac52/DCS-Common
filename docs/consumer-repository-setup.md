@@ -45,7 +45,7 @@ Scaffold output is a **draft**: review `SCAFFOLD-REPORT.md` and `config/kneeboar
 
 ### Canonical and native device names
 
-Consumer repositories store canonical profile filenames so accidental or vendor-supplied whitespace does not leak into source, documentation, or IPI. When a mapping declares `dcsName`, the OvGME packager translates the canonical filename and matching modifier device identity to that exact native DCS name. The GUID is preserved. For example, the VKB F-14 Gunfighter remains `VKBSim Gunfighter F14 {GUID}.diff.lua` in a consumer repository but is packaged as ` VKBSim Gunfighter F14 {GUID}.diff.lua` because that leading space is part of the name DCS requires.
+Consumer repositories store canonical profile filenames so accidental or vendor-supplied whitespace does not leak into source, documentation, or IPI. When a mapping declares `dcsName`, the OvGME packager translates the canonical filename and matching modifier device identity to that exact native DCS name. The GUID is preserved. For example, the VKB F-14 Gunfighter remains `VKBSim Gunfighter F14 {GUID}.diff.lua` in a consumer repository but is packaged with its native one leading and two trailing device-name spaces. With the normal separator before the GUID, the deployed filename is `␠VKBSim Gunfighter F14␠␠␠{GUID}.diff.lua`, where each `␠` documents a literal space rather than being written to the filename.
 
 After a canonical or native name mapping changes, re-scaffold the affected consumer repositories and rebuild their packages. No manual filename edits are required in those repositories.
 

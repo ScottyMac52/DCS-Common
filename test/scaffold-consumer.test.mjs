@@ -37,7 +37,7 @@ test('parseArgs requires preview and profiles flags', () => {
 
 test('VKB profiles use a clean repository name and the exact native DCS name at deployment', () => {
   const deviceMap = loadDeviceMap(commonRoot);
-  const raw = ' VKBSim Gunfighter F14 {2D5CEC70-5189-11f1-8001-444553540000}.diff.lua';
+  const raw = ' VKBSim Gunfighter F14   {2D5CEC70-5189-11f1-8001-444553540000}.diff.lua';
   const clean = 'VKBSim Gunfighter F14 {2D5CEC70-5189-11f1-8001-444553540000}.diff.lua';
   assert.equal(canonicalProfileFilename(raw, deviceMap), clean);
   assert.equal(dcsProfileFilename(clean, deviceMap), raw);

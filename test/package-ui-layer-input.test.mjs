@@ -57,7 +57,7 @@ test('physicalDeviceName ignores GUID, spacing, and case', () => {
 
 test('VKB deployment translates only the DCS-facing filename and modifier device identity', () => {
   const clean = 'VKBSim Gunfighter F14 {2D5CEC70-5189-11f1-8001-444553540000}.diff.lua';
-  const native = ` ${clean}`;
+  const native = ` ${clean.replace(' {', '   {')}`;
   const fixture = createConsumer({
     profiles: { stick: { filename: clean, source: diffLua() } },
     pages: [{ deviceId: 'vkb-f14-gunfighter', controls: { stick: { profile: 'stick' } } }],
@@ -68,13 +68,13 @@ test('VKB deployment translates only the DCS-facing filename and modifier device
   assert.deepEqual(readdirSync(fixture.stagedJoystick), [native]);
   assert.ok(result.copiedProfiles.includes(`joystick/${native}`));
   const modifiers = readFileSync(join(fixture.destination, 'modifiers.lua'), 'utf8');
-  assert.match(modifiers, /\["device"\]\s*=\s*" VKBSim Gunfighter F14 \{2D5CEC70-5189-11f1-8001-444553540000\}"/u);
+  assert.match(modifiers, /\["device"\]\s*=\s*" VKBSim Gunfighter F14   \{2D5CEC70-5189-11f1-8001-444553540000\}"/u);
 });
 
 test('modifier translation leaves canonical source untouched and emits the native DCS name', () => {
   const source = 'local modifiers = { ["VKB_F14_BTN7"] = { ["device"] = "VKBSim Gunfighter F14 {2D5CEC70-5189-11f1-8001-444553540000}" } } return modifiers';
   const translated = translateModifierDevicesForDcs(source, loadDeviceMap(root));
-  assert.match(translated, /" VKBSim Gunfighter F14 \{/u);
+  assert.match(translated, /" VKBSim Gunfighter F14   \{/u);
   assert.doesNotMatch(source, /" VKBSim/u);
 });
 
