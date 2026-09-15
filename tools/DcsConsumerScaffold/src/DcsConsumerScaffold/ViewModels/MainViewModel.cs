@@ -1595,15 +1595,15 @@ public sealed class MainViewModel : INotifyPropertyChanged
                     string.Equals(device.ProfileFile, item.ProfileFile, StringComparison.OrdinalIgnoreCase));
                 if (existing is not null)
                 {
-                    var authored = CreateAuthoredDevice(
+                    var authoredDevice = CreateAuthoredDevice(
                         new IpiHardwareChoice { DeviceId = item.DeviceId, Label = item.DeviceId },
                         item.ProfileFile, item.DeviceInstance, item.Role);
                     existing.IsAuthored = true;
-                    existing.DeviceId = authored.DeviceId;
-                    existing.InstanceHint = authored.InstanceHint;
-                    existing.Role = authored.Role;
-                    existing.ProfileKey = authored.ProfileKey;
-                    existing.PhysicalInstance = existing.Guid ?? authored.PhysicalInstance;
+                    existing.DeviceId = authoredDevice.DeviceId;
+                    existing.InstanceHint = authoredDevice.InstanceHint;
+                    existing.Role = authoredDevice.Role;
+                    existing.ProfileKey = authoredDevice.ProfileKey;
+                    existing.PhysicalInstance = existing.Guid ?? authoredDevice.PhysicalInstance;
                     foreach (var row in AssignmentTargets.Where(row =>
                         string.Equals(row.ProfileFile, existing.ProfileFile, StringComparison.OrdinalIgnoreCase)))
                     {
