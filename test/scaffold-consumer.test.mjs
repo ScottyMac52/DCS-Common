@@ -20,6 +20,7 @@ import {
   canonicalizeLegacyChordCommandIds,
   mergeRepositoryAssignments,
   previewWithAuthoredDevices,
+  previewWithoutRemovedProfiles,
 } from '../scripts/scaffold-consumer.mjs';
 import { loadProfileDrivenConfig, parseDcsDiffLua } from '../scripts/profile-driven-kneeboard.mjs';
 
@@ -1555,4 +1556,33 @@ test('an authored device definition reuses its materialized profile on re-scaffo
   assert.equal(augmented.devices[0].mappingSource, 'authored-selection');
   assert.equal(augmented.devices[0].profileKey, 'tm-mfd-left');
   assert.equal(augmented.rows[0].profileKey, 'tm-mfd-left');
+});
+
+test('explicit removal excludes a loaded device and deletes its prior consumer profile', () => {
+  const root = mkdtempSync(join(tmpdir(), 'scaffold-remove-loaded-device-'));
+  const profilesDir = join(root, 'profiles');
+  mkdirSync(profilesDir);
+  const mfdProfile = 'F16 MFD 1 {11111111-2222-3333-4444-555555555555}.diff.lua';
+  const rudderProfile = 'T-Pendular-Rudder {66666666-7777-8888-9999-000000000000}.diff.lua';
+  writeFileSync(join(profilesDir, mfdProfile), 'local diff = {\n}\nreturn diff\n');
+  writeFileSync(join(profilesDir, rudderProfile), 'local diff = {\n}\nreturn diff\n');
+  const preview = buildPreview({ profilesDir, commonRoot });
+  preview.errors.push(`${mfdProfile}: removable diagnostic`, `${rudderProfile}: retained diagnostic`);
+  const selected = previewWithoutRemovedProfiles(preview, ['tm-mfd-1']);
+  assert.deepEqual(selected.devices.map((device) => device.deviceId), ['tm-tpr']);
+  assert.deepEqual(selected.errors, [`${rudderProfile}: retained diagnostic`]);
+
+  const outputDir = join(root, 'consumer');
+  writeConsumer({ preview, outputDir, displayName: 'Test Jet', inputModuleId: 'TestJet',
+    kneeboardId: 'TestJet', commonRoot });
+  const priorMfd = join(outputDir, 'src/Config/Input/TestJet/joystick', mfdProfile);
+  assert.ok(existsSync(priorMfd));
+
+  writeConsumer({ preview, outputDir, displayName: 'Test Jet', inputModuleId: 'TestJet',
+    kneeboardId: 'TestJet', commonRoot, removedProfiles: ['tm-mfd-1'] });
+  assert.equal(existsSync(priorMfd), false);
+  const config = JSON.parse(readFileSync(join(outputDir, 'config/kneeboard.json'), 'utf8'));
+  assert.equal(config.profiles['tm-mfd-1'], undefined);
+  assert.equal(config.pages.some((page) => page.profile === 'tm-mfd-1'), false);
+  assert.doesNotMatch(readFileSync(join(outputDir, 'docs/CONTROL-MAPPINGS.md'), 'utf8'), /F16 MFD 1/);
 });

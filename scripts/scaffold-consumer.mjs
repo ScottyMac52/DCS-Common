@@ -1225,6 +1225,30 @@ export function previewWithAuthoredDevices(preview, authoredDevices = [], common
   };
 }
 
+export function previewWithoutRemovedProfiles(preview, removedProfiles = []) {
+  const removed = new Set((removedProfiles ?? []).map((profile) => String(profile).toLocaleLowerCase()));
+  if (removed.size === 0) return preview;
+  const isRemoved = (device) => removed.has(String(device.profileKey).toLocaleLowerCase()) ||
+    removed.has(String(device.profileFile).toLocaleLowerCase());
+  const removedDevices = preview.devices.filter(isRemoved);
+  const devices = preview.devices.filter((device) => !isRemoved(device));
+  const profileFiles = new Set(devices.map((device) => device.profileFile));
+  const removedProfileFiles = removedDevices.map((device) => `${device.profileFile}:`.toLocaleLowerCase());
+  const rows = preview.rows.filter((row) => profileFiles.has(row.profileFile));
+  const availableControls = (preview.availableControls ?? []).filter((row) => profileFiles.has(row.profileFile));
+  const errors = (preview.errors ?? []).filter((error) =>
+    !removedProfileFiles.some((prefix) => String(error).toLocaleLowerCase().startsWith(prefix)));
+  return {
+    ...preview, devices, rows, availableControls, errors, removedDevices,
+    summary: {
+      ...(preview.summary ?? {}), profileCount: devices.length, rowCount: rows.length,
+      mappedDevices: devices.filter((device) => device.deviceId).length,
+      unmappedDevices: devices.filter((device) => !device.deviceId).length,
+      errorCount: errors.length,
+    },
+  };
+}
+
 function effectiveDeviceProfileSource(preview, device) {
   return device.authored
     ? emptyDcsProfile
@@ -1307,16 +1331,17 @@ export function buildConsumerDocumentation({ preview, kneeboard, displayName, in
 
 export function writeConsumer({ preview, outputDir, displayName, inputModuleId, kneeboardId, repoName, removedProfiles = [], assignments = [], authoredDevices = [], includeUiLayer = true, dryRun = false, commonRoot = defaultCommonRoot }) {
   const authoredPreview = previewWithAuthoredDevices(preview, authoredDevices, commonRoot);
-  const effectivePreview = previewWithAssignments(authoredPreview, assignments, commonRoot);
-  if (assignments.some((assignment) => !authoredPreview.devices.some((device) => device.profileFile === assignment.profileFile)))
+  const selectedPreview = previewWithoutRemovedProfiles(authoredPreview, removedProfiles);
+  const effectivePreview = previewWithAssignments(selectedPreview, assignments, commonRoot);
+  if (assignments.some((assignment) => !selectedPreview.devices.some((device) => device.profileFile === assignment.profileFile)))
     throw new Error('Assignment profile is not in the preview');
   // Validate and materialize every changed profile before writing any destination files.
   const assignedProfiles = new Map();
-  for (const device of authoredPreview.devices) {
+  for (const device of selectedPreview.devices) {
     const pending = assignments.filter((assignment) => assignment.profileFile === device.profileFile);
     if (!pending.length) continue;
     assignedProfiles.set(device.profileFile, applyDcsCommandAssignments(
-      effectiveDeviceProfileSource(authoredPreview, device), pending, { filename: device.profileFile,
+      effectiveDeviceProfileSource(selectedPreview, device), pending, { filename: device.profileFile,
         allowedInputs: pending.filter((item) => item.allowCreate && effectivePreview.rows.some((row) => row.profileFile === item.profileFile && row.key === item.key && row.section === item.section)) }));
   }
   const out = resolve(outputDir);
@@ -1346,13 +1371,13 @@ export function writeConsumer({ preview, outputDir, displayName, inputModuleId, 
   };
 
   const joystickRel = `src/Config/Input/${inputModuleId}/joystick`;
-  for (const device of authoredPreview.devices) {
-    const source = device.authored ? null : join(authoredPreview.profilesDir, device.profileFile);
+  for (const device of selectedPreview.devices) {
+    const source = device.authored ? null : join(selectedPreview.profilesDir, device.profileFile);
     const pending = assignments.filter((assignment) => assignment.profileFile === device.profileFile);
     if (pending.length === 0) {
-      const effective = effectiveDeviceProfileSource(authoredPreview, device);
+      const effective = effectiveDeviceProfileSource(selectedPreview, device);
       const outputProfileFile = device.outputProfileFile ?? device.profileFile;
-      if (source && !authoredPreview.repositoryProfilesDir && effective === readFileSync(source, 'utf8')) copy(source, `${joystickRel}/${outputProfileFile}`);
+      if (source && !selectedPreview.repositoryProfilesDir && effective === readFileSync(source, 'utf8')) copy(source, `${joystickRel}/${outputProfileFile}`);
       else write(`${joystickRel}/${outputProfileFile}`, effective);
     }
     else write(`${joystickRel}/${device.outputProfileFile ?? device.profileFile}`, assignedProfiles.get(device.profileFile));
@@ -1401,6 +1426,10 @@ export function writeConsumer({ preview, outputDir, displayName, inputModuleId, 
       const absolute = join(out, relative);
       if (existsSync(absolute)) unlinkSync(absolute);
     }
+    for (const device of selectedPreview.removedDevices ?? []) {
+      const absolute = join(out, joystickRel, device.outputProfileFile ?? device.profileFile);
+      if (existsSync(absolute)) unlinkSync(absolute);
+    }
   }
 
   write('package.json', applyTokens(readTemplate(commonRoot, 'package.json.tmpl'), tokens));
@@ -1439,16 +1468,16 @@ export function writeConsumer({ preview, outputDir, displayName, inputModuleId, 
     '',
     `- Input module: \`${inputModuleId}\``,
     `- Kneeboard ID: \`${kneeboardId}\``,
-    `- Profiles: ${authoredPreview.summary.profileCount}`,
-    `- Mapped devices: ${authoredPreview.summary.mappedDevices}`,
-    `- Unmapped devices: ${authoredPreview.summary.unmappedDevices}`,
-    `- Preview errors: ${authoredPreview.summary.errorCount}`,
+    `- Profiles: ${selectedPreview.summary.profileCount}`,
+    `- Mapped devices: ${selectedPreview.summary.mappedDevices}`,
+    `- Unmapped devices: ${selectedPreview.summary.unmappedDevices}`,
+    `- Preview errors: ${selectedPreview.summary.errorCount}`,
     `- Preserved absent profiles: ${merge.preservedProfiles.length}`,
     `- Explicitly removed profiles: ${merge.removedProfiles.length}`,
     '',
     '## Devices',
     '',
-    ...authoredPreview.devices.map(
+    ...selectedPreview.devices.map(
       (d) =>
         `- \`${d.outputProfileFile ?? d.profileFile}\` → profile \`${d.profileKey ?? '**UNMAPPED**'}\` → ${d.deviceId ?? '**UNMAPPED**'} (${d.mappingSource}${d.role ? `, role ${d.role}` : ''}${d.guid ? `, GUID ${d.guid}` : ''}${d.mappingSource === 'standalone-fallback' ? '; generic AB9 profile—select the installed grip' : ''})`,
     ),
@@ -1457,7 +1486,7 @@ export function writeConsumer({ preview, outputDir, displayName, inputModuleId, 
     '',
     '## TM MFD categories',
     '',
-    ...authoredPreview.devices.filter((device) => device.deviceId === 'tm-mfd').map((device) => {
+    ...selectedPreview.devices.filter((device) => device.deviceId === 'tm-mfd').map((device) => {
       const categories = device.categoryLabels ?? {};
       const text = ['top', 'right', 'bottom', 'left'].map((side) => `${side}=${categories[side] ?? ''}`).join('; ');
       return `- \`${device.profileKey}\`: ${text}`;
@@ -1493,7 +1522,7 @@ export function writeConsumer({ preview, outputDir, displayName, inputModuleId, 
     plannedFiles: planned,
     kneeboard,
     dryRun,
-    errors: authoredPreview.errors,
+    errors: selectedPreview.errors,
   };
 }
 
@@ -1531,12 +1560,13 @@ export function main(argv = process.argv.slice(2)) {
     console.log(`Wrote preview: ${options.previewJson}`);
   }
 
+  let result = null;
   if (options.outputDir) {
     if (!options.displayName || !options.inputModuleId || !options.kneeboardId) {
       console.error('Write mode requires --display-name, --input-module-id, and --kneeboard-id.');
       return 1;
     }
-    const result = writeConsumer({
+    result = writeConsumer({
       preview,
       outputDir: options.outputDir,
       displayName: options.displayName,
@@ -1564,7 +1594,7 @@ export function main(argv = process.argv.slice(2)) {
   console.log(
     `Profiles=${preview.summary.profileCount} rows=${preview.summary.rowCount} mapped=${preview.summary.mappedDevices} unmapped=${preview.summary.unmappedDevices} errors=${preview.summary.errorCount}`,
   );
-  return preview.errors.length > 0 ? 2 : 0;
+  return (result?.errors ?? preview.errors).length > 0 ? 2 : 0;
 }
 
 const isDirectRun = process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.url);

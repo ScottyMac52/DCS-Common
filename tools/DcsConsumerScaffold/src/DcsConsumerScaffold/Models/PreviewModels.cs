@@ -116,11 +116,21 @@ public sealed class PreviewDevice : INotifyPropertyChanged
     public bool RemoveRequested
     {
         get => _removeRequested;
-        set => Set(ref _removeRequested, value);
+        set
+        {
+            if (Set(ref _removeRequested, value))
+            {
+                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(CanPreview)));
+                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(CanToggleRemoval)));
+            }
+        }
     }
 
     [JsonIgnore]
-    public bool CanPreview => !IsRepositoryOnly && !string.IsNullOrWhiteSpace(DeviceId) && !string.IsNullOrWhiteSpace(ProfileKey);
+    public bool CanPreview => !RemoveRequested && !IsRepositoryOnly && !string.IsNullOrWhiteSpace(DeviceId) && !string.IsNullOrWhiteSpace(ProfileKey);
+
+    [JsonIgnore]
+    public bool CanToggleRemoval => IsRepositoryOnly || RemoveRequested;
 
     [JsonIgnore]
     public bool CanEdit => !IsRepositoryOnly;

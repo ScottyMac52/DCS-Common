@@ -39,8 +39,9 @@ public class SharedDeviceAuthoringTests
         Assert.Equal("right", device.Role);
 
         model.RemoveSharedDevice(device);
-        Assert.Empty(model.Devices);
-        Assert.Empty(model.CaptureSolution().Decisions.AuthoredDevices!);
+        Assert.True(device.RemoveRequested);
+        Assert.Same(device, Assert.Single(model.Devices));
+        Assert.Contains("tm-mfd-right", model.CaptureSolution().Decisions.RemovedProfiles);
     }
 
     [Fact]
@@ -60,7 +61,34 @@ public class SharedDeviceAuthoringTests
 
         model.RemoveModifier(modifier);
         model.RemoveSharedDevice(device);
-        Assert.Empty(model.Devices);
+        Assert.True(device.RemoveRequested);
+    }
+
+    [Fact]
+    public void MainEditorStagesRemovalForAnyUnusedImportedOrRepositoryDevice()
+    {
+        var model = new MainViewModel();
+        var imported = new PreviewDevice
+        {
+            DeviceId = "tm-tpr", ProfileFile = "T-Pendular-Rudder.diff.lua",
+            ProfileKey = "tm-tpr", PhysicalInstance = "T-Pendular-Rudder.diff.lua",
+        };
+        var repositoryOnly = new PreviewDevice
+        {
+            DeviceId = "tm-mfd", ProfileFile = "F16 MFD 2.diff.lua",
+            ProfileKey = "tm-mfd-2", PhysicalInstance = "MFD2", IsRepositoryOnly = true,
+        };
+        model.Devices.Add(imported);
+        model.Devices.Add(repositoryOnly);
+
+        model.RemoveSharedDevice(imported);
+        model.RemoveSharedDevice(repositoryOnly);
+
+        Assert.True(imported.RemoveRequested);
+        Assert.True(repositoryOnly.RemoveRequested);
+        var removed = model.CaptureSolution().Decisions.RemovedProfiles;
+        Assert.Contains("tm-tpr", removed);
+        Assert.Contains("tm-mfd-2", removed);
     }
 
     [Fact]
