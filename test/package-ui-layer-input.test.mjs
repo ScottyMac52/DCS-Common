@@ -109,7 +109,7 @@ test('tailorDiffLua removes dangling alternatives and preserves valid shifted bi
 test('package uses configured profiles, removes no-op and stale module files, and closes modifier references', () => {
   const ava = 'Ava [R] Viper {11111111-1111-1111-1111-111111111111}.diff.lua';
   const mfd = 'F16 MFD 3 {C5BE49A0-2342-11ee-8001-444553540000}.diff.lua';
-  const stale = ' VKBSim Gunfighter F14   {2D5CEC70-5189-11f1-8001-444553540000}.diff.lua';
+  const stale = 'VKBSim Gunfighter F14 {2D5CEC70-5189-11f1-8001-444553540000}.diff.lua';
   const empty = 'Unrelated Device {22222222-2222-2222-2222-222222222222}.diff.lua';
   const fixture = createConsumer({
     profiles: {
@@ -205,7 +205,7 @@ test('configured keyboard additions project the definitive keyboard UI Layer pro
 
 test('stick configuration matrix exposes exactly one device modifier family', () => {
   const cases = [
-    { deviceId: 'vkb-f14-gunfighter', filename: ' VKBSim Gunfighter F14   {2D5CEC70-5189-11f1-8001-444553540000}.diff.lua', expected: 'VKB_F14_BTN7' },
+    { deviceId: 'vkb-f14-gunfighter', filename: 'VKBSim Gunfighter F14 {2D5CEC70-5189-11f1-8001-444553540000}.diff.lua', expected: 'VKB_F14_BTN7' },
     { deviceId: 'moza-ab9-hornet-grip', filename: 'MOZA AB9 FFB Base {71DA6210-432E-11f1-8001-444553540000}.diff.lua', expected: 'MOZA_MODIFIER_BTN3' },
     { deviceId: 'moza-ab9-warthog-grip', filename: 'MOZA AB9 FFB Base {71DA6210-432E-11f1-8001-444553540000}.diff.lua', expected: 'MOZA_MODIFIER_BTN3' },
     { deviceId: 'ava-base-f16c', filename: 'Ava [R] Viper {F77212B0-00A8-11f1-8001-444553540000}.diff.lua', expected: 'AVA_BASE_MODIFIER_BTN3' },

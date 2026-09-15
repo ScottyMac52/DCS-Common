@@ -186,6 +186,25 @@ export function resolveDeviceMapping(profileFileName, deviceMap, overrides = {})
   return { deviceId: null, matchedPattern: null, source: 'unmapped', stem };
 }
 
+export function canonicalProfileFilename(profileFileName, deviceMap, overrides = {}) {
+  const mapping = resolveDeviceMapping(profileFileName, deviceMap, overrides);
+  const canonicalName = deviceMap.mappings.find((entry) => entry.deviceId === mapping.deviceId)?.canonicalName;
+  if (!canonicalName) return profileFileName;
+  const guid = profileFileName.match(/\{([0-9A-Fa-f-]{36})\}/u)?.[1];
+  return `${canonicalName}${guid ? ` {${guid}}` : ''}.diff.lua`;
+}
+
+export function canonicalDeviceIdentity(device, deviceMap) {
+  const value = String(device ?? '');
+  const filename = value.toLowerCase().endsWith('.diff.lua') ? value : `${value}.diff.lua`;
+  return canonicalProfileFilename(filename, deviceMap).replace(/\.diff\.lua$/iu, '');
+}
+
+export function canonicalizeModifierDevices(source, deviceMap) {
+  return source.replace(/(\["device"\]\s*=\s*")((?:\\.|[^"])*)"/gu,
+    (match, prefix, device) => `${prefix}${canonicalDeviceIdentity(device, deviceMap)}"`);
+}
+
 export function resolveCatalogInputKey(deviceId, inputKey, deviceMap) {
   return deviceMap.inputKeyAliases?.[deviceId]?.[inputKey] ?? inputKey;
 }
@@ -614,6 +633,7 @@ export function buildPreview({ profilesDir, repositoryProfilesDir = null, modifi
     modifier.semanticModifier = semanticOverrides[modifier.name]
       ?? semanticOverrides[`${modifier.device}\0${modifier.key}`]
       ?? modifier.name;
+    modifier.device = canonicalDeviceIdentity(modifier.device, deviceMap);
   }
 
   const profileFiles = readdirSync(profilesDir)
@@ -657,6 +677,7 @@ export function buildPreview({ profilesDir, repositoryProfilesDir = null, modifi
       errors.push(`${fileName}: ${error.message ?? error}`);
       devices.push({
         profileFile: fileName,
+        outputProfileFile: canonicalProfileFilename(fileName, deviceMap, overrides),
         stem: mapping.stem,
         deviceId: mapping.deviceId,
         matchedPattern: mapping.matchedPattern,
@@ -670,6 +691,7 @@ export function buildPreview({ profilesDir, repositoryProfilesDir = null, modifi
 
     devices.push({
       profileFile: fileName,
+      outputProfileFile: canonicalProfileFilename(fileName, deviceMap, overrides),
       stem: mapping.stem,
       deviceId: mapping.deviceId,
       matchedPattern: mapping.matchedPattern,
@@ -909,7 +931,7 @@ export function buildDraftKneeboardConfig(preview, { displayName, inputModuleId,
   for (const device of preview.devices) {
     if (!device.deviceId) continue;
     const key = profileKeyFromDevice(device);
-    profiles[key] = `src/Config/Input/${inputModuleId}/joystick/${device.profileFile}`;
+    profiles[key] = `src/Config/Input/${inputModuleId}/joystick/${device.outputProfileFile ?? device.profileFile}`;
   }
 
   const modifiers = {};
@@ -1190,15 +1212,16 @@ export function writeConsumer({ preview, outputDir, displayName, inputModuleId, 
     const pending = assignments.filter((assignment) => assignment.profileFile === device.profileFile);
     if (pending.length === 0) {
       const effective = effectiveProfileSource(preview.profilesDir, preview.repositoryProfilesDir, device.profileFile);
-      if (!preview.repositoryProfilesDir && effective === readFileSync(source, 'utf8')) copy(source, `${joystickRel}/${device.profileFile}`);
-      else write(`${joystickRel}/${device.profileFile}`, effective);
+      const outputProfileFile = device.outputProfileFile ?? device.profileFile;
+      if (!preview.repositoryProfilesDir && effective === readFileSync(source, 'utf8')) copy(source, `${joystickRel}/${outputProfileFile}`);
+      else write(`${joystickRel}/${outputProfileFile}`, effective);
     }
-    else write(`${joystickRel}/${device.profileFile}`, assignedProfiles.get(device.profileFile));
+    else write(`${joystickRel}/${device.outputProfileFile ?? device.profileFile}`, assignedProfiles.get(device.profileFile));
   }
   if (preview.modifiersPath && existsSync(preview.modifiersPath)) {
     const modifierRel = `src/Config/Input/${inputModuleId}/modifiers.lua`;
     const existingModifierPath = join(out, modifierRel);
-    const observedModifiers = readFileSync(preview.modifiersPath, 'utf8');
+    const observedModifiers = canonicalizeModifierDevices(readFileSync(preview.modifiersPath, 'utf8'), loadDeviceMap(commonRoot));
     const mergedModifiers = existsSync(existingModifierPath) && !preview.replaceModifiers
       ? mergeModifierSources(readFileSync(existingModifierPath, 'utf8'), observedModifiers)
       : observedModifiers;
@@ -1283,7 +1306,7 @@ export function writeConsumer({ preview, outputDir, displayName, inputModuleId, 
     '',
     ...preview.devices.map(
       (d) =>
-        `- \`${d.profileFile}\` → profile \`${d.profileKey ?? '**UNMAPPED**'}\` → ${d.deviceId ?? '**UNMAPPED**'} (${d.mappingSource}${d.role ? `, role ${d.role}` : ''}${d.guid ? `, GUID ${d.guid}` : ''}${d.mappingSource === 'standalone-fallback' ? '; generic AB9 profile—select the installed grip' : ''})`,
+        `- \`${d.outputProfileFile ?? d.profileFile}\` → profile \`${d.profileKey ?? '**UNMAPPED**'}\` → ${d.deviceId ?? '**UNMAPPED**'} (${d.mappingSource}${d.role ? `, role ${d.role}` : ''}${d.guid ? `, GUID ${d.guid}` : ''}${d.mappingSource === 'standalone-fallback' ? '; generic AB9 profile—select the installed grip' : ''})`,
     ),
     ...merge.preservedProfiles.map((profile) => `- \`${profile}\` → preserved while absent from this scaffold session`),
     ...merge.removedProfiles.map((profile) => `- \`${profile}\` → explicitly removed`),

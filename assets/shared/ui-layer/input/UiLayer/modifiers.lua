@@ -50,7 +50,7 @@ local modifiers = {
 		["switch"] = false,
 	},
 	["VKB_F14_BTN7"] = {
-		["device"] = " VKBSim Gunfighter F14   {2D5CEC70-5189-11f1-8001-444553540000}",
+		["device"] = "VKBSim Gunfighter F14 {2D5CEC70-5189-11f1-8001-444553540000}",
 		["key"] = "JOY_BTN7",
 		["switch"] = false,
 	},
