@@ -10,7 +10,7 @@ Publisher: **Vyper Industries** · TFM: `net10.0-windows` · Assembly: `DcsConsu
 
 1. **Scaffolding solutions** — open, save, revise, and delete versioned JSON workspaces containing every normal importer input and reviewed decision
 2. **Load Preview** — `scaffold-consumer.mjs --preview-json`
-3. **Physical device roles** — review every GUID-distinct device and optionally name repeated instances (for example, `left-tank-control` and `right-tank-control`)
+3. **Physical device instances** — review every GUID-distinct device, add/update/remove empty instances from the DCS-Common shared hardware catalog, and optionally name repeated instances (for example, `left-tank-control` and `right-tank-control`)
 4. **MOZA AB9 configuration** — select standalone, F-16C Viper Grip, or F/A-18C/E/F Grip
 5. **Semantic modifiers** — assign one semantic ID to alternative device-qualified physical modifiers without globally aliasing button numbers
 6. **Editable labels** — initialize each label from the imported DCS Lua command name, show the DCS-Common `hardwareLabel` separately as **Device Label**, and edit, intentionally blank, or replace the label with the device label
@@ -20,6 +20,8 @@ Publisher: **Vyper Industries** · TFM: `net10.0-windows` · Assembly: `DcsConsu
 10. **Import target** — choose a normal consumer module or the authoritative DCS-Common UI Layer
 11. **Proceed** — writes a consumer tree in consumer mode, or safely synchronizes only `assets/shared/ui-layer` in UI Layer mode
 12. **Definitive UI Layer Editor** — load the complete canonical catalog without connected devices, inspect profiles/bindings/modifiers, reconcile an imported UiLayer folder with explicit per-file actions, validate, and save atomically
+
+Proceed also creates or refreshes the consumer's standard installation, control-mapping, OpenKneeboard/VAICOM, and third-party asset guides. The mapping documentation comes from the effective profiles being written, including empty device instances, modifier chords, and axis filters.
 13. **DCS Command Browser (first slice)** — import a versioned module command catalog after Load Preview, then search and filter it by DCS name, category, canonical binding key, type, and bound/unbound state
 14. **Axis tuning** — select any assigned axis in the interactive device preview and choose **Tune axis…** to edit deadzone, X/Y saturation, curvature, inversion, and slider mode. Values are shown as DCS-style percentages and are written to the binding's native `filter` table when **Proceed** runs.
 

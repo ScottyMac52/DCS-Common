@@ -110,6 +110,9 @@ public sealed class PreviewDevice : INotifyPropertyChanged
     public bool IsRepositoryOnly { get; set; }
 
     [JsonIgnore]
+    public bool IsAuthored { get; set; }
+
+    [JsonIgnore]
     public bool RemoveRequested
     {
         get => _removeRequested;
@@ -361,7 +364,7 @@ public sealed class DcsCommandAssignment
 {
     [JsonPropertyName("tuneOnly")] public bool TuneOnly { get; init; }
     [JsonPropertyName("clear")] public bool Clear { get; init; }
-    [JsonPropertyName("profileFile")] public string ProfileFile { get; init; } = string.Empty;
+    [JsonPropertyName("profileFile")] public string ProfileFile { get; set; } = string.Empty;
     [JsonPropertyName("section")] public string Section { get; init; } = string.Empty;
     [JsonPropertyName("key")] public string Key { get; init; } = string.Empty;
     [JsonPropertyName("reformers")] public List<string> Reformers { get; init; } = [];

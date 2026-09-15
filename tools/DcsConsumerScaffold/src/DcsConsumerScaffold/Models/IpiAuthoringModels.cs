@@ -12,6 +12,14 @@ public sealed class IpiModifierDefinition
     [JsonPropertyName("deviceId")] public string? DeviceId { get; set; }
 }
 
+public sealed class IpiAuthoredDeviceDefinition
+{
+    [JsonPropertyName("deviceId")] public string DeviceId { get; set; } = string.Empty;
+    [JsonPropertyName("profileFile")] public string ProfileFile { get; set; } = string.Empty;
+    [JsonPropertyName("deviceInstance")] public string? DeviceInstance { get; set; }
+    [JsonPropertyName("role")] public string? Role { get; set; }
+}
+
 public sealed class IpiUiLayerUtilization
 {
     [JsonPropertyName("mode")] public string Mode { get; set; } = "explicit";

@@ -107,6 +107,7 @@ public sealed class ScaffoldEngineService
         IReadOnlyCollection<DcsCommandAssignment>? assignments = null,
         string? repositoryProfilesDir = null,
         IReadOnlyCollection<PreviewModifier>? authoredModifiers = null,
+        IReadOnlyCollection<IpiAuthoredDeviceDefinition>? authoredDevices = null,
         CancellationToken cancellationToken = default)
     {
         var root = ResolveCommonRoot(commonRoot)
@@ -122,6 +123,7 @@ public sealed class ScaffoldEngineService
         string? pagePresentationsPath = null;
         string? assignmentsPath = null;
         string? authoredModifiersPath = null;
+        string? authoredDevicesPath = null;
         try
         {
             if (instanceRoles is { Count: > 0 })
@@ -141,9 +143,10 @@ public sealed class ScaffoldEngineService
                 authoredModifiersPath = Path.Combine(Path.GetTempPath(), $"dcs-scaffold-modifiers-{Guid.NewGuid():N}.lua");
                 await File.WriteAllTextAsync(authoredModifiersPath, SerializeModifiers(authoredModifiers), cancellationToken).ConfigureAwait(false);
             }
+            authoredDevicesPath = await WriteTemporaryJsonArrayAsync("authored-devices", authoredDevices, cancellationToken);
 
             var args = BuildWriteArguments(
-                script, profilesDir, authoredModifiersPath ?? modifiersPath, mozaGrip, rolesPath, root, outputDir, displayName, inputModuleId, kneeboardId, repoName, semanticPath, labelsPath, removedProfilesPath, mfdCategoriesPath, pagePresentationsPath, includeUiLayer, assignmentsPath, repositoryProfilesDir, authoredModifiers is not null);
+                script, profilesDir, authoredModifiersPath ?? modifiersPath, mozaGrip, rolesPath, root, outputDir, displayName, inputModuleId, kneeboardId, repoName, semanticPath, labelsPath, removedProfilesPath, mfdCategoriesPath, pagePresentationsPath, includeUiLayer, assignmentsPath, repositoryProfilesDir, authoredModifiers is not null, authoredDevicesPath);
             var (exitCode, stdout, stderr) = await RunNodeAsync(root, args, cancellationToken).ConfigureAwait(false);
             return (stdout, stderr, exitCode);
         }
@@ -160,6 +163,7 @@ public sealed class ScaffoldEngineService
             DeleteTemporary(pagePresentationsPath);
             DeleteTemporary(assignmentsPath);
             DeleteTemporary(authoredModifiersPath);
+            DeleteTemporary(authoredDevicesPath);
         }
     }
 
@@ -198,6 +202,7 @@ public sealed class ScaffoldEngineService
         IReadOnlyCollection<DcsCommandAssignment>? assignments = null,
         string? repositoryProfilesDir = null,
         IReadOnlyCollection<PreviewModifier>? authoredModifiers = null,
+        IReadOnlyCollection<IpiAuthoredDeviceDefinition>? authoredDevices = null,
         CancellationToken cancellationToken = default)
     {
         var root = ResolveCommonRoot(commonRoot)
@@ -212,7 +217,7 @@ public sealed class ScaffoldEngineService
                 temporaryRoot, displayName, inputModuleId, kneeboardId,
                 mfdCategories: mfdCategories, pagePresentations: pagePresentations,
                 includeUiLayer: includeUiLayer, assignments: assignments, repositoryProfilesDir: repositoryProfilesDir,
-                authoredModifiers: authoredModifiers, cancellationToken: cancellationToken);
+                authoredModifiers: authoredModifiers, authoredDevices: authoredDevices, cancellationToken: cancellationToken);
             if (exitCode is not (0 or 2)) throw new InvalidOperationException($"Temporary scaffold failed: {stderr}");
 
             var script = Path.Combine(root, "scripts", "render-scaffold-preview.mjs");
@@ -384,7 +389,8 @@ public sealed class ScaffoldEngineService
         bool includeUiLayer = true,
         string? assignmentsPath = null,
         string? repositoryProfilesDir = null,
-        bool replaceModifiers = false)
+        bool replaceModifiers = false,
+        string? authoredDevicesPath = null)
     {
         var list = new List<string>
         {
@@ -426,6 +432,7 @@ public sealed class ScaffoldEngineService
         AddOptionalFile(list, "--mfd-categories", mfdCategoriesPath);
         AddOptionalFile(list, "--page-presentation", pagePresentationsPath);
         AddOptionalFile(list, "--assignments", assignmentsPath);
+        AddOptionalFile(list, "--authored-devices", authoredDevicesPath);
         if (!string.IsNullOrWhiteSpace(repositoryProfilesDir) && Directory.Exists(repositoryProfilesDir))
         {
             list.Add("--repository-profiles");

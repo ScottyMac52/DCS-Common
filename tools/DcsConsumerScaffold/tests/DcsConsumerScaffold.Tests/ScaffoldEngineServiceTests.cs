@@ -10,6 +10,16 @@ namespace DcsConsumerScaffold.Tests;
 public class ScaffoldEngineServiceTests
 {
     [Fact]
+    public void BuildWriteArgumentsIncludesAuthoredDevicesWhenProvided()
+    {
+        var args = ScaffoldEngineService.BuildWriteArguments(
+            "script", "profiles", null, null, null, "root", "out", "Jet", "Jet", "Jet",
+            authoredDevicesPath: "authored-devices.json");
+        Assert.Contains("--authored-devices", args);
+        Assert.Contains("authored-devices.json", args);
+    }
+
+    [Fact]
     public void BuildPreviewArguments_IncludesModifiersWhenProvided()
     {
         var args = ScaffoldEngineService.BuildPreviewArguments(

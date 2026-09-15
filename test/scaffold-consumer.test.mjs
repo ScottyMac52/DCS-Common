@@ -19,6 +19,7 @@ import {
   applyDcsCommandAssignments,
   canonicalizeLegacyChordCommandIds,
   mergeRepositoryAssignments,
+  previewWithAuthoredDevices,
 } from '../scripts/scaffold-consumer.mjs';
 import { loadProfileDrivenConfig, parseDcsDiffLua } from '../scripts/profile-driven-kneeboard.mjs';
 
@@ -69,6 +70,13 @@ test('parseArgs accepts pending command assignments', () => {
     '--output-dir', 'out', '--profiles-dir', 'profiles', '--assignments', 'pending.json',
   ]);
   assert.equal(options.assignmentsPath, 'pending.json');
+});
+
+test('parseArgs accepts authored shared hardware instances', () => {
+  const options = parseArgs([
+    '--output-dir', 'out', '--profiles-dir', 'profiles', '--authored-devices', 'devices.json',
+  ]);
+  assert.equal(options.authoredDevicesPath, 'devices.json');
 });
 
 test('parseArgs accepts existing repository profiles', () => {
@@ -1478,4 +1486,73 @@ test('label defaults to the DCS name, exposes the device label, and supports bla
   const paddle = config.pages[0].controls['vkb-paddle'];
   assert.equal(paddle.label, undefined);
   assert.equal(config.labels[paddle.labelId], '');
+});
+
+test('authored shared hardware materializes an empty profile and standard documentation', () => {
+  const root = mkdtempSync(join(tmpdir(), 'scaffold-authored-device-'));
+  const profilesDir = join(root, 'profiles');
+  mkdirSync(profilesDir);
+  writeFileSync(join(profilesDir, 'T-Pendular-Rudder {14ED3D40-3F58-11f1-8002-444553540000}.diff.lua'),
+    `local diff = { ["axisDiffs"] = {
+      ["a2003cdnil"] = { ["changed"] = { [1] = { ["key"] = "JOY_Z", ["filter"] = { ["deadzone"] = 0.05 } } }, ["name"] = "Rudder" },
+    } } return diff`);
+  const preview = buildPreview({ profilesDir, commonRoot });
+  const authored = [{ deviceId: 'tm-mfd', profileFile: 'F16 MFD 1 {51FA60C0-CB32-11ed-800B-444553540000}.diff.lua', deviceInstance: '1', role: 'left' }];
+  const combined = previewWithAuthoredDevices(preview, authored, commonRoot);
+  assert.equal(combined.devices.length, 2);
+  assert.equal(combined.devices[1].mappingSource, 'authored');
+  assert.equal(combined.devices[1].profileKey, 'tm-mfd-left');
+
+  const outputDir = join(root, 'consumer');
+  writeConsumer({ preview, authoredDevices: authored, outputDir, displayName: 'Test Jet', inputModuleId: 'TestJet',
+    kneeboardId: 'TestJet', repoName: 'DCS-Test-Jet-Components', commonRoot });
+  const authoredProfile = join(outputDir, 'src/Config/Input/TestJet/joystick', authored[0].profileFile);
+  assert.equal(readFileSync(authoredProfile, 'utf8'), 'local diff = {\n}\nreturn diff\n');
+  const config = JSON.parse(readFileSync(join(outputDir, 'config/kneeboard.json'), 'utf8'));
+  assert.equal(config.profiles['tm-mfd-left'], `src/Config/Input/TestJet/joystick/${authored[0].profileFile}`);
+  for (const file of ['INSTALLATION.md', 'CONTROL-MAPPINGS.md', 'OPENKNEEBOARD-VAICOM.md', 'THIRD-PARTY-ASSETS.md'])
+    assert.ok(existsSync(join(outputDir, 'docs', file)), file);
+  const readme = readFileSync(join(outputDir, 'README.md'), 'utf8');
+  assert.match(readme, /docs\/CONTROL-MAPPINGS\.md/);
+  const mappings = readFileSync(join(outputDir, 'docs/CONTROL-MAPPINGS.md'), 'utf8');
+  assert.match(mappings, /JOY_Z.*Rudder.*deadzone=0\.05/);
+  assert.match(mappings, /F16 MFD 1.*No module-specific assignments/s);
+  assert.match(readFileSync(join(outputDir, 'docs/OPENKNEEBOARD-VAICOM.md'), 'utf8'),
+    /does not bundle an AutoHotkey\/VAICOM PTT bridge/);
+});
+
+test('authored shared hardware accepts assignments and validates unique profile filenames', () => {
+  const root = mkdtempSync(join(tmpdir(), 'scaffold-authored-assignment-'));
+  const profilesDir = join(root, 'profiles');
+  mkdirSync(profilesDir);
+  const preview = buildPreview({ profilesDir, commonRoot });
+  const authored = [{ deviceId: 'vkb-f14-gunfighter', profileFile: 'VKBSim Gunfighter F14 {11111111-1111-1111-1111-111111111111}.diff.lua' }];
+  const outputDir = join(root, 'consumer');
+  writeConsumer({ preview, authoredDevices: authored, outputDir, displayName: 'Test Jet', inputModuleId: 'TestJet',
+    kneeboardId: 'TestJet', commonRoot, assignments: [{
+      profileFile: authored[0].profileFile, section: 'keyDiffs', key: 'JOY_BTN1', reformers: [], allowCreate: true,
+      command: 'd-test', name: 'Fire guns',
+    }] });
+  const source = readFileSync(join(outputDir, 'src/Config/Input/TestJet/joystick', authored[0].profileFile), 'utf8');
+  assert.deepEqual(parseDcsDiffLua(source).bindings[0].added, [{ key: 'JOY_BTN1', reformers: [] }]);
+  assert.match(readFileSync(join(outputDir, 'docs/CONTROL-MAPPINGS.md'), 'utf8'), /JOY_BTN1.*Fire guns/);
+  assert.throws(() => previewWithAuthoredDevices(preview, [authored[0], authored[0]], commonRoot), /Duplicate physical device profile/);
+  assert.throws(() => previewWithAuthoredDevices(preview, [{ deviceId: 'not-shared', profileFile: 'Bad.diff.lua' }], commonRoot), /unsupported shared deviceId/);
+});
+
+test('an authored device definition reuses its materialized profile on re-scaffold', () => {
+  const root = mkdtempSync(join(tmpdir(), 'scaffold-reauthored-device-'));
+  const profilesDir = join(root, 'profiles');
+  mkdirSync(profilesDir);
+  const profile = 'Custom Panel {11111111-2222-3333-4444-555555555555}.diff.lua';
+  writeFileSync(join(profilesDir, profile), `local diff = {\n  ["keyDiffs"] = {\n    ["d3001pnilunilcd1vd1vpnilvunil"] = { ["added"] = { [1] = { ["key"] = "JOY_BTN1" } }, ["name"] = "Existing" }\n  }\n}\nreturn diff\n`);
+  const preview = buildPreview({ profilesDir, commonRoot });
+  const augmented = previewWithAuthoredDevices(preview, [
+    { deviceId: 'tm-mfd', profileFile: profile, deviceInstance: '1', role: 'left' },
+  ], commonRoot);
+  assert.equal(augmented.devices.length, 1);
+  assert.equal(augmented.devices[0].deviceId, 'tm-mfd');
+  assert.equal(augmented.devices[0].mappingSource, 'authored-selection');
+  assert.equal(augmented.devices[0].profileKey, 'tm-mfd-left');
+  assert.equal(augmented.rows[0].profileKey, 'tm-mfd-left');
 });

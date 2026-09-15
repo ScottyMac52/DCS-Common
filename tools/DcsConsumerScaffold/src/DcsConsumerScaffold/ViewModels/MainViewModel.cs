@@ -54,6 +54,7 @@ public sealed class MainViewModel : INotifyPropertyChanged
     private DcsCommandCatalogEntry? _selectedCatalogCommand;
     private PreviewRow? _selectedPreviewRow;
     private PreviewModifier? _selectedModifier;
+    private PreviewDevice? _selectedDevice;
     private readonly Dictionary<PreviewRow, PreviewRow> _assignmentOriginals = [];
     private readonly HashSet<PreviewRow> _emptyControls = [];
     private readonly Dictionary<PreviewRow, List<PreviewRow>> _displacedRows = [];
@@ -120,6 +121,12 @@ public sealed class MainViewModel : INotifyPropertyChanged
     {
         get => _selectedModifier;
         set => Set(ref _selectedModifier, value);
+    }
+
+    public PreviewDevice? SelectedDevice
+    {
+        get => _selectedDevice;
+        set => Set(ref _selectedDevice, value);
     }
 
     public DcsCommandCatalogEntry? SelectedCatalogCommand
@@ -524,6 +531,7 @@ public sealed class MainViewModel : INotifyPropertyChanged
         _uiLayerProjectionCache.Clear();
         _uiLayerModifierCache.Clear();
         SelectedPreviewRow = null;
+        SelectedDevice = null;
         SelectedCatalogCommand = null;
         RaiseAssignmentState();
         CommandLabels.Clear();
@@ -662,7 +670,8 @@ public sealed class MainViewModel : INotifyPropertyChanged
                 pagePresentations: PagePresentationOverrides(),
                 assignments: PendingAssignments.ToArray(),
                 repositoryProfilesDir: ExistingRepositoryProfilesDirectory(),
-                authoredModifiers: _modifiersAuthored ? Modifiers.ToArray() : null);
+                authoredModifiers: _modifiersAuthored ? Modifiers.ToArray() : null,
+                authoredDevices: AuthoredDeviceDefinitions());
 
             StatusText = exitCode is 0 or 2
                 ? $"Proceed finished (exit {exitCode}). See SCAFFOLD-REPORT.md under the output folder.{Environment.NewLine}{stdout}{Environment.NewLine}{stderr}".Trim()
@@ -843,6 +852,141 @@ public sealed class MainViewModel : INotifyPropertyChanged
         return modifier;
     }
 
+    public PreviewDevice AddSharedDevice(IpiHardwareChoice hardware, string profileFile, string? deviceInstance, string? role)
+    {
+        var candidate = CreateAuthoredDevice(hardware, profileFile, deviceInstance, role);
+        ValidateAuthoredDevice(candidate, null);
+        Devices.Add(candidate);
+        candidate.PropertyChanged += Device_PropertyChanged;
+        SelectedDevice = candidate;
+        DeviceCollectionChanged($"Added shared hardware instance {candidate.ProfileFile}.");
+        return candidate;
+    }
+
+    public void UpdateSharedDevice(PreviewDevice device, IpiHardwareChoice hardware, string profileFile,
+        string? deviceInstance, string? role)
+    {
+        if (!device.IsAuthored) throw new InvalidOperationException("Only devices added in the shared-hardware editor can be updated here.");
+        var candidate = CreateAuthoredDevice(hardware, profileFile, deviceInstance, role);
+        ValidateAuthoredDevice(candidate, device);
+        var oldProfile = device.ProfileFile!;
+        var oldNative = NativeDeviceName(oldProfile);
+        if (!string.Equals(device.DeviceId, candidate.DeviceId, StringComparison.OrdinalIgnoreCase))
+        {
+            var assignedRows = Rows.Count(row => string.Equals(row.ProfileFile, oldProfile, StringComparison.OrdinalIgnoreCase)
+                && !row.IsUnboundCandidate && !string.IsNullOrWhiteSpace(row.Command));
+            var pendingAssignments = PendingAssignments.Count(item => string.Equals(item.ProfileFile, oldProfile, StringComparison.OrdinalIgnoreCase));
+            var modifiers = Modifiers.Count(item => string.Equals(item.Device, oldNative, StringComparison.OrdinalIgnoreCase));
+            if (assignedRows + pendingAssignments + modifiers > 0)
+                throw new InvalidOperationException($"{oldProfile} has assignments or modifiers. Clear them before changing its shared hardware type.");
+
+            foreach (var row in AssignmentTargets.Where(row => string.Equals(row.ProfileFile, oldProfile, StringComparison.OrdinalIgnoreCase)).ToList())
+            {
+                Rows.Remove(row);
+                AssignmentTargets.Remove(row);
+                _emptyControls.Remove(row);
+            }
+        }
+        device.DeviceId = candidate.DeviceId;
+        device.ProfileFile = candidate.ProfileFile;
+        device.Stem = candidate.Stem;
+        device.InstanceHint = candidate.InstanceHint;
+        device.PhysicalInstance = candidate.PhysicalInstance;
+        device.ProfileKey = candidate.ProfileKey;
+        device.Role = candidate.Role;
+        device.ChangeState = PreviewChangeState.Changed;
+        device.ChangeReason = "Edited in the shared-hardware instance editor.";
+        foreach (var row in AssignmentTargets.Where(row => string.Equals(row.ProfileFile, oldProfile, StringComparison.OrdinalIgnoreCase)))
+        {
+            row.ProfileFile = device.ProfileFile;
+            row.Stem = device.Stem;
+            row.DeviceId = device.DeviceId;
+            row.ProfileKey = device.ProfileKey;
+            row.PhysicalInstance = device.PhysicalInstance;
+        }
+        foreach (var assignment in PendingAssignments.Where(item => string.Equals(item.ProfileFile, oldProfile, StringComparison.OrdinalIgnoreCase)))
+            assignment.ProfileFile = device.ProfileFile!;
+        foreach (var modifier in Modifiers.Where(item => string.Equals(item.Device, oldNative, StringComparison.OrdinalIgnoreCase)))
+        {
+            modifier.Device = NativeDeviceName(device.ProfileFile!);
+            modifier.DeviceId = device.DeviceId;
+        }
+        DeviceCollectionChanged($"Updated shared hardware instance {device.ProfileFile}.");
+    }
+
+    public void RemoveSharedDevice(PreviewDevice device)
+    {
+        if (!device.IsAuthored) throw new InvalidOperationException("Only devices added in the shared-hardware editor can be removed here.");
+        var profile = device.ProfileFile!;
+        var native = NativeDeviceName(profile);
+        var assignments = PendingAssignments.Count(item => string.Equals(item.ProfileFile, profile, StringComparison.OrdinalIgnoreCase))
+            + Rows.Count(row => string.Equals(row.ProfileFile, profile, StringComparison.OrdinalIgnoreCase)
+                && !row.IsUnboundCandidate && !string.IsNullOrWhiteSpace(row.Command));
+        var modifiers = Modifiers.Count(item => string.Equals(item.Device, native, StringComparison.OrdinalIgnoreCase));
+        if (assignments + modifiers > 0)
+            throw new InvalidOperationException($"{profile} is used by {assignments} pending assignment(s) and {modifiers} modifier(s). Move or clear them before removing it.");
+        foreach (var row in AssignmentTargets.Where(row => string.Equals(row.ProfileFile, profile, StringComparison.OrdinalIgnoreCase)).ToList())
+        {
+            Rows.Remove(row);
+            AssignmentTargets.Remove(row);
+            _emptyControls.Remove(row);
+        }
+        device.PropertyChanged -= Device_PropertyChanged;
+        Devices.Remove(device);
+        SelectedDevice = null;
+        DeviceCollectionChanged($"Removed shared hardware instance {profile}.");
+    }
+
+    private PreviewDevice CreateAuthoredDevice(IpiHardwareChoice hardware, string profileFile, string? deviceInstance, string? role)
+    {
+        var file = profileFile.Trim();
+        var stem = file.EndsWith(".diff.lua", StringComparison.OrdinalIgnoreCase) ? file[..^".diff.lua".Length] : file;
+        var instance = NullIfBlank(deviceInstance);
+        var semanticRole = NullIfBlank(role);
+        var identity = semanticRole ?? instance;
+        return new PreviewDevice
+        {
+            DeviceId = hardware.DeviceId.Trim(), ProfileFile = file, Stem = stem,
+            InstanceHint = instance, Role = semanticRole,
+            PhysicalInstance = instance ?? file,
+            ProfileKey = identity is null ? hardware.DeviceId.Trim() : $"{hardware.DeviceId.Trim()}-{NormalizeIdentity(identity)}",
+            MappingSource = "authored", BindingCount = 0, IsAuthored = true,
+            ChangeState = PreviewChangeState.New, ChangeReason = "Added in the shared-hardware instance editor.",
+        };
+    }
+
+    private void ValidateAuthoredDevice(PreviewDevice candidate, PreviewDevice? current)
+    {
+        if (string.IsNullOrWhiteSpace(candidate.DeviceId)) throw new InvalidOperationException("Select shared hardware.");
+        var identity = candidate.Role ?? candidate.InstanceHint;
+        if (identity is not null && string.IsNullOrWhiteSpace(NormalizeIdentity(identity)))
+            throw new InvalidOperationException("The device instance or role must contain at least one letter or number.");
+        if (string.IsNullOrWhiteSpace(candidate.ProfileFile) || !candidate.ProfileFile.EndsWith(".diff.lua", StringComparison.OrdinalIgnoreCase))
+            throw new InvalidOperationException("Profile filename must end in .diff.lua.");
+        if (candidate.ProfileFile.IndexOfAny(Path.GetInvalidFileNameChars()) >= 0 || candidate.ProfileFile != Path.GetFileName(candidate.ProfileFile))
+            throw new InvalidOperationException("Profile filename must be a valid filename without a directory.");
+        if (Devices.Any(item => item != current && string.Equals(item.ProfileFile, candidate.ProfileFile, StringComparison.OrdinalIgnoreCase)))
+            throw new InvalidOperationException($"A physical device already uses {candidate.ProfileFile}.");
+        if (Devices.Any(item => item != current && string.Equals(item.ProfileKey, candidate.ProfileKey, StringComparison.OrdinalIgnoreCase)))
+            throw new InvalidOperationException($"A physical device already uses profile identity {candidate.ProfileKey}; supply a unique instance or role.");
+    }
+
+    private static string NormalizeIdentity(string value)
+    {
+        var normalized = new string(value.Trim().ToLowerInvariant().Select(character => char.IsLetterOrDigit(character) ? character : '-').ToArray());
+        return string.Join('-', normalized.Split('-', StringSplitOptions.RemoveEmptyEntries));
+    }
+
+    private void DeviceCollectionChanged(string status)
+    {
+        _uiLayerProjectionCache.Clear();
+        RebuildTargetChords();
+        RefreshTargetFilter();
+        RecomparePreview();
+        MarkSolutionDirty();
+        StatusText = status + " The change will be written when you choose Proceed.";
+    }
+
     public void UpdateModifier(PreviewModifier modifier, PreviewDevice? device, InteractiveControl? control,
         string name, string mode, string? semanticModifier)
     {
@@ -854,6 +998,8 @@ public sealed class MainViewModel : INotifyPropertyChanged
         };
         if (device is not null && control is not null)
         {
+            if (string.IsNullOrWhiteSpace(device.ProfileFile))
+                throw new InvalidOperationException("The selected physical device has no profile filename.");
             candidate.Device = NativeDeviceName(device.ProfileFile);
             candidate.DeviceId = device.DeviceId;
             candidate.Key = control.Key;
@@ -1319,7 +1465,9 @@ public sealed class MainViewModel : INotifyPropertyChanged
             PagePresentationOverrides(),
             includeUiLayer: !IsUiLayerImport, assignments: PendingAssignments.ToArray(),
             repositoryProfilesDir: ExistingRepositoryProfilesDirectory(),
-            authoredModifiers: _modifiersAuthored ? Modifiers.ToArray() : null);
+            authoredModifiers: _modifiersAuthored ? Modifiers.ToArray() : null,
+            authoredDevices: AuthoredDeviceDefinitions());
+
     }
 
 
@@ -1346,6 +1494,13 @@ public sealed class MainViewModel : INotifyPropertyChanged
                     Name = item.Name, Device = item.Device, Key = item.Key, Mode = item.Mode,
                     SemanticModifier = item.SemanticModifier, DeviceId = item.DeviceId,
                 }).ToList() ?? [];
+        decisions.AuthoredDevices = Devices.Any(device => device.IsAuthored) || HasPreview
+            ? AuthoredDeviceDefinitions().ToList()
+            : _pendingSolutionDecisions?.AuthoredDevices?.Select(item => new IpiAuthoredDeviceDefinition
+            {
+                DeviceId = item.DeviceId, ProfileFile = item.ProfileFile,
+                DeviceInstance = item.DeviceInstance, Role = item.Role,
+            }).ToList() ?? [];
 
         return new ScaffoldSolutionDocument
         {
@@ -1392,6 +1547,7 @@ public sealed class MainViewModel : INotifyPropertyChanged
             _modifiersAuthored = _pendingSolutionDecisions.AuthoredModifiers is not null;
             UntrackRows();
             Devices.Clear();
+            SelectedDevice = null;
             Rows.Clear();
             AssignmentTargets.Clear();
             RebuildTargetChords();
@@ -1433,6 +1589,41 @@ public sealed class MainViewModel : INotifyPropertyChanged
     {
         if (_pendingSolutionDecisions is null) return;
         var restored = 0;
+        if (_pendingSolutionDecisions.AuthoredDevices is { } authoredDevices)
+        {
+            foreach (var item in authoredDevices)
+            {
+                var existing = Devices.FirstOrDefault(device =>
+                    string.Equals(device.ProfileFile, item.ProfileFile, StringComparison.OrdinalIgnoreCase));
+                if (existing is not null)
+                {
+                    var authoredDevice = CreateAuthoredDevice(
+                        new IpiHardwareChoice { DeviceId = item.DeviceId, Label = item.DeviceId },
+                        item.ProfileFile, item.DeviceInstance, item.Role);
+                    existing.IsAuthored = true;
+                    existing.DeviceId = authoredDevice.DeviceId;
+                    existing.InstanceHint = authoredDevice.InstanceHint;
+                    existing.Role = authoredDevice.Role;
+                    existing.ProfileKey = authoredDevice.ProfileKey;
+                    existing.PhysicalInstance = existing.Guid ?? authoredDevice.PhysicalInstance;
+                    foreach (var row in AssignmentTargets.Where(row =>
+                        string.Equals(row.ProfileFile, existing.ProfileFile, StringComparison.OrdinalIgnoreCase)))
+                    {
+                        row.DeviceId = existing.DeviceId;
+                        row.ProfileKey = existing.ProfileKey;
+                        row.PhysicalInstance = existing.PhysicalInstance;
+                    }
+                    restored++;
+                    continue;
+                }
+                var device = CreateAuthoredDevice(new IpiHardwareChoice { DeviceId = item.DeviceId, Label = item.DeviceId },
+                    item.ProfileFile, item.DeviceInstance, item.Role);
+                ValidateAuthoredDevice(device, null);
+                Devices.Add(device);
+                device.PropertyChanged += Device_PropertyChanged;
+                restored++;
+            }
+        }
         if (_pendingSolutionDecisions.AuthoredModifiers is { } authored)
         {
             foreach (var modifier in Modifiers) modifier.PropertyChanged -= Modifier_PropertyChanged;
@@ -1523,7 +1714,17 @@ public sealed class MainViewModel : INotifyPropertyChanged
             : value;
     }
 
-    private static string? NullIfBlank(string value) => string.IsNullOrWhiteSpace(value) ? null : value;
+    private IReadOnlyList<IpiAuthoredDeviceDefinition> AuthoredDeviceDefinitions() => Devices
+        .Where(device => device.IsAuthored)
+        .Select(device => new IpiAuthoredDeviceDefinition
+        {
+            DeviceId = device.DeviceId ?? string.Empty,
+            ProfileFile = device.ProfileFile ?? string.Empty,
+            DeviceInstance = device.InstanceHint,
+            Role = device.Role,
+        }).ToList();
+
+    private static string? NullIfBlank(string? value) => string.IsNullOrWhiteSpace(value) ? null : value.Trim();
 
     private bool Set<T>(ref T field, T value, [CallerMemberName] string? name = null)
     {
