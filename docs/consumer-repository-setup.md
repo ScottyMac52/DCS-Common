@@ -1,9 +1,11 @@
 # DCS-Common consumer repository setup
 
-This is the complete contract for a new aircraft, UI-layer, or component repository that consumes DCS-Common.
+This is the complete contract for a new aircraft or component repository that consumes DCS-Common.
 
 A conforming consumer owns DCS bindings, labels, page order, packaging, and releases.
-DCS-Common owns reusable workflows, shared hardware identities, draw.io sources, exported SVG geometry, product images, callout IDs, anchors, connectors, and rendering helpers.
+DCS-Common owns reusable workflows, shared hardware identities, draw.io sources, exported SVG geometry, product images, callout IDs, anchors, connectors, rendering helpers, and the definitive UI Layer catalog.
+
+The definitive UI Layer is maintained directly in DCS-Common and projected into each module package according to that module's explicit utilization. Do not create or install a separate all-inclusive UI Layer consumer. The retired [DCS-UI-Layer](https://github.com/ScottyMac52/DCS-UI-Layer) repository is retained only as historical reference.
 
 **Reference implementation:** [DCS-F-14B-U-Components](https://github.com/ScottyMac52/DCS-F-14B-U-Components). Prefer that pattern over older two-step consumers.
 
@@ -376,7 +378,6 @@ Use these repositories as implementation references, not as sources to copy shar
 - [DCS-F-14B-U-Components](https://github.com/ScottyMac52/DCS-F-14B-U-Components): **preferred contract** — unified `build-kneeboard.mjs`, summary + hardware pages, single `Test-Package.ps1` for both package and release validation
 - [DCS-F-16C-Components](https://github.com/ScottyMac52/DCS-F-16C-Components): aircraft profiles and profile-driven pages
 - [DCS-F4U-1D-Components](https://github.com/ScottyMac52/DCS-F4U-1D-Components): two instances of one canonical shared device
-- [DCS-UI-Layer](https://github.com/ScottyMac52/DCS-UI-Layer): a global UI-layer kneeboard and Saved Games packaging
 
 ## 12. Verification checklist
 
