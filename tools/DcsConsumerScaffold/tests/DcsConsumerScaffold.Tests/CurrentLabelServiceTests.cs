@@ -94,6 +94,59 @@ public sealed class CurrentLabelServiceTests
     }
 
     [Fact]
+    public void ApplyExistingRepository_UsesSharedDefaultsForANewInstanceOfARepeatedDevice()
+    {
+        var destination = Directory.CreateTempSubdirectory("dcs-new-repeated-device-");
+        try
+        {
+            var configDirectory = Directory.CreateDirectory(Path.Combine(destination.FullName, "config"));
+            File.WriteAllText(Path.Combine(configDirectory.FullName, "kneeboard.json"), """
+                {
+                  "pages": [
+                    {
+                      "deviceId": "tm-mfd",
+                      "deviceInstance": "MFD1",
+                      "title": "F16 MFD 1",
+                      "controls": {}
+                    },
+                    {
+                      "deviceId": "tm-mfd",
+                      "deviceInstance": "MFD2",
+                      "title": "F16 MFD 2",
+                      "controls": {}
+                    }
+                  ]
+                }
+                """);
+
+            var mfd3 = new PreviewDevice
+            {
+                DeviceId = "tm-mfd",
+                InstanceHint = "3",
+                ProfileFile = "F16 MFD 3.diff.lua",
+                ProfileKey = "tm-mfd-3",
+                PageTitle = "F16 MFD 3",
+            };
+            var zellLaunch = Row(mfd3, "mfd-osb-b3", "JOY_BTN13", "d3001pnilunilcd35vd1vpnilvunil", "ZELL Launch");
+
+            var result = new CurrentLabelService().ApplyExistingRepository(
+                destination.FullName,
+                [mfd3],
+                [zellLaunch]);
+
+            Assert.Equal(0, result.CurrentCount);
+            Assert.Equal(1, result.SharedHardwareCount);
+            Assert.Equal("ZELL Launch", zellLaunch.Label);
+            Assert.Equal("device", zellLaunch.LabelSource);
+            Assert.Equal("F16 MFD 3", mfd3.PageTitle);
+        }
+        finally
+        {
+            destination.Delete(recursive: true);
+        }
+    }
+
+    [Fact]
     public void Apply_UsesTheSelectedInstanceCurrentLabelsAndSharedHardwareFallbacks()
     {
         var destination = Directory.CreateTempSubdirectory("dcs-current-labels-");
