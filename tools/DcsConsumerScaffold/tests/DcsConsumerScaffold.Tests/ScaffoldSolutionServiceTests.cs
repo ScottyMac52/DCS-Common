@@ -16,6 +16,7 @@ public sealed class ScaffoldSolutionServiceTests
         document.Decisions.InstanceRoles["profile.lua"] = "rio";
         document.Decisions.SemanticModifiers["MFD3_BTN1"] = "shift";
         document.Decisions.RemovedProfiles.Add("old-device");
+        document.Import.CommandSource = new() { Type = "catalog-json", Paths = ["../commands/F-14B.json"] };
 
         service.Save(path, document);
         var loaded = service.Load(path);
@@ -24,7 +25,46 @@ public sealed class ScaffoldSolutionServiceTests
         Assert.Equal("standalone", loaded.Import.MozaGrip);
         Assert.Equal("rio", loaded.Decisions.InstanceRoles["profile.lua"]);
         Assert.Contains("old-device", loaded.Decisions.RemovedProfiles);
+        Assert.Equal("../commands/F-14B.json", Assert.Single(loaded.Import.CommandSource!.Paths));
         Assert.EndsWith(Environment.NewLine, File.ReadAllText(path));
+    }
+
+    [Fact]
+    public void HtmlCommandSource_AcceptsMultiplePaths()
+    {
+        var document = Consumer();
+        document.Import.CommandSource = new() { Type = "dcs-html", Paths = ["buttons.html", "axes.html"] };
+
+        ScaffoldSolutionService.Validate(document);
+    }
+
+    [Fact]
+    public void CatalogCommandSource_RequiresExactlyOnePath()
+    {
+        var document = Consumer();
+        document.Import.CommandSource = new() { Type = "catalog-json", Paths = ["one.json", "two.json"] };
+
+        var error = Assert.Throws<InvalidDataException>(() => ScaffoldSolutionService.Validate(document));
+
+        Assert.Contains("exactly one path", error.Message);
+    }
+
+    [Fact]
+    public void UiLayerSolution_RejectsCommandSource()
+    {
+        var document = new ScaffoldSolutionDocument
+        {
+            Import = new()
+            {
+                Target = "ui-layer", ProfilesDirectory = "profiles", ModifiersPath = "modifiers.lua",
+                CommonRoot = "common", MozaGrip = "standalone",
+                CommandSource = new() { Type = "catalog-json", Paths = ["commands.json"] },
+            },
+        };
+
+        var error = Assert.Throws<InvalidDataException>(() => ScaffoldSolutionService.Validate(document));
+
+        Assert.Contains("only supported for consumer", error.Message);
     }
 
     [Fact]

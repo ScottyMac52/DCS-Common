@@ -338,6 +338,8 @@
                       Click="SaveCommandCatalog_Click" IsEnabled="{Binding HasPreview}" />
               <Button DockPanel.Dock="Right" Content="Load DCS HTML…" Padding="8,3" Margin="6,0,0,0"
                       Click="LoadDcsHtmlCommands_Click" IsEnabled="{Binding HasPreview}" />
+              <Button DockPanel.Dock="Right" Content="Unlink source" Padding="8,3" Margin="6,0,0,0"
+                      Click="ClearCommandSource_Click" IsEnabled="{Binding HasCommandSource}" />
               <TextBlock VerticalAlignment="Center" Foreground="#555" Text="{Binding CommandCatalogStatus}"
                          TextTrimming="CharacterEllipsis" ToolTip="{Binding CommandCatalogPath}" />
             </DockPanel>

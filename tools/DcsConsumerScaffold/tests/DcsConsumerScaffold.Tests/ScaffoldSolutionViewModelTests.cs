@@ -99,6 +99,41 @@ public sealed class ScaffoldSolutionViewModelTests
     }
 
     [Fact]
+    public void RelativeCommandSourcePaths_RoundTripWithoutBeingRewritten()
+    {
+        var viewModel = new MainViewModel();
+        var document = Consumer();
+        document.Import.CommandSource = new()
+        {
+            Type = "dcs-html",
+            Paths = ["exports/buttons.html", "exports/axes.html"],
+        };
+        var path = Path.Combine(Path.GetTempPath(), "solutions", "f14.dcs-scaffold.json");
+
+        viewModel.LoadSolution(document, path);
+        var captured = viewModel.CaptureSolution();
+
+        Assert.True(viewModel.HasCommandSource);
+        Assert.Equal(document.Import.CommandSource.Paths, captured.Import.CommandSource!.Paths);
+        Assert.False(viewModel.IsSolutionDirty);
+    }
+
+    [Fact]
+    public void ClearCommandSource_UnlinksAndMarksSolutionDirty()
+    {
+        var viewModel = new MainViewModel();
+        var document = Consumer();
+        document.Import.CommandSource = new() { Type = "catalog-json", Paths = ["commands.json"] };
+        viewModel.LoadSolution(document, Path.Combine(Path.GetTempPath(), "solution.dcs-scaffold.json"));
+
+        viewModel.ClearCommandSource();
+
+        Assert.False(viewModel.HasCommandSource);
+        Assert.Null(viewModel.CaptureSolution().Import.CommandSource);
+        Assert.True(viewModel.IsSolutionDirty);
+    }
+
+    [Fact]
     public void UiLayerSolution_DoesNotRequireConsumerFieldsForSave()
     {
         var viewModel = new MainViewModel();

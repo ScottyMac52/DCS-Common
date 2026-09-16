@@ -46,6 +46,8 @@ public sealed class MainViewModel : INotifyPropertyChanged
     private readonly Dictionary<string, (string Raw, string Resolved)> _loadedSolutionPaths = new(StringComparer.Ordinal);
     private DcsCommandCatalogDocument? _commandCatalog;
     private string? _commandCatalogPath;
+    private ScaffoldSolutionCommandSource? _commandSource;
+    private readonly List<(string Raw, string Resolved)> _loadedCommandSourcePaths = [];
     private string _commandSearch = string.Empty;
     private string _selectedCommandCategory = "All";
     private string _selectedCommandType = "All";
@@ -209,6 +211,8 @@ public sealed class MainViewModel : INotifyPropertyChanged
         private set => Set(ref _commandCatalogPath, value);
     }
 
+    public bool HasCommandSource => _commandSource is not null;
+
     public string CommandCatalogStatus => _commandCatalog is null
         ? "No command catalog loaded. Import a schemaVersion 1 catalog after Load Preview."
         : $"{_commandCatalog.ModuleId} • {CommandCatalog.Count} commands • DCS {_commandCatalog.DcsVersion ?? "unknown"} • {_commandCatalog.Locale ?? "default locale"}";
@@ -308,6 +312,7 @@ public sealed class MainViewModel : INotifyPropertyChanged
                 PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(CommonRootLabel)));
                 PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(IsMozaConfigurationEnabled)));
                 if (!IsUiLayerImport) ApplyProfileIdentityDefaults();
+                if (IsUiLayerImport && _commandSource is not null) ClearCommandSource();
                 RecomparePreview();
                 MarkSolutionDirty();
             }
@@ -608,6 +613,7 @@ public sealed class MainViewModel : INotifyPropertyChanged
                 StatusText = $"{StatusText}{Environment.NewLine}{uiLayerConflictCount} module assignment(s) conflict with the applicable UI Layer. " +
                     "Conflicting assignments are orange-red in the visual editor and must be cleared or moved before Proceed.";
             ApplyPendingSolutionDecisions();
+            ReloadLinkedCommandSource();
         }
         catch (Exception ex)
         {
@@ -1172,8 +1178,10 @@ public sealed class MainViewModel : INotifyPropertyChanged
         if (!HasPreview)
             throw new InvalidOperationException("Load a module preview before importing its DCS command catalog.");
 
-        var document = _commandCatalogService.Load(path, InputModuleId);
-        ApplyCommandCatalog(document, Path.GetFullPath(path));
+        var fullPath = Path.GetFullPath(path);
+        var document = _commandCatalogService.Load(fullPath, InputModuleId);
+        ApplyCommandCatalog(document, fullPath);
+        SetCommandSource("catalog-json", [fullPath], true);
         StatusText = $"Loaded {CommandCatalog.Count} commands for {document.ModuleId} from {Path.GetFileName(path)}.";
     }
 
@@ -1182,9 +1190,10 @@ public sealed class MainViewModel : INotifyPropertyChanged
         if (!HasPreview)
             throw new InvalidOperationException("Load a module preview before loading DCS Controls HTML exports.");
 
-        var paths = htmlPaths.ToList();
+        var paths = htmlPaths.Select(Path.GetFullPath).ToList();
         var result = _htmlCommandCatalogProvider.Build(paths, InputModuleId);
-        ApplyCommandCatalog(result.Document, string.Join(";", paths.Select(Path.GetFullPath)));
+        ApplyCommandCatalog(result.Document, string.Join(";", paths));
+        SetCommandSource("dcs-html", paths, true);
         StatusText = $"Loaded {CommandCatalog.Count} commands and {result.EffectiveAssignmentCount} effective assignments " +
                      $"from {result.FileCount} DCS HTML exports; reconciled {result.DuplicateCommandCount} repeated command rows.";
     }
@@ -1192,8 +1201,54 @@ public sealed class MainViewModel : INotifyPropertyChanged
     public void SaveCommandCatalog(string path)
     {
         if (_commandCatalog is null) throw new InvalidOperationException("Load a DCS command catalog before saving it.");
-        _commandCatalogService.Save(path, _commandCatalog);
+        var fullPath = Path.GetFullPath(path);
+        _commandCatalogService.Save(fullPath, _commandCatalog);
+        SetCommandSource("catalog-json", [fullPath], true);
         StatusText = $"Saved {CommandCatalog.Count} commands for {_commandCatalog.ModuleId} to {Path.GetFileName(path)}.";
+    }
+
+    public void ClearCommandSource()
+    {
+        _commandSource = null;
+        _loadedCommandSourcePaths.Clear();
+        ClearCommandCatalog();
+        PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(HasCommandSource)));
+        MarkSolutionDirty();
+        StatusText = "Unlinked the command source from this solution.";
+    }
+
+    private void ReloadLinkedCommandSource()
+    {
+        if (_commandSource is null || !HasPreview) return;
+        try
+        {
+            if (_commandSource.Type == "catalog-json")
+            {
+                var path = _commandSource.Paths.Single();
+                var document = _commandCatalogService.Load(path, InputModuleId);
+                ApplyCommandCatalog(document, path);
+                StatusText += $"{Environment.NewLine}Loaded {CommandCatalog.Count} linked commands from {Path.GetFileName(path)}.";
+            }
+            else
+            {
+                var result = _htmlCommandCatalogProvider.Build(_commandSource.Paths, InputModuleId);
+                ApplyCommandCatalog(result.Document, string.Join(";", _commandSource.Paths));
+                StatusText += $"{Environment.NewLine}Loaded {CommandCatalog.Count} linked commands from {result.FileCount} DCS HTML exports.";
+            }
+        }
+        catch (Exception ex)
+        {
+            ClearCommandCatalog();
+            StatusText += $"{Environment.NewLine}Preview loaded, but the linked command source could not be loaded: {ex.Message}";
+        }
+    }
+
+    private void SetCommandSource(string type, IEnumerable<string> paths, bool markDirty)
+    {
+        _commandSource = new ScaffoldSolutionCommandSource { Type = type, Paths = paths.Select(Path.GetFullPath).ToList() };
+        _loadedCommandSourcePaths.Clear();
+        PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(HasCommandSource)));
+        if (markDirty) MarkSolutionDirty();
     }
 
     private void ApplyCommandCatalog(DcsCommandCatalogDocument document, string sourcePath)
@@ -1524,6 +1579,7 @@ public sealed class MainViewModel : INotifyPropertyChanged
                 DisplayName = NullIfBlank(DisplayName),
                 InputModuleId = NullIfBlank(InputModuleId),
                 KneeboardId = NullIfBlank(KneeboardId),
+                CommandSource = CaptureCommandSource(),
             },
             Decisions = decisions,
         };
@@ -1551,6 +1607,7 @@ public sealed class MainViewModel : INotifyPropertyChanged
             DisplayName = document.Import.DisplayName ?? string.Empty;
             InputModuleId = document.Import.InputModuleId ?? string.Empty;
             KneeboardId = document.Import.KneeboardId ?? string.Empty;
+            LoadCommandSource(document.Import.CommandSource, path);
             _pendingSolutionDecisions = document.Decisions ?? new ScaffoldSolutionDecisions();
             _modifiersAuthored = _pendingSolutionDecisions.AuthoredModifiers is not null;
             UntrackRows();
@@ -1562,6 +1619,7 @@ public sealed class MainViewModel : INotifyPropertyChanged
             RefreshTargetFilter();
             Modifiers.Clear();
             CommandLabels.Clear();
+            ClearCommandCatalog();
             HasPreview = false;
             SummaryText = string.Empty;
             PreviewErrorText = string.Empty;
@@ -1570,7 +1628,9 @@ public sealed class MainViewModel : INotifyPropertyChanged
                 : document.Name;
             SolutionPath = Path.GetFullPath(path);
             IsSolutionDirty = false;
-            StatusText = $"Loaded scaffolding solution '{SolutionName}'. Select Load Preview to reconcile its saved decisions.";
+            StatusText = HasCommandSource
+                ? $"Loaded scaffolding solution '{SolutionName}'. Loading its preview and linked command source…"
+                : $"Loaded scaffolding solution '{SolutionName}'. Select Load Preview to reconcile its saved decisions.";
         }
         finally
         {
@@ -1721,6 +1781,38 @@ public sealed class MainViewModel : INotifyPropertyChanged
                string.Equals(value, loaded.Resolved, StringComparison.OrdinalIgnoreCase)
             ? loaded.Raw
             : value;
+    }
+
+    private void LoadCommandSource(ScaffoldSolutionCommandSource? source, string solutionPath)
+    {
+        _loadedCommandSourcePaths.Clear();
+        if (source is null)
+        {
+            _commandSource = null;
+        }
+        else
+        {
+            _loadedCommandSourcePaths.AddRange(source.Paths.Select(raw =>
+                (Raw: raw, Resolved: ScaffoldSolutionService.ResolvePath(raw, solutionPath))));
+            _commandSource = new ScaffoldSolutionCommandSource
+            {
+                Type = source.Type,
+                Paths = _loadedCommandSourcePaths.Select(item => item.Resolved).ToList(),
+            };
+        }
+        PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(HasCommandSource)));
+    }
+
+    private ScaffoldSolutionCommandSource? CaptureCommandSource()
+    {
+        if (_commandSource is null) return null;
+        var paths = _commandSource.Paths.Select(path =>
+        {
+            var loaded = _loadedCommandSourcePaths.FirstOrDefault(item =>
+                string.Equals(item.Resolved, path, StringComparison.OrdinalIgnoreCase));
+            return string.IsNullOrEmpty(loaded.Raw) ? path : loaded.Raw;
+        }).ToList();
+        return new ScaffoldSolutionCommandSource { Type = _commandSource.Type, Paths = paths };
     }
 
     private IReadOnlyList<IpiAuthoredDeviceDefinition> AuthoredDeviceDefinitions() => Devices
