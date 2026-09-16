@@ -1225,6 +1225,11 @@ test('writeConsumer preserves absent repository devices and removes them only wh
   assert.deepEqual(config.packaging.retainNoOpProfiles, ['intentional-device']);
   assert.ok(existsSync(join(moduleJoystick, tpr)));
   assert.match(readFileSync(join(out, 'SCAFFOLD-REPORT.md'), 'utf8'), /tm-tpr.*preserved while absent/);
+  const preservedMappings = readFileSync(join(out, 'docs/CONTROL-MAPPINGS.md'), 'utf8');
+  assert.match(preservedMappings, /T-Pendular-Rudder/);
+  assert.match(preservedMappings, /Disconnected Panel/);
+  assert.ok(existsSync(join(out, 'docs/devices/TM-TPR-MAPPINGS.md')));
+  assert.ok(existsSync(join(out, 'docs/devices/DISCONNECTED-PANEL-MAPPINGS.md')));
 
   writeConsumer({ preview, outputDir: out, displayName: 'FA-18C_hornet', inputModuleId: 'FA-18C_hornet',
     kneeboardId: 'FA-18C_hornet', commonRoot, removedProfiles: ['tm-tpr'] });
@@ -1232,6 +1237,9 @@ test('writeConsumer preserves absent repository devices and removes them only wh
   assert.equal(config.profiles['tm-tpr'], undefined);
   assert.equal(config.pages.some((page) => page.deviceId === 'tm-tpr'), false);
   assert.equal(existsSync(join(moduleJoystick, tpr)), false);
+  assert.doesNotMatch(readFileSync(join(out, 'docs/CONTROL-MAPPINGS.md'), 'utf8'), /T-Pendular-Rudder/);
+  assert.equal(existsSync(join(out, 'docs/devices/TM-TPR-MAPPINGS.md')), false);
+  assert.ok(existsSync(join(out, 'docs/devices/DISCONNECTED-PANEL-MAPPINGS.md')));
 });
 
 test('mergeModifierSources preserves unobserved global modifiers and updates observed ones', () => {
@@ -1518,8 +1526,14 @@ test('authored shared hardware materializes an empty profile and standard docume
   const mappings = readFileSync(join(outputDir, 'docs/CONTROL-MAPPINGS.md'), 'utf8');
   assert.match(mappings, /JOY_Z.*Rudder.*deadzone=0\.05/);
   assert.match(mappings, /F16 MFD 1.*No module-specific assignments/s);
-  assert.match(readFileSync(join(outputDir, 'docs/OPENKNEEBOARD-VAICOM.md'), 'utf8'),
-    /does not bundle an AutoHotkey\/VAICOM PTT bridge/);
+  assert.match(mappings, /devices\/TM-TPR-MAPPINGS\.md/);
+  assert.match(readFileSync(join(outputDir, 'docs/devices/TM-TPR-MAPPINGS.md'), 'utf8'), /JOY_Z.*Rudder.*deadzone=0\.05/s);
+  assert.match(readFileSync(join(outputDir, 'docs/devices/TM-MFD-LEFT-MAPPINGS.md'), 'utf8'), /No module-specific assignments/);
+  const integrations = readFileSync(join(outputDir, 'docs/OPENKNEEBOARD-VAICOM.md'), 'utf8');
+  assert.match(integrations, /installs 0 numbered PNG/);
+  assert.doesNotMatch(integrations, /TM-TPR\.png/);
+  assert.doesNotMatch(integrations, /F16-MFD/);
+  assert.match(integrations, /does not bundle an AutoHotkey\/VAICOM PTT bridge/);
 });
 
 test('authored shared hardware accepts assignments and validates unique profile filenames', () => {
@@ -1585,4 +1599,70 @@ test('explicit removal excludes a loaded device and deletes its prior consumer p
   assert.equal(config.profiles['tm-mfd-1'], undefined);
   assert.equal(config.pages.some((page) => page.profile === 'tm-mfd-1'), false);
   assert.doesNotMatch(readFileSync(join(outputDir, 'docs/CONTROL-MAPPINGS.md'), 'utf8'), /F16 MFD 1/);
+});
+
+test('T-45 selection keeps standalone MOZA and separate VKB while removing AVA completely', () => {
+  const root = mkdtempSync(join(tmpdir(), 'scaffold-t45-devices-'));
+  const initialProfiles = join(root, 'initial-profiles');
+  const selectedProfiles = join(root, 'selected-profiles');
+  mkdirSync(initialProfiles);
+  mkdirSync(selectedProfiles);
+  const moza = 'MOZA AB9 FFB Base {11111111-1111-1111-1111-111111111111}.diff.lua';
+  const vkb = 'VKBSim Gunfighter F14 {22222222-2222-2222-2222-222222222222}.diff.lua';
+  const ava = 'Ava [R] Viper {33333333-3333-3333-3333-333333333333}.diff.lua';
+  const profile = (key, name) => `local diff = { ["keyDiffs"] = {
+    ["d1"] = { ["added"] = { [1] = { ["key"] = "${key}" } }, ["name"] = "${name}" },
+  } } return diff`;
+  writeFileSync(join(initialProfiles, moza), profile('JOY_BTN1', 'MOZA control'));
+  writeFileSync(join(initialProfiles, vkb), profile('JOY_BTN1', 'VKB trigger'));
+  writeFileSync(join(initialProfiles, ava), profile('JOY_BTN1', 'AVA trigger'));
+  writeFileSync(join(selectedProfiles, moza), profile('JOY_BTN1', 'MOZA control'));
+  writeFileSync(join(selectedProfiles, vkb), profile('JOY_BTN1', 'VKB trigger'));
+
+  const outputDir = join(root, 'consumer');
+  writeConsumer({
+    preview: buildPreview({ profilesDir: initialProfiles, commonRoot }),
+    outputDir,
+    displayName: 'T-45',
+    inputModuleId: 'T-45',
+    kneeboardId: 'T-45',
+    commonRoot,
+  });
+  const initialConfigPath = join(outputDir, 'config/kneeboard.json');
+  const initialConfig = JSON.parse(readFileSync(initialConfigPath, 'utf8'));
+  initialConfig.summaryPages = [{ type: 'summary', file: '00-T45-OVERVIEW', title: 'T-45 overview', items: [] }];
+  writeFileSync(initialConfigPath, JSON.stringify(initialConfig, null, 2));
+  writeConsumer({
+    preview: buildPreview({ profilesDir: selectedProfiles, mozaGrip: 'standalone', commonRoot }),
+    outputDir,
+    displayName: 'T-45',
+    inputModuleId: 'T-45',
+    kneeboardId: 'T-45',
+    commonRoot,
+    removedProfiles: ['ava-base-f16c'],
+  });
+
+  const config = JSON.parse(readFileSync(join(outputDir, 'config/kneeboard.json'), 'utf8'));
+  assert.ok(config.profiles['moza-ab9']);
+  assert.ok(config.profiles['vkb-f14-gunfighter']);
+  assert.equal(config.profiles['ava-base-f16c'], undefined);
+  assert.ok(config.pages.some((page) => page.profile === 'moza-ab9' && page.deviceId === 'moza-ab9'));
+  assert.ok(config.pages.some((page) => page.profile === 'vkb-f14-gunfighter' && page.deviceId === 'vkb-f14-gunfighter'));
+  assert.equal(config.pages.some((page) => page.deviceId === 'ava-base-f16c'), false);
+  assert.equal(existsSync(join(outputDir, 'src/Config/Input/T-45/joystick', ava)), false);
+
+  const mappings = readFileSync(join(outputDir, 'docs/CONTROL-MAPPINGS.md'), 'utf8');
+  assert.match(mappings, /MOZA AB9 FFB Base/);
+  assert.match(mappings, /VKBSim Gunfighter F14/);
+  assert.doesNotMatch(mappings, /Ava \[R\] Viper/);
+  assert.ok(existsSync(join(outputDir, 'docs/devices/MOZA-AB9-MAPPINGS.md')));
+  assert.ok(existsSync(join(outputDir, 'docs/devices/VKB-F14-GUNFIGHTER-MAPPINGS.md')));
+  assert.equal(existsSync(join(outputDir, 'docs/devices/AVA-BASE-F16C-MAPPINGS.md')), false);
+  const integrations = readFileSync(join(outputDir, 'docs/OPENKNEEBOARD-VAICOM.md'), 'utf8');
+  assert.match(integrations, /installs 3 numbered PNG/);
+  assert.match(integrations, /00-T45-OVERVIEW\.png/);
+  assert.match(integrations, /MOZA-AB9\.png/);
+  assert.match(integrations, /VKB-F14-GUNFIGHTER\.png/);
+  assert.doesNotMatch(integrations, /AVA/);
+  assert.doesNotMatch(readFileSync(join(outputDir, 'SCAFFOLD-REPORT.md'), 'utf8'), /Ava \[R\] Viper/);
 });

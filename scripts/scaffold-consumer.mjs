@@ -20,7 +20,8 @@ import {
 } from 'node:fs';
 import { basename, dirname, join, resolve, relative } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { parseDcsDiffLua, parseDcsModifiersLua } from './profile-driven-kneeboard.mjs';
+import { loadProfileDrivenConfig, parseDcsDiffLua, parseDcsModifiersLua } from './profile-driven-kneeboard.mjs';
+import { renderSharedHardwarePages } from './shared-hardware-consumer.mjs';
 
 const scriptDir = dirname(fileURLToPath(import.meta.url));
 const defaultCommonRoot = resolve(scriptDir, '..');
@@ -1265,20 +1266,89 @@ function axisFilterSummary(filter) {
     `${key}=${Array.isArray(value) ? `[${value.join(', ')}]` : value}`).join('; ');
 }
 
-function pageFiles(kneeboard) {
-  return (kneeboard.pages ?? []).flatMap((page) => [
-    `${page.file}.png`,
-    ...(page.layers ?? []).filter((layer) => layer.file).map((layer) => `${layer.file}.png`),
-  ]);
+function rowIdentity(row) {
+  return [
+    row.profileFile,
+    row.section,
+    row.command,
+    row.key,
+    ...[...(row.reformers ?? [])].sort(),
+  ].join('\0');
 }
 
-export function buildConsumerDocumentation({ preview, kneeboard, displayName, inputModuleId, kneeboardId, repoName, outputDir }) {
-  const profileByKey = new Map(Object.entries(kneeboard.profiles ?? {}).map(([key, relative]) =>
-    [basename(relative), key]));
+function finalDocumentationPreview({ preview, kneeboard, inputModuleId, outputDir, commonRoot }) {
+  const profilesDir = join(outputDir, 'src', 'Config', 'Input', inputModuleId, 'joystick');
+  if (!existsSync(profilesDir)) return preview;
+  const modifiersPath = join(outputDir, 'src', 'Config', 'Input', inputModuleId, 'modifiers.lua');
+  const finalPreview = buildPreview({
+    profilesDir,
+    modifiersPath: existsSync(modifiersPath) ? modifiersPath : null,
+    commonRoot,
+  });
+  const profileByFile = new Map(Object.entries(kneeboard.profiles ?? {}).map(([profileKey, path]) => [
+    basename(path).toLocaleLowerCase(),
+    profileKey,
+  ]));
   const pageByProfile = new Map((kneeboard.pages ?? []).map((page) => [page.profile, page]));
-  const sections = preview.devices.map((device) => {
+  const authoredDevices = new Map(preview.devices.map((device) => [
+    (device.outputProfileFile ?? device.profileFile).toLocaleLowerCase(),
+    device,
+  ]));
+  const authoredRows = new Map(preview.rows.map((row) => [rowIdentity(row), row]));
+  for (const device of finalPreview.devices) {
+    const profileKey = profileByFile.get((device.outputProfileFile ?? device.profileFile).toLocaleLowerCase());
+    const page = pageByProfile.get(profileKey);
+    const authored = authoredDevices.get((device.outputProfileFile ?? device.profileFile).toLocaleLowerCase());
+    if (authored) {
+      device.mappingSource = authored.mappingSource;
+      device.role = authored.role;
+    }
+    if (profileKey) device.profileKey = profileKey;
+    if (page?.deviceId) device.deviceId = page.deviceId;
+    if (page?.deviceInstance) device.instanceHint = page.deviceInstance;
+  }
+  for (const row of finalPreview.rows) {
+    const authored = authoredRows.get(rowIdentity(row));
+    if (authored) {
+      row.label = authored.label;
+      row.labelSource = authored.labelSource;
+      row.deviceLabel = authored.deviceLabel;
+    }
+    const profileKey = profileByFile.get(row.profileFile.toLocaleLowerCase());
+    const page = pageByProfile.get(profileKey);
+    if (profileKey) row.profileKey = profileKey;
+    if (page?.deviceId) row.deviceId = page.deviceId;
+  }
+  return finalPreview;
+}
+
+function renderedPageFiles(kneeboard, { outputDir, commonRoot }) {
+  const configPath = join(outputDir, 'config', 'kneeboard.json');
+  if (!existsSync(configPath)) return [];
+  const effective = loadProfileDrivenConfig(configPath, { consumerRoot: outputDir, commonRoot });
+  const pages = [
+    ...(kneeboard.summaryPages ?? []),
+    ...effective.pages,
+  ].sort((left, right) => left.file.localeCompare(right.file));
+  return pages.flatMap((page) => {
+    if (!page.deviceId) return [`${page.file}.png`];
+    return renderSharedHardwarePages({ ...page, commonRoot }).map(({ file }) => `${file}.png`);
+  });
+}
+
+function deviceGuidePath(profileKey, device) {
+  const identity = profileKey ?? device.profileKey ?? device.stem ?? device.deviceId ?? 'device';
+  return `docs/devices/${slugifyId(identity).toUpperCase()}-MAPPINGS.md`;
+}
+
+export function buildConsumerDocumentation({ preview, kneeboard, displayName, inputModuleId, kneeboardId, repoName, outputDir, commonRoot = defaultCommonRoot }) {
+  const profileByKey = new Map(Object.entries(kneeboard.profiles ?? {}).map(([key, relative]) =>
+    [basename(relative).toLocaleLowerCase(), key]));
+  const pageByProfile = new Map((kneeboard.pages ?? []).map((page) => [page.profile, page]));
+  const deviceDocuments = {};
+  const documentedDevices = preview.devices.map((device) => {
     const profileFile = device.outputProfileFile ?? device.profileFile;
-    const profileKey = profileByKey.get(profileFile) ?? device.profileKey;
+    const profileKey = profileByKey.get(profileFile.toLocaleLowerCase()) ?? device.profileKey;
     const page = pageByProfile.get(profileKey);
     const rows = preview.rows.filter((row) => row.profileFile === device.profileFile);
     const groups = new Map();
@@ -1297,21 +1367,28 @@ export function buildConsumerDocumentation({ preview, kneeboard, displayName, in
       });
       return `#### ${heading}\n\n| Physical input | Assignment | Axis/filter settings |\n| --- | --- | --- |\n${table.join('\n')}`;
     }).join('\n\n');
-    return `### ${markdownCell(page?.title ?? device.stem ?? device.deviceId)}\n\n- Profile: \`${markdownCell(profileFile)}\`\n- Shared hardware: \`${markdownCell(device.deviceId)}\`\n- Physical instance: \`${markdownCell(device.physicalInstance)}\`\n- Kneeboard page: \`${markdownCell(page ? `${page.file}.png` : 'not generated')}\`\n\n${layers}`;
-  }).join('\n\n');
-  const index = preview.devices.map((device) => {
-    const profileFile = device.outputProfileFile ?? device.profileFile;
-    const profileKey = profileByKey.get(profileFile) ?? device.profileKey;
-    const page = pageByProfile.get(profileKey);
-    const rows = preview.rows.filter((row) => row.profileFile === device.profileFile);
-    const layers = [...new Set(rows.map((row) => row.reformers?.length ? [...row.reformers].sort().join(' + ') : 'Base'))];
-    return `| ${markdownCell(page?.title ?? device.stem)} | \`${markdownCell(profileFile)}\` | ${markdownCell(layers.length ? layers.join(', ') : 'Base')} | ${rows.length} |`;
-  }).join('\n');
+    const title = page?.title ?? device.stem ?? device.deviceId;
+    const metadata = `- Profile: \`${markdownCell(profileFile)}\`\n- Shared hardware: \`${markdownCell(device.deviceId)}\`\n- Physical instance: \`${markdownCell(device.physicalInstance)}\`\n- Kneeboard page: \`${markdownCell(page ? `${page.file}.png` : 'not generated')}\``;
+    const guidePath = deviceGuidePath(profileKey, device);
+    deviceDocuments[guidePath] = `<!-- Generated by DCS-Common IPI. -->\n\n# ${markdownCell(title)} mappings\n\nThis guide is generated from the effective DCS profile used by ${displayName}.\n\n${metadata}\n\n## Assignments\n\n${layers}\n`;
+    const layerNames = [...new Set(rows.map((row) => row.reformers?.length ? [...row.reformers].sort().join(' + ') : 'Base'))];
+    return {
+      title,
+      profileFile,
+      guidePath,
+      rows,
+      layerNames,
+      section: `### ${markdownCell(title)}\n\n${metadata}\n\n${layers}`,
+    };
+  });
+  const sections = documentedDevices.map(({ section }) => section).join('\n\n');
+  const index = documentedDevices.map(({ title, profileFile, guidePath, layerNames, rows }) =>
+    `| [${markdownCell(title)}](${relative('docs', guidePath).replaceAll('\\', '/')}) | \`${markdownCell(profileFile)}\` | ${markdownCell(layerNames.length ? layerNames.join(', ') : 'Base')} | ${rows.length} |`).join('\n');
   const controlMappings = `# ${displayName} control mappings\n\nThis reference is generated from the effective DCS \`.diff.lua\` profiles used by IPI. Those profiles remain the executable source of truth.\n\n## Device index\n\n| Device | Profile file | Layers | Assignments |\n| --- | --- | --- | ---: |\n${index}\n\n## Reading the tables\n\n- \`JOY_BTN#\` identifies a button; \`JOY_X\`, \`JOY_Y\`, and similar names identify axes.\n- A modifier before an input means both must be active.\n- Empty/default profiles are documented explicitly rather than omitted.\n- DCS device GUIDs in filenames are installation-specific; see [Installation](INSTALLATION.md#device-guids).\n\n## Devices\n\n${sections}\n`;
 
   const installation = `# Installing ${repoName}\n\n## Requirements\n\n- DCS World with the ${displayName} module installed.\n- OvGME configured with the DCS Saved Games directory as its root.\n- The hardware profiles you intend to use.\n- OpenKneeboard, VoiceAttack, VAICOM PRO, and AutoHotkey are optional.\n\n## Back up existing controls\n\nBefore enabling the package, copy these folders somewhere outside Saved Games:\n\n\`\`\`text\nSaved Games\\DCS\\Config\\Input\\${inputModuleId}\nSaved Games\\DCS\\Config\\Input\\UiLayer\nSaved Games\\DCS\\KNEEBOARD\\${kneeboardId}\n\`\`\`\n\n## Install with OvGME\n\n1. Download \`${repoName}-<version>-OVGME.zip\` from the repository release.\n2. Add it to the OvGME configuration rooted at your DCS Saved Games directory.\n3. Enable the package.\n4. In DCS, open **Options → Controls → ${displayName}** and verify the expected device columns.\n5. Confirm that the numbered kneeboard pages appear in game or OpenKneeboard.\n\nThe archive writes \`Config/Input/${inputModuleId}\`, the applicable \`Config/Input/UiLayer\` profiles, and \`KNEEBOARD/${kneeboardId}\`.\n\n## Device GUIDs\n\nDCS embeds a Windows device-instance GUID in each \`.diff.lua\` filename. If your GUID differs, use DCS **Load profile** for the matching device or re-scaffold when the repository should adopt a newly captured device set.\n\n## Remove or restore\n\nDisable the package in OvGME before installing another version. Restore the backed-up folders to return to the pre-package state.\n`;
 
-  const generatedPages = pageFiles(kneeboard);
+  const generatedPages = renderedPageFiles(kneeboard, { outputDir, commonRoot });
   const ahkRoot = join(outputDir, 'autohotkey');
   const ahkFiles = existsSync(ahkRoot) && statSync(ahkRoot).isDirectory()
     ? readdirSync(ahkRoot).filter((file) => file.toLowerCase().endsWith('.ahk')).sort() : [];
@@ -1326,6 +1403,7 @@ export function buildConsumerDocumentation({ preview, kneeboard, displayName, in
     'docs/INSTALLATION.md': installation,
     'docs/OPENKNEEBOARD-VAICOM.md': openKneeboard,
     'docs/THIRD-PARTY-ASSETS.md': thirdParty,
+    ...deviceDocuments,
   };
 }
 
@@ -1434,10 +1512,32 @@ export function writeConsumer({ preview, outputDir, displayName, inputModuleId, 
 
   write('package.json', applyTokens(readTemplate(commonRoot, 'package.json.tmpl'), tokens));
   write('README.md', applyTokens(readTemplate(commonRoot, 'README.md.tmpl'), tokens));
+  const documentationPreview = dryRun
+    ? effectivePreview
+    : finalDocumentationPreview({
+      preview: effectivePreview,
+      kneeboard,
+      inputModuleId,
+      outputDir: out,
+      commonRoot,
+    });
   const documentation = buildConsumerDocumentation({
-    preview: effectivePreview, kneeboard, displayName, inputModuleId, kneeboardId,
-    repoName: name, outputDir: out,
+    preview: documentationPreview, kneeboard, displayName, inputModuleId, kneeboardId,
+    repoName: name, outputDir: out, commonRoot,
   });
+  if (!dryRun) {
+    const deviceDocs = join(out, 'docs', 'devices');
+    const retained = new Set(Object.keys(documentation).map((path) => path.replaceAll('\\', '/')));
+    if (existsSync(deviceDocs)) {
+      for (const filename of readdirSync(deviceDocs).filter((file) => file.toLocaleLowerCase().endsWith('.md'))) {
+        const relativePath = `docs/devices/${filename}`;
+        const absolutePath = join(deviceDocs, filename);
+        if (!retained.has(relativePath) && readFileSync(absolutePath, 'utf8').includes('Generated by DCS-Common IPI.')) {
+          unlinkSync(absolutePath);
+        }
+      }
+    }
+  }
   for (const [relativePath, content] of Object.entries(documentation)) write(relativePath, content);
   write('scripts/build-kneeboard.mjs', readTemplate(commonRoot, 'build-kneeboard.mjs.tmpl'));
   write('scripts/test-kneeboard.mjs', applyTokens(readTemplate(commonRoot, 'test-kneeboard.mjs.tmpl'), tokens));
@@ -1468,20 +1568,19 @@ export function writeConsumer({ preview, outputDir, displayName, inputModuleId, 
     '',
     `- Input module: \`${inputModuleId}\``,
     `- Kneeboard ID: \`${kneeboardId}\``,
-    `- Profiles: ${selectedPreview.summary.profileCount}`,
-    `- Mapped devices: ${selectedPreview.summary.mappedDevices}`,
-    `- Unmapped devices: ${selectedPreview.summary.unmappedDevices}`,
-    `- Preview errors: ${selectedPreview.summary.errorCount}`,
+    `- Profiles: ${documentationPreview.summary.profileCount}`,
+    `- Mapped devices: ${documentationPreview.summary.mappedDevices}`,
+    `- Unmapped devices: ${documentationPreview.summary.unmappedDevices}`,
+    `- Preview errors: ${documentationPreview.summary.errorCount}`,
     `- Preserved absent profiles: ${merge.preservedProfiles.length}`,
     `- Explicitly removed profiles: ${merge.removedProfiles.length}`,
     '',
     '## Devices',
     '',
-    ...selectedPreview.devices.map(
+    ...documentationPreview.devices.map(
       (d) =>
-        `- \`${d.outputProfileFile ?? d.profileFile}\` → profile \`${d.profileKey ?? '**UNMAPPED**'}\` → ${d.deviceId ?? '**UNMAPPED**'} (${d.mappingSource}${d.role ? `, role ${d.role}` : ''}${d.guid ? `, GUID ${d.guid}` : ''}${d.mappingSource === 'standalone-fallback' ? '; generic AB9 profile—select the installed grip' : ''})`,
+        `- \`${d.outputProfileFile ?? d.profileFile}\` → profile \`${d.profileKey ?? '**UNMAPPED**'}\` → ${d.deviceId ?? '**UNMAPPED**'} (${d.mappingSource}${merge.preservedProfiles.includes(d.profileKey) ? ', preserved while absent from this scaffold session' : ''}${d.role ? `, role ${d.role}` : ''}${d.guid ? `, GUID ${d.guid}` : ''}${d.mappingSource === 'standalone-fallback' ? '; generic AB9 profile—select the installed grip' : ''})`,
     ),
-    ...merge.preservedProfiles.map((profile) => `- \`${profile}\` → preserved while absent from this scaffold session`),
     ...merge.removedProfiles.map((profile) => `- \`${profile}\` → explicitly removed`),
     '',
     '## TM MFD categories',
@@ -1496,7 +1595,7 @@ export function writeConsumer({ preview, outputDir, displayName, inputModuleId, 
     '',
     '| Device | Control | DCS command name | Device label | Effective label | Label source |',
     '| --- | --- | --- | --- | --- | --- |',
-    ...effectivePreview.rows.map((row) => {
+    ...documentationPreview.rows.map((row) => {
       const cell = (value) => String(value ?? '').replaceAll('|', '\\|').replaceAll('\n', ' ');
       return `| ${cell(row.stem)} | ${cell(row.key)} | ${cell(row.name)} | ${cell(row.deviceLabel)} | ${cell(row.label)} | ${cell(row.labelSource)} |`;
     }),
