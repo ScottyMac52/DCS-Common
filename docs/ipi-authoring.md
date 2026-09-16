@@ -30,10 +30,11 @@ The same screen contains a shared-hardware instance editor above **Physical devi
 
 - `docs/INSTALLATION.md`
 - `docs/CONTROL-MAPPINGS.md`
+- `docs/devices/*-MAPPINGS.md`
 - `docs/OPENKNEEBOARD-VAICOM.md`
 - `docs/THIRD-PARTY-ASSETS.md`
 
-The control-mapping guide is derived from the same effective profile preview used to write the package. It includes every physical device instance, including intentionally empty profiles, plus modifier layers and non-default axis filters. The integration guide inventories generated kneeboard pages and reports optional OpenKneeboard, VAICOM PRO, or AutoHotkey behavior only when that output actually exists. Re-running IPI deterministically refreshes these files and the README links to them.
+The control-mapping index and individual device guides are derived from the final merged consumer inventory, not only the devices visible during the current import. They therefore include preserved physical instances, intentionally empty profiles, modifier layers, and non-default axis filters. Explicitly removed devices are deleted from the profile inventory and from IPI-owned device guides. The integration guide uses the same effective page expansion as the kneeboard builder, including summary pages and excluding configured profiles that do not produce output, so its file list matches the packaged PNG set. Re-running IPI deterministically refreshes these files and the README links to them.
 
 ## Definitive UI Layer authoring
 
