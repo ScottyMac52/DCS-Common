@@ -44,9 +44,18 @@ public sealed class CurrentLabelService
                 continue;
             }
 
-            var selectedPage = SelectPage(pages, device);
-            ApplyPagePresentation(selectedPage, device);
-            var result = ApplyPage(selectedPage, selectedRows, ReadCanonicalLabels(document.RootElement));
+            var selectedPage = TrySelectPage(pages, device);
+            if (selectedPage is null && !IsUnrepresentedInstance(pages, device))
+                selectedPage = SelectPage(pages, device);
+            if (selectedPage is null)
+            {
+                foreach (var row in selectedRows) row.ResetLabel();
+                sharedCount += selectedRows.Count;
+                continue;
+            }
+
+            ApplyPagePresentation(selectedPage.Value, device);
+            var result = ApplyPage(selectedPage.Value, selectedRows, ReadCanonicalLabels(document.RootElement));
             currentCount += result.CurrentCount;
             sharedCount += result.SharedHardwareCount;
             dcsDefaultCount += result.DcsDefaultCount;
@@ -196,6 +205,17 @@ public sealed class CurrentLabelService
         if (pages.Count == 0)
             throw new InvalidOperationException($"The destination repository has no page for {device.DeviceId}.");
 
+        var selectedPage = TrySelectPage(pages, device);
+        if (selectedPage is not null) return selectedPage.Value;
+
+        throw new InvalidOperationException(
+            $"The destination repository has multiple {device.DeviceId} pages and none uniquely matches {device.ProfileKey}.");
+    }
+
+    private static JsonElement? TrySelectPage(IReadOnlyList<JsonElement> pages, PreviewDevice device)
+    {
+        if (pages.Count == 0) return null;
+
         var instance = CanonicalInstance(device);
         if (instance != null)
         {
@@ -208,9 +228,18 @@ public sealed class CurrentLabelService
         var profileMatches = pages.Where(page => ContainsProfile(page, device.ProfileKey!)).ToList();
         if (profileMatches.Count == 1) return profileMatches[0];
         if (pages.Count == 1) return pages[0];
+        return null;
+    }
 
-        throw new InvalidOperationException(
-            $"The destination repository has multiple {device.DeviceId} pages and none uniquely matches {device.ProfileKey}.");
+    private static bool IsUnrepresentedInstance(IReadOnlyList<JsonElement> pages, PreviewDevice device)
+    {
+        var instance = CanonicalInstance(device);
+        return instance != null && pages.All(page =>
+        {
+            var existingInstance = Property(page, "deviceInstance");
+            return !string.IsNullOrWhiteSpace(existingInstance) &&
+                   !StringEquals(existingInstance, instance);
+        });
     }
 
     private static Dictionary<string, string?> ReadCanonicalLabels(JsonElement root)
