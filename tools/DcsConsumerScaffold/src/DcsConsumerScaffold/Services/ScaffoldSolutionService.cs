@@ -48,6 +48,18 @@ public sealed class ScaffoldSolutionImport
 
     [JsonPropertyName("kneeboardId")]
     public string? KneeboardId { get; set; }
+
+    [JsonPropertyName("commandSource")]
+    public ScaffoldSolutionCommandSource? CommandSource { get; set; }
+}
+
+public sealed class ScaffoldSolutionCommandSource
+{
+    [JsonPropertyName("type")]
+    public string Type { get; set; } = string.Empty;
+
+    [JsonPropertyName("paths")]
+    public List<string> Paths { get; set; } = [];
 }
 
 public sealed class ScaffoldSolutionDecisions
@@ -160,11 +172,14 @@ public sealed class ScaffoldSolutionService
                 Require(import.DisplayName, "import.displayName", errors);
                 Require(import.InputModuleId, "import.inputModuleId", errors);
                 Require(import.KneeboardId, "import.kneeboardId", errors);
+                ValidateCommandSource(import.CommandSource, errors);
             }
             else if (import.Target == "ui-layer")
             {
                 Require(import.ModifiersPath, "import.modifiersPath", errors);
                 Require(import.CommonRoot, "import.commonRoot", errors);
+                if (import.CommandSource is not null)
+                    errors.Add("import.commandSource is only supported for consumer solutions.");
             }
         }
 
@@ -198,5 +213,16 @@ public sealed class ScaffoldSolutionService
     private static void Require(string? value, string field, ICollection<string> errors)
     {
         if (string.IsNullOrWhiteSpace(value)) errors.Add($"{field} is required.");
+    }
+
+    private static void ValidateCommandSource(ScaffoldSolutionCommandSource? source, ICollection<string> errors)
+    {
+        if (source is null) return;
+        if (source.Type is not ("catalog-json" or "dcs-html"))
+            errors.Add("import.commandSource.type must be 'catalog-json' or 'dcs-html'.");
+        if (source.Paths is null || source.Paths.Count == 0 || source.Paths.Any(string.IsNullOrWhiteSpace))
+            errors.Add("import.commandSource.paths must contain at least one non-empty path.");
+        if (source.Type == "catalog-json" && source.Paths?.Count != 1)
+            errors.Add("import.commandSource.paths must contain exactly one path for catalog-json.");
     }
 }

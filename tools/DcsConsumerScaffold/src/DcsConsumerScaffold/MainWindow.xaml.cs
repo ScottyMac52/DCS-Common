@@ -28,7 +28,7 @@ public partial class MainWindow : Window
     }
 
 
-    private void OpenSolution_Click(object sender, RoutedEventArgs e)
+    private async void OpenSolution_Click(object sender, RoutedEventArgs e)
     {
         if (!ConfirmDiscardChanges()) return;
         var dialog = new OpenFileDialog
@@ -42,6 +42,8 @@ public partial class MainWindow : Window
         {
             var document = _solutionService.Load(dialog.FileName);
             _viewModel.LoadSolution(document, dialog.FileName);
+            if (_viewModel.HasCommandSource)
+                await _viewModel.LoadPreviewAsync();
         }
         catch (Exception ex)
         {
@@ -254,6 +256,8 @@ public partial class MainWindow : Window
         try { _viewModel.SaveCommandCatalog(dialog.FileName); }
         catch (Exception ex) { MessageBox.Show(this, ex.Message, "Unable to save command catalog", MessageBoxButton.OK, MessageBoxImage.Error); }
     }
+
+    private void ClearCommandSource_Click(object sender, RoutedEventArgs e) => _viewModel.ClearCommandSource();
 
     private void AssignCommand_Click(object sender, RoutedEventArgs e)
     {

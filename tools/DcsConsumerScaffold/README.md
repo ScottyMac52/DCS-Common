@@ -39,15 +39,28 @@ Installer (tag `vX.X.X.X`): Inno Setup via shared-github-workflows. The installe
 
 ## Reuse a scaffolding solution
 
-The main importer can save its complete workspace as an indented, versioned `.dcs-scaffold.json` file. This includes the import target, paths, MOZA grip choice, consumer identities, device roles, semantic modifiers, and explicit repository-only removal requests.
+The main importer can save its complete workspace as an indented, versioned `.dcs-scaffold.json` file. This includes the import target, paths, MOZA grip choice, consumer identities, device roles, semantic modifiers, explicit repository-only removal requests, and an optional linked command source.
 
-- **Open…** validates a solution and populates the form without running Node or writing any repository.
+- **Open…** validates a solution and populates the form without writing any repository. A consumer solution with a linked command source automatically runs Preview, restores its saved decisions, and then reloads the command source without opening another file picker.
 - Select **Load Preview** to re-read the current DCS profiles and reconcile saved non-label decisions by their stable identifiers. Every consumer preview discards labels from the previous in-memory preview, then reloads binding labels and MFD side categories from the destination repository’s current `config/kneeboard.json`.
+- A linked command source is reloaded every time **Load Preview** runs. If that source fails, the successful profile preview remains available and the source error is reported in the status area.
+- Importing JSON or loading DCS HTML replaces the active source and marks the solution dirty. **Save catalog…** makes the saved JSON file the active source; **Unlink source** removes the link and loaded catalog.
 - Unmatched decisions are retained in the solution and reported instead of being guessed or discarded.
 - **Save** atomically replaces the open solution; **Save As…** creates a separate solution.
 - **Delete…** confirms the exact JSON path and deletes only that file. The current values remain in the importer as an unsaved workspace.
 - Relative paths are interpreted from the solution file's directory. Absolute paths are recommended for machine-local solutions.
 - Invalid JSON and unsupported schema versions leave the current workspace unchanged.
+
+Consumer solutions may use either one reloadable JSON catalog or one or more DCS Controls HTML exports. Relative source paths are resolved from the solution file and remain relative when the solution is saved again:
+
+```json
+"commandSource": {
+  "type": "catalog-json",
+  "paths": ["../config/F-100D-commands.json"]
+}
+```
+
+Use `"type": "dcs-html"` with one or more paths for HTML exports. UI Layer solutions reject `commandSource` because module command catalogs only apply to consumer imports. Existing schemaVersion 1 solutions without this optional field keep the manual import behavior.
 
 The solution file never contains binding labels or MFD side-category labels. Those values always come from the destination repository’s current `config/kneeboard.json` when **Load Preview** runs, keeping that file authoritative and preventing saved solutions from reviving stale or orphaned labels. Legacy solution files containing `labelOverrides` or `mfdCategories` are accepted, but those properties are ignored and removed the next time the solution is saved. The solution also never contains generated previews, generated consumer content, credentials, or any state from the **Definitive UI Layer Editor**.
 
