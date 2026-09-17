@@ -1084,6 +1084,23 @@ function profileReferences(value, result = new Set()) {
   return result;
 }
 
+function modifierReferences(value, result = new Set()) {
+  if (Array.isArray(value)) {
+    for (const item of value) modifierReferences(item, result);
+  } else if (value && typeof value === 'object') {
+    for (const [key, item] of Object.entries(value)) {
+      if ((key === 'modifiers' || key === 'activators') && Array.isArray(item)) {
+        for (const chord of item.filter(entry => typeof entry === 'string')) {
+          for (const modifier of chord.split('+').map(entry => entry.trim()).filter(Boolean)) result.add(modifier);
+        }
+      } else {
+        modifierReferences(item, result);
+      }
+    }
+  }
+  return result;
+}
+
 function modifierEntries(source) {
   const entries = new Map();
   const pattern = /\["([^"]+)"\]\s*=\s*\{([\s\S]*?)\n\s*\},?/gu;
@@ -1119,7 +1136,7 @@ function ensureMfdCategoryLabels(pages = []) {
   }
 }
 
-export function mergeConsumerConfig(draft, existing, removedProfiles = []) {
+export function mergeConsumerConfig(draft, existing, removedProfiles = [], replaceModifiers = false) {
   if (!existing || typeof existing !== 'object') {
     ensureMfdCategoryLabels(draft.pages);
     return { config: draft, preservedProfiles: [], removedProfiles: [] };
@@ -1165,9 +1182,29 @@ export function mergeConsumerConfig(draft, existing, removedProfiles = []) {
   });
   config.pages = [...currentPages, ...retainedPages];
   ensureMfdCategoryLabels(config.pages);
-  config.semanticModifiers = { ...(existing.semanticModifiers ?? {}), ...(draft.semanticModifiers ?? {}) };
-  if (existing.modifiers || draft.modifiers) config.modifiers = { ...(existing.modifiers ?? {}), ...(draft.modifiers ?? {}) };
-  if (!draft.modifiersFile && existing.modifiersFile) config.modifiersFile = existing.modifiersFile;
+  if (replaceModifiers) {
+    const removedModifierNames = new Set();
+    for (const [alias, definition] of Object.entries(existing.modifiers ?? {})) {
+      if (draft.modifiers?.[alias]) continue;
+      removedModifierNames.add(alias);
+      if (typeof definition?.nativeName === 'string') removedModifierNames.add(definition.nativeName);
+    }
+    const remainingReferences = modifierReferences(config.pages ?? []);
+    const usedRemovedModifiers = [...removedModifierNames].filter(name => remainingReferences.has(name)).sort();
+    if (usedRemovedModifiers.length > 0) {
+      throw new Error(`Cannot remove modifier(s) still referenced by retained pages: ${usedRemovedModifiers.join(', ')}`);
+    }
+
+    config.semanticModifiers = { ...(draft.semanticModifiers ?? {}) };
+    if (draft.modifiers && Object.keys(draft.modifiers).length > 0) config.modifiers = { ...draft.modifiers };
+    else delete config.modifiers;
+    if (draft.modifiersFile) config.modifiersFile = draft.modifiersFile;
+    else delete config.modifiersFile;
+  } else {
+    config.semanticModifiers = { ...(existing.semanticModifiers ?? {}), ...(draft.semanticModifiers ?? {}) };
+    if (existing.modifiers || draft.modifiers) config.modifiers = { ...(existing.modifiers ?? {}), ...(draft.modifiers ?? {}) };
+    if (!draft.modifiersFile && existing.modifiersFile) config.modifiersFile = existing.modifiersFile;
+  }
   return { config, preservedProfiles, removedProfiles: [...removed].filter((profile) => existing.profiles?.[profile]) };
 }
 
@@ -1479,7 +1516,7 @@ export function writeConsumer({ preview, outputDir, displayName, inputModuleId, 
   const draftKneeboard = buildDraftKneeboardConfig(effectivePreview, { displayName, inputModuleId, includeUiLayer });
   const existingConfigPath = join(out, 'config/kneeboard.json');
   const existingKneeboard = existsSync(existingConfigPath) ? JSON.parse(readFileSync(existingConfigPath, 'utf8')) : null;
-  const merge = mergeConsumerConfig(draftKneeboard, existingKneeboard, removedProfiles);
+  const merge = mergeConsumerConfig(draftKneeboard, existingKneeboard, removedProfiles, preview.replaceModifiers);
   const kneeboard = merge.config;
   write('config/kneeboard.json', JSON.stringify(kneeboard, null, 2));
   if (!dryRun) {

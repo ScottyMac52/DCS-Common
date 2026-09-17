@@ -1019,14 +1019,24 @@ public sealed class MainViewModel : INotifyPropertyChanged
 
     public void RemoveModifier(PreviewModifier modifier)
     {
+        EnsureModifierCanBeRemoved(modifier);
         var name = modifier.Name ?? string.Empty;
-        var uses = Rows.Count(row => row.Reformers.Contains(name, StringComparer.Ordinal)) +
-            PendingAssignments.Count(item => item.Reformers.Contains(name, StringComparer.Ordinal));
-        if (uses > 0) throw new InvalidOperationException($"{name} is used by {uses} assignment(s). Move or clear those assignments before removing it.");
         modifier.PropertyChanged -= Modifier_PropertyChanged;
         Modifiers.Remove(modifier);
         SelectedModifier = null;
         ModifierCollectionChanged($"Removed modifier {name}.");
+    }
+
+    public void EnsureModifierCanBeRemoved(PreviewModifier modifier)
+    {
+        var name = modifier.Name ?? string.Empty;
+        var semanticName = string.IsNullOrWhiteSpace(modifier.SemanticModifier) ? name : modifier.SemanticModifier;
+        var uses = Rows.Count(row => !string.IsNullOrWhiteSpace(row.Command) &&
+            (row.Reformers.Contains(name, StringComparer.Ordinal) ||
+             string.Equals(row.SemanticChord, semanticName, StringComparison.Ordinal) ||
+             row.SemanticChord?.Split('+').Contains(semanticName, StringComparer.Ordinal) == true));
+        if (uses > 0)
+            throw new InvalidOperationException($"{name} is used by {uses} effective assignment(s). Move or clear those assignments before removing it.");
     }
 
     private void ValidateModifier(PreviewModifier candidate, PreviewModifier? current) =>

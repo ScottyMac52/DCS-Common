@@ -933,6 +933,62 @@ test('consumer merge guarantees complete TM MFD category fields', () => {
   assert.deepEqual(cleared.config.pages[0].categoryLabels, defaultCategories);
 });
 
+test('authoritative modifier replacement removes stale modifier configuration', () => {
+  const existing = {
+    profiles: {},
+    pages: [],
+    modifiersFile: 'src/Config/Input/Test/modifiers.lua',
+    modifiers: {
+      KEEP: { nativeName: 'RAW_KEEP', mode: 'hold' },
+      REMOVE: { nativeName: 'RAW_REMOVE', mode: 'hold' },
+    },
+    semanticModifiers: {
+      keep: [{ nativeName: 'RAW_KEEP' }],
+      remove: [{ nativeName: 'RAW_REMOVE' }],
+    },
+  };
+  const draft = {
+    profiles: {},
+    pages: [],
+    modifiersFile: 'src/Config/Input/Test/modifiers.lua',
+    modifiers: { KEEP: { nativeName: 'RAW_KEEP', mode: 'hold' } },
+    semanticModifiers: { keep: [{ nativeName: 'RAW_KEEP' }] },
+  };
+
+  const merged = mergeConsumerConfig(draft, existing, [], true).config;
+
+  assert.deepEqual(Object.keys(merged.modifiers), ['KEEP']);
+  assert.deepEqual(Object.keys(merged.semanticModifiers), ['keep']);
+
+  const cleared = mergeConsumerConfig(
+    { profiles: {}, pages: [], semanticModifiers: {} },
+    existing,
+    [],
+    true,
+  ).config;
+  assert.equal(cleared.modifiers, undefined);
+  assert.equal(cleared.modifiersFile, undefined);
+  assert.deepEqual(cleared.semanticModifiers, {});
+});
+
+test('authoritative modifier replacement rejects references on retained pages', () => {
+  const existing = {
+    profiles: { retained: 'retained.diff.lua' },
+    pages: [{
+      deviceId: 'retained-device',
+      controls: { button: { profile: 'retained', key: 'JOY_BTN1', modifiers: ['REMOVE'] } },
+    }],
+    modifiers: { REMOVE: { nativeName: 'RAW_REMOVE', mode: 'hold' } },
+    semanticModifiers: { remove: [{ nativeName: 'RAW_REMOVE' }] },
+  };
+  const draft = { profiles: {}, pages: [], semanticModifiers: {} };
+
+  assert.throws(
+    () => mergeConsumerConfig(draft, existing, [], true),
+    /still referenced by retained pages: REMOVE/,
+  );
+});
+
 test('scaffold applies and reports per-instance TM MFD categories', () => {
   const root = mkdtempSync(join(tmpdir(), 'scaffold-mfd-categories-'));
   const profilesDir = join(root, 'joystick');
