@@ -1169,7 +1169,9 @@ export function mergeConsumerConfig(draft, existing, removedProfiles = [], repla
       for (const layer of page.layers) {
         if (layer.id === 'base') continue;
         const previousLayer = previousLayers.get(layer.id);
-        layer.title = typeof previousLayer?.title === 'string'\n          ? previousLayer.title.trim()\n          : `${page.title} • ${layer.id}`;
+        layer.title = typeof previousLayer?.title === 'string'
+          ? previousLayer.title.trim()
+          : `${page.title} • ${layer.id}`;
       }
     }
   }
@@ -1326,7 +1328,9 @@ function finalDocumentationPreview({ preview, kneeboard, inputModuleId, outputDi
     basename(path).toLocaleLowerCase(),
     profileKey,
   ]));
-  const pageByProfile = new Map((kneeboard.pages ?? [])\n    .filter((page) => typeof page.profile === 'string' && page.profile.trim())\n    .map((page) => [page.profile, page]));
+  const pageByProfile = new Map((kneeboard.pages ?? [])
+    .filter((page) => typeof page.profile === 'string' && page.profile.trim())
+    .map((page) => [page.profile, page]));
   const authoredDevices = new Map(preview.devices.map((device) => [
     (device.outputProfileFile ?? device.profileFile).toLocaleLowerCase(),
     device,
@@ -1381,7 +1385,9 @@ function deviceGuidePath(profileKey, device) {
 export function buildConsumerDocumentation({ preview, kneeboard, displayName, inputModuleId, kneeboardId, repoName, outputDir, commonRoot = defaultCommonRoot }) {
   const profileByKey = new Map(Object.entries(kneeboard.profiles ?? {}).map(([key, relative]) =>
     [basename(relative).toLocaleLowerCase(), key]));
-  const pageByProfile = new Map((kneeboard.pages ?? [])\n    .filter((page) => typeof page.profile === 'string' && page.profile.trim())\n    .map((page) => [page.profile, page]));
+  const pageByProfile = new Map((kneeboard.pages ?? [])
+    .filter((page) => typeof page.profile === 'string' && page.profile.trim())
+    .map((page) => [page.profile, page]));
   const deviceDocuments = {};
   const documentedDevices = preview.devices.map((device) => {
     const profileFile = device.outputProfileFile ?? device.profileFile;
@@ -1545,6 +1551,22 @@ export function writeConsumer({ preview, outputDir, displayName, inputModuleId, 
       const absolute = join(out, joystickRel, device.outputProfileFile ?? device.profileFile);
       if (existsSync(absolute)) unlinkSync(absolute);
     }
+
+    // The configured profile inventory plus profiles observed in this import are
+    // authoritative. Remove stale repository files that are neither configured
+    // nor present in the current input so they cannot leak into OvGME packages.
+    const retainedProfileFiles = new Set([
+      ...Object.values(kneeboard.profiles ?? {}).map((relative) => basename(relative).toLocaleLowerCase()),
+      ...selectedPreview.devices.map((device) =>
+        (device.outputProfileFile ?? device.profileFile).toLocaleLowerCase()),
+    ]);
+    const joystickPath = join(out, joystickRel);
+    if (existsSync(joystickPath)) {
+      for (const filename of readdirSync(joystickPath)
+        .filter((file) => file.toLocaleLowerCase().endsWith('.diff.lua'))) {
+        if (!retainedProfileFiles.has(filename.toLocaleLowerCase())) unlinkSync(join(joystickPath, filename));
+      }
+    }
   }
 
   write('package.json', applyTokens(readTemplate(commonRoot, 'package.json.tmpl'), tokens));
@@ -1611,6 +1633,7 @@ export function writeConsumer({ preview, outputDir, displayName, inputModuleId, 
     `- Preview errors: ${documentationPreview.summary.errorCount}`,
     `- Preserved absent profiles: ${merge.preservedProfiles.length}`,
     `- Explicitly removed profiles: ${merge.removedProfiles.length}`,
+    `- Applied staged profile edits: ${assignments.length}`,
     '',
     '## Devices',
     '',
@@ -1619,6 +1642,15 @@ export function writeConsumer({ preview, outputDir, displayName, inputModuleId, 
         `- \`${d.outputProfileFile ?? d.profileFile}\` → profile \`${d.profileKey ?? '**UNMAPPED**'}\` → ${d.deviceId ?? '**UNMAPPED**'} (${d.mappingSource}${merge.preservedProfiles.includes(d.profileKey) ? ', preserved while absent from this scaffold session' : ''}${d.role ? `, role ${d.role}` : ''}${d.guid ? `, GUID ${d.guid}` : ''}${d.mappingSource === 'standalone-fallback' ? '; generic AB9 profile—select the installed grip' : ''})`,
     ),
     ...merge.removedProfiles.map((profile) => `- \`${profile}\` → explicitly removed`),
+    '',
+    '## Staged profile edits',
+    '',
+    ...(assignments.length > 0 ? assignments.map((assignment) => {
+      const chord = assignment.reformers?.length ? assignment.reformers.join(' + ') : 'Base';
+      const action = assignment.clear ? 'clear' : assignment.tuneOnly ? 'tune axis' : 'assign';
+      const command = assignment.clear || assignment.tuneOnly ? '' : ` → ${assignment.command}`;
+      return `- \`${assignment.profileFile}\`: ${action} \`${chord} + ${assignment.key}\`${command}`;
+    }) : ['- None']),
     '',
     '## TM MFD categories',
     '',
@@ -1630,11 +1662,12 @@ export function writeConsumer({ preview, outputDir, displayName, inputModuleId, 
     '',
     '## Bindings',
     '',
-    '| Device | Control | DCS command name | Device label | Effective label | Label source |',
-    '| --- | --- | --- | --- | --- | --- |',
+    '| Device | Layer / chord | Control | DCS command name | Device label | Effective label | Label source |',
+    '| --- | --- | --- | --- | --- | --- | --- |',
     ...documentationPreview.rows.map((row) => {
       const cell = (value) => String(value ?? '').replaceAll('|', '\\|').replaceAll('\n', ' ');
-      return `| ${cell(row.stem)} | ${cell(row.key)} | ${cell(row.name)} | ${cell(row.deviceLabel)} | ${cell(row.label)} | ${cell(row.labelSource)} |`;
+      const chord = row.reformers?.length ? [...row.reformers].sort().join(' + ') : 'Base';
+      return `| ${cell(row.stem)} | ${cell(chord)} | ${cell(row.key)} | ${cell(row.name)} | ${cell(row.deviceLabel)} | ${cell(row.label)} | ${cell(row.labelSource)} |`;
     }),
     '',
     '## Next steps',
