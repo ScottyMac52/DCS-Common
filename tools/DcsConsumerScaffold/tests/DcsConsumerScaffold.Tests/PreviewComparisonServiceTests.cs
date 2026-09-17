@@ -82,6 +82,27 @@ public sealed class PreviewComparisonServiceTests
     }
 
     [Fact]
+    public void Apply_DoesNotRestoreRepositoryOnlyModifiersAfterAuthoritativeRemoval()
+    {
+        var repository = CreateRepository();
+        try
+        {
+            var service = new PreviewComparisonService();
+            var snapshot = service.Load(repository.FullName);
+            var modifiers = new List<PreviewModifier>();
+
+            service.Apply(snapshot, new List<PreviewDevice>(), modifiers, [], new List<CommandLabelGroup>(),
+                modifiersAreAuthoritative: true);
+
+            Assert.Empty(modifiers);
+        }
+        finally
+        {
+            repository.Delete(recursive: true);
+        }
+    }
+
+    [Fact]
     public void Apply_UsesNewChangedOutOfSyncAndNotComparedStatesWithCorrectPrecedence()
     {
         var service = new PreviewComparisonService();

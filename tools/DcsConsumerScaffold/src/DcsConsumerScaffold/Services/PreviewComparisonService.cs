@@ -86,7 +86,8 @@ public sealed class PreviewComparisonService
         IList<PreviewDevice> devices,
         IList<PreviewModifier> modifiers,
         IEnumerable<PreviewRow> rows,
-        IList<CommandLabelGroup> commands)
+        IList<CommandLabelGroup> commands,
+        bool modifiersAreAuthoritative = false)
     {
         RemoveSynthetic(devices, modifiers, commands);
         var loadedRows = rows.ToList();
@@ -97,7 +98,7 @@ public sealed class PreviewComparisonService
         }
 
         CompareDevices(snapshot, devices, loadedRows);
-        CompareModifiers(snapshot, modifiers, loadedRows);
+        CompareModifiers(snapshot, modifiers, loadedRows, modifiersAreAuthoritative);
         CompareCommands(snapshot, commands, loadedRows);
     }
 
@@ -163,7 +164,8 @@ public sealed class PreviewComparisonService
     private static void CompareModifiers(
         RepositoryPreviewSnapshot snapshot,
         IList<PreviewModifier> modifiers,
-        IReadOnlyList<PreviewRow> rows)
+        IReadOnlyList<PreviewRow> rows,
+        bool modifiersAreAuthoritative)
     {
         var matched = new HashSet<RepositoryModifier>();
         foreach (var modifier in modifiers)
@@ -191,6 +193,7 @@ public sealed class PreviewComparisonService
                 reasons.Count == 0 ? PreviewChangeState.Unchanged : PreviewChangeState.Changed,
                 reasons.Count == 0 ? "Modifier is unchanged." : string.Join("; ", reasons));
         }
+        if (modifiersAreAuthoritative) return;
         foreach (var current in snapshot.Modifiers.Where(item => !matched.Contains(item)))
         {
             modifiers.Add(new PreviewModifier

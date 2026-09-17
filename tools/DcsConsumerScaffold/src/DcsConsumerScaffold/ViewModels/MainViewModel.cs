@@ -1352,7 +1352,7 @@ public sealed class MainViewModel : INotifyPropertyChanged
             return;
         }
         if (_comparisonSnapshot is null) return;
-        _comparison.Apply(_comparisonSnapshot, Devices, Modifiers, Rows, CommandLabels);
+        _comparison.Apply(_comparisonSnapshot, Devices, Modifiers, Rows, CommandLabels, _modifiersAuthored);
     }
 
     private void ApplyUiLayerObservedStates()
