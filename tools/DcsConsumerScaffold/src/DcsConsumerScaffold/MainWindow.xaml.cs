@@ -398,6 +398,7 @@ public partial class MainWindow : Window
     private void RemoveModifier_Click(object sender, RoutedEventArgs e) => RunModifierEdit(() =>
     {
         if (_viewModel.SelectedModifier is not { } modifier) throw new InvalidOperationException("Select a modifier to remove.");
+        _viewModel.EnsureModifierCanBeRemoved(modifier);
         if (MessageBox.Show(this, $"Remove modifier {modifier.Name}?", "Remove modifier", MessageBoxButton.YesNo,
             MessageBoxImage.Warning) != MessageBoxResult.Yes) return;
         _viewModel.RemoveModifier(modifier);

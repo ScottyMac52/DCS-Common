@@ -39,13 +39,21 @@ public class ModifierAuthoringTests
         var device = new PreviewDevice { DeviceId = "tm-mfd", ProfileFile = "F16 MFD 3.diff.lua" };
         var modifier = model.AddModifier(device,
             new InteractiveControl { Key = "JOY_BTN1", HardwareLabel = "OSB01" }, "OLD", "hold", null);
-        var row = new PreviewRow { Reformers = ["OLD"], Chord = "OLD" };
+        var row = new PreviewRow
+        {
+            ProfileFile = "F16 MFD 3.diff.lua", Section = "keyDiffs", Key = "JOY_BTN2",
+            Command = "d1", Name = "Used command", Reformers = ["OLD"], Chord = "OLD",
+        };
         model.ReplacePreviewRows([row]);
 
         model.UpdateModifier(modifier, null, null, "NEW", "hold", null);
         Assert.Equal(new[] { "NEW" }, row.Reformers);
         Assert.Equal("NEW", row.Chord);
         Assert.Throws<InvalidOperationException>(() => model.RemoveModifier(modifier));
+
+        model.ClearAssignment(row);
+        model.RemoveModifier(modifier);
+        Assert.Empty(model.Modifiers);
     }
 
     [Fact]
