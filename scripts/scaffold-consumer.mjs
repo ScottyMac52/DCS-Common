@@ -955,7 +955,7 @@ export function buildDraftKneeboardConfig(preview, { displayName, inputModuleId,
     if (!device.deviceId) continue;
     const profileKey = profileKeyFromDevice(device);
     const inferredTitle = device.role ? `${device.stem || device.deviceId} — ${device.role}` : device.stem || device.deviceId;
-    const title = device.pageTitle ?? inferredTitle;
+    const title = String(device.pageTitle ?? inferredTitle).trim();
     const file = `${String(pageIndex).padStart(2, '0')}-${slugifyId(profileKey).toUpperCase()}`;
     pageIndex += 1;
 
@@ -1159,7 +1159,7 @@ export function mergeConsumerConfig(draft, existing, removedProfiles = [], repla
   for (const page of currentPages) {
     const previous = existingPagesByIdentity.get(pageIdentity(page));
     if (!previous) continue;
-    if (previous.title !== undefined) page.title = previous.title;
+    if (previous.title !== undefined) page.title = typeof previous.title === 'string' ? previous.title.trim() : previous.title;
     if (previous.kicker !== undefined) page.kicker = previous.kicker;
     if (page.deviceId === 'tm-mfd' && page.categoryLabels === undefined && previous.categoryLabels !== undefined) {
       page.categoryLabels = { ...previous.categoryLabels };
@@ -1169,7 +1169,7 @@ export function mergeConsumerConfig(draft, existing, removedProfiles = [], repla
       for (const layer of page.layers) {
         if (layer.id === 'base') continue;
         const previousLayer = previousLayers.get(layer.id);
-        layer.title = previousLayer?.title ?? `${page.title} • ${layer.id}`;
+        layer.title = typeof previousLayer?.title === 'string'\n          ? previousLayer.title.trim()\n          : `${page.title} • ${layer.id}`;
       }
     }
   }
@@ -1326,7 +1326,7 @@ function finalDocumentationPreview({ preview, kneeboard, inputModuleId, outputDi
     basename(path).toLocaleLowerCase(),
     profileKey,
   ]));
-  const pageByProfile = new Map((kneeboard.pages ?? []).map((page) => [page.profile, page]));
+  const pageByProfile = new Map((kneeboard.pages ?? [])\n    .filter((page) => typeof page.profile === 'string' && page.profile.trim())\n    .map((page) => [page.profile, page]));
   const authoredDevices = new Map(preview.devices.map((device) => [
     (device.outputProfileFile ?? device.profileFile).toLocaleLowerCase(),
     device,
@@ -1334,7 +1334,7 @@ function finalDocumentationPreview({ preview, kneeboard, inputModuleId, outputDi
   const authoredRows = new Map(preview.rows.map((row) => [rowIdentity(row), row]));
   for (const device of finalPreview.devices) {
     const profileKey = profileByFile.get((device.outputProfileFile ?? device.profileFile).toLocaleLowerCase());
-    const page = pageByProfile.get(profileKey);
+    const page = profileKey ? pageByProfile.get(profileKey) : undefined;
     const authored = authoredDevices.get((device.outputProfileFile ?? device.profileFile).toLocaleLowerCase());
     if (authored) {
       device.mappingSource = authored.mappingSource;
@@ -1352,7 +1352,7 @@ function finalDocumentationPreview({ preview, kneeboard, inputModuleId, outputDi
       row.deviceLabel = authored.deviceLabel;
     }
     const profileKey = profileByFile.get(row.profileFile.toLocaleLowerCase());
-    const page = pageByProfile.get(profileKey);
+    const page = profileKey ? pageByProfile.get(profileKey) : undefined;
     if (profileKey) row.profileKey = profileKey;
     if (page?.deviceId) row.deviceId = page.deviceId;
   }
@@ -1381,7 +1381,7 @@ function deviceGuidePath(profileKey, device) {
 export function buildConsumerDocumentation({ preview, kneeboard, displayName, inputModuleId, kneeboardId, repoName, outputDir, commonRoot = defaultCommonRoot }) {
   const profileByKey = new Map(Object.entries(kneeboard.profiles ?? {}).map(([key, relative]) =>
     [basename(relative).toLocaleLowerCase(), key]));
-  const pageByProfile = new Map((kneeboard.pages ?? []).map((page) => [page.profile, page]));
+  const pageByProfile = new Map((kneeboard.pages ?? [])\n    .filter((page) => typeof page.profile === 'string' && page.profile.trim())\n    .map((page) => [page.profile, page]));
   const deviceDocuments = {};
   const documentedDevices = preview.devices.map((device) => {
     const profileFile = device.outputProfileFile ?? device.profileFile;
@@ -1404,7 +1404,7 @@ export function buildConsumerDocumentation({ preview, kneeboard, displayName, in
       });
       return `#### ${heading}\n\n| Physical input | Assignment | Axis/filter settings |\n| --- | --- | --- |\n${table.join('\n')}`;
     }).join('\n\n');
-    const title = page?.title ?? device.stem ?? device.deviceId;
+    const title = String(page?.title ?? device.stem ?? device.deviceId ?? '').trim();
     const metadata = `- Profile: \`${markdownCell(profileFile)}\`\n- Shared hardware: \`${markdownCell(device.deviceId)}\`\n- Physical instance: \`${markdownCell(device.physicalInstance)}\`\n- Kneeboard page: \`${markdownCell(page ? `${page.file}.png` : 'not generated')}\``;
     const guidePath = deviceGuidePath(profileKey, device);
     deviceDocuments[guidePath] = `<!-- Generated by DCS-Common IPI. -->\n\n# ${markdownCell(title)} mappings\n\nThis guide is generated from the effective DCS profile used by ${displayName}.\n\n${metadata}\n\n## Assignments\n\n${layers}\n`;
