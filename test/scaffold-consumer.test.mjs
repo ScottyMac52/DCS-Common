@@ -1649,7 +1649,9 @@ test('explicit removal excludes a loaded device and deletes its prior consumer p
   assert.ok(existsSync(priorMfd));
 
   writeConsumer({ preview, outputDir, displayName: 'Test Jet', inputModuleId: 'TestJet',
-    kneeboardId: 'TestJet', commonRoot, removedProfiles: ['tm-mfd-1'] });
+    kneeboardId: 'TestJet', commonRoot, removedProfiles: ['tm-mfd-1'], assignments: [{
+      profileFile: mfdProfile, section: 'keyDiffs', key: 'JOY_BTN1', reformers: [], clear: true,
+    }] });
   assert.equal(existsSync(priorMfd), false);
   const config = JSON.parse(readFileSync(join(outputDir, 'config/kneeboard.json'), 'utf8'));
   assert.equal(config.profiles['tm-mfd-1'], undefined);

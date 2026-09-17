@@ -1447,13 +1447,13 @@ export function buildConsumerDocumentation({ preview, kneeboard, displayName, in
 export function writeConsumer({ preview, outputDir, displayName, inputModuleId, kneeboardId, repoName, removedProfiles = [], assignments = [], authoredDevices = [], includeUiLayer = true, dryRun = false, commonRoot = defaultCommonRoot }) {
   const authoredPreview = previewWithAuthoredDevices(preview, authoredDevices, commonRoot);
   const selectedPreview = previewWithoutRemovedProfiles(authoredPreview, removedProfiles);
-  const effectivePreview = previewWithAssignments(selectedPreview, assignments, commonRoot);
-  if (assignments.some((assignment) => !selectedPreview.devices.some((device) => device.profileFile === assignment.profileFile)))
-    throw new Error('Assignment profile is not in the preview');
+  const selectedProfileFiles = new Set(selectedPreview.devices.map((device) => device.profileFile));
+  const effectiveAssignments = assignments.filter((assignment) => selectedProfileFiles.has(assignment.profileFile));
+  const effectivePreview = previewWithAssignments(selectedPreview, effectiveAssignments, commonRoot);
   // Validate and materialize every changed profile before writing any destination files.
   const assignedProfiles = new Map();
   for (const device of selectedPreview.devices) {
-    const pending = assignments.filter((assignment) => assignment.profileFile === device.profileFile);
+    const pending = effectiveAssignments.filter((assignment) => assignment.profileFile === device.profileFile);
     if (!pending.length) continue;
     assignedProfiles.set(device.profileFile, applyDcsCommandAssignments(
       effectiveDeviceProfileSource(selectedPreview, device), pending, { filename: device.profileFile,

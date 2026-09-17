@@ -925,9 +925,9 @@ public sealed class MainViewModel : INotifyPropertyChanged
     {
         var profile = device.ProfileFile!;
         var native = NativeDeviceName(profile);
-        var assignments = PendingAssignments.Count(item => string.Equals(item.ProfileFile, profile, StringComparison.OrdinalIgnoreCase))
-            + Rows.Count(row => string.Equals(row.ProfileFile, profile, StringComparison.OrdinalIgnoreCase)
-                && !row.IsUnboundCandidate && !string.IsNullOrWhiteSpace(row.Command));
+        var assignments = Rows.Count(row =>
+            string.Equals(row.ProfileFile, profile, StringComparison.OrdinalIgnoreCase) &&
+            !string.IsNullOrWhiteSpace(row.Command));
         var modifiers = Modifiers.Count(item => string.Equals(item.Device, native, StringComparison.OrdinalIgnoreCase));
         if (assignments + modifiers > 0)
             throw new InvalidOperationException($"{profile} is used by {assignments} assignment(s) and {modifiers} modifier(s). Move or clear them before removing it.");
