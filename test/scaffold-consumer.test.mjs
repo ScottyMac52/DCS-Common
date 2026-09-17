@@ -1655,6 +1655,9 @@ test('explicit removal excludes a loaded device and deletes its prior consumer p
   assert.equal(config.profiles['tm-mfd-1'], undefined);
   assert.equal(config.pages.some((page) => page.profile === 'tm-mfd-1'), false);
   assert.doesNotMatch(readFileSync(join(outputDir, 'docs/CONTROL-MAPPINGS.md'), 'utf8'), /F16 MFD 1/);
+  const report = readFileSync(join(outputDir, 'SCAFFOLD-REPORT.md'), 'utf8');
+  assert.match(report, /Explicitly removed profiles: 1/);
+  assert.match(report, /tm-mfd-1.*explicitly removed/);
 });
 
 test('T-45 selection keeps standalone MOZA and separate VKB while removing AVA completely', () => {
@@ -1721,4 +1724,166 @@ test('T-45 selection keeps standalone MOZA and separate VKB while removing AVA c
   assert.match(integrations, /VKB-F14-GUNFIGHTER\.png/);
   assert.doesNotMatch(integrations, /AVA/);
   assert.doesNotMatch(readFileSync(join(outputDir, 'SCAFFOLD-REPORT.md'), 'utf8'), /Ava \[R\] Viper/);
+});
+
+
+test('unmapped profiles do not inherit profile-less repository pages during documentation', () => {
+  const root = mkdtempSync(join(tmpdir(), 'scaffold-unmapped-documentation-'));
+  const profilesDir = join(root, 'profiles');
+  const outputDir = join(root, 'consumer');
+  const configDir = join(outputDir, 'config');
+  const repositoryProfiles = join(outputDir, 'src', 'Config', 'Input', 'TestJet', 'joystick');
+  mkdirSync(profilesDir);
+  mkdirSync(configDir, { recursive: true });
+  mkdirSync(repositoryProfiles, { recursive: true });
+
+  const vjoy = 'vJoy Device {00DE48B0-724A-11f1-8002-444553540000}.diff.lua';
+  writeFileSync(join(profilesDir, vjoy), `local diff = { ["axisDiffs"] = {
+    ["a2001cdnil"] = { ["removed"] = { [1] = { ["key"] = "JOY_Y" } }, ["name"] = "Pitch" },
+  } } return diff`);
+
+  const ava = 'Ava [R] Viper {F77212B0-00A8-11f1-8001-444553540000}.diff.lua';
+  writeFileSync(join(repositoryProfiles, ava), 'local diff = {} return diff');
+  writeFileSync(join(configDir, 'kneeboard.json'), JSON.stringify({
+    schemaVersion: 1,
+    aircraft: 'Test Jet',
+    profiles: {
+      'ava-base-f16c': `src/Config/Input/TestJet/joystick/${ava}`,
+    },
+    pages: [{
+      file: '01-AVA-BASE-F16C',
+      deviceId: 'ava-base-f16c',
+      title: 'Ava [R] Viper',
+      controls: {},
+    }],
+  }, null, 2));
+
+  const preview = buildPreview({ profilesDir, commonRoot });
+  assert.equal(preview.devices[0].deviceId, null);
+  writeConsumer({
+    preview,
+    outputDir,
+    displayName: 'Test Jet',
+    inputModuleId: 'TestJet',
+    kneeboardId: 'TestJet',
+    commonRoot,
+  });
+
+  const report = readFileSync(join(outputDir, 'SCAFFOLD-REPORT.md'), 'utf8');
+  const vjoyLine = report.split('\n').find((line) => line.includes(vjoy));
+  assert.match(vjoyLine, /profile `\*\*UNMAPPED\*\*` → \*\*UNMAPPED\*\*/);
+  assert.doesNotMatch(vjoyLine, /ava-base-f16c/);
+  const vjoyGuide = readFileSync(join(outputDir, 'docs/devices/VJOY-DEVICE-MAPPINGS.md'), 'utf8');
+  assert.doesNotMatch(vjoyGuide, /Ava \[R\] Viper|ava-base-f16c|01-AVA-BASE-F16C/);
+});
+
+test('consumer merge trims stale surrounding whitespace from page and layer titles', () => {
+  const draft = {
+    profiles: { 'vkb-f14-gunfighter': 'src/VKBSim Gunfighter F14.diff.lua' },
+    pages: [{
+      profile: 'vkb-f14-gunfighter',
+      deviceId: 'vkb-f14-gunfighter',
+      title: 'VKBSim Gunfighter F14',
+      layers: [
+        { id: 'base', controls: {} },
+        { id: 'JOY_BTN7', title: 'VKBSim Gunfighter F14 • JOY_BTN7', controls: {} },
+      ],
+    }],
+  };
+  const existing = {
+    profiles: { ...draft.profiles },
+    pages: [{
+      profile: 'vkb-f14-gunfighter',
+      deviceId: 'vkb-f14-gunfighter',
+      title: ' VKBSim Gunfighter F14 ',
+      layers: [
+        { id: 'base', controls: {} },
+        { id: 'JOY_BTN7', title: ' VKBSim Gunfighter F14 • JOY_BTN7 ', controls: {} },
+      ],
+    }],
+  };
+
+  const { config } = mergeConsumerConfig(draft, existing);
+  assert.equal(config.pages[0].title, 'VKBSim Gunfighter F14');
+  assert.equal(config.pages[0].layers[1].title, 'VKBSim Gunfighter F14 • JOY_BTN7');
+});
+
+
+test('scaffolding removes stale repository profiles outside the effective inventory', () => {
+  const root = mkdtempSync(join(tmpdir(), 'scaffold-orphan-profile-'));
+  const profilesDir = join(root, 'profiles');
+  const outputDir = join(root, 'consumer');
+  const configDir = join(outputDir, 'config');
+  const repositoryProfiles = join(outputDir, 'src', 'Config', 'Input', 'TestJet', 'joystick');
+  mkdirSync(profilesDir);
+  mkdirSync(configDir, { recursive: true });
+  mkdirSync(repositoryProfiles, { recursive: true });
+
+  const ava = 'Ava [R] Viper {F77212B0-00A8-11f1-8001-444553540000}.diff.lua';
+  const vjoy = 'vJoy Device {00DE48B0-724A-11f1-8002-444553540000}.diff.lua';
+  writeFileSync(join(repositoryProfiles, ava), 'local diff = {} return diff');
+  writeFileSync(join(repositoryProfiles, vjoy), 'local diff = {} return diff');
+  writeFileSync(join(configDir, 'kneeboard.json'), JSON.stringify({
+    schemaVersion: 1,
+    aircraft: 'Test Jet',
+    profiles: {
+      'ava-base-f16c': `src/Config/Input/TestJet/joystick/${ava}`,
+    },
+    pages: [{
+      file: '01-AVA-BASE-F16C',
+      profile: 'ava-base-f16c',
+      deviceId: 'ava-base-f16c',
+      title: 'Ava [R] Viper',
+      controls: {},
+    }],
+  }, null, 2));
+
+  writeConsumer({
+    preview: buildPreview({ profilesDir, commonRoot }),
+    outputDir,
+    displayName: 'Test Jet',
+    inputModuleId: 'TestJet',
+    kneeboardId: 'TestJet',
+    commonRoot,
+  });
+
+  assert.ok(existsSync(join(repositoryProfiles, ava)));
+  assert.equal(existsSync(join(repositoryProfiles, vjoy)), false);
+  assert.equal(existsSync(join(outputDir, 'docs/devices/VJOY-DEVICE-MAPPINGS.md')), false);
+  assert.doesNotMatch(readFileSync(join(outputDir, 'SCAFFOLD-REPORT.md'), 'utf8'), /vJoy Device/);
+});
+
+test('scaffold report records each staged profile edit', () => {
+  const root = mkdtempSync(join(tmpdir(), 'scaffold-assignment-audit-'));
+  const profilesDir = join(root, 'profiles');
+  const outputDir = join(root, 'consumer');
+  mkdirSync(profilesDir);
+  const profile = 'F16 MFD 1 {11111111-2222-3333-4444-555555555555}.diff.lua';
+  writeFileSync(join(profilesDir, profile), `local diff = { ["keyDiffs"] = {
+    ["d-old"] = { ["added"] = { [1] = { ["key"] = "JOY_BTN1" } }, ["name"] = "Old" },
+  } } return diff`);
+  const preview = buildPreview({ profilesDir, commonRoot });
+
+  writeConsumer({
+    preview,
+    outputDir,
+    displayName: 'Test Jet',
+    inputModuleId: 'TestJet',
+    kneeboardId: 'TestJet',
+    commonRoot,
+    assignments: [{
+      profileFile: profile,
+      section: 'keyDiffs',
+      key: 'JOY_BTN1',
+      reformers: [],
+      command: 'd-new',
+      name: 'New',
+    }],
+  });
+
+  const report = readFileSync(join(outputDir, 'SCAFFOLD-REPORT.md'), 'utf8');
+  assert.match(report, /Applied staged profile edits: 1/);
+  assert.match(report, /assign `Base \+ JOY_BTN1` → d-new/);
+  assert.match(report, /\| Device \| Layer \/ chord \| Control \|/);
+  assert.match(report, /\| F16 MFD 1 \| Base \| JOY_BTN1 \| New \|/);
 });
