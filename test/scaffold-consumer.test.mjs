@@ -19,6 +19,7 @@ import {
   applyDcsCommandAssignments,
   canonicalizeLegacyChordCommandIds,
   mergeRepositoryAssignments,
+  restrictStandaloneMozaProfile,
   previewWithAuthoredDevices,
   previewWithoutRemovedProfiles,
 } from '../scripts/scaffold-consumer.mjs';
@@ -276,7 +277,7 @@ test('command IDs are not guessed from a suffix unless the canonical command exi
   assert.equal(canonicalizeLegacyChordCommandIds(source), source);
 });
 
-test('repository assignments override the same physical controls while retaining newly observed controls', () => {
+test('existing consumer assignments reject unstaged bindings from live DCS', () => {
   const observed = `local diff = { ["keyDiffs"] = {
     ["d-old"] = { ["added"] = { [1] = { ["key"] = "JOY_BTN1" } }, ["name"] = "Old" },
     ["d-observed"] = { ["added"] = { [1] = { ["key"] = "JOY_BTN2" } }, ["name"] = "Observed" },
@@ -288,8 +289,32 @@ test('repository assignments override the same physical controls while retaining
   const merged = parseDcsDiffLua(mergeRepositoryAssignments(observed, repository, { filename: 'MFD.diff.lua' })).bindings;
 
   assert.deepEqual(merged.find(({ command }) => command === 'd-local').added, [{ key: 'JOY_BTN1', reformers: [] }]);
-  assert.deepEqual(merged.find(({ command }) => command === 'd-observed').added, [{ key: 'JOY_BTN2', reformers: [] }]);
+  assert.equal(merged.some(({ command }) => command === 'd-observed'), false);
   assert.equal(merged.some(({ command }) => command === 'd-old'), false);
+});
+
+test('standalone MOZA profile keeps only unmodified pitch and roll assignments', () => {
+  const source = `local diff = {
+    ["keyDiffs"] = {
+      ["d-fire"] = { ["added"] = { [1] = { ["key"] = "JOY_BTN1" } }, ["name"] = "Fire" },
+      ["d-view"] = { ["removed"] = { [1] = { ["key"] = "JOY_BTN_POV1_U" } }, ["name"] = "View" },
+    },
+    ["axisDiffs"] = {
+      ["a-pitch"] = { ["added"] = { [1] = { ["key"] = "JOY_Y" } }, ["name"] = "Pitch" },
+      ["a-roll"] = { ["added"] = { [1] = { ["key"] = "JOY_X" } }, ["name"] = "Roll" },
+      ["a-throttle"] = { ["added"] = { [1] = { ["key"] = "JOY_Z" } }, ["name"] = "Throttle" },
+      ["a-rudder"] = { ["removed"] = { [1] = { ["key"] = "JOY_RZ" } }, ["name"] = "Rudder" },
+    },
+  } return diff`;
+
+  const bindings = parseDcsDiffLua(restrictStandaloneMozaProfile(source)).bindings;
+  const active = bindings.flatMap((binding) =>
+    [...binding.added, ...(binding.changed ?? [])].map((input) =>
+      `${binding.section}:${binding.command}:${input.key}`));
+
+  assert.deepEqual(active.sort(), ['axisDiffs:a-pitch:JOY_Y', 'axisDiffs:a-roll:JOY_X']);
+  assert.ok(bindings.find(({ command }) => command === 'd-view').removed.some(({ key }) => key === 'JOY_BTN_POV1_U'));
+  assert.ok(bindings.find(({ command }) => command === 'a-rudder').removed.some(({ key }) => key === 'JOY_RZ'));
 });
 
 test('repository removals prevent an observed assignment from being resurrected', () => {
@@ -306,7 +331,7 @@ test('repository removals prevent an observed assignment from being resurrected'
   assert.ok(merged.find(({ command }) => command === 'd-old').removed.some(({ key }) => key === 'JOY_BTN1'));
 });
 
-test('preview and proceed preserve uncommitted repository assignments', () => {
+test('preview and proceed keep existing consumer profiles isolated from live DCS drift', () => {
   const root = mkdtempSync(join(tmpdir(), 'scaffold-repository-assignments-'));
   const profilesDir = join(root, 'profiles');
   const outputDir = join(root, 'consumer');
@@ -324,14 +349,14 @@ test('preview and proceed preserve uncommitted repository assignments', () => {
 
   const preview = buildPreview({ profilesDir, repositoryProfilesDir, commonRoot });
   assert.ok(preview.rows.some(({ command, key }) => command === 'd-local' && key === 'JOY_BTN1'));
-  assert.ok(preview.rows.some(({ command, key }) => command === 'd-observed' && key === 'JOY_BTN2'));
+  assert.equal(preview.rows.some(({ command }) => command === 'd-observed'), false);
 
   writeConsumer({ preview, outputDir, displayName: 'Test', inputModuleId: 'Test', kneeboardId: 'Test', commonRoot,
     assignments: [{ profileFile, section: 'keyDiffs', key: 'JOY_BTN1', reformers: [], command: 'd-reassigned', name: 'Reassigned' }] });
   const written = parseDcsDiffLua(readFileSync(join(repositoryProfilesDir, profileFile), 'utf8')).bindings;
   assert.ok(written.some(({ command, added }) => command === 'd-reassigned' && added.some(({ key }) => key === 'JOY_BTN1')));
   assert.equal(written.some(({ command }) => command === 'd-local'), false);
-  assert.ok(written.some(({ command, added }) => command === 'd-observed' && added.some(({ key }) => key === 'JOY_BTN2')));
+  assert.equal(written.some(({ command }) => command === 'd-observed'), false);
 });
 
 test('proceed repairs legacy chord-suffixed command IDs without a pending assignment', () => {
@@ -1672,10 +1697,14 @@ test('T-45 selection keeps standalone MOZA and separate VKB while removing AVA c
   const profile = (key, name) => `local diff = { ["keyDiffs"] = {
     ["d1"] = { ["added"] = { [1] = { ["key"] = "${key}" } }, ["name"] = "${name}" },
   } } return diff`;
-  writeFileSync(join(initialProfiles, moza), profile('JOY_BTN1', 'MOZA control'));
+  const mozaProfile = `local diff = { ["axisDiffs"] = {
+    ["a2001cdnil"] = { ["added"] = { [1] = { ["key"] = "JOY_Y" } }, ["name"] = "Pitch" },
+    ["a2002cdnil"] = { ["added"] = { [1] = { ["key"] = "JOY_X" } }, ["name"] = "Roll" },
+  } } return diff`;
+  writeFileSync(join(initialProfiles, moza), mozaProfile);
   writeFileSync(join(initialProfiles, vkb), profile('JOY_BTN1', 'VKB trigger'));
   writeFileSync(join(initialProfiles, ava), profile('JOY_BTN1', 'AVA trigger'));
-  writeFileSync(join(selectedProfiles, moza), profile('JOY_BTN1', 'MOZA control'));
+  writeFileSync(join(selectedProfiles, moza), mozaProfile);
   writeFileSync(join(selectedProfiles, vkb), profile('JOY_BTN1', 'VKB trigger'));
 
   const outputDir = join(root, 'consumer');
