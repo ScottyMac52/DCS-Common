@@ -440,31 +440,32 @@ export function canonicalizeLegacyChordCommandIds(source, { filename = 'profile.
 }
 
 export function mergeRepositoryAssignments(observedSource, repositorySource, { filename = 'profile.diff.lua' } = {}) {
-  const observed = parseDcsDiffLua(observedSource, { filename });
+  // Once a consumer profile exists, it is the executable source of truth. The
+  // live DCS profile is discovery input only: silently unioning its additional
+  // bindings makes a repeat scaffold depend on workstation state and can
+  // resurrect stale controls. New or changed bindings must be staged explicitly
+  // through IPI before they are written to an existing consumer.
+  parseDcsDiffLua(observedSource, { filename });
   const repository = parseDcsDiffLua(repositorySource, { filename });
-  normalizeLegacyChordCommandBindings(observed);
   normalizeLegacyChordCommandBindings(repository);
-  const location = (input) => `${input.key}\0${chordKey(input.reformers)}`;
-  const repositoryLocations = new Set(repository.bindings.flatMap((binding) => [...binding.added, ...(binding.changed ?? []), ...binding.removed].map(location)));
-  for (const binding of observed.bindings) {
-    binding.added = binding.added.filter((input) => !repositoryLocations.has(location(input)));
-    binding.changed = (binding.changed ?? []).filter((input) => !repositoryLocations.has(location(input)));
-  }
-  for (const saved of repository.bindings) {
-    let target = observed.bindings.find((binding) => binding.section === saved.section && binding.command === saved.command);
-    if (!target) {
-      target = { section: saved.section, command: saved.command, name: saved.name, added: [], changed: [], removed: [] };
-      observed.bindings.push(target);
+  return serializeDcsProfile(repository);
+}
+
+export function restrictStandaloneMozaProfile(source, { filename = 'MOZA AB9.diff.lua' } = {}) {
+  const parsed = parseDcsDiffLua(source, { filename });
+  normalizeLegacyChordCommandBindings(parsed);
+  for (const binding of parsed.bindings) {
+    if (binding.section === 'keyDiffs') {
+      binding.added = [];
+      binding.changed = [];
+      continue;
     }
-    target.name = saved.name;
-    for (const input of saved.added)
-      if (!target.added.some((candidate) => location(candidate) === location(input))) target.added.push(input);
-    for (const input of saved.changed ?? [])
-      if (!target.changed.some((candidate) => location(candidate) === location(input))) target.changed.push(input);
-    for (const input of saved.removed)
-      if (!target.removed.some((candidate) => location(candidate) === location(input))) target.removed.push(input);
+    const isFlightAxis = (input) =>
+      ['JOY_X', 'JOY_Y'].includes(input.key) && (input.reformers?.length ?? 0) === 0;
+    binding.added = binding.added.filter(isFlightAxis);
+    binding.changed = (binding.changed ?? []).filter(isFlightAxis);
   }
-  return serializeDcsProfile(observed);
+  return serializeDcsProfile(parsed);
 }
 
 function effectiveProfileSource(profilesDir, repositoryProfilesDir, fileName) {
@@ -676,7 +677,11 @@ export function buildPreview({ profilesDir, repositoryProfilesDir = null, modifi
 
     let bindings = [];
     try {
-      bindings = parseDcsDiffLua(effectiveProfileSource(profilesDir, repositoryProfilesDir, fileName), { filename: fileName }).bindings;
+      const effectiveSource = effectiveProfileSource(profilesDir, repositoryProfilesDir, fileName);
+      const profileSource = mapping.deviceId === 'moza-ab9' && mozaGrip === 'standalone'
+        ? restrictStandaloneMozaProfile(effectiveSource, { filename: fileName })
+        : effectiveSource;
+      bindings = parseDcsDiffLua(profileSource, { filename: fileName }).bindings;
     } catch (error) {
       errors.push(`${fileName}: ${error.message ?? error}`);
       devices.push({
@@ -955,7 +960,7 @@ export function buildDraftKneeboardConfig(preview, { displayName, inputModuleId,
     if (!device.deviceId) continue;
     const profileKey = profileKeyFromDevice(device);
     const inferredTitle = device.role ? `${device.stem || device.deviceId} — ${device.role}` : device.stem || device.deviceId;
-    const title = device.pageTitle ?? inferredTitle;
+    const title = String(device.pageTitle ?? inferredTitle).trim();
     const file = `${String(pageIndex).padStart(2, '0')}-${slugifyId(profileKey).toUpperCase()}`;
     pageIndex += 1;
 
@@ -1159,7 +1164,7 @@ export function mergeConsumerConfig(draft, existing, removedProfiles = [], repla
   for (const page of currentPages) {
     const previous = existingPagesByIdentity.get(pageIdentity(page));
     if (!previous) continue;
-    if (previous.title !== undefined) page.title = previous.title;
+    if (previous.title !== undefined) page.title = typeof previous.title === 'string' ? previous.title.trim() : previous.title;
     if (previous.kicker !== undefined) page.kicker = previous.kicker;
     if (page.deviceId === 'tm-mfd' && page.categoryLabels === undefined && previous.categoryLabels !== undefined) {
       page.categoryLabels = { ...previous.categoryLabels };
@@ -1169,7 +1174,9 @@ export function mergeConsumerConfig(draft, existing, removedProfiles = [], repla
       for (const layer of page.layers) {
         if (layer.id === 'base') continue;
         const previousLayer = previousLayers.get(layer.id);
-        layer.title = previousLayer?.title ?? `${page.title} • ${layer.id}`;
+        layer.title = typeof previousLayer?.title === 'string'
+          ? previousLayer.title.trim()
+          : `${page.title} • ${layer.id}`;
       }
     }
   }
@@ -1288,9 +1295,12 @@ export function previewWithoutRemovedProfiles(preview, removedProfiles = []) {
 }
 
 function effectiveDeviceProfileSource(preview, device) {
-  return device.authored
+  const source = device.authored
     ? emptyDcsProfile
     : effectiveProfileSource(preview.profilesDir, preview.repositoryProfilesDir, device.profileFile);
+  return preview.mozaGrip === 'standalone' && device.deviceId === 'moza-ab9'
+    ? restrictStandaloneMozaProfile(source, { filename: device.profileFile })
+    : source;
 }
 
 function markdownCell(value) {
@@ -1326,7 +1336,9 @@ function finalDocumentationPreview({ preview, kneeboard, inputModuleId, outputDi
     basename(path).toLocaleLowerCase(),
     profileKey,
   ]));
-  const pageByProfile = new Map((kneeboard.pages ?? []).map((page) => [page.profile, page]));
+  const pageByProfile = new Map((kneeboard.pages ?? [])
+    .filter((page) => typeof page.profile === 'string' && page.profile.trim())
+    .map((page) => [page.profile, page]));
   const authoredDevices = new Map(preview.devices.map((device) => [
     (device.outputProfileFile ?? device.profileFile).toLocaleLowerCase(),
     device,
@@ -1334,7 +1346,7 @@ function finalDocumentationPreview({ preview, kneeboard, inputModuleId, outputDi
   const authoredRows = new Map(preview.rows.map((row) => [rowIdentity(row), row]));
   for (const device of finalPreview.devices) {
     const profileKey = profileByFile.get((device.outputProfileFile ?? device.profileFile).toLocaleLowerCase());
-    const page = pageByProfile.get(profileKey);
+    const page = profileKey ? pageByProfile.get(profileKey) : undefined;
     const authored = authoredDevices.get((device.outputProfileFile ?? device.profileFile).toLocaleLowerCase());
     if (authored) {
       device.mappingSource = authored.mappingSource;
@@ -1352,7 +1364,7 @@ function finalDocumentationPreview({ preview, kneeboard, inputModuleId, outputDi
       row.deviceLabel = authored.deviceLabel;
     }
     const profileKey = profileByFile.get(row.profileFile.toLocaleLowerCase());
-    const page = pageByProfile.get(profileKey);
+    const page = profileKey ? pageByProfile.get(profileKey) : undefined;
     if (profileKey) row.profileKey = profileKey;
     if (page?.deviceId) row.deviceId = page.deviceId;
   }
@@ -1381,7 +1393,9 @@ function deviceGuidePath(profileKey, device) {
 export function buildConsumerDocumentation({ preview, kneeboard, displayName, inputModuleId, kneeboardId, repoName, outputDir, commonRoot = defaultCommonRoot }) {
   const profileByKey = new Map(Object.entries(kneeboard.profiles ?? {}).map(([key, relative]) =>
     [basename(relative).toLocaleLowerCase(), key]));
-  const pageByProfile = new Map((kneeboard.pages ?? []).map((page) => [page.profile, page]));
+  const pageByProfile = new Map((kneeboard.pages ?? [])
+    .filter((page) => typeof page.profile === 'string' && page.profile.trim())
+    .map((page) => [page.profile, page]));
   const deviceDocuments = {};
   const documentedDevices = preview.devices.map((device) => {
     const profileFile = device.outputProfileFile ?? device.profileFile;
@@ -1404,7 +1418,7 @@ export function buildConsumerDocumentation({ preview, kneeboard, displayName, in
       });
       return `#### ${heading}\n\n| Physical input | Assignment | Axis/filter settings |\n| --- | --- | --- |\n${table.join('\n')}`;
     }).join('\n\n');
-    const title = page?.title ?? device.stem ?? device.deviceId;
+    const title = String(page?.title ?? device.stem ?? device.deviceId ?? '').trim();
     const metadata = `- Profile: \`${markdownCell(profileFile)}\`\n- Shared hardware: \`${markdownCell(device.deviceId)}\`\n- Physical instance: \`${markdownCell(device.physicalInstance)}\`\n- Kneeboard page: \`${markdownCell(page ? `${page.file}.png` : 'not generated')}\``;
     const guidePath = deviceGuidePath(profileKey, device);
     deviceDocuments[guidePath] = `<!-- Generated by DCS-Common IPI. -->\n\n# ${markdownCell(title)} mappings\n\nThis guide is generated from the effective DCS profile used by ${displayName}.\n\n${metadata}\n\n## Assignments\n\n${layers}\n`;
@@ -1545,6 +1559,22 @@ export function writeConsumer({ preview, outputDir, displayName, inputModuleId, 
       const absolute = join(out, joystickRel, device.outputProfileFile ?? device.profileFile);
       if (existsSync(absolute)) unlinkSync(absolute);
     }
+
+    // The configured profile inventory plus profiles observed in this import are
+    // authoritative. Remove stale repository files that are neither configured
+    // nor present in the current input so they cannot leak into OvGME packages.
+    const retainedProfileFiles = new Set([
+      ...Object.values(kneeboard.profiles ?? {}).map((relative) => basename(relative).toLocaleLowerCase()),
+      ...selectedPreview.devices.map((device) =>
+        (device.outputProfileFile ?? device.profileFile).toLocaleLowerCase()),
+    ]);
+    const joystickPath = join(out, joystickRel);
+    if (existsSync(joystickPath)) {
+      for (const filename of readdirSync(joystickPath)
+        .filter((file) => file.toLocaleLowerCase().endsWith('.diff.lua'))) {
+        if (!retainedProfileFiles.has(filename.toLocaleLowerCase())) unlinkSync(join(joystickPath, filename));
+      }
+    }
   }
 
   write('package.json', applyTokens(readTemplate(commonRoot, 'package.json.tmpl'), tokens));
@@ -1611,6 +1641,7 @@ export function writeConsumer({ preview, outputDir, displayName, inputModuleId, 
     `- Preview errors: ${documentationPreview.summary.errorCount}`,
     `- Preserved absent profiles: ${merge.preservedProfiles.length}`,
     `- Explicitly removed profiles: ${merge.removedProfiles.length}`,
+    `- Applied staged profile edits: ${assignments.length}`,
     '',
     '## Devices',
     '',
@@ -1619,6 +1650,15 @@ export function writeConsumer({ preview, outputDir, displayName, inputModuleId, 
         `- \`${d.outputProfileFile ?? d.profileFile}\` → profile \`${d.profileKey ?? '**UNMAPPED**'}\` → ${d.deviceId ?? '**UNMAPPED**'} (${d.mappingSource}${merge.preservedProfiles.includes(d.profileKey) ? ', preserved while absent from this scaffold session' : ''}${d.role ? `, role ${d.role}` : ''}${d.guid ? `, GUID ${d.guid}` : ''}${d.mappingSource === 'standalone-fallback' ? '; generic AB9 profile—select the installed grip' : ''})`,
     ),
     ...merge.removedProfiles.map((profile) => `- \`${profile}\` → explicitly removed`),
+    '',
+    '## Staged profile edits',
+    '',
+    ...(assignments.length > 0 ? assignments.map((assignment) => {
+      const chord = assignment.reformers?.length ? assignment.reformers.join(' + ') : 'Base';
+      const action = assignment.clear ? 'clear' : assignment.tuneOnly ? 'tune axis' : 'assign';
+      const command = assignment.clear || assignment.tuneOnly ? '' : ` → ${assignment.command}`;
+      return `- \`${assignment.profileFile}\`: ${action} \`${chord} + ${assignment.key}\`${command}`;
+    }) : ['- None']),
     '',
     '## TM MFD categories',
     '',
@@ -1630,11 +1670,12 @@ export function writeConsumer({ preview, outputDir, displayName, inputModuleId, 
     '',
     '## Bindings',
     '',
-    '| Device | Control | DCS command name | Device label | Effective label | Label source |',
-    '| --- | --- | --- | --- | --- | --- |',
+    '| Device | Layer / chord | Control | DCS command name | Device label | Effective label | Label source |',
+    '| --- | --- | --- | --- | --- | --- | --- |',
     ...documentationPreview.rows.map((row) => {
       const cell = (value) => String(value ?? '').replaceAll('|', '\\|').replaceAll('\n', ' ');
-      return `| ${cell(row.stem)} | ${cell(row.key)} | ${cell(row.name)} | ${cell(row.deviceLabel)} | ${cell(row.label)} | ${cell(row.labelSource)} |`;
+      const chord = row.reformers?.length ? [...row.reformers].sort().join(' + ') : 'Base';
+      return `| ${cell(row.stem)} | ${cell(chord)} | ${cell(row.key)} | ${cell(row.name)} | ${cell(row.deviceLabel)} | ${cell(row.label)} | ${cell(row.labelSource)} |`;
     }),
     '',
     '## Next steps',
