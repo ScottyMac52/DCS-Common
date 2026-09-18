@@ -1697,10 +1697,14 @@ test('T-45 selection keeps standalone MOZA and separate VKB while removing AVA c
   const profile = (key, name) => `local diff = { ["keyDiffs"] = {
     ["d1"] = { ["added"] = { [1] = { ["key"] = "${key}" } }, ["name"] = "${name}" },
   } } return diff`;
-  writeFileSync(join(initialProfiles, moza), profile('JOY_BTN1', 'MOZA control'));
+  const mozaProfile = `local diff = { ["axisDiffs"] = {
+    ["a2001cdnil"] = { ["added"] = { [1] = { ["key"] = "JOY_Y" } }, ["name"] = "Pitch" },
+    ["a2002cdnil"] = { ["added"] = { [1] = { ["key"] = "JOY_X" } }, ["name"] = "Roll" },
+  } } return diff`;
+  writeFileSync(join(initialProfiles, moza), mozaProfile);
   writeFileSync(join(initialProfiles, vkb), profile('JOY_BTN1', 'VKB trigger'));
   writeFileSync(join(initialProfiles, ava), profile('JOY_BTN1', 'AVA trigger'));
-  writeFileSync(join(selectedProfiles, moza), profile('JOY_BTN1', 'MOZA control'));
+  writeFileSync(join(selectedProfiles, moza), mozaProfile);
   writeFileSync(join(selectedProfiles, vkb), profile('JOY_BTN1', 'VKB trigger'));
 
   const outputDir = join(root, 'consumer');
