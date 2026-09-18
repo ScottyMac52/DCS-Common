@@ -92,6 +92,58 @@ public class SharedDeviceAuthoringTests
     }
 
     [Fact]
+    public void ClearingFinalAssignmentAllowsDeviceRemoval()
+    {
+        var model = new MainViewModel { HasPreview = true };
+        var hardware = new IpiHardwareChoice { DeviceId = "tm-mfd", Label = "Thrustmaster MFD" };
+        var device = model.AddSharedDevice(hardware, "F16 MFD 1.diff.lua", "1", null);
+        var row = new PreviewRow
+        {
+            ProfileFile = device.ProfileFile,
+            Stem = "F16 MFD 1",
+            Key = "JOY_BTN1",
+            Section = "keyDiffs",
+            Command = "d-old",
+            Name = "Old command",
+        };
+        model.ReplacePreviewRows([row]);
+
+        model.ClearAssignment(row);
+        model.RemoveSharedDevice(device);
+
+        Assert.True(device.RemoveRequested);
+        Assert.True(Assert.Single(model.PendingAssignments).Clear);
+    }
+
+    [Fact]
+    public void NewlyAssignedEmptyControlStillBlocksDeviceRemoval()
+    {
+        var model = new MainViewModel { HasPreview = true };
+        var hardware = new IpiHardwareChoice { DeviceId = "tm-mfd", Label = "Thrustmaster MFD" };
+        var device = model.AddSharedDevice(hardware, "F16 MFD 1.diff.lua", "1", null);
+        var row = model.GetInteractiveRow(device, new InteractiveControl
+        {
+            Id = "mfd-osb-t1",
+            Key = "JOY_BTN1",
+            Type = "button",
+            HardwareLabel = "OSB01",
+        }, []);
+        model.SelectedPreviewRow = row;
+        model.SelectedCatalogCommand = new DcsCommandCatalogEntry
+        {
+            BindingKey = "d-new",
+            Name = "New command",
+            Type = "button",
+        };
+
+        model.AssignSelectedCommand();
+
+        Assert.False(row.IsUnboundCandidate);
+        Assert.Equal("d-new", row.Command);
+        Assert.Throws<InvalidOperationException>(() => model.RemoveSharedDevice(device));
+    }
+
+    [Fact]
     public void SolutionServiceRoundTripsAuthoredDevices()
     {
         using var temporary = new TemporaryDirectory();
