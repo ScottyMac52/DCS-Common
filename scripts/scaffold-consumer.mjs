@@ -440,31 +440,15 @@ export function canonicalizeLegacyChordCommandIds(source, { filename = 'profile.
 }
 
 export function mergeRepositoryAssignments(observedSource, repositorySource, { filename = 'profile.diff.lua' } = {}) {
-  const observed = parseDcsDiffLua(observedSource, { filename });
+  // Once a consumer profile exists, it is the executable source of truth. The
+  // live DCS profile is discovery input only: silently unioning its additional
+  // bindings makes a repeat scaffold depend on workstation state and can
+  // resurrect stale controls. New or changed bindings must be staged explicitly
+  // through IPI before they are written to an existing consumer.
+  parseDcsDiffLua(observedSource, { filename });
   const repository = parseDcsDiffLua(repositorySource, { filename });
-  normalizeLegacyChordCommandBindings(observed);
   normalizeLegacyChordCommandBindings(repository);
-  const location = (input) => `${input.key}\0${chordKey(input.reformers)}`;
-  const repositoryLocations = new Set(repository.bindings.flatMap((binding) => [...binding.added, ...(binding.changed ?? []), ...binding.removed].map(location)));
-  for (const binding of observed.bindings) {
-    binding.added = binding.added.filter((input) => !repositoryLocations.has(location(input)));
-    binding.changed = (binding.changed ?? []).filter((input) => !repositoryLocations.has(location(input)));
-  }
-  for (const saved of repository.bindings) {
-    let target = observed.bindings.find((binding) => binding.section === saved.section && binding.command === saved.command);
-    if (!target) {
-      target = { section: saved.section, command: saved.command, name: saved.name, added: [], changed: [], removed: [] };
-      observed.bindings.push(target);
-    }
-    target.name = saved.name;
-    for (const input of saved.added)
-      if (!target.added.some((candidate) => location(candidate) === location(input))) target.added.push(input);
-    for (const input of saved.changed ?? [])
-      if (!target.changed.some((candidate) => location(candidate) === location(input))) target.changed.push(input);
-    for (const input of saved.removed)
-      if (!target.removed.some((candidate) => location(candidate) === location(input))) target.removed.push(input);
-  }
-  return serializeDcsProfile(observed);
+  return serializeDcsProfile(repository);
 }
 
 function effectiveProfileSource(profilesDir, repositoryProfilesDir, fileName) {
