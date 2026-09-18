@@ -138,7 +138,8 @@ public class SharedDeviceAuthoringTests
 
         model.AssignSelectedCommand();
 
-        Assert.True(row.IsUnboundCandidate);
+        Assert.False(row.IsUnboundCandidate);
+        Assert.Equal("d-new", row.Command);
         Assert.Throws<InvalidOperationException>(() => model.RemoveSharedDevice(device));
     }
 
