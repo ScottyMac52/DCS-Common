@@ -19,6 +19,7 @@ import {
   applyDcsCommandAssignments,
   canonicalizeLegacyChordCommandIds,
   mergeRepositoryAssignments,
+  restrictStandaloneMozaProfile,
   previewWithAuthoredDevices,
   previewWithoutRemovedProfiles,
 } from '../scripts/scaffold-consumer.mjs';
@@ -290,6 +291,30 @@ test('existing consumer assignments reject unstaged bindings from live DCS', () 
   assert.deepEqual(merged.find(({ command }) => command === 'd-local').added, [{ key: 'JOY_BTN1', reformers: [] }]);
   assert.equal(merged.some(({ command }) => command === 'd-observed'), false);
   assert.equal(merged.some(({ command }) => command === 'd-old'), false);
+});
+
+test('standalone MOZA profile keeps only unmodified pitch and roll assignments', () => {
+  const source = `local diff = {
+    ["keyDiffs"] = {
+      ["d-fire"] = { ["added"] = { [1] = { ["key"] = "JOY_BTN1" } }, ["name"] = "Fire" },
+      ["d-view"] = { ["removed"] = { [1] = { ["key"] = "JOY_BTN_POV1_U" } }, ["name"] = "View" },
+    },
+    ["axisDiffs"] = {
+      ["a-pitch"] = { ["added"] = { [1] = { ["key"] = "JOY_Y" } }, ["name"] = "Pitch" },
+      ["a-roll"] = { ["added"] = { [1] = { ["key"] = "JOY_X" } }, ["name"] = "Roll" },
+      ["a-throttle"] = { ["added"] = { [1] = { ["key"] = "JOY_Z" } }, ["name"] = "Throttle" },
+      ["a-rudder"] = { ["removed"] = { [1] = { ["key"] = "JOY_RZ" } }, ["name"] = "Rudder" },
+    },
+  } return diff`;
+
+  const bindings = parseDcsDiffLua(restrictStandaloneMozaProfile(source)).bindings;
+  const active = bindings.flatMap((binding) =>
+    [...binding.added, ...(binding.changed ?? [])].map((input) =>
+      `${binding.section}:${binding.command}:${input.key}`));
+
+  assert.deepEqual(active.sort(), ['axisDiffs:a-pitch:JOY_Y', 'axisDiffs:a-roll:JOY_X']);
+  assert.ok(bindings.find(({ command }) => command === 'd-view').removed.some(({ key }) => key === 'JOY_BTN_POV1_U'));
+  assert.ok(bindings.find(({ command }) => command === 'a-rudder').removed.some(({ key }) => key === 'JOY_RZ'));
 });
 
 test('repository removals prevent an observed assignment from being resurrected', () => {

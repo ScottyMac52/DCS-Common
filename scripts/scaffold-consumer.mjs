@@ -451,6 +451,23 @@ export function mergeRepositoryAssignments(observedSource, repositorySource, { f
   return serializeDcsProfile(repository);
 }
 
+export function restrictStandaloneMozaProfile(source, { filename = 'MOZA AB9.diff.lua' } = {}) {
+  const parsed = parseDcsDiffLua(source, { filename });
+  normalizeLegacyChordCommandBindings(parsed);
+  for (const binding of parsed.bindings) {
+    if (binding.section === 'keyDiffs') {
+      binding.added = [];
+      binding.changed = [];
+      continue;
+    }
+    const isFlightAxis = (input) =>
+      ['JOY_X', 'JOY_Y'].includes(input.key) && (input.reformers?.length ?? 0) === 0;
+    binding.added = binding.added.filter(isFlightAxis);
+    binding.changed = (binding.changed ?? []).filter(isFlightAxis);
+  }
+  return serializeDcsProfile(parsed);
+}
+
 function effectiveProfileSource(profilesDir, repositoryProfilesDir, fileName) {
   const observed = readFileSync(join(profilesDir, fileName), 'utf8');
   const repository = repositoryProfilesDir ? join(repositoryProfilesDir, fileName) : null;
@@ -660,7 +677,11 @@ export function buildPreview({ profilesDir, repositoryProfilesDir = null, modifi
 
     let bindings = [];
     try {
-      bindings = parseDcsDiffLua(effectiveProfileSource(profilesDir, repositoryProfilesDir, fileName), { filename: fileName }).bindings;
+      const effectiveSource = effectiveProfileSource(profilesDir, repositoryProfilesDir, fileName);
+      const profileSource = mapping.deviceId === 'moza-ab9' && mozaGrip === 'standalone'
+        ? restrictStandaloneMozaProfile(effectiveSource, { filename: fileName })
+        : effectiveSource;
+      bindings = parseDcsDiffLua(profileSource, { filename: fileName }).bindings;
     } catch (error) {
       errors.push(`${fileName}: ${error.message ?? error}`);
       devices.push({
@@ -1274,9 +1295,12 @@ export function previewWithoutRemovedProfiles(preview, removedProfiles = []) {
 }
 
 function effectiveDeviceProfileSource(preview, device) {
-  return device.authored
+  const source = device.authored
     ? emptyDcsProfile
     : effectiveProfileSource(preview.profilesDir, preview.repositoryProfilesDir, device.profileFile);
+  return preview.mozaGrip === 'standalone' && device.deviceId === 'moza-ab9'
+    ? restrictStandaloneMozaProfile(source, { filename: device.profileFile })
+    : source;
 }
 
 function markdownCell(value) {
