@@ -80,8 +80,8 @@ public partial class UiLayerEditorWindow : Window
             { Name = modifier.Name, Device = modifier.Device, Key = modifier.Key, Mode = modifier.Mode });
         PossibilitiesGrid.ItemsSource = document.Possibilities;
         EditDeviceBox.ItemsSource = document.Possibilities;
-        LayerBox.ItemsSource = new[] { new IpiLayerChoice() }.Concat(document.Modifiers.Select(item => new IpiLayerChoice { Name = item.Name })).ToList();
-        LayerBox.SelectedIndex = 0;
+        LayerBox.ItemsSource = document.Modifiers.Select(item => new IpiLayerChoice { Name = item.Name }).ToList();
+        LayerBox.UnselectAll();
         ErrorsList.ItemsSource = document.Errors;
         SummaryText.Text = $"{document.Scope}: Possibilities={document.Summary.Possibilities}  Profiles={document.Summary.Profiles}  Bindings={document.Summary.Bindings}  " +
             $"Keys={document.Summary.Keys}  Axes={document.Summary.Axes}  Modifiers={document.Summary.Modifiers}  Errors={document.Summary.Errors}";
@@ -127,8 +127,11 @@ public partial class UiLayerEditorWindow : Window
         EditLabelBox.Text = binding.Name;
         EditDeviceBox.SelectedItem = ((IEnumerable<UiLayerDevicePossibility>)EditDeviceBox.ItemsSource)
             .FirstOrDefault(item => item.DeviceId.Equals(binding.DeviceId, StringComparison.OrdinalIgnoreCase));
-        LayerBox.SelectedItem = ((IEnumerable<IpiLayerChoice>)LayerBox.ItemsSource)
-            .FirstOrDefault(item => item.Name.Equals(binding.Modifiers.FirstOrDefault() ?? string.Empty, StringComparison.Ordinal));
+        LayerBox.UnselectAll();
+        foreach (var item in ((IEnumerable<IpiLayerChoice>)LayerBox.ItemsSource)
+            .Where(item => binding.Modifiers.Contains(item.Name, StringComparer.Ordinal)))
+            LayerBox.SelectedItems.Add(item);
+        EditCategoryBox.SelectedIndex = binding.Category switch { "keyboard" => 1, "mouse" => 2, _ => 0 };
         var command = _functions.FirstOrDefault(item => item.Command == binding.Command);
         if (command is not null) UiCommandsGrid.SelectedItem = command;
     }
@@ -141,6 +144,11 @@ public partial class UiLayerEditorWindow : Window
             return;
         }
         var action = SelectedText(EditActionBox);
+        if (action == "restore")
+        {
+            RestoreSelectedBinding();
+            return;
+        }
         var edit = new UiLayerBindingEdit { Action = action, Command = command.Command, Name = string.IsNullOrWhiteSpace(EditLabelBox.Text) ? command.Label : EditLabelBox.Text.Trim() };
         if (action == "relabel") edit.Label = EditLabelBox.Text;
         else
@@ -150,10 +158,12 @@ public partial class UiLayerEditorWindow : Window
             var control = SharedControlBox.SelectedItem as IpiSharedControlChoice;
             if (action != "clear" && control is null)
                 throw new InvalidOperationException("Select a shared DCS-Common control.");
-            var category = _selectedBinding?.Profile == EditProfileBox.Text.Trim() ? _selectedBinding.Category : "joystick";
+            var category = _selectedBinding?.Profile == EditProfileBox.Text.Trim() ? _selectedBinding.Category : SelectedText(EditCategoryBox);
+            if (string.IsNullOrWhiteSpace(category)) throw new InvalidOperationException("Select joystick, keyboard, or mouse profile category.");
             edit.Profile = new UiLayerProfileTarget { Category = category, Filename = EditProfileBox.Text.Trim(), DeviceId = device.DeviceId };
             edit.Section = action == "clear" ? _selectedBinding?.Section ?? "keyDiffs" : control!.Section;
-            var chord = LayerBox.SelectedItem is IpiLayerChoice layer && !string.IsNullOrEmpty(layer.Name) ? new List<string> { layer.Name } : [];
+            var chord = LayerBox.SelectedItems.Cast<IpiLayerChoice>().Select(item => item.Name)
+                .Where(name => !string.IsNullOrWhiteSpace(name)).Distinct(StringComparer.Ordinal).OrderBy(name => name, StringComparer.Ordinal).ToList();
             if (action == "move")
             {
                 if (_selectedBinding is null) throw new InvalidOperationException("Select the existing binding to move.");
@@ -171,6 +181,19 @@ public partial class UiLayerEditorWindow : Window
         StatusText.Text = $"Staged authoritative change: {edit.Summary}. Nothing has been written yet.";
     }
 
+    private void RestoreSelectedBinding()
+    {
+        if (_selectedBinding is null) throw new InvalidOperationException("Select the authoritative binding to restore.");
+        var removed = StagedEdits.Where(edit => edit.Command == _selectedBinding.Command
+            && edit.Profile?.Filename == _selectedBinding.Profile
+            && (edit.Key == _selectedBinding.Key || edit.From?.Key == _selectedBinding.Key || edit.To?.Key == _selectedBinding.Key))
+            .ToList();
+        foreach (var edit in removed) StagedEdits.Remove(edit);
+        StatusText.Text = removed.Count == 0
+            ? "The selected authoritative binding has no staged changes to restore."
+            : $"Restored the selected binding by unstaging {removed.Count} pending change(s). Nothing has been written.";
+    }
+
     private void UnstageEdit_Click(object sender, RoutedEventArgs e)
     {
         if (StagedEditsGrid.SelectedItem is UiLayerBindingEdit edit) StagedEdits.Remove(edit);
@@ -185,7 +208,9 @@ public partial class UiLayerEditorWindow : Window
             var result = await _service.ApplyEditsAsync(CommonRootBox.Text.Trim(), _fingerprint, EditableModifiers.ToArray(), StagedEdits.ToArray());
             StagedEdits.Clear();
             Display(result);
-            StatusText.Text = $"Saved authoritative UI Layer: {string.Join(", ", result.ChangedFiles)}. Re-scaffold affected consumers, rebuild kneeboards and OVGME packages; this data-only edit does not require another EXE rebuild.";
+            StatusText.Text = result.Impact is null
+                ? $"Saved authoritative UI Layer: {string.Join(", ", result.ChangedFiles)}. Rebuild affected consumers."
+                : $"Saved authoritative UI Layer: {string.Join(", ", result.ChangedFiles)}. {result.Impact.Summary}";
         });
     }
 
