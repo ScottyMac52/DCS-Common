@@ -40,10 +40,22 @@ public sealed class UiLayerCatalogService
         var path = Path.Combine(Path.GetTempPath(), $"ui-layer-edits-{Guid.NewGuid():N}.json");
         try
         {
-            await File.WriteAllTextAsync(path, JsonSerializer.Serialize(new { expectedFingerprint, modifiers, bindings }), cancellationToken);
+            var consumerRoots = DiscoverConsumerRoots(commonRoot);
+            await File.WriteAllTextAsync(path, JsonSerializer.Serialize(new { expectedFingerprint, modifiers, bindings, consumerRoots }), cancellationToken);
             return Deserialize<UiLayerCatalogDocument>(await RunAsync(commonRoot, ["edit", commonRoot, path], cancellationToken));
         }
         finally { try { File.Delete(path); } catch { /* best effort */ } }
+    }
+
+    internal static IReadOnlyList<string> DiscoverConsumerRoots(string commonRoot)
+    {
+        var parent = Directory.GetParent(Path.GetFullPath(commonRoot))?.FullName;
+        if (parent is null || !Directory.Exists(parent)) return [];
+        return Directory.EnumerateDirectories(parent)
+            .Where(path => !Path.GetFullPath(path).Equals(Path.GetFullPath(commonRoot), StringComparison.OrdinalIgnoreCase))
+            .Where(path => File.Exists(Path.Combine(path, "config", "kneeboard.json")))
+            .OrderBy(path => path, StringComparer.OrdinalIgnoreCase)
+            .ToList();
     }
 
     private static T Deserialize<T>(string json) where T : class =>
