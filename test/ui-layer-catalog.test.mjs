@@ -4,7 +4,7 @@ import { cpSync, mkdtempSync, mkdirSync, readFileSync, rmSync, writeFileSync } f
 import { dirname, join, resolve } from 'node:path';
 import { tmpdir } from 'node:os';
 import { fileURLToPath } from 'node:url';
-import { applyAuthoritativeEdits, applyReconciliation, compareCatalogs, inspectCatalog, serializeModifiers } from '../scripts/manage-ui-layer-catalog.mjs';
+import { analyzeConsumerImpact, applyAuthoritativeEdits, applyReconciliation, compareCatalogs, inspectCatalog, serializeModifiers } from '../scripts/manage-ui-layer-catalog.mjs';
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const canonical = join(root, 'assets/shared/ui-layer/input/UiLayer');
@@ -137,4 +137,57 @@ test('layer serialization is deterministic and rejects ambiguous physical modifi
     { name: 'A', device: 'Device', key: 'JOY_BTN1', mode: 'hold' },
     { name: 'B', device: 'Device', key: 'JOY_BTN1', mode: 'hold' },
   ]), /Duplicate modifier physical input/);
+});
+
+
+test('authoritative edits preserve multi-modifier chords and report explicit and compatibility consumers', () => {
+  const fixture = mkdtempSync(join(tmpdir(), 'dcs-common-impact-'));
+  writeFileSync(join(fixture, 'package.json'), JSON.stringify({ name: 'dcs-common' }));
+  mkdirSync(join(fixture, 'assets/shared'), { recursive: true });
+  cpSync(join(root, 'assets/shared/ui-layer'), join(fixture, 'assets/shared/ui-layer'), { recursive: true });
+  cpSync(join(root, 'assets/shared/hardware'), join(fixture, 'assets/shared/hardware'), { recursive: true });
+  const input = join(fixture, 'assets/shared/ui-layer/input/UiLayer');
+  const before = inspectCatalog(input);
+  const explicit = join(fixture, '..', `explicit-${Date.now()}`);
+  const compatibility = join(fixture, '..', `compatibility-${Date.now()}`);
+  mkdirSync(join(explicit, 'config'), { recursive: true });
+  mkdirSync(join(compatibility, 'config'), { recursive: true });
+  writeFileSync(join(explicit, 'config/kneeboard.json'), JSON.stringify({ uiLayerUtilization: { mode: 'explicit',
+    bindings: [{ deviceId: 'viper-tqs-mission-pack', functionId: 'vr-zoom', modifiers: ['LAYER_A', 'LAYER_B'] }] } }));
+  writeFileSync(join(compatibility, 'config/kneeboard.json'), '{}');
+  try {
+    const modifiers = [...before.modifiers.map(({ name, device, key, mode }) => ({ name, device, key, mode })),
+      { name: 'LAYER_A', device: 'Test Device', key: 'JOY_BTN90', mode: 'hold' },
+      { name: 'LAYER_B', device: 'Test Device', key: 'JOY_BTN91', mode: 'hold' }];
+    const result = applyAuthoritativeEdits(fixture, { expectedFingerprint: before.fingerprint, modifiers,
+      consumerRoots: [explicit, compatibility],
+      bindings: [{ action: 'upsert', profile: { category: 'joystick', filename: 'Viper TQS Mission Pack.diff.lua',
+        deviceId: 'viper-tqs-mission-pack' }, section: 'keyDiffs', key: 'JOY_BTN11',
+        reformers: ['LAYER_B', 'LAYER_A'], command: 'd2604pnilu2604cdnilvd1vpnilvu0', name: 'VR Zoom' }] });
+    const authored = result.bindings.find(({ key, command }) => key === 'JOY_BTN11' && command === 'd2604pnilu2604cdnilvd1vpnilvu0');
+    assert.deepEqual(authored.modifiers, ['LAYER_A', 'LAYER_B']);
+    assert.equal(result.impact.explicitConsumers.length, 1);
+    assert.equal(result.impact.compatibilityConsumers.length, 1);
+    assert.match(result.impact.summary, /re-scaffold/i);
+  } finally {
+    rmSync(explicit, { recursive: true, force: true });
+    rmSync(compatibility, { recursive: true, force: true });
+  }
+});
+
+test('consumer impact reports only explicit selections matching a changed binding', () => {
+  const binding = { deviceId: 'tm-mfd', deviceInstance: 'MFD3', functionId: 'vr-zoom',
+    controlId: 'osb-1', key: 'JOY_BTN1', modifiers: ['SHIFT'], command: 'zoom' };
+  const unchanged = { ...binding, controlId: 'osb-2', key: 'JOY_BTN2' };
+  const rootA = mkdtempSync(join(tmpdir(), 'impact-a-'));
+  const rootB = mkdtempSync(join(tmpdir(), 'impact-b-'));
+  for (const consumer of [rootA, rootB]) mkdirSync(join(consumer, 'config'), { recursive: true });
+  writeFileSync(join(rootA, 'config/kneeboard.json'), JSON.stringify({ uiLayerUtilization: { mode: 'explicit',
+    bindings: [{ deviceId: 'tm-mfd', deviceInstance: 'MFD3', functionId: 'vr-zoom', modifiers: ['SHIFT'] }] } }));
+  writeFileSync(join(rootB, 'config/kneeboard.json'), JSON.stringify({ uiLayerUtilization: { mode: 'explicit',
+    bindings: [{ deviceId: 'tm-mfd', deviceInstance: 'MFD1', functionId: 'vr-zoom', modifiers: ['SHIFT'] }] } }));
+  const impact = analyzeConsumerImpact(root, { bindings: [binding], modifiers: [] },
+    { bindings: [unchanged], modifiers: [] }, [rootA, rootB]);
+  assert.equal(impact.explicitConsumers.length, 1);
+  assert.equal(impact.explicitConsumers[0].root, rootA);
 });

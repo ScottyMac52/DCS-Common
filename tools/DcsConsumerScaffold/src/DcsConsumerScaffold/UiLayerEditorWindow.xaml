@@ -36,13 +36,14 @@
             <DataGrid.Columns><DataGridTextColumn Header="Category" Binding="{Binding Category}" Width="120"/><DataGridTextColumn Header="Function" Binding="{Binding Label}" Width="*"/><DataGridTextColumn Header="Function ID" Binding="{Binding Id}" Width="180"/><DataGridTextColumn Header="Command identity" Binding="{Binding Command}" Width="2*"/></DataGrid.Columns>
           </DataGrid>
           <WrapPanel Grid.Row="2" Margin="0,7">
-            <TextBlock Text="Action" VerticalAlignment="Center"/><ComboBox x:Name="EditActionBox" Width="95" Margin="5,0" SelectedIndex="0"><ComboBoxItem Content="upsert"/><ComboBoxItem Content="move"/><ComboBoxItem Content="clear"/><ComboBoxItem Content="relabel"/></ComboBox>
+            <TextBlock Text="Action" VerticalAlignment="Center"/><ComboBox x:Name="EditActionBox" Width="95" Margin="5,0" SelectedIndex="0"><ComboBoxItem Content="upsert"/><ComboBoxItem Content="move"/><ComboBoxItem Content="clear"/><ComboBoxItem Content="restore"/><ComboBoxItem Content="relabel"/></ComboBox>
             <TextBlock Text="Device" VerticalAlignment="Center"/><ComboBox x:Name="EditDeviceBox" Width="260" Margin="5,0" DisplayMemberPath="DeviceId" SelectionChanged="EditDevice_Changed"/>
-            <TextBlock Text="Profile" VerticalAlignment="Center"/><TextBox x:Name="EditProfileBox" Width="240" Margin="5,0" ToolTip="Native DCS profile filename; existing selection fills this automatically"/>
+            <TextBlock Text="Category" VerticalAlignment="Center"/><ComboBox x:Name="EditCategoryBox" Width="100" Margin="5,0" SelectedIndex="0"><ComboBoxItem Content="joystick"/><ComboBoxItem Content="keyboard"/><ComboBoxItem Content="mouse"/></ComboBox>
+            <TextBlock Text="Profile" VerticalAlignment="Center"/><TextBox x:Name="EditProfileBox" Width="200" Margin="5,0" ToolTip="Native DCS profile filename; existing selection fills this automatically"/>
           </WrapPanel>
           <WrapPanel Grid.Row="3" Margin="0,0,0,7">
             <TextBlock Text="Shared control" VerticalAlignment="Center"/><ComboBox x:Name="SharedControlBox" Width="290" Margin="5,0"/>
-            <TextBlock Text="Layer" VerticalAlignment="Center"/><ComboBox x:Name="LayerBox" Width="230" Margin="5,0"/>
+            <TextBlock Text="Layers" VerticalAlignment="Center"/><ListBox x:Name="LayerBox" Width="230" Height="62" Margin="5,0" SelectionMode="Multiple" DisplayMemberPath="Name" ToolTip="Select zero, one, or multiple modifiers for the exact chord"/>
             <TextBlock Text="Label/name" VerticalAlignment="Center"/><TextBox x:Name="EditLabelBox" Width="180" Margin="5,0"/>
             <Button Content="Stage edit" Padding="10,3" Click="StageEdit_Click"/><Button Content="Unstage selected" Padding="10,3" Margin="6,0,0,0" Click="UnstageEdit_Click"/>
           </WrapPanel>

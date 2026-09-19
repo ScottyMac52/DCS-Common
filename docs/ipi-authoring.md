@@ -38,7 +38,7 @@ The control-mapping index and individual device guides are derived from the fina
 
 ## Definitive UI Layer authoring
 
-The **Definitive UI Layer Editor** treats DCS-Common's shared hardware catalog as its physical-control API. Select a validated UI Layer command, canonical device, shared control, and an existing layer. IPI derives the native input key, `keyDiffs`/`axisDiffs` section, hardware label, and control identity. Moving or clearing starts from a selected authoritative binding, so its source key and chord are never retyped. Stage an upsert, move, clear, or relabel operation, then save the complete batch.
+The **Definitive UI Layer Editor** treats DCS-Common's shared hardware catalog as its physical-control API. Select a validated UI Layer command, canonical device, shared control, and zero or more existing layers. Multi-selecting layers creates one exact multi-modifier chord; the editor sorts and de-duplicates its native modifier names deterministically. IPI derives the native input key, `keyDiffs`/`axisDiffs` section, hardware label, and control identity. Moving or clearing starts from a selected authoritative binding, so its source key and chord are never retyped. **Restore** discards every staged mutation of the selected authoritative binding before anything is written. Stage an upsert, move, clear, restore, or relabel operation, then save the complete batch. New profiles explicitly select joystick, keyboard, or mouse.
 
 The destination is always `DCS-Common/assets/shared/ui-layer`. Save stages the catalog, validates command identities, physical controls, modifier closure, and the expected fingerprint, then atomically replaces the authoritative directory. Existing unknown command entries are preserved as warnings; IPI will not newly assign an unknown identity.
 
@@ -71,5 +71,7 @@ The same selection filters kneeboard overlays and packaged DCS UI Layer profiles
 ## Rebuild and rollback
 
 Module data changes require kneeboard and OVGME package rebuilds. Authoritative UI Layer data changes require affected consumers to be re-scaffolded or rebuilt. A new IPI EXE is required only when IPI/DCS-Common code changes, not for later catalog-only edits.
+
+Before an authoritative save, IPI discovers sibling consumer repositories containing `config/kneeboard.json`. The result names explicit consumers whose selected canonical binding changed, separately lists compatibility-inferred consumers requiring review, and reports changed devices, functions, bindings, and modifier families. Only the reported consumers need re-scaffolding; their kneeboards and OVGME packages must then be rebuilt.
 
 Before replacing an active package: disable it in OVGME, update or re-scaffold and rebuild the consumer, rebuild the OVGME archive, then enable the new package. IPI does not operate OVGME or Git automatically.

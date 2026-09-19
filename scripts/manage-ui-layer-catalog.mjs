@@ -119,6 +119,20 @@ export function inspectCatalog(rootArg) {
       binding.bindingId = [binding.deviceId, binding.deviceInstance, binding.functionId, ...binding.reformers].map((value) => value ?? '').join('|');
     }
   }
+  const effectiveTuples = new Map();
+  const commandTuples = new Set();
+  for (const binding of bindings.filter((item) => item.deviceId)) {
+    const chord = [...binding.reformers].sort().join('+');
+    const effectiveTuple = [binding.category, binding.deviceId, binding.deviceInstance ?? '', binding.key, chord].join('|');
+    const existing = effectiveTuples.get(effectiveTuple);
+    if (existing && existing !== binding.command) {
+      errors.push(`${binding.profile}: ${binding.command} competes with ${existing} for effective tuple ${effectiveTuple}`);
+    } else effectiveTuples.set(effectiveTuple, binding.command);
+    const commandTuple = `${effectiveTuple}|${binding.command}`;
+    if (commandTuples.has(commandTuple)) errors.push(`${binding.profile}: duplicate command/effective tuple ${commandTuple}`);
+    commandTuples.add(commandTuple);
+  }
+
   const catalogFiles = [
     ...files(root).map((file) => ({ name: `input/UiLayer/${file.relativePath}`, path: file.absolutePath })),
     { name: 'functions.json', path: join(dirname(dirname(root)), 'functions.json') },
@@ -198,6 +212,58 @@ function migrateModifierReferences(uiRoot, renames) {
   }
 }
 
+function bindingSignature(binding) {
+  return [binding.deviceId ?? '', binding.deviceInstance ?? '', binding.functionId ?? binding.command,
+    binding.controlId ?? binding.key, ...(binding.modifiers ?? binding.reformers ?? [])].join('|');
+}
+
+export function analyzeConsumerImpact(commonRootArg, before, after, consumerRoots = []) {
+  const beforeBySignature = new Map(before.bindings.map((binding) => [bindingSignature(binding), binding]));
+  const afterBySignature = new Map(after.bindings.map((binding) => [bindingSignature(binding), binding]));
+  const changedSignatures = [...new Set([...beforeBySignature.keys(), ...afterBySignature.keys()])]
+    .filter((signature) => !beforeBySignature.has(signature) || !afterBySignature.has(signature)).sort();
+  const changedBindings = changedSignatures.map((signature) => afterBySignature.get(signature) ?? beforeBySignature.get(signature));
+  const modifierKey = (item) => [item.name, item.device, item.key, item.mode].join('|');
+  const beforeModifiers = new Set(before.modifiers.map(modifierKey));
+  const afterModifiers = new Set(after.modifiers.map(modifierKey));
+  const changedModifierFamilies = [...new Set([...beforeModifiers, ...afterModifiers]
+    .filter((item) => !beforeModifiers.has(item) || !afterModifiers.has(item)).map((item) => item.split('|')[0]))].sort();
+  const explicitConsumers = [];
+  const compatibilityConsumers = [];
+  for (const consumerRootArg of consumerRoots ?? []) {
+    const consumerRoot = resolve(consumerRootArg);
+    const configPath = join(consumerRoot, 'config', 'kneeboard.json');
+    if (!existsSync(configPath)) continue;
+    try {
+      const config = JSON.parse(readFileSync(configPath, 'utf8'));
+      const consumer = { name: basename(consumerRoot), root: consumerRoot, matchedBindings: [] };
+      if (config.uiLayerUtilization?.mode !== 'explicit') {
+        if (changedBindings.length || changedModifierFamilies.length) compatibilityConsumers.push(consumer);
+        continue;
+      }
+      for (const selection of config.uiLayerUtilization.bindings ?? []) {
+        const matches = changedBindings.filter((binding) =>
+          binding.deviceId === selection.deviceId
+          && (selection.deviceInstance == null || binding.deviceInstance === selection.deviceInstance)
+          && binding.functionId === selection.functionId
+          && JSON.stringify([...(binding.modifiers ?? [])].sort()) === JSON.stringify([...(selection.modifiers ?? [])].sort()));
+        consumer.matchedBindings.push(...matches.map(bindingSignature));
+      }
+      consumer.matchedBindings = [...new Set(consumer.matchedBindings)].sort();
+      if (consumer.matchedBindings.length) explicitConsumers.push(consumer);
+    } catch (error) {
+      compatibilityConsumers.push({ name: basename(consumerRoot), root: consumerRoot,
+        matchedBindings: [`Unreadable configuration: ${String(error.message ?? error)}`] });
+    }
+  }
+  const changedDevices = [...new Set(changedBindings.map((item) => item.deviceId).filter(Boolean))].sort();
+  const changedFunctions = [...new Set(changedBindings.map((item) => item.functionId ?? item.command).filter(Boolean))].sort();
+  const summary = `Changed ${changedBindings.length} binding(s), ${changedDevices.length} device(s), ${changedFunctions.length} function(s), and ${changedModifierFamilies.length} modifier family/families. `
+    + `${explicitConsumers.length} explicit consumer(s) and ${compatibilityConsumers.length} compatibility-inferred consumer(s) require review; re-scaffold those consumers and rebuild kneeboards/OVGME. Importer EXE rebuild: no.`;
+  return { changedDevices, changedFunctions, changedBindings: changedSignatures, changedModifierFamilies,
+    explicitConsumers, compatibilityConsumers, summary };
+}
+
 export function applyAuthoritativeEdits(commonRootArg, request) {
   const commonRoot = resolve(commonRootArg);
   const packagePath = join(commonRoot, 'package.json');
@@ -273,12 +339,14 @@ export function applyAuthoritativeEdits(commonRootArg, request) {
     if (changedFiles.has('functions.json')) writeFileSync(functionsPath, `${JSON.stringify(functionsDoc, null, 2)}\n`, 'utf8');
     const inspected = inspectCatalog(stagedInput);
     if (!inspected.valid) throw new Error(`Catalog validation failed:\n${inspected.errors.join('\n')}`);
+    const impact = analyzeConsumerImpact(commonRoot, current, inspected, request.consumerRoots ?? []);
     renameSync(liveUiRoot, backup);
     try { renameSync(stage, liveUiRoot); }
     catch (error) { renameSync(backup, liveUiRoot); throw error; }
     rmSync(backup, { recursive: true, force: true });
-    return { ...inspectCatalog(canonicalInput), changedFiles: [...changedFiles].sort(),
-      rebuild: { importerExe: false, consumerRescaffold: true, kneeboards: true, ovgmePackage: true } };
+    return { ...inspectCatalog(canonicalInput), changedFiles: [...changedFiles].sort(), impact,
+      rebuild: { importerExe: false, consumerRescaffold: impact.explicitConsumers.length > 0 || impact.compatibilityConsumers.length > 0,
+        kneeboards: true, ovgmePackage: true } };
   } catch (error) {
     rmSync(stage, { recursive: true, force: true });
     throw error;
