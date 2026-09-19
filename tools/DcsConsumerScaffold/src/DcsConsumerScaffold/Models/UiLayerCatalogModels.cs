@@ -15,6 +15,7 @@ public sealed class UiLayerCatalogDocument
     [JsonPropertyName("errors")] public List<string> Errors { get; set; } = [];
     [JsonPropertyName("warnings")] public List<string> Warnings { get; set; } = [];
     [JsonPropertyName("changedFiles")] public List<string> ChangedFiles { get; set; } = [];
+    [JsonPropertyName("impact")] public UiLayerImpactReport? Impact { get; set; }
     [JsonPropertyName("summary")] public UiLayerCatalogSummary Summary { get; set; } = new();
 }
 
@@ -125,4 +126,23 @@ public sealed class UiLayerCatalogChange
     [JsonPropertyName("relativePath")] public string RelativePath { get; set; } = string.Empty;
     [JsonPropertyName("state")] public string State { get; set; } = string.Empty;
     [JsonPropertyName("action")] public string Action { get; set; } = "Keep";
+}
+
+
+public sealed class UiLayerImpactReport
+{
+    [JsonPropertyName("changedDevices")] public List<string> ChangedDevices { get; set; } = [];
+    [JsonPropertyName("changedFunctions")] public List<string> ChangedFunctions { get; set; } = [];
+    [JsonPropertyName("changedBindings")] public List<string> ChangedBindings { get; set; } = [];
+    [JsonPropertyName("changedModifierFamilies")] public List<string> ChangedModifierFamilies { get; set; } = [];
+    [JsonPropertyName("explicitConsumers")] public List<UiLayerConsumerImpact> ExplicitConsumers { get; set; } = [];
+    [JsonPropertyName("compatibilityConsumers")] public List<UiLayerConsumerImpact> CompatibilityConsumers { get; set; } = [];
+    [JsonPropertyName("summary")] public string Summary { get; set; } = string.Empty;
+}
+
+public sealed class UiLayerConsumerImpact
+{
+    [JsonPropertyName("name")] public string Name { get; set; } = string.Empty;
+    [JsonPropertyName("root")] public string Root { get; set; } = string.Empty;
+    [JsonPropertyName("matchedBindings")] public List<string> MatchedBindings { get; set; } = [];
 }
