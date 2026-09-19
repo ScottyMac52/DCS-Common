@@ -1,4 +1,5 @@
 using DcsConsumerScaffold.ViewModels;
+using DcsConsumerScaffold.Services;
 using Xunit;
 
 namespace DcsConsumerScaffold.Tests;
@@ -22,4 +23,27 @@ public sealed class UiLayerOwnershipTests
         Assert.Contains("observed snapshot, not the definitive catalog", viewModel.StatusText);
         Assert.Contains("Definitive UI Layer Editor", viewModel.StatusText);
     }
+    [Fact]
+    public void DiscoverConsumerRoots_FindsOnlySiblingConsumerRepositories()
+    {
+        var parent = Path.Combine(Path.GetTempPath(), $"ipi-impact-{Guid.NewGuid():N}");
+        var common = Path.Combine(parent, "DCS-Common");
+        var consumer = Path.Combine(parent, "DCS-Test-Components");
+        var unrelated = Path.Combine(parent, "notes");
+        Directory.CreateDirectory(common);
+        Directory.CreateDirectory(Path.Combine(consumer, "config"));
+        Directory.CreateDirectory(unrelated);
+        File.WriteAllText(Path.Combine(consumer, "config", "kneeboard.json"), "{}");
+        try
+        {
+            var roots = UiLayerCatalogService.DiscoverConsumerRoots(common);
+            Assert.Single(roots);
+            Assert.Equal(consumer, roots[0]);
+        }
+        finally
+        {
+            Directory.Delete(parent, recursive: true);
+        }
+    }
+
 }
