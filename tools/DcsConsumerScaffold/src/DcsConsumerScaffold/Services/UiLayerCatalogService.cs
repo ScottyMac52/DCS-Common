@@ -47,7 +47,7 @@ public sealed class UiLayerCatalogService
         finally { try { File.Delete(path); } catch { /* best effort */ } }
     }
 
-    internal static IReadOnlyList<string> DiscoverConsumerRoots(string commonRoot)
+    public static IReadOnlyList<string> DiscoverConsumerRoots(string commonRoot)
     {
         var parent = Directory.GetParent(Path.GetFullPath(commonRoot))?.FullName;
         if (parent is null || !Directory.Exists(parent)) return [];
